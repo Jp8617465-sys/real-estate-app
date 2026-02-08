@@ -1,0 +1,25 @@
+{
+  "name": "@realflow/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@realflow/shared": "*",
+    "@realflow/business-logic": "*",
+    "@realflow/integrations": "*",
+    "@supabase/supabase-js": "^2.45.0",
+    "fastify": "^4.28.0",
+    "@fastify/cors": "^9.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}
