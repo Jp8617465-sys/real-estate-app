@@ -1,12 +1,25 @@
 'use client';
 
 import { useState } from 'react';
+import { useSidebar } from './sidebar-context';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
+  const { toggle } = useSidebar();
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-gray-200 bg-white/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-gray-200 bg-white/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-white/60 sm:px-6">
+      {/* Hamburger menu (mobile only) */}
+      <button
+        onClick={toggle}
+        className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 lg:hidden"
+        aria-label="Toggle sidebar"
+      >
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
       {/* Search */}
       <div className="flex flex-1 items-center">
         <div className="relative w-full max-w-md">
@@ -34,7 +47,7 @@ export function Header() {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Notifications */}
         <button className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,8 +62,9 @@ export function Header() {
         </button>
 
         {/* Quick Add */}
-        <button className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700">
-          + New
+        <button className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 sm:px-4">
+          <span className="hidden sm:inline">+ New</span>
+          <span className="sm:hidden">+</span>
         </button>
       </div>
     </header>
