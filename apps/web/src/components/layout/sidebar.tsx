@@ -27,8 +27,12 @@ export function Sidebar() {
 
   // Close sidebar when route changes (mobile)
   useEffect(() => {
-    close();
-  }, [pathname, close]);
+    // Only close on mobile when pathname actually changes (not on initial mount)
+    if (window.innerWidth < 1024) {
+      close();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]); // Only depend on pathname, not close function
 
   return (
     <>
