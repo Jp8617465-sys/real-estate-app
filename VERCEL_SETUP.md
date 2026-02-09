@@ -10,7 +10,9 @@
 ### The Problem
 Vercel's automatic Turborepo detection conflicts with manual `vercel.json` configuration, causing path resolution issues where Vercel looks for output in the wrong directory.
 
-### The Solution: Use Vercel's Root Directory Setting
+### The Solution: Use Vercel's Root Directory Setting (Official Recommendation)
+
+**Source**: [Vercel Monorepo Documentation](https://vercel.com/docs/monorepos) (Updated Dec 2025)
 
 1. **Go to your Vercel project dashboard**
    - Navigate to: Project Settings → General
@@ -31,21 +33,26 @@ Vercel's automatic Turborepo detection conflicts with manual `vercel.json` confi
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
      - `SUPABASE_SERVICE_ROLE_KEY`
 
-### Why This Works
+### Why This Works (Verified Against Official Docs)
 
-1. **Vercel auto-detects Next.js** in `apps/web/`
-2. **Turbo caching still works** via Vercel's built-in integration
-3. **No path resolution conflicts** because Vercel builds from the app directory
-4. **Official Vercel + Turborepo pattern** (most reliable)
+1. **Vercel auto-detects Next.js** in `apps/web/` - zero config needed
+2. **Turbo remote caching is automatic** - Vercel enables it by default for Turborepo projects
+3. **No path resolution conflicts** - building from app directory avoids monorepo root issues
+4. **Prevents unnecessary rebuilds** - setting Root Directory to monorepo root would rebuild ALL apps
+5. **Official Vercel + Turborepo pattern** (recommended by Vercel engineering team)
 
-### Alternative: Build from Root (Advanced)
+**Official Sources:**
+- [Vercel Monorepo Docs](https://vercel.com/docs/monorepos)
+- [Vercel Turborepo Integration](https://vercel.com/docs/monorepos/turborepo)
+- [Turborepo on Vercel Guide](https://turborepo.dev/docs/guides/ci-vendors/vercel)
 
-If you must build from the monorepo root, you need to:
-1. Remove all vercel.json configuration
-2. Let Vercel auto-detect Turborepo
-3. Configure which app to deploy via Vercel's UI
+### ❌ What NOT to Do (According to Official Docs)
 
-**Note:** This approach has path resolution issues and is not recommended.
+**Don't set Root Directory to monorepo root** - This causes ALL apps to rebuild on every deployment, wasting build minutes and time. [Source: Vercel Monorepo FAQ](https://vercel.com/docs/monorepos/monorepo-faq)
+
+**Don't use `outputDirectory` in vercel.json for Next.js** - Vercel handles Next.js output automatically. This setting is for static builds only. [Source: Vercel Project Configuration](https://vercel.com/docs/project-configuration)
+
+**Don't manually configure build commands** - Vercel's zero-config integration with Turborepo works best when you let it auto-detect. [Source: Vercel Turborepo Docs](https://vercel.com/docs/monorepos/turborepo)
 
 ## 📦 Pre-Deploy Checklist
 
