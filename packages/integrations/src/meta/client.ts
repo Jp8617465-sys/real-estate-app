@@ -118,4 +118,15 @@ export class MetaSocialClient {
   async getConversations(limit = 25): Promise<unknown> {
     return this.request(`/${this.config.pageId}/conversations?limit=${limit}`);
   }
+
+  /**
+   * Send a message in an existing Facebook Page conversation.
+   * Used for replying to DMs from the unified inbox.
+   */
+  async sendPageMessage(conversationId: string, message: string): Promise<{ id: string }> {
+    return this.request<{ id: string }>(`/${conversationId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+  }
 }
