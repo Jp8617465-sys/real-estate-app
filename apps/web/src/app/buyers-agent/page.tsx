@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { StatCard } from '@/components/dashboard/stat-card';
 import { BaPipelineBoard } from '@/components/buyers-agent/ba-pipeline-board';
 import { usePipelineTransactions } from '@/hooks/use-pipeline';

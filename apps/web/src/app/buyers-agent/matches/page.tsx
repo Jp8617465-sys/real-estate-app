@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { usePropertyMatches } from '@/hooks/use-property-matches';
 import { PropertyMatchCard } from '@/components/buyers-agent/property-match-card';
 import { cn } from '@/lib/utils';
