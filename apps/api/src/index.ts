@@ -12,6 +12,8 @@ import { dueDiligenceRoutes } from './routes/due-diligence';
 import { keyDateRoutes } from './routes/key-dates';
 import { feeRoutes } from './routes/fees';
 import { sellingAgentRoutes } from './routes/selling-agents';
+import { inboxRoutes } from './routes/inbox';
+import { inboxWebhookRoutes } from './routes/inbox-webhooks';
 
 const fastify = Fastify({
   logger: true,
@@ -38,6 +40,8 @@ async function start() {
   await fastify.register(keyDateRoutes, { prefix: '/api/v1/key-dates' });
   await fastify.register(feeRoutes, { prefix: '/api/v1/fees' });
   await fastify.register(sellingAgentRoutes, { prefix: '/api/v1/selling-agents' });
+  await fastify.register(inboxRoutes, { prefix: '/api/v1/inbox' });
+  await fastify.register(inboxWebhookRoutes, { prefix: '/api/v1/inbox/webhooks' });
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', service: 'realflow-api' }));
