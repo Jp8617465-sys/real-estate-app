@@ -1,80 +1,16 @@
+'use client';
+
 import {
   CheckCircle2,
   Circle,
   Clock,
   AlertCircle,
   AlertTriangle,
+  Loader2,
+  Calendar,
 } from 'lucide-react';
 import type { KeyDateStatus } from '@realflow/shared';
-
-// ── Mock data ────────────────────────────────────────────────────────
-interface MockKeyDate {
-  id: string;
-  label: string;
-  date: string;
-  isCritical: boolean;
-  status: KeyDateStatus;
-  notes?: string;
-}
-
-const MOCK_KEY_DATES: MockKeyDate[] = [
-  {
-    id: '1',
-    label: 'Contract exchange',
-    date: '2026-02-05T10:00:00Z',
-    isCritical: true,
-    status: 'completed',
-    notes: 'Contracts exchanged at $1,095,000. 21-day cooling off period applies.',
-  },
-  {
-    id: '2',
-    label: 'Building & pest inspection',
-    date: '2026-02-10T09:00:00Z',
-    isCritical: true,
-    status: 'completed',
-    notes: 'Inspection completed. Minor issues noted - not structural.',
-  },
-  {
-    id: '3',
-    label: 'Cooling off period expires',
-    date: '2026-02-26T17:00:00Z',
-    isCritical: true,
-    status: 'due_soon',
-    notes: 'Must confirm before 5pm. Solicitor to handle if we proceed.',
-  },
-  {
-    id: '4',
-    label: 'Finance approval deadline',
-    date: '2026-02-28T17:00:00Z',
-    isCritical: true,
-    status: 'due_soon',
-    notes: 'Bank valuation pending. Broker following up with lender.',
-  },
-  {
-    id: '5',
-    label: 'Deposit due (10%)',
-    date: '2026-03-05T17:00:00Z',
-    isCritical: true,
-    status: 'upcoming',
-    notes: 'Balance of deposit ($84,500) due to trust account.',
-  },
-  {
-    id: '6',
-    label: 'Pre-settlement inspection',
-    date: '2026-04-01T10:00:00Z',
-    isCritical: false,
-    status: 'upcoming',
-    notes: 'Final walkthrough to confirm property condition.',
-  },
-  {
-    id: '7',
-    label: 'Settlement',
-    date: '2026-04-07T14:00:00Z',
-    isCritical: true,
-    status: 'upcoming',
-    notes: 'Target settlement date. Keys handover same day.',
-  },
-];
+import { useTimeline } from '@/hooks/use-timeline';
 
 const STATUS_CONFIG: Record<
   KeyDateStatus,
@@ -146,8 +82,47 @@ function daysUntil(iso: string): number {
 }
 
 export default function TimelinePage() {
-  const criticalUpcoming = MOCK_KEY_DATES.filter(
-    (d) => d.isCritical && (d.status === 'due_soon' || d.status === 'overdue')
+  const { data: keyDates, isLoading, error } = useTimeline();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-portal-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="h-10 w-10 text-gray-300" />
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">Unable to load key dates</h2>
+        <p className="mt-1 text-sm text-gray-500">Please try again later.</p>
+      </div>
+    );
+  }
+
+  const dates = keyDates ?? [];
+
+  if (dates.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Key Dates</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Calendar className="h-10 w-10 text-gray-300" />
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">No key dates yet</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Key dates will appear here once your transaction is active.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const criticalUpcoming = dates.filter(
+    (d) => d.is_critical && (d.status === 'due_soon' || d.status === 'overdue'),
   );
 
   return (
@@ -155,9 +130,6 @@ export default function TimelinePage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Key Dates</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          42 Latrobe Terrace, Paddington QLD 4064
-        </p>
       </div>
 
       {/* Critical dates alert */}
@@ -189,10 +161,10 @@ export default function TimelinePage() {
 
       {/* Vertical timeline */}
       <div className="relative">
-        {MOCK_KEY_DATES.map((keyDate, index) => {
+        {dates.map((keyDate, index) => {
           const config = STATUS_CONFIG[keyDate.status];
           const StatusIcon = config.icon;
-          const isLast = index === MOCK_KEY_DATES.length - 1;
+          const isLast = index === dates.length - 1;
           const days = daysUntil(keyDate.date);
 
           return (
@@ -220,7 +192,7 @@ export default function TimelinePage() {
                         <h3 className="font-semibold text-gray-900">
                           {keyDate.label}
                         </h3>
-                        {keyDate.isCritical && (
+                        {keyDate.is_critical && (
                           <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-red-600">
                             Critical
                           </span>
