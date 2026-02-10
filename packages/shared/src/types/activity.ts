@@ -20,6 +20,11 @@ export const ActivityTypeSchema = z.enum([
   'settlement-completed',
   'social-dm-sent',
   'social-dm-received',
+  'inspection-logged',
+  'property-matched',
+  'offer-round',
+  'dd-item-completed',
+  'brief-updated',
   'system', // automated actions
 ]);
 export type ActivityType = z.infer<typeof ActivityTypeSchema>;

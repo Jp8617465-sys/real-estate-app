@@ -15,6 +15,7 @@ export const ContactTypeSchema = z.enum([
   'tenant',
   'referral-source',
   'past-client',
+  'selling-agent',
 ]);
 export type ContactType = z.infer<typeof ContactTypeSchema>;
 

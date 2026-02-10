@@ -48,6 +48,7 @@ export const LeadSourceSchema = z.enum([
   'open-home',
   'signboard',
   'print',
+  'google_ads',
   'other',
 ]);
 export type LeadSource = z.infer<typeof LeadSourceSchema>;
