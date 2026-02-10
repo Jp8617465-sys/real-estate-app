@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // ─── Pipeline Types ─────────────────────────────────────────────────
-export const PipelineTypeSchema = z.enum(['buying', 'selling']);
+export const PipelineTypeSchema = z.enum(['buying', 'selling', 'buyers-agent']);
 export type PipelineType = z.infer<typeof PipelineTypeSchema>;
 
 // ─── Buyer Pipeline Stages ──────────────────────────────────────────
@@ -66,6 +66,54 @@ export const SELLER_STAGE_LABELS: Record<SellerStage, string> = {
   'offers-negotiation': 'Offers / Negotiation',
   'under-contract': 'Under Contract',
   'settled': 'Settled / Complete',
+};
+
+// ─── Buyers Agent Pipeline Stages ────────────────────────────────────
+// Purpose-built pipeline for buyers agents (distinct from generic 'buying' pipeline)
+export const BuyersAgentStageSchema = z.enum([
+  'enquiry',
+  'consult-qualify',
+  'engaged',
+  'strategy-brief',
+  'active-search',
+  'offer-negotiate',
+  'under-contract',
+  'settled-nurture',
+]);
+export type BuyersAgentStage = z.infer<typeof BuyersAgentStageSchema>;
+
+export const BUYERS_AGENT_STAGE_ORDER: Record<BuyersAgentStage, number> = {
+  'enquiry': 1,
+  'consult-qualify': 2,
+  'engaged': 3,
+  'strategy-brief': 4,
+  'active-search': 5,
+  'offer-negotiate': 6,
+  'under-contract': 7,
+  'settled-nurture': 8,
+};
+
+export const BUYERS_AGENT_STAGE_LABELS: Record<BuyersAgentStage, string> = {
+  'enquiry': 'Enquiry',
+  'consult-qualify': 'Consultation & Qualify',
+  'engaged': 'Engaged (Signed)',
+  'strategy-brief': 'Strategy & Brief',
+  'active-search': 'Active Search',
+  'offer-negotiate': 'Offer & Negotiate',
+  'under-contract': 'Under Contract',
+  'settled-nurture': 'Settled & Nurture',
+};
+
+// Stage descriptions for UI tooltips / help text
+export const BUYERS_AGENT_STAGE_DESCRIPTIONS: Record<BuyersAgentStage, string> = {
+  'enquiry': 'Initial contact from potential client. Respond fast, qualify interest, book discovery call.',
+  'consult-qualify': 'Discovery meeting to understand needs, assess fit, explain fees. Send engagement agreement if qualified.',
+  'engaged': 'Agreement signed, retainer paid. Collect detailed requirements, verify finance, connect with solicitor/broker.',
+  'strategy-brief': 'Full client brief completed. Market analysis, suburb comparison, search strategy activated.',
+  'active-search': 'Actively sourcing, inspecting, and presenting properties. Multiple properties evaluated simultaneously.',
+  'offer-negotiate': 'Making offers or bidding at auction. Multi-round negotiation with selling agents.',
+  'under-contract': 'Contracts exchanged. Due diligence, building & pest, finance approval, settlement coordination.',
+  'settled-nurture': 'Settlement complete. Post-purchase nurture, review requests, referral generation, long-term relationship.',
 };
 
 // ─── Transaction (links contact + property + pipeline) ──────────────

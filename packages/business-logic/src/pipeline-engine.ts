@@ -1,9 +1,11 @@
 import {
   BuyerStage,
   SellerStage,
+  BuyersAgentStage,
   PipelineType,
   BUYER_STAGE_ORDER,
   SELLER_STAGE_ORDER,
+  BUYERS_AGENT_STAGE_ORDER,
   type Transaction,
   type StageTransition,
 } from '@realflow/shared';
@@ -28,6 +30,17 @@ const VALID_SELLER_TRANSITIONS: Record<SellerStage, SellerStage[]> = {
   'offers-negotiation': ['under-contract', 'on-market'],
   'under-contract': ['settled', 'offers-negotiation'],
   'settled': [],
+};
+
+const VALID_BUYERS_AGENT_TRANSITIONS: Record<BuyersAgentStage, BuyersAgentStage[]> = {
+  'enquiry': ['consult-qualify'],
+  'consult-qualify': ['engaged', 'enquiry'],  // can go back to enquiry
+  'engaged': ['strategy-brief', 'consult-qualify'],  // can go back
+  'strategy-brief': ['active-search', 'engaged'],
+  'active-search': ['offer-negotiate', 'strategy-brief'],  // can refine brief
+  'offer-negotiate': ['under-contract', 'active-search'],  // back to search if offer fails
+  'under-contract': ['settled-nurture', 'offer-negotiate'],  // back if contract falls through
+  'settled-nurture': [],  // terminal
 };
 
 // ─── Stage Requirements ─────────────────────────────────────────────
@@ -69,6 +82,29 @@ const SELLER_STAGE_REQUIREMENTS: Partial<Record<SellerStage, StageRequirement[]>
   ],
 };
 
+const BUYERS_AGENT_STAGE_REQUIREMENTS: Partial<Record<BuyersAgentStage, StageRequirement[]>> = {
+  'consult-qualify': [
+    { field: 'contactId', label: 'Client contact exists', required: true },
+  ],
+  'engaged': [
+    { field: 'agreementSigned', label: 'Engagement agreement signed', required: true },
+    { field: 'retainerPaid', label: 'Retainer fee paid', required: true },
+  ],
+  'strategy-brief': [
+    { field: 'clientBriefId', label: 'Client brief completed', required: true },
+    { field: 'financeVerified', label: 'Finance pre-approval verified', required: true },
+  ],
+  'offer-negotiate': [
+    { field: 'propertyId', label: 'Target property selected', required: true },
+    { field: 'offerAmount', label: 'Offer amount specified', required: true },
+  ],
+  'under-contract': [
+    { field: 'contractPrice', label: 'Contract price recorded', required: true },
+    { field: 'exchangeDate', label: 'Exchange date set', required: true },
+    { field: 'settlementDate', label: 'Settlement date set', required: true },
+  ],
+};
+
 // ─── Pipeline Engine ────────────────────────────────────────────────
 
 export class PipelineEngine {
@@ -85,6 +121,11 @@ export class PipelineEngine {
       return validTargets?.includes(toStage as BuyerStage) ?? false;
     }
 
+    if (pipelineType === 'buyers-agent') {
+      const validTargets = VALID_BUYERS_AGENT_TRANSITIONS[fromStage as BuyersAgentStage];
+      return validTargets?.includes(toStage as BuyersAgentStage) ?? false;
+    }
+
     const validTargets = VALID_SELLER_TRANSITIONS[fromStage as SellerStage];
     return validTargets?.includes(toStage as SellerStage) ?? false;
   }
@@ -95,6 +136,9 @@ export class PipelineEngine {
   static getValidNextStages(pipelineType: PipelineType, currentStage: string): string[] {
     if (pipelineType === 'buying') {
       return VALID_BUYER_TRANSITIONS[currentStage as BuyerStage] ?? [];
+    }
+    if (pipelineType === 'buyers-agent') {
+      return VALID_BUYERS_AGENT_TRANSITIONS[currentStage as BuyersAgentStage] ?? [];
     }
     return VALID_SELLER_TRANSITIONS[currentStage as SellerStage] ?? [];
   }
@@ -109,6 +153,9 @@ export class PipelineEngine {
     if (pipelineType === 'buying') {
       return BUYER_STAGE_REQUIREMENTS[stage as BuyerStage] ?? [];
     }
+    if (pipelineType === 'buyers-agent') {
+      return BUYERS_AGENT_STAGE_REQUIREMENTS[stage as BuyersAgentStage] ?? [];
+    }
     return SELLER_STAGE_REQUIREMENTS[stage as SellerStage] ?? [];
   }
 
@@ -118,6 +165,9 @@ export class PipelineEngine {
   static getStageOrder(pipelineType: PipelineType, stage: string): number {
     if (pipelineType === 'buying') {
       return BUYER_STAGE_ORDER[stage as BuyerStage] ?? 0;
+    }
+    if (pipelineType === 'buyers-agent') {
+      return BUYERS_AGENT_STAGE_ORDER[stage as BuyersAgentStage] ?? 0;
     }
     return SELLER_STAGE_ORDER[stage as SellerStage] ?? 0;
   }
@@ -133,6 +183,12 @@ export class PipelineEngine {
    * Determine the initial stage for a pipeline type.
    */
   static getInitialStage(pipelineType: PipelineType): string {
-    return pipelineType === 'buying' ? 'new-enquiry' : 'appraisal-request';
+    if (pipelineType === 'buying') {
+      return 'new-enquiry';
+    }
+    if (pipelineType === 'buyers-agent') {
+      return 'enquiry';
+    }
+    return 'appraisal-request';
   }
 }

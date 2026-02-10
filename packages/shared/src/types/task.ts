@@ -23,6 +23,10 @@ export const TaskTypeSchema = z.enum([
   'open-home',
   'auction-prep',
   'settlement-task',
+  'brief-review',
+  'due-diligence-check',
+  'pre-settlement-inspection',
+  'client-portal-update',
   'general',
 ]);
 export type TaskType = z.infer<typeof TaskTypeSchema>;
