@@ -6,3 +6,6 @@ export { DueDiligenceEngine } from './due-diligence-engine';
 export { FeeCalculator } from './fee-calculator';
 export { KeyDatesEngine } from './key-dates-engine';
 export { BUYERS_AGENT_WORKFLOW_TEMPLATES, type WorkflowTemplate } from './workflow-templates';
+export { MessageNormaliser } from './message-normaliser';
+export { ContactMatcher } from './contact-matcher';
+export { EmailParser } from './email-parser';

@@ -21,6 +21,7 @@ const navSections: NavSection[] = [
   {
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: '📊' },
+      { label: 'Inbox', href: '/inbox', icon: '💬' },
       { label: 'Contacts', href: '/contacts', icon: '👤' },
       { label: 'Properties', href: '/properties', icon: '🏠' },
       { label: 'Pipeline', href: '/pipeline', icon: '📈' },

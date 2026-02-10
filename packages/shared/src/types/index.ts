@@ -14,3 +14,4 @@ export * from './offer';
 export * from './due-diligence';
 export * from './key-date';
 export * from './fee';
+export * from './conversation';
