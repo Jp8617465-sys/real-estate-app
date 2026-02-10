@@ -1,43 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   BUYERS_AGENT_STAGE_LABELS,
   type BuyersAgentStage,
 } from '@realflow/shared';
-
-interface BAPipelineCard {
-  id: string;
-  clientName: string;
-  budget: string;
-  propertyCount: number;
-}
-
-const stageData: Record<string, BAPipelineCard[]> = {
-  'enquiry': [
-    { id: 't1', clientName: 'Sarah Mitchell', budget: '$800K-$1M', propertyCount: 0 },
-    { id: 't2', clientName: 'James Lee', budget: '$1.2M-$1.5M', propertyCount: 0 },
-  ],
-  'consult-qualify': [
-    { id: 't3', clientName: 'Emma Wilson', budget: '$600K-$750K', propertyCount: 0 },
-  ],
-  'engaged': [
-    { id: 't4', clientName: 'David Chen', budget: '$900K-$1.1M', propertyCount: 0 },
-  ],
-  'strategy-brief': [
-    { id: 't5', clientName: 'Rachel Green', budget: '$1.5M-$2M', propertyCount: 2 },
-  ],
-  'active-search': [
-    { id: 't6', clientName: 'Michael Johnson', budget: '$800K-$1.2M', propertyCount: 8 },
-    { id: 't7', clientName: 'Priya Patel', budget: '$500K-$750K', propertyCount: 5 },
-  ],
-  'offer-negotiate': [
-    { id: 't8', clientName: 'Lisa Nguyen', budget: '$1.5M-$2M', propertyCount: 1 },
-  ],
-  'under-contract': [
-    { id: 't9', clientName: 'Mark Stevens', budget: '$1.1M', propertyCount: 1 },
-  ],
-  'settled-nurture': [],
-};
+import { usePipeline } from '../../src/hooks/use-pipeline';
 
 function getStageColor(stage: BuyersAgentStage): string {
   const colors: Record<BuyersAgentStage, string> = {
@@ -55,7 +22,28 @@ function getStageColor(stage: BuyersAgentStage): string {
 
 export default function BAPipelineScreen() {
   const router = useRouter();
+  const { data: transactions, isLoading } = usePipeline('buyers-agent');
   const stages = Object.entries(BUYERS_AGENT_STAGE_LABELS) as [BuyersAgentStage, string][];
+
+  if (isLoading && !transactions) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  // Group transactions by current_stage
+  const grouped: Record<string, typeof transactions> = {};
+  for (const stage of stages) {
+    grouped[stage[0]] = [];
+  }
+  for (const tx of transactions ?? []) {
+    const stage = tx.currentStage ?? tx.current_stage;
+    if (grouped[stage]) {
+      grouped[stage]!.push(tx);
+    }
+  }
 
   return (
     <ScrollView
@@ -65,7 +53,7 @@ export default function BAPipelineScreen() {
       contentContainerStyle={styles.content}
     >
       {stages.map(([key, label]) => {
-        const cards = stageData[key] ?? [];
+        const cards = grouped[key] ?? [];
         const color = getStageColor(key);
         return (
           <View key={key} style={styles.column}>
@@ -76,24 +64,29 @@ export default function BAPipelineScreen() {
                 <Text style={styles.countText}>{cards.length}</Text>
               </View>
             </View>
-            {cards.map((card) => (
-              <TouchableOpacity
-                key={card.id}
-                style={styles.card}
-                onPress={() => router.push(`/brief/${card.id}`)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.cardName}>{card.clientName}</Text>
-                <Text style={styles.cardBudget}>{card.budget}</Text>
-                {card.propertyCount > 0 && (
-                  <View style={styles.cardMeta}>
-                    <Text style={styles.cardMetaText}>
-                      {card.propertyCount} {card.propertyCount === 1 ? 'property' : 'properties'}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
+            {cards.map((card) => {
+              const contact = (card as Record<string, unknown>).contact as
+                | { first_name: string; last_name: string; buyer_profile: Record<string, unknown> | null }
+                | undefined;
+              const clientName = contact
+                ? `${contact.first_name} ${contact.last_name}`
+                : 'Unknown';
+              const budget = contact?.buyer_profile
+                ? `$${((contact.buyer_profile.budgetMin as number) / 1000).toFixed(0)}K-$${((contact.buyer_profile.budgetMax as number) / 1000).toFixed(0)}K`
+                : '';
+
+              return (
+                <TouchableOpacity
+                  key={card.id}
+                  style={styles.card}
+                  onPress={() => router.push(`/brief/${card.contactId ?? card.contact_id}`)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.cardName}>{clientName}</Text>
+                  {budget ? <Text style={styles.cardBudget}>{budget}</Text> : null}
+                </TouchableOpacity>
+              );
+            })}
             {cards.length === 0 && (
               <Text style={styles.emptyText}>No clients</Text>
             )}
@@ -107,6 +100,7 @@ export default function BAPipelineScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
   column: {
     width: 260,
     backgroundColor: '#f3f4f6',
@@ -149,14 +143,5 @@ const styles = StyleSheet.create({
   },
   cardName: { fontSize: 14, fontWeight: '600', color: '#111827' },
   cardBudget: { fontSize: 12, color: '#6b7280', marginTop: 4 },
-  cardMeta: {
-    marginTop: 6,
-    backgroundColor: '#dbeafe',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
-  },
-  cardMetaText: { fontSize: 11, fontWeight: '500', color: '#2563eb' },
   emptyText: { textAlign: 'center', color: '#9ca3af', fontSize: 12, padding: 16 },
 });

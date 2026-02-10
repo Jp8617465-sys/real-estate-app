@@ -1,13 +1,17 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-
-const contacts = [
-  { id: '1', name: 'Michael Johnson', type: 'Buyer', phone: '0413 111 001', score: 82 },
-  { id: '2', name: 'Priya Patel', type: 'Buyer / Investor', phone: '0413 111 002', score: 45 },
-  { id: '3', name: 'David Williams', type: 'Seller', phone: '0413 111 003', score: 70 },
-  { id: '4', name: 'Lisa Nguyen', type: 'Buyer', phone: '0413 111 004', score: 90 },
-  { id: '5', name: 'Robert Clarke', type: 'Referral', phone: '0413 111 005', score: 0 },
-];
+import { useContacts } from '../../src/hooks/use-contacts';
+import type { Contact } from '@realflow/shared';
 
 function getScoreColor(score: number) {
   if (score >= 75) return '#ef4444';
@@ -18,36 +22,72 @@ function getScoreColor(score: number) {
 
 export default function ContactsScreen() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: contacts, isLoading, refetch } = useContacts(
+    searchQuery ? { query: searchQuery } : undefined,
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: Contact }) => {
+      const name = `${item.firstName} ${item.lastName}`;
+      const initials = name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('');
+      const typeLabel = item.types.join(' / ');
+
+      return (
+        <TouchableOpacity
+          style={styles.contactRow}
+          onPress={() => router.push(`/contact/${item.id}`)}
+        >
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials}</Text>
+          </View>
+          <View style={styles.info}>
+            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.meta}>
+              {typeLabel} &middot; {item.phone}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [router],
+  );
+
+  if (isLoading && !contacts) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search contacts..."
+          placeholderTextColor="#9ca3af"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          returnKeyType="search"
+        />
+      </View>
       <FlatList
-        data={contacts}
+        data={contacts ?? []}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.contactRow}
-            onPress={() => router.push(`/contact/${item.id}`)}
-          >
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {item.name.split(' ').map((n) => n[0]).join('')}
-              </Text>
-            </View>
-            <View style={styles.info}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.meta}>{item.type} &middot; {item.phone}</Text>
-            </View>
-            {item.score > 0 && (
-              <View style={[styles.scoreBadge, { backgroundColor: getScoreColor(item.score) + '20' }]}>
-                <Text style={[styles.scoreText, { color: getScoreColor(item.score) }]}>
-                  {item.score}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        )}
+        renderItem={renderItem}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No contacts found</Text>
+        }
       />
     </View>
   );
@@ -55,7 +95,18 @@ export default function ContactsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
-  list: { padding: 16 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  searchContainer: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+  searchInput: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    color: '#111827',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  list: { padding: 16, paddingTop: 8 },
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -79,6 +130,7 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   name: { fontSize: 15, fontWeight: '600', color: '#111827' },
   meta: { fontSize: 12, color: '#6b7280', marginTop: 2 },
+  emptyText: { fontSize: 14, color: '#9ca3af', textAlign: 'center', padding: 40 },
   scoreBadge: { borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3 },
   scoreText: { fontSize: 12, fontWeight: '600' },
 });

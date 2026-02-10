@@ -5,90 +5,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { usePropertyMatches, useUpdatePropertyMatchStatus } from '../../src/hooks/use-property-matches';
 import type { PropertyMatchStatus } from '@realflow/shared';
-
-interface MockMatch {
-  id: string;
-  address: string;
-  overallScore: number;
-  status: PropertyMatchStatus;
-  price: string;
-  beds: number;
-  baths: number;
-  cars: number;
-  clientName: string;
-}
-
-const mockMatches: MockMatch[] = [
-  {
-    id: 'm1',
-    address: '42 Ocean St, Bondi NSW 2026',
-    overallScore: 92,
-    status: 'new',
-    price: '$1,150,000',
-    beds: 3,
-    baths: 2,
-    cars: 1,
-    clientName: 'Michael Johnson',
-  },
-  {
-    id: 'm2',
-    address: '18 Carr St, Coogee NSW 2034',
-    overallScore: 85,
-    status: 'sent_to_client',
-    price: '$980,000',
-    beds: 2,
-    baths: 2,
-    cars: 1,
-    clientName: 'Michael Johnson',
-  },
-  {
-    id: 'm3',
-    address: '7/120 Arden St, Coogee NSW 2034',
-    overallScore: 78,
-    status: 'client_interested',
-    price: '$1,050,000',
-    beds: 3,
-    baths: 1,
-    cars: 1,
-    clientName: 'Priya Patel',
-  },
-  {
-    id: 'm4',
-    address: '5 Alison Rd, Randwick NSW 2031',
-    overallScore: 65,
-    status: 'inspection_booked',
-    price: '$1,200,000',
-    beds: 4,
-    baths: 2,
-    cars: 2,
-    clientName: 'Priya Patel',
-  },
-  {
-    id: 'm5',
-    address: '3/22 Beach Rd, Bondi NSW 2026',
-    overallScore: 45,
-    status: 'under_review',
-    price: '$870,000',
-    beds: 2,
-    baths: 1,
-    cars: 0,
-    clientName: 'Lisa Nguyen',
-  },
-  {
-    id: 'm6',
-    address: '91 Brook St, Coogee NSW 2034',
-    overallScore: 32,
-    status: 'rejected',
-    price: '$1,400,000',
-    beds: 3,
-    baths: 2,
-    cars: 1,
-    clientName: 'Michael Johnson',
-  },
-];
 
 function getScoreColor(score: number): string {
   if (score >= 75) return '#16a34a';
@@ -126,84 +48,120 @@ function getStatusColor(status: PropertyMatchStatus): string {
   return colors[status];
 }
 
-export default function MatchesListScreen() {
-  const router = useRouter();
+function MatchQuickActions({ matchId, status }: { matchId: string; status: PropertyMatchStatus }) {
+  const updateStatus = useUpdatePropertyMatchStatus(matchId);
 
-  function handleSwipeAction(matchId: string, action: 'interested' | 'rejected') {
-    // TODO: Connect to API
-    Alert.alert(
-      action === 'interested' ? 'Marked Interested' : 'Rejected',
-      `Match ${matchId} updated.`
+  function handleAction(action: 'interested' | 'rejected') {
+    const newStatus: PropertyMatchStatus = action === 'interested' ? 'client_interested' : 'rejected';
+    updateStatus.mutate(
+      { status: newStatus },
+      {
+        onSuccess: () => {
+          Alert.alert(
+            action === 'interested' ? 'Marked Interested' : 'Rejected',
+            `Match updated.`
+          );
+        },
+      },
     );
   }
 
-  function renderItem({ item }: { item: MockMatch }) {
-    const scoreColor = getScoreColor(item.overallScore);
-    const scoreBgColor = getScoreBgColor(item.overallScore);
-    const statusColor = getStatusColor(item.status);
+  if (status === 'rejected' || status === 'client_interested') {
+    return null;
+  }
 
-    return (
+  return (
+    <View style={styles.quickActions}>
       <TouchableOpacity
-        style={styles.matchRow}
-        onPress={() => router.push(`/matches/${item.id}`)}
+        style={styles.quickActionInterested}
+        onPress={() => handleAction('interested')}
         activeOpacity={0.7}
       >
-        <View style={styles.matchContent}>
-          <View style={styles.matchTop}>
-            <Text style={styles.matchAddress} numberOfLines={1}>{item.address}</Text>
-            <View style={[styles.scoreBadge, { backgroundColor: scoreBgColor }]}>
-              <Text style={[styles.scoreText, { color: scoreColor }]}>
-                {item.overallScore}%
-              </Text>
-            </View>
-          </View>
-
-          <Text style={styles.matchPrice}>{item.price}</Text>
-
-          <View style={styles.matchMeta}>
-            <Text style={styles.matchSpecs}>
-              {item.beds} bed {'\u00B7'} {item.baths} bath {'\u00B7'} {item.cars} car
-            </Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
-              <Text style={[styles.statusText, { color: statusColor }]}>
-                {getStatusLabel(item.status)}
-              </Text>
-            </View>
-          </View>
-
-          <Text style={styles.clientLabel}>For: {item.clientName}</Text>
-        </View>
-
-        {/* Swipe Action Hints */}
-        {item.status !== 'rejected' && item.status !== 'client_interested' && (
-          <View style={styles.quickActions}>
-            <TouchableOpacity
-              style={styles.quickActionInterested}
-              onPress={() => handleSwipeAction(item.id, 'interested')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.quickActionText}>✓</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.quickActionReject}
-              onPress={() => handleSwipeAction(item.id, 'rejected')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.quickActionText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <Text style={styles.quickActionText}>✓</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.quickActionReject}
+        onPress={() => handleAction('rejected')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.quickActionText}>✕</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export default function MatchesListScreen() {
+  const router = useRouter();
+  const { data: matches, isLoading, refetch } = usePropertyMatches();
+
+  if (isLoading && !matches) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
     );
   }
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={mockMatches}
+        data={matches ?? []}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
         contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No property matches found</Text>
+        }
+        renderItem={({ item }) => {
+          const scoreColor = getScoreColor(item.overallScore);
+          const scoreBgColor = getScoreBgColor(item.overallScore);
+          const statusColor = getStatusColor(item.status);
+
+          // Build address from property relation
+          const property = item.property;
+          const address = property?.address
+            ? `${(property.address as Record<string, string>).streetNumber ?? ''} ${(property.address as Record<string, string>).streetName ?? ''}, ${(property.address as Record<string, string>).suburb ?? ''}`
+            : 'Unknown address';
+          const price = property?.price_guide ?? (property?.list_price ? `$${property.list_price.toLocaleString()}` : '');
+
+          return (
+            <TouchableOpacity
+              style={styles.matchRow}
+              onPress={() => router.push(`/matches/${item.id}`)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.matchContent}>
+                <View style={styles.matchTop}>
+                  <Text style={styles.matchAddress} numberOfLines={1}>{address}</Text>
+                  <View style={[styles.scoreBadge, { backgroundColor: scoreBgColor }]}>
+                    <Text style={[styles.scoreText, { color: scoreColor }]}>
+                      {item.overallScore}%
+                    </Text>
+                  </View>
+                </View>
+
+                {price ? <Text style={styles.matchPrice}>{price}</Text> : null}
+
+                <View style={styles.matchMeta}>
+                  {property && (
+                    <Text style={styles.matchSpecs}>
+                      {property.bedrooms} bed {'\u00B7'} {property.bathrooms} bath {'\u00B7'} {property.car_spaces} car
+                    </Text>
+                  )}
+                  <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
+                    <Text style={[styles.statusText, { color: statusColor }]}>
+                      {getStatusLabel(item.status)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <MatchQuickActions matchId={item.id} status={item.status} />
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
@@ -211,7 +169,9 @@ export default function MatchesListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
   list: { padding: 16 },
+  emptyText: { fontSize: 14, color: '#9ca3af', textAlign: 'center', padding: 40 },
 
   matchRow: {
     flexDirection: 'row',
@@ -242,7 +202,6 @@ const styles = StyleSheet.create({
   matchSpecs: { fontSize: 12, color: '#6b7280' },
   statusBadge: { borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
   statusText: { fontSize: 11, fontWeight: '600' },
-  clientLabel: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
 
   quickActions: { flexDirection: 'column', gap: 6, marginLeft: 10 },
   quickActionInterested: {

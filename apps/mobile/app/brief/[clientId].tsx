@@ -1,98 +1,7 @@
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import type { PurchaseType, Urgency, UpdateFrequency, BriefContactMethod } from '@realflow/shared';
-
-interface MockBrief {
-  clientName: string;
-  purchaseType: PurchaseType;
-
-  // Budget
-  budgetMin: number;
-  budgetMax: number;
-  absoluteMax: number;
-  stampDutyBudgeted: boolean;
-
-  // Finance
-  preApproved: boolean;
-  preApprovalAmount: number;
-  preApprovalExpiry: string;
-  lender: string;
-  brokerName: string;
-  brokerPhone: string;
-  depositAvailable: number;
-  firstHomeBuyer: boolean;
-
-  // Requirements
-  propertyTypes: string[];
-  bedsMin: number;
-  bedsIdeal: number;
-  bathsMin: number;
-  carsMin: number;
-  suburbs: string[];
-  mustHaves: string[];
-  niceToHaves: string[];
-  dealBreakers: string[];
-
-  // Timeline
-  urgency: Urgency;
-  idealSettlement: string;
-
-  // Communication
-  preferredMethod: BriefContactMethod;
-  updateFrequency: UpdateFrequency;
-  bestTimeToCall: string;
-  partnerName: string;
-  partnerPhone: string;
-
-  // Solicitor
-  solicitorFirm: string;
-  solicitorContact: string;
-  solicitorPhone: string;
-  solicitorEmail: string;
-}
-
-const mockBrief: MockBrief = {
-  clientName: 'Michael Johnson',
-  purchaseType: 'owner_occupier',
-
-  budgetMin: 800000,
-  budgetMax: 1200000,
-  absoluteMax: 1300000,
-  stampDutyBudgeted: true,
-
-  preApproved: true,
-  preApprovalAmount: 1100000,
-  preApprovalExpiry: '2026-05-15',
-  lender: 'CBA',
-  brokerName: 'Andrew Miles',
-  brokerPhone: '0412 345 678',
-  depositAvailable: 240000,
-  firstHomeBuyer: false,
-
-  propertyTypes: ['House', 'Apartment'],
-  bedsMin: 3,
-  bedsIdeal: 4,
-  bathsMin: 2,
-  carsMin: 1,
-  suburbs: ['Bondi', 'Coogee', 'Randwick', 'Bronte'],
-  mustHaves: ['Natural light', 'Outdoor space', 'Close to beach'],
-  niceToHaves: ['Ocean views', 'Updated kitchen', 'Off-street parking'],
-  dealBreakers: ['Main road', 'No natural light', 'Flood zone'],
-
-  urgency: '1_3_months',
-  idealSettlement: '60 days',
-
-  preferredMethod: 'phone',
-  updateFrequency: 'twice_weekly',
-  bestTimeToCall: 'After 5pm weekdays',
-  partnerName: 'Sarah Johnson',
-  partnerPhone: '0413 222 333',
-
-  solicitorFirm: 'Henderson & Co Solicitors',
-  solicitorContact: 'Kate Henderson',
-  solicitorPhone: '02 9876 5432',
-  solicitorEmail: 'kate@hendersonco.com.au',
-};
+import { useClientBrief } from '../../src/hooks/use-client-briefs';
+import type { PurchaseType, Urgency, UpdateFrequency } from '@realflow/shared';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-AU', {
@@ -155,15 +64,31 @@ function TagList({ items, color }: { items: string[]; color: string }) {
 
 export default function ClientBriefScreen() {
   const { clientId } = useLocalSearchParams<{ clientId: string }>();
+  const { data: brief, isLoading, error } = useClientBrief(clientId ?? '');
 
-  // TODO: Fetch from API using clientId
-  const brief = mockBrief;
+  if (isLoading || !brief) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Failed to load client brief</Text>
+      </View>
+    );
+  }
+
+  const suburbNames = brief.requirements.suburbs.map((s) => s.suburb);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Client Header */}
       <View style={styles.header}>
-        <Text style={styles.clientName}>{brief.clientName}</Text>
+        <Text style={styles.clientName}>Client Brief</Text>
         <View style={styles.typeBadge}>
           <Text style={styles.typeBadgeText}>{getPurchaseTypeLabel(brief.purchaseType)}</Text>
         </View>
@@ -172,77 +97,115 @@ export default function ClientBriefScreen() {
       {/* Budget Section */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Budget</Text>
-        <InfoRow label="Range" value={`${formatCurrency(brief.budgetMin)} - ${formatCurrency(brief.budgetMax)}`} />
-        <InfoRow label="Absolute Max" value={formatCurrency(brief.absoluteMax)} />
-        <InfoRow label="Stamp Duty Budgeted" value={brief.stampDutyBudgeted ? 'Yes' : 'No'} />
+        <InfoRow label="Range" value={`${formatCurrency(brief.budget.min)} - ${formatCurrency(brief.budget.max)}`} />
+        {brief.budget.absoluteMax && (
+          <InfoRow label="Absolute Max" value={formatCurrency(brief.budget.absoluteMax)} />
+        )}
+        <InfoRow label="Stamp Duty Budgeted" value={brief.budget.stampDutyBudgeted ? 'Yes' : 'No'} />
 
         <View style={styles.divider} />
         <Text style={styles.subTitle}>Finance</Text>
-        <InfoRow label="Pre-Approved" value={brief.preApproved ? 'Yes' : 'No'} />
-        <InfoRow label="Pre-Approval" value={formatCurrency(brief.preApprovalAmount)} />
-        <InfoRow label="Expiry" value={new Date(brief.preApprovalExpiry).toLocaleDateString('en-AU')} />
-        <InfoRow label="Lender" value={brief.lender} />
-        <InfoRow label="Broker" value={`${brief.brokerName} (${brief.brokerPhone})`} />
-        <InfoRow label="Deposit Available" value={formatCurrency(brief.depositAvailable)} />
-        <InfoRow label="First Home Buyer" value={brief.firstHomeBuyer ? 'Yes' : 'No'} />
+        <InfoRow label="Pre-Approved" value={brief.finance.preApproved ? 'Yes' : 'No'} />
+        {brief.finance.preApprovalAmount && (
+          <InfoRow label="Pre-Approval" value={formatCurrency(brief.finance.preApprovalAmount)} />
+        )}
+        {brief.finance.preApprovalExpiry && (
+          <InfoRow label="Expiry" value={new Date(brief.finance.preApprovalExpiry).toLocaleDateString('en-AU')} />
+        )}
+        {brief.finance.lender && <InfoRow label="Lender" value={brief.finance.lender} />}
+        {brief.finance.brokerName && (
+          <InfoRow label="Broker" value={`${brief.finance.brokerName}${brief.finance.brokerPhone ? ` (${brief.finance.brokerPhone})` : ''}`} />
+        )}
+        {brief.finance.depositAvailable !== undefined && (
+          <InfoRow label="Deposit Available" value={formatCurrency(brief.finance.depositAvailable)} />
+        )}
+        <InfoRow label="First Home Buyer" value={brief.finance.firstHomeBuyer ? 'Yes' : 'No'} />
       </View>
 
       {/* Requirements Section */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Requirements</Text>
-        <InfoRow label="Property Types" value={brief.propertyTypes.join(', ')} />
-        <InfoRow label="Bedrooms" value={`${brief.bedsMin}+ (ideal: ${brief.bedsIdeal})`} />
-        <InfoRow label="Bathrooms" value={`${brief.bathsMin}+`} />
-        <InfoRow label="Cars" value={`${brief.carsMin}+`} />
+        <InfoRow label="Property Types" value={brief.requirements.propertyTypes.join(', ')} />
+        <InfoRow label="Bedrooms" value={`${brief.requirements.bedrooms.min}+${brief.requirements.bedrooms.ideal ? ` (ideal: ${brief.requirements.bedrooms.ideal})` : ''}`} />
+        <InfoRow label="Bathrooms" value={`${brief.requirements.bathrooms.min}+`} />
+        <InfoRow label="Cars" value={`${brief.requirements.carSpaces.min}+`} />
 
-        <View style={styles.divider} />
-        <Text style={styles.subTitle}>Preferred Suburbs</Text>
-        <TagList items={brief.suburbs} color="#2563eb" />
+        {suburbNames.length > 0 && (
+          <>
+            <View style={styles.divider} />
+            <Text style={styles.subTitle}>Preferred Suburbs</Text>
+            <TagList items={suburbNames} color="#2563eb" />
+          </>
+        )}
 
-        <View style={styles.divider} />
-        <Text style={styles.subTitle}>Must-Haves</Text>
-        <TagList items={brief.mustHaves} color="#16a34a" />
+        {brief.requirements.mustHaves.length > 0 && (
+          <>
+            <View style={styles.divider} />
+            <Text style={styles.subTitle}>Must-Haves</Text>
+            <TagList items={brief.requirements.mustHaves} color="#16a34a" />
+          </>
+        )}
 
-        <View style={styles.divider} />
-        <Text style={styles.subTitle}>Nice-to-Haves</Text>
-        <TagList items={brief.niceToHaves} color="#ca8a04" />
+        {brief.requirements.niceToHaves.length > 0 && (
+          <>
+            <View style={styles.divider} />
+            <Text style={styles.subTitle}>Nice-to-Haves</Text>
+            <TagList items={brief.requirements.niceToHaves} color="#ca8a04" />
+          </>
+        )}
 
-        <View style={styles.divider} />
-        <Text style={styles.subTitle}>Deal Breakers</Text>
-        <TagList items={brief.dealBreakers} color="#dc2626" />
+        {brief.requirements.dealBreakers.length > 0 && (
+          <>
+            <View style={styles.divider} />
+            <Text style={styles.subTitle}>Deal Breakers</Text>
+            <TagList items={brief.requirements.dealBreakers} color="#dc2626" />
+          </>
+        )}
       </View>
 
       {/* Timeline Section */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Timeline</Text>
-        <InfoRow label="Urgency" value={getUrgencyLabel(brief.urgency)} />
-        <InfoRow label="Ideal Settlement" value={brief.idealSettlement} />
+        <InfoRow label="Urgency" value={getUrgencyLabel(brief.timeline.urgency)} />
+        {brief.timeline.idealSettlement && (
+          <InfoRow label="Ideal Settlement" value={brief.timeline.idealSettlement} />
+        )}
       </View>
 
       {/* Communication Section */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Communication</Text>
-        <InfoRow label="Preferred" value={brief.preferredMethod.charAt(0).toUpperCase() + brief.preferredMethod.slice(1)} />
-        <InfoRow label="Update Frequency" value={getFrequencyLabel(brief.updateFrequency)} />
-        <InfoRow label="Best Time to Call" value={brief.bestTimeToCall} />
-        {brief.partnerName ? (
+        {brief.communication.preferredMethod && (
+          <InfoRow label="Preferred" value={brief.communication.preferredMethod.charAt(0).toUpperCase() + brief.communication.preferredMethod.slice(1)} />
+        )}
+        {brief.communication.updateFrequency && (
+          <InfoRow label="Update Frequency" value={getFrequencyLabel(brief.communication.updateFrequency)} />
+        )}
+        {brief.communication.bestTimeToCall && (
+          <InfoRow label="Best Time to Call" value={brief.communication.bestTimeToCall} />
+        )}
+        {brief.communication.partnerName ? (
           <>
             <View style={styles.divider} />
             <Text style={styles.subTitle}>Partner / Spouse</Text>
-            <InfoRow label="Name" value={brief.partnerName} />
-            <InfoRow label="Phone" value={brief.partnerPhone} />
+            <InfoRow label="Name" value={brief.communication.partnerName} />
+            {brief.communication.partnerPhone && (
+              <InfoRow label="Phone" value={brief.communication.partnerPhone} />
+            )}
           </>
         ) : null}
       </View>
 
       {/* Solicitor Section */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Solicitor</Text>
-        <InfoRow label="Firm" value={brief.solicitorFirm} />
-        <InfoRow label="Contact" value={brief.solicitorContact} />
-        <InfoRow label="Phone" value={brief.solicitorPhone} />
-        <InfoRow label="Email" value={brief.solicitorEmail} />
-      </View>
+      {brief.solicitor && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Solicitor</Text>
+          <InfoRow label="Firm" value={brief.solicitor.firmName} />
+          <InfoRow label="Contact" value={brief.solicitor.contactName} />
+          <InfoRow label="Phone" value={brief.solicitor.phone} />
+          <InfoRow label="Email" value={brief.solicitor.email} />
+        </View>
+      )}
 
       <View style={styles.bottomSpacer} />
     </ScrollView>
@@ -252,6 +215,8 @@ export default function ClientBriefScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  errorText: { fontSize: 16, color: '#dc2626' },
 
   header: {
     flexDirection: 'row',

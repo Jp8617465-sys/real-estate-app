@@ -7,52 +7,11 @@ import {
   TextInput,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import type { PropertyMatchStatus, MatchScoreBreakdown } from '@realflow/shared';
-
-interface MockMatchDetail {
-  id: string;
-  address: string;
-  propertyType: string;
-  beds: number;
-  baths: number;
-  cars: number;
-  landSize: string;
-  price: string;
-  overallScore: number;
-  scoreBreakdown: MatchScoreBreakdown;
-  status: PropertyMatchStatus;
-  flags: string[];
-  agentNotes: string;
-  listingAgent: string;
-  listingAgency: string;
-  clientName: string;
-}
-
-const mockMatch: MockMatchDetail = {
-  id: 'm1',
-  address: '42 Ocean St, Bondi NSW 2026',
-  propertyType: 'Apartment',
-  beds: 3,
-  baths: 2,
-  cars: 1,
-  landSize: '120 sqm',
-  price: '$1,150,000',
-  overallScore: 92,
-  scoreBreakdown: {
-    priceMatch: 88,
-    locationMatch: 95,
-    sizeMatch: 90,
-    featureMatch: 85,
-  },
-  status: 'new',
-  flags: ['Ocean views', 'Walking distance to beach', 'Updated kitchen'],
-  agentNotes: '',
-  listingAgent: 'Jane Thompson',
-  listingAgency: 'Ray White Bondi',
-  clientName: 'Michael Johnson',
-};
+import { usePropertyMatch, useUpdatePropertyMatchStatus } from '../../src/hooks/use-property-matches';
+import type { PropertyMatchStatus } from '@realflow/shared';
 
 const ALL_STATUSES: PropertyMatchStatus[] = [
   'new',
@@ -106,20 +65,46 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
 export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { data: match, isLoading, error } = usePropertyMatch(id ?? '');
+  const updateStatus = useUpdatePropertyMatchStatus(id ?? '');
 
-  // TODO: Fetch from API using id
-  const match = mockMatch;
+  const [selectedStatus, setSelectedStatus] = useState<PropertyMatchStatus | null>(null);
+  const [agentNotes, setAgentNotes] = useState('');
 
-  const [selectedStatus, setSelectedStatus] = useState<PropertyMatchStatus>(match.status);
-  const [agentNotes, setAgentNotes] = useState(match.agentNotes);
+  if (isLoading || !match) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Failed to load match</Text>
+      </View>
+    );
+  }
+
+  // Initialize local state from fetched data
+  const currentStatus = selectedStatus ?? match.status;
+  const currentNotes = agentNotes || (match.agentNotes ?? '');
+  const clientBrief = match.client_brief as Record<string, unknown> | undefined;
+  const clientContact = clientBrief?.contact as { first_name: string; last_name: string } | undefined;
+  const clientName = clientContact ? `${clientContact.first_name} ${clientContact.last_name}` : '';
 
   const overallColor = getScoreColor(match.overallScore);
-  const overallBgColor = getScoreBarBgColor(match.overallScore);
+
+  function handleStatusChange(status: PropertyMatchStatus) {
+    setSelectedStatus(status);
+    updateStatus.mutate({ status, agentNotes: agentNotes || undefined });
+  }
 
   function handleSendToClient() {
-    Alert.alert('Send to Client', `This will send ${match.address} to ${match.clientName}.`, [
+    Alert.alert('Send to Client', `This will send this property to ${clientName}.`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Send', onPress: () => setSelectedStatus('sent_to_client') },
+      { text: 'Send', onPress: () => handleStatusChange('sent_to_client') },
     ]);
   }
 
@@ -130,46 +115,19 @@ export default function MatchDetailScreen() {
   function handleReject() {
     Alert.alert('Reject Match', 'Are you sure you want to reject this match?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Reject', style: 'destructive', onPress: () => setSelectedStatus('rejected') },
+      { text: 'Reject', style: 'destructive', onPress: () => handleStatusChange('rejected') },
     ]);
   }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Property Header */}
-      <View style={styles.header}>
-        <Text style={styles.address}>{match.address}</Text>
-        <Text style={styles.propertyType}>{match.propertyType}</Text>
-        <Text style={styles.price}>{match.price}</Text>
-      </View>
-
       {/* Overall Score */}
       <View style={[styles.overallScoreCard, { borderColor: overallColor }]}>
         <Text style={styles.overallScoreLabel}>Overall Match</Text>
         <Text style={[styles.overallScoreValue, { color: overallColor }]}>
           {match.overallScore}%
         </Text>
-        <Text style={styles.overallScoreClient}>for {match.clientName}</Text>
-      </View>
-
-      {/* Property Specs */}
-      <View style={styles.specsRow}>
-        <View style={styles.specItem}>
-          <Text style={styles.specValue}>{match.beds}</Text>
-          <Text style={styles.specLabel}>Beds</Text>
-        </View>
-        <View style={styles.specItem}>
-          <Text style={styles.specValue}>{match.baths}</Text>
-          <Text style={styles.specLabel}>Baths</Text>
-        </View>
-        <View style={styles.specItem}>
-          <Text style={styles.specValue}>{match.cars}</Text>
-          <Text style={styles.specLabel}>Cars</Text>
-        </View>
-        <View style={styles.specItem}>
-          <Text style={styles.specValue}>{match.landSize}</Text>
-          <Text style={styles.specLabel}>Size</Text>
-        </View>
+        {clientName ? <Text style={styles.overallScoreClient}>for {clientName}</Text> : null}
       </View>
 
       {/* Score Breakdown */}
@@ -179,33 +137,9 @@ export default function MatchDetailScreen() {
         <ScoreBar label="Location" score={match.scoreBreakdown.locationMatch} />
         <ScoreBar label="Size" score={match.scoreBreakdown.sizeMatch} />
         <ScoreBar label="Features" score={match.scoreBreakdown.featureMatch} />
-      </View>
-
-      {/* Flags */}
-      {match.flags.length > 0 && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Highlights</Text>
-          <View style={styles.flagsWrap}>
-            {match.flags.map((flag, i) => (
-              <View key={i} style={styles.flagChip}>
-                <Text style={styles.flagText}>{flag}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Listing Agent */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Listing Agent</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Agent</Text>
-          <Text style={styles.infoValue}>{match.listingAgent}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Agency</Text>
-          <Text style={styles.infoValue}>{match.listingAgency}</Text>
-        </View>
+        {match.scoreBreakdown.investorMatch !== undefined && (
+          <ScoreBar label="Investor" score={match.scoreBreakdown.investorMatch} />
+        )}
       </View>
 
       {/* Status Selector */}
@@ -217,15 +151,15 @@ export default function MatchDetailScreen() {
               key={status}
               style={[
                 styles.statusChip,
-                selectedStatus === status && styles.statusChipActive,
+                currentStatus === status && styles.statusChipActive,
               ]}
-              onPress={() => setSelectedStatus(status)}
+              onPress={() => handleStatusChange(status)}
               activeOpacity={0.7}
             >
               <Text
                 style={[
                   styles.statusChipText,
-                  selectedStatus === status && styles.statusChipTextActive,
+                  currentStatus === status && styles.statusChipTextActive,
                 ]}
               >
                 {getStatusLabel(status)}
@@ -242,7 +176,7 @@ export default function MatchDetailScreen() {
           style={styles.notesInput}
           placeholder="Add your notes about this match..."
           placeholderTextColor="#9ca3af"
-          value={agentNotes}
+          value={currentNotes}
           onChangeText={setAgentNotes}
           multiline
           numberOfLines={3}
@@ -285,11 +219,8 @@ export default function MatchDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
-
-  header: { marginBottom: 16 },
-  address: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  propertyType: { fontSize: 14, color: '#6b7280', marginTop: 2 },
-  price: { fontSize: 18, fontWeight: '700', color: '#2563eb', marginTop: 6 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  errorText: { fontSize: 16, color: '#dc2626' },
 
   overallScoreCard: {
     backgroundColor: '#fff',
@@ -302,20 +233,6 @@ const styles = StyleSheet.create({
   overallScoreLabel: { fontSize: 13, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 },
   overallScoreValue: { fontSize: 48, fontWeight: '800', marginVertical: 4 },
   overallScoreClient: { fontSize: 13, color: '#6b7280' },
-
-  specsRow: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    justifyContent: 'space-around',
-  },
-  specItem: { alignItems: 'center' },
-  specValue: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  specLabel: { fontSize: 11, color: '#6b7280', marginTop: 2 },
 
   card: {
     backgroundColor: '#fff',
@@ -341,21 +258,6 @@ const styles = StyleSheet.create({
   scoreBarValue: { fontSize: 13, fontWeight: '700' },
   scoreBarTrack: { height: 8, borderRadius: 4 },
   scoreBarFill: { height: 8, borderRadius: 4 },
-
-  // Flags
-  flagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  flagChip: {
-    backgroundColor: '#dbeafe',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  flagText: { fontSize: 12, fontWeight: '500', color: '#2563eb' },
-
-  // Info rows
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
-  infoLabel: { fontSize: 13, color: '#6b7280' },
-  infoValue: { fontSize: 13, color: '#111827', fontWeight: '500' },
 
   // Status selector
   statusRow: { gap: 8 },

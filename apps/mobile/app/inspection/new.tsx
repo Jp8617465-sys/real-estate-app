@@ -9,12 +9,14 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useCreateInspection } from '../../src/hooks/use-inspections';
 import type { InspectionImpression, ClientSuitability } from '@realflow/shared';
 
 const TIME_OPTIONS = [5, 10, 15, 20, 30, 45, 60, 90];
 
 export default function NewInspectionScreen() {
   const router = useRouter();
+  const createInspection = useCreateInspection();
 
   const [address, setAddress] = useState('');
   const [impression, setImpression] = useState<InspectionImpression | null>(null);
@@ -22,7 +24,6 @@ export default function NewInspectionScreen() {
   const [suitability, setSuitability] = useState<ClientSuitability | null>(null);
   const [sellingAgent, setSellingAgent] = useState('');
   const [timeSpent, setTimeSpent] = useState<number | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const now = new Date();
   const dateLabel = now.toLocaleDateString('en-AU', {
@@ -46,16 +47,30 @@ export default function NewInspectionScreen() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    // TODO: Submit to API when connected
-    // For now, simulate a brief delay then navigate back
-    setTimeout(() => {
-      setIsSubmitting(false);
-      Alert.alert('Saved', 'Inspection logged successfully.', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
-    }, 500);
+    createInspection.mutate(
+      {
+        propertyId: '', // Will be linked to actual property
+        inspectionDate: new Date().toISOString(),
+        overallImpression: impression,
+        conditionNotes: notes || undefined,
+        clientSuitability: suitability ?? undefined,
+        timeSpentMinutes: timeSpent ?? undefined,
+        agentNotes: undefined,
+        areaFeelNotes: undefined,
+        photos: [],
+        createdBy: '', // Will be filled from auth context
+      },
+      {
+        onSuccess: () => {
+          Alert.alert('Saved', 'Inspection logged successfully.', [
+            { text: 'OK', onPress: () => router.back() },
+          ]);
+        },
+        onError: (err) => {
+          Alert.alert('Error', err instanceof Error ? err.message : 'Failed to save inspection.');
+        },
+      },
+    );
   }
 
   return (
@@ -297,13 +312,13 @@ export default function NewInspectionScreen() {
 
       {/* Submit */}
       <TouchableOpacity
-        style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+        style={[styles.submitButton, createInspection.isPending && styles.submitButtonDisabled]}
         onPress={handleSubmit}
         activeOpacity={0.8}
-        disabled={isSubmitting}
+        disabled={createInspection.isPending}
       >
         <Text style={styles.submitButtonText}>
-          {isSubmitting ? 'Saving...' : 'Save Inspection'}
+          {createInspection.isPending ? 'Saving...' : 'Save Inspection'}
         </Text>
       </TouchableOpacity>
 
