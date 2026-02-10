@@ -33,6 +33,30 @@ export default function RootLayout() {
           name="property/[id]"
           options={{ title: 'Property' }}
         />
+        <Stack.Screen
+          name="inspection/new"
+          options={{ title: 'Log Inspection' }}
+        />
+        <Stack.Screen
+          name="inspection/[id]"
+          options={{ title: 'Inspection' }}
+        />
+        <Stack.Screen
+          name="matches/index"
+          options={{ title: 'Property Matches' }}
+        />
+        <Stack.Screen
+          name="matches/[id]"
+          options={{ title: 'Match Detail' }}
+        />
+        <Stack.Screen
+          name="auction/[offerId]"
+          options={{ title: 'Auction Day', headerStyle: { backgroundColor: '#1e3a8a' }, headerTintColor: '#ffffff' }}
+        />
+        <Stack.Screen
+          name="brief/[clientId]"
+          options={{ title: 'Client Brief' }}
+        />
       </Stack>
     </QueryClientProvider>
   );

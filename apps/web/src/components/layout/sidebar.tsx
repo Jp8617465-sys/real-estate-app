@@ -12,13 +12,36 @@ interface NavItem {
   icon: string;
 }
 
-const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: '📊' },
-  { label: 'Contacts', href: '/contacts', icon: '👤' },
-  { label: 'Properties', href: '/properties', icon: '🏠' },
-  { label: 'Pipeline', href: '/pipeline', icon: '📈' },
-  { label: 'Tasks', href: '/tasks', icon: '✅' },
-  { label: 'Settings', href: '/settings', icon: '⚙️' },
+interface NavSection {
+  title?: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    items: [
+      { label: 'Dashboard', href: '/dashboard', icon: '📊' },
+      { label: 'Contacts', href: '/contacts', icon: '👤' },
+      { label: 'Properties', href: '/properties', icon: '🏠' },
+      { label: 'Pipeline', href: '/pipeline', icon: '📈' },
+      { label: 'Tasks', href: '/tasks', icon: '✅' },
+    ],
+  },
+  {
+    title: 'Buyers Agent',
+    items: [
+      { label: 'BA Dashboard', href: '/buyers-agent', icon: '🏡' },
+      { label: 'Client Briefs', href: '/buyers-agent/briefs', icon: '📋' },
+      { label: 'Property Matches', href: '/buyers-agent/matches', icon: '🎯' },
+      { label: 'Due Diligence', href: '/buyers-agent/due-diligence', icon: '🔍' },
+      { label: 'Selling Agents', href: '/buyers-agent/selling-agents', icon: '🤝' },
+    ],
+  },
+  {
+    items: [
+      { label: 'Settings', href: '/settings', icon: '⚙️' },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -69,25 +92,37 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-brand-50 text-brand-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                )}
-              >
-                <span className="text-lg">{item.icon}</span>
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+          {navSections.map((section, sectionIdx) => (
+            <div key={sectionIdx}>
+              {section.title && (
+                <p className="mb-1 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  {section.title}
+                </p>
+              )}
+              {section.items.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
+                const isExactActive = pathname === item.href;
+                const isParentActive = !isExactActive && pathname.startsWith(item.href);
+                const active = isExactActive || isParentActive;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      active
+                        ? 'bg-brand-50 text-brand-700'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                    )}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* User section */}

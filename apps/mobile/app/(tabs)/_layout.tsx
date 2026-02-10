@@ -44,6 +44,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="ba-pipeline"
+        options={{
+          title: 'BA Pipeline',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🤝</Text>,
+        }}
+      />
+      <Tabs.Screen
         name="tasks"
         options={{
           title: 'Tasks',
