@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useClientBriefs } from '@/hooks/use-client-briefs';
 import { ClientBriefCard } from '@/components/buyers-agent/client-brief-card';
 import type { Urgency } from '@realflow/shared';

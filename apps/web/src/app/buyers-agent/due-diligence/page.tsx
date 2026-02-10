@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { usePipelineTransactions } from '@/hooks/use-pipeline';
 import { cn } from '@/lib/utils';
 

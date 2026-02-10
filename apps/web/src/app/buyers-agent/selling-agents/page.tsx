@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useSellingAgents } from '@/hooks/use-selling-agents';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
