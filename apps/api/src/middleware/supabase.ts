@@ -1,8 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
-
-const supabaseUrl = process.env.SUPABASE_URL ?? '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
+import { env } from '../config/env';
 
 /**
  * Create a Supabase client for API routes.
@@ -15,7 +13,7 @@ export function createSupabaseClient(request: FastifyRequest) {
   if (authHeader?.startsWith('Bearer ')) {
     // Authenticated request — create client with user's JWT
     const token = authHeader.slice(7);
-    return createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY ?? '', {
+    return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
       global: {
         headers: { Authorization: `Bearer ${token}` },
       },
@@ -23,5 +21,5 @@ export function createSupabaseClient(request: FastifyRequest) {
   }
 
   // Service role client for webhooks and internal operations
-  return createClient(supabaseUrl, supabaseServiceKey);
+  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 }

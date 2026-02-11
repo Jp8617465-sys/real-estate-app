@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DomainAPIError } from '../errors';
 
 // ─── Domain API Configuration ───────────────────────────────────────
 const DomainConfigSchema = z.object({
@@ -50,7 +51,7 @@ export class DomainClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Domain auth failed: ${response.status} ${response.statusText}`);
+      throw new DomainAPIError('Domain auth failed', response.status, response.statusText);
     }
 
     const data = (await response.json()) as DomainTokenResponse;
@@ -73,7 +74,7 @@ export class DomainClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Domain API error: ${response.status} ${response.statusText}`);
+      throw new DomainAPIError('Domain API error', response.status, response.statusText);
     }
 
     return response.json() as Promise<T>;

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MetaAPIError } from '../errors';
 
 const MetaConfigSchema = z.object({
   pageAccessToken: z.string(),
@@ -39,7 +40,7 @@ export class MetaSocialClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Meta API error: ${response.status} ${response.statusText}`);
+      throw new MetaAPIError('Meta API error', response.status, response.statusText);
     }
 
     return response.json() as Promise<T>;

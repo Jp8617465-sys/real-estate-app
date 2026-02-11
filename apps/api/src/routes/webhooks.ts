@@ -1,9 +1,52 @@
 import type { FastifyInstance } from 'fastify';
+import crypto from 'crypto';
 import { createSupabaseClient } from '../middleware/supabase';
+import { env } from '../config/env';
+
+/**
+ * Verify Domain webhook signature using HMAC SHA-256
+ */
+function verifyDomainSignature(payload: string, signature: string, secret: string): boolean {
+  if (!secret || !signature) {
+    return false;
+  }
+  try {
+    const hash = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(signature));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Verify Meta webhook signature using HMAC SHA-256 with sha256= prefix
+ */
+function verifyMetaSignature(payload: string, signature: string, appSecret: string): boolean {
+  if (!appSecret || !signature) {
+    return false;
+  }
+  try {
+    const hash = 'sha256=' + crypto.createHmac('sha256', appSecret).update(payload).digest('hex');
+    return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(signature));
+  } catch {
+    return false;
+  }
+}
 
 export async function webhookRoutes(fastify: FastifyInstance) {
   // Domain.com.au enquiry webhook
   fastify.post('/domain/enquiry', async (request, reply) => {
+    // Verify webhook signature
+    if (env.DOMAIN_WEBHOOK_SECRET) {
+      const signature = request.headers['x-domain-signature'] as string;
+      const payload = JSON.stringify(request.body);
+
+      if (!verifyDomainSignature(payload, signature, env.DOMAIN_WEBHOOK_SECRET)) {
+        fastify.log.warn('Invalid Domain webhook signature');
+        return reply.status(401).send({ error: 'Invalid signature' });
+      }
+    }
+
     const supabase = createSupabaseClient(request);
     const body = request.body as Record<string, unknown>;
 
@@ -54,16 +97,28 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
   // Facebook Lead Ads webhook
   fastify.post('/meta/lead', async (request, reply) => {
+    // Verify webhook signature
+    if (env.META_APP_SECRET) {
+      const signature = request.headers['x-hub-signature-256'] as string;
+      const payload = JSON.stringify(request.body);
+
+      if (!verifyMetaSignature(payload, signature, env.META_APP_SECRET)) {
+        fastify.log.warn('Invalid Meta webhook signature');
+        return reply.status(401).send({ error: 'Invalid signature' });
+      }
+    }
+
     const body = request.body as Record<string, unknown>;
     fastify.log.info({ body }, 'Received Meta lead webhook');
 
-    // Verify webhook (Meta sends a verification challenge)
-    // In production, validate the signature using the app secret
+    // Implement lead processing logic here
     return { received: true };
   });
 
-  // Generic webhook for testing
-  fastify.post('/test', async (request) => {
-    return { received: true, body: request.body };
-  });
+  // Generic webhook for testing (development and test only)
+  if (env.NODE_ENV === 'development' || env.NODE_ENV === 'test') {
+    fastify.post('/test', async (request) => {
+      return { received: true, body: request.body };
+    });
+  }
 }
