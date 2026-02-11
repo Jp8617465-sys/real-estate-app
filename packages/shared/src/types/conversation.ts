@@ -216,44 +216,6 @@ export const SendMessageRequestSchema = z.object({
 });
 export type SendMessageRequest = z.infer<typeof SendMessageRequestSchema>;
 
-// ─── OAuth Token Storage ───────────────────────────────────────────
-export const OAuthTokenSchema = z.object({
-  id: z.string().uuid(),
-  userId: z.string().uuid(),
-  provider: z.enum(['google', 'microsoft', 'meta', 'whatsapp']),
-  accessToken: z.string(),
-  refreshToken: z.string().optional(),
-  expiresAt: z.string().datetime(),
-  scopes: z.array(z.string()),
-  accountEmail: z.string().email().optional(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
-export type OAuthToken = z.infer<typeof OAuthTokenSchema>;
-
-// ─── Integration Connection ────────────────────────────────────────
-export const IntegrationConnectionSchema = z.object({
-  id: z.string().uuid(),
-  userId: z.string().uuid(),
-  officeId: z.string().uuid(),
-  provider: z.enum([
-    'gmail',
-    'outlook',
-    'twilio',
-    'instagram',
-    'facebook',
-    'whatsapp',
-    'google_calendar',
-    'outlook_calendar',
-  ]),
-  isActive: z.boolean().default(true),
-  config: z.record(z.unknown()).default({}),
-  lastSyncAt: z.string().datetime().optional(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
-export type IntegrationConnection = z.infer<typeof IntegrationConnectionSchema>;
-
 // ─── Inbound Webhook Payload (normalised) ──────────────────────────
 export const NormalisedInboundMessageSchema = z.object({
   channel: MessageChannelSchema,
