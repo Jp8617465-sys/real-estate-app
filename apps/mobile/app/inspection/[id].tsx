@@ -4,39 +4,11 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useInspection } from '../../src/hooks/use-inspections';
 import type { InspectionImpression, ClientSuitability } from '@realflow/shared';
-
-interface MockInspection {
-  id: string;
-  address: string;
-  inspectionDate: string;
-  overallImpression: InspectionImpression;
-  conditionNotes: string;
-  clientSuitability: ClientSuitability;
-  sellingAgent: string;
-  timeSpentMinutes: number;
-  photoCount: number;
-  hasVoiceNote: boolean;
-  agentNotes: string;
-}
-
-const mockInspection: MockInspection = {
-  id: '1',
-  address: '42 Ocean St, Bondi NSW 2026',
-  inspectionDate: '2026-02-10T10:30:00Z',
-  overallImpression: 'positive',
-  conditionNotes:
-    'Well-maintained 3-bed apartment with ocean views from balcony. Updated kitchen, original bathrooms. Good natural light throughout. Strata appears well-managed.',
-  clientSuitability: 'match',
-  sellingAgent: 'Jane Thompson',
-  timeSpentMinutes: 20,
-  photoCount: 6,
-  hasVoiceNote: true,
-  agentNotes:
-    'Client loved the ocean views and open-plan living. Bathrooms need updating - factor $30K into offer. Good comparable sales in the building.',
-};
 
 function getImpressionDisplay(impression: InspectionImpression): { emoji: string; label: string; color: string; bgColor: string } {
   switch (impression) {
@@ -63,12 +35,25 @@ function getSuitabilityDisplay(suitability: ClientSuitability): { label: string;
 export default function InspectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { data: inspection, isLoading, error } = useInspection(id ?? '');
 
-  // TODO: Fetch from API using id
-  const inspection = mockInspection;
+  if (isLoading || !inspection) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Failed to load inspection</Text>
+      </View>
+    );
+  }
 
   const impressionDisplay = getImpressionDisplay(inspection.overallImpression);
-  const suitabilityDisplay = getSuitabilityDisplay(inspection.clientSuitability);
 
   const dateObj = new Date(inspection.inspectionDate);
   const formattedDate = dateObj.toLocaleDateString('en-AU', {
@@ -86,7 +71,6 @@ export default function InspectionDetailScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.address}>{inspection.address}</Text>
         <Text style={styles.dateTime}>{formattedDate} at {formattedTime}</Text>
       </View>
 
@@ -98,21 +82,27 @@ export default function InspectionDetailScreen() {
             {impressionDisplay.label}
           </Text>
         </View>
-        <View style={[styles.badge, { backgroundColor: suitabilityDisplay.bgColor }]}>
-          <Text style={[styles.badgeText, { color: suitabilityDisplay.color }]}>
-            Client: {suitabilityDisplay.label}
-          </Text>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{inspection.timeSpentMinutes} min</Text>
-        </View>
+        {inspection.clientSuitability && (
+          <View style={[styles.badge, { backgroundColor: getSuitabilityDisplay(inspection.clientSuitability).bgColor }]}>
+            <Text style={[styles.badgeText, { color: getSuitabilityDisplay(inspection.clientSuitability).color }]}>
+              Client: {getSuitabilityDisplay(inspection.clientSuitability).label}
+            </Text>
+          </View>
+        )}
+        {inspection.timeSpentMinutes && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{inspection.timeSpentMinutes} min</Text>
+          </View>
+        )}
       </View>
 
       {/* Condition Notes */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Condition Notes</Text>
-        <Text style={styles.cardBody}>{inspection.conditionNotes}</Text>
-      </View>
+      {inspection.conditionNotes && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Condition Notes</Text>
+          <Text style={styles.cardBody}>{inspection.conditionNotes}</Text>
+        </View>
+      )}
 
       {/* Agent Notes */}
       {inspection.agentNotes ? (
@@ -122,26 +112,22 @@ export default function InspectionDetailScreen() {
         </View>
       ) : null}
 
-      {/* Selling Agent */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Selling Agent</Text>
-        <Text style={styles.cardBody}>{inspection.sellingAgent}</Text>
-      </View>
-
-      {/* Photos Grid Placeholder */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Photos ({inspection.photoCount})</Text>
-        <View style={styles.photosGrid}>
-          {Array.from({ length: inspection.photoCount }).map((_, i) => (
-            <View key={i} style={styles.photoPlaceholder}>
-              <Text style={styles.photoPlaceholderText}>📷</Text>
-            </View>
-          ))}
+      {/* Photos Grid */}
+      {inspection.photos && inspection.photos.length > 0 && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Photos ({inspection.photos.length})</Text>
+          <View style={styles.photosGrid}>
+            {inspection.photos.map((photo) => (
+              <View key={photo.id} style={styles.photoPlaceholder}>
+                <Text style={styles.photoPlaceholderText}>📷</Text>
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Voice Note Placeholder */}
-      {inspection.hasVoiceNote && (
+      {inspection.voiceNoteUrl && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Voice Note</Text>
           <TouchableOpacity style={styles.voiceNotePlayer} activeOpacity={0.7}>
@@ -149,7 +135,6 @@ export default function InspectionDetailScreen() {
             <View style={styles.voiceNoteBar}>
               <View style={styles.voiceNoteProgress} />
             </View>
-            <Text style={styles.voiceNoteDuration}>1:24</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -167,9 +152,10 @@ export default function InspectionDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  errorText: { fontSize: 16, color: '#dc2626' },
 
   header: { marginBottom: 16 },
-  address: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 4 },
   dateTime: { fontSize: 14, color: '#6b7280' },
 
   badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
@@ -238,7 +224,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#2563eb',
     borderRadius: 2,
   },
-  voiceNoteDuration: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
 
   editButton: {
     backgroundColor: '#2563eb',

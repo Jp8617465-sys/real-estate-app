@@ -1,50 +1,8 @@
-import { CheckCircle2, Clock, FileText } from 'lucide-react';
-import type { PurchaseType, Urgency, UpdateFrequency } from '@realflow/shared';
+'use client';
 
-// ── Mock data ────────────────────────────────────────────────────────
-const MOCK_BRIEF = {
-  purchaseType: 'owner_occupier' as PurchaseType,
-  budget: {
-    min: 950000,
-    max: 1200000,
-    absoluteMax: 1300000,
-    stampDutyBudgeted: true,
-  },
-  requirements: {
-    propertyTypes: ['house', 'townhouse'] as string[],
-    bedrooms: { min: 3, ideal: 4 },
-    bathrooms: { min: 2, ideal: 2 },
-    carSpaces: { min: 2, ideal: 2 },
-    suburbs: [
-      { suburb: 'Paddington', state: 'QLD', postcode: '4064', rank: 1 },
-      { suburb: 'Red Hill', state: 'QLD', postcode: '4059', rank: 2 },
-      { suburb: 'Ashgrove', state: 'QLD', postcode: '4060', rank: 3 },
-    ],
-    mustHaves: ['Outdoor entertaining area', 'Separate living zones', 'Air conditioning'],
-    niceToHaves: ['Pool', 'Home office', 'Walk to cafe strip'],
-    dealBreakers: ['Main road frontage', 'Flood zone', 'Body corporate over $8,000/yr'],
-  },
-  timeline: {
-    urgency: '1_3_months' as Urgency,
-    idealSettlement: '90 days from exchange',
-  },
-  communication: {
-    preferredMethod: 'phone' as const,
-    updateFrequency: 'twice_weekly' as UpdateFrequency,
-    bestTimeToCall: '12pm - 2pm weekdays',
-    partnerName: 'James Johnson',
-  },
-  solicitor: {
-    firmName: 'Henderson & Partners',
-    contactName: 'Mark Henderson',
-    phone: '07 3555 1234',
-    email: 'mark@hendersonlaw.com.au',
-  },
-  briefVersion: 3,
-  clientSignedOff: true,
-  signedOffAt: '2026-01-28T10:00:00Z',
-  updatedAt: '2026-01-28T10:00:00Z',
-};
+import { CheckCircle2, Clock, FileText, Loader2, AlertCircle } from 'lucide-react';
+import type { PurchaseType, Urgency, UpdateFrequency, BriefContactMethod } from '@realflow/shared';
+import { useBrief } from '@/hooks/use-brief';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-AU', {
@@ -127,6 +85,43 @@ function TagList({ items }: { items: string[] }) {
 }
 
 export default function BriefPage() {
+  const { data: brief, isLoading, error } = useBrief();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-portal-500" />
+      </div>
+    );
+  }
+
+  if (error || !brief) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="h-10 w-10 text-gray-300" />
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">No brief found</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Your buyers agent has not created a brief yet. Check back soon.
+        </p>
+      </div>
+    );
+  }
+
+  const purchaseType = brief.purchase_type as PurchaseType;
+  const urgency = brief.timeline?.urgency as Urgency | undefined;
+  const updateFrequency = brief.communication?.update_frequency as UpdateFrequency | undefined;
+  const preferredMethod = brief.communication?.preferred_method as BriefContactMethod | undefined;
+  const suburbs = (brief.requirements?.suburbs ?? []) as Array<{
+    suburb: string;
+    state: string;
+    postcode: string;
+    rank?: number;
+  }>;
+  const mustHaves = (brief.requirements?.must_haves ?? []) as string[];
+  const niceToHaves = (brief.requirements?.nice_to_haves ?? []) as string[];
+  const dealBreakers = (brief.requirements?.deal_breakers ?? []) as string[];
+  const propertyTypes = (brief.requirements?.property_types ?? []) as string[];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -136,15 +131,15 @@ export default function BriefPage() {
           <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
             <span className="flex items-center gap-1">
               <FileText className="h-3.5 w-3.5" />
-              Version {MOCK_BRIEF.briefVersion}
+              Version {brief.brief_version ?? 1}
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
-              Last updated {formatDate(MOCK_BRIEF.updatedAt)}
+              Last updated {formatDate(brief.updated_at)}
             </span>
           </div>
         </div>
-        {MOCK_BRIEF.clientSignedOff && (
+        {brief.client_signed_off && (
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700">
             <CheckCircle2 className="h-4 w-4" />
             Signed Off
@@ -157,7 +152,7 @@ export default function BriefPage() {
         <dl className="space-y-3">
           <DetailRow
             label="Type"
-            value={PURCHASE_TYPE_LABELS[MOCK_BRIEF.purchaseType]}
+            value={PURCHASE_TYPE_LABELS[purchaseType] ?? purchaseType}
           />
         </dl>
       </SectionCard>
@@ -167,17 +162,17 @@ export default function BriefPage() {
         <dl className="space-y-3">
           <DetailRow
             label="Range"
-            value={`${formatCurrency(MOCK_BRIEF.budget.min)} - ${formatCurrency(MOCK_BRIEF.budget.max)}`}
+            value={`${formatCurrency(brief.budget?.min ?? 0)} - ${formatCurrency(brief.budget?.max ?? 0)}`}
           />
-          {MOCK_BRIEF.budget.absoluteMax && (
+          {brief.budget?.absolute_max && (
             <DetailRow
               label="Absolute Maximum"
-              value={formatCurrency(MOCK_BRIEF.budget.absoluteMax)}
+              value={formatCurrency(brief.budget.absolute_max)}
             />
           )}
           <DetailRow
             label="Stamp Duty Budgeted"
-            value={MOCK_BRIEF.budget.stampDutyBudgeted ? 'Yes' : 'No'}
+            value={brief.budget?.stamp_duty_budgeted ? 'Yes' : 'No'}
           />
         </dl>
       </SectionCard>
@@ -185,87 +180,105 @@ export default function BriefPage() {
       {/* Requirements */}
       <SectionCard title="Requirements">
         <dl className="space-y-4">
-          <DetailRow
-            label="Property Types"
-            value={MOCK_BRIEF.requirements.propertyTypes
-              .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
-              .join(', ')}
-          />
-          <DetailRow
-            label="Bedrooms"
-            value={`Min ${MOCK_BRIEF.requirements.bedrooms.min}${MOCK_BRIEF.requirements.bedrooms.ideal ? `, ideally ${MOCK_BRIEF.requirements.bedrooms.ideal}` : ''}`}
-          />
-          <DetailRow
-            label="Bathrooms"
-            value={`Min ${MOCK_BRIEF.requirements.bathrooms.min}${MOCK_BRIEF.requirements.bathrooms.ideal ? `, ideally ${MOCK_BRIEF.requirements.bathrooms.ideal}` : ''}`}
-          />
-          <DetailRow
-            label="Car Spaces"
-            value={`Min ${MOCK_BRIEF.requirements.carSpaces.min}${MOCK_BRIEF.requirements.carSpaces.ideal ? `, ideally ${MOCK_BRIEF.requirements.carSpaces.ideal}` : ''}`}
-          />
+          {propertyTypes.length > 0 && (
+            <DetailRow
+              label="Property Types"
+              value={propertyTypes
+                .map((t: string) => t.charAt(0).toUpperCase() + t.slice(1))
+                .join(', ')}
+            />
+          )}
+          {brief.requirements?.bedrooms && (
+            <DetailRow
+              label="Bedrooms"
+              value={`Min ${brief.requirements.bedrooms.min}${brief.requirements.bedrooms.ideal ? `, ideally ${brief.requirements.bedrooms.ideal}` : ''}`}
+            />
+          )}
+          {brief.requirements?.bathrooms && (
+            <DetailRow
+              label="Bathrooms"
+              value={`Min ${brief.requirements.bathrooms.min}${brief.requirements.bathrooms.ideal ? `, ideally ${brief.requirements.bathrooms.ideal}` : ''}`}
+            />
+          )}
+          {brief.requirements?.car_spaces && (
+            <DetailRow
+              label="Car Spaces"
+              value={`Min ${brief.requirements.car_spaces.min}${brief.requirements.car_spaces.ideal ? `, ideally ${brief.requirements.car_spaces.ideal}` : ''}`}
+            />
+          )}
 
-          <div className="border-t border-gray-100 pt-4">
-            <h3 className="mb-2 text-sm font-medium text-gray-700">
-              Preferred Suburbs
-            </h3>
-            <div className="space-y-1.5">
-              {MOCK_BRIEF.requirements.suburbs.map((suburb) => (
-                <div
-                  key={suburb.suburb}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-portal-100 text-[10px] font-semibold text-portal-700">
-                    {suburb.rank}
-                  </span>
-                  <span className="text-gray-900">
-                    {suburb.suburb}, {suburb.state} {suburb.postcode}
-                  </span>
-                </div>
-              ))}
+          {suburbs.length > 0 && (
+            <div className="border-t border-gray-100 pt-4">
+              <h3 className="mb-2 text-sm font-medium text-gray-700">
+                Preferred Suburbs
+              </h3>
+              <div className="space-y-1.5">
+                {suburbs.map((suburb) => (
+                  <div
+                    key={suburb.suburb}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-portal-100 text-[10px] font-semibold text-portal-700">
+                      {suburb.rank ?? '-'}
+                    </span>
+                    <span className="text-gray-900">
+                      {suburb.suburb}, {suburb.state} {suburb.postcode}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="border-t border-gray-100 pt-4">
-            <h3 className="mb-2 text-sm font-medium text-gray-700">Must Haves</h3>
-            <TagList items={MOCK_BRIEF.requirements.mustHaves} />
-          </div>
-
-          <div>
-            <h3 className="mb-2 text-sm font-medium text-gray-700">
-              Nice to Haves
-            </h3>
-            <TagList items={MOCK_BRIEF.requirements.niceToHaves} />
-          </div>
-
-          <div>
-            <h3 className="mb-2 text-sm font-medium text-gray-700">
-              Deal Breakers
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {MOCK_BRIEF.requirements.dealBreakers.map((item) => (
-                <span
-                  key={item}
-                  className="inline-flex rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700"
-                >
-                  {item}
-                </span>
-              ))}
+          {mustHaves.length > 0 && (
+            <div className="border-t border-gray-100 pt-4">
+              <h3 className="mb-2 text-sm font-medium text-gray-700">Must Haves</h3>
+              <TagList items={mustHaves} />
             </div>
-          </div>
+          )}
+
+          {niceToHaves.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">
+                Nice to Haves
+              </h3>
+              <TagList items={niceToHaves} />
+            </div>
+          )}
+
+          {dealBreakers.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">
+                Deal Breakers
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {dealBreakers.map((item: string) => (
+                  <span
+                    key={item}
+                    className="inline-flex rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </dl>
       </SectionCard>
 
       {/* Timeline */}
       <SectionCard title="Timeline">
         <dl className="space-y-3">
-          <DetailRow
-            label="Urgency"
-            value={URGENCY_LABELS[MOCK_BRIEF.timeline.urgency]}
-          />
-          {MOCK_BRIEF.timeline.idealSettlement && (
+          {urgency && (
+            <DetailRow
+              label="Urgency"
+              value={URGENCY_LABELS[urgency] ?? urgency}
+            />
+          )}
+          {brief.timeline?.ideal_settlement && (
             <DetailRow
               label="Ideal Settlement"
-              value={MOCK_BRIEF.timeline.idealSettlement}
+              value={brief.timeline.ideal_settlement}
             />
           )}
         </dl>
@@ -277,43 +290,50 @@ export default function BriefPage() {
           <DetailRow
             label="Preferred Method"
             value={
-              MOCK_BRIEF.communication.preferredMethod
-                ? MOCK_BRIEF.communication.preferredMethod.charAt(0).toUpperCase() +
-                  MOCK_BRIEF.communication.preferredMethod.slice(1)
+              preferredMethod
+                ? preferredMethod.charAt(0).toUpperCase() + preferredMethod.slice(1)
                 : 'Not specified'
             }
           />
           <DetailRow
             label="Update Frequency"
             value={
-              MOCK_BRIEF.communication.updateFrequency
-                ? FREQUENCY_LABELS[MOCK_BRIEF.communication.updateFrequency]
+              updateFrequency
+                ? FREQUENCY_LABELS[updateFrequency]
                 : 'Not specified'
             }
           />
-          {MOCK_BRIEF.communication.bestTimeToCall && (
+          {brief.communication?.best_time_to_call && (
             <DetailRow
               label="Best Time to Call"
-              value={MOCK_BRIEF.communication.bestTimeToCall}
+              value={brief.communication.best_time_to_call}
             />
           )}
-          {MOCK_BRIEF.communication.partnerName && (
+          {brief.communication?.partner_name && (
             <DetailRow
               label="Partner"
-              value={MOCK_BRIEF.communication.partnerName}
+              value={brief.communication.partner_name}
             />
           )}
         </dl>
       </SectionCard>
 
       {/* Solicitor */}
-      {MOCK_BRIEF.solicitor && (
+      {brief.solicitor && (
         <SectionCard title="Solicitor">
           <dl className="space-y-3">
-            <DetailRow label="Firm" value={MOCK_BRIEF.solicitor.firmName} />
-            <DetailRow label="Contact" value={MOCK_BRIEF.solicitor.contactName} />
-            <DetailRow label="Phone" value={MOCK_BRIEF.solicitor.phone} />
-            <DetailRow label="Email" value={MOCK_BRIEF.solicitor.email} />
+            {brief.solicitor.firm_name && (
+              <DetailRow label="Firm" value={brief.solicitor.firm_name} />
+            )}
+            {brief.solicitor.contact_name && (
+              <DetailRow label="Contact" value={brief.solicitor.contact_name} />
+            )}
+            {brief.solicitor.phone && (
+              <DetailRow label="Phone" value={brief.solicitor.phone} />
+            )}
+            {brief.solicitor.email && (
+              <DetailRow label="Email" value={brief.solicitor.email} />
+            )}
           </dl>
         </SectionCard>
       )}

@@ -26,6 +26,8 @@ const navSections: NavSection[] = [
       { label: 'Properties', href: '/properties', icon: '🏠' },
       { label: 'Pipeline', href: '/pipeline', icon: '📈' },
       { label: 'Tasks', href: '/tasks', icon: '✅' },
+      { label: 'Workflows', href: '/workflows', icon: '⚡' },
+      { label: 'Social', href: '/social', icon: '📱' },
     ],
   },
   {

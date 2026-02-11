@@ -14,6 +14,12 @@ import { feeRoutes } from './routes/fees';
 import { sellingAgentRoutes } from './routes/selling-agents';
 import { inboxRoutes } from './routes/inbox';
 import { inboxWebhookRoutes } from './routes/inbox-webhooks';
+import { taskRoutes } from './routes/tasks';
+import { workflowRoutes } from './routes/workflows';
+import { documentRoutes } from './routes/documents';
+import { portalRoutes } from './routes/portal';
+import { settingsRoutes } from './routes/settings';
+import { socialPostRoutes } from './routes/social-posts';
 
 const fastify = Fastify({
   logger: true,
@@ -24,6 +30,7 @@ async function start() {
     origin: [
       'http://localhost:3000', // Next.js dev
       'http://localhost:8081', // Expo dev
+      'http://localhost:3002', // Portal dev
     ],
   });
 
@@ -42,6 +49,12 @@ async function start() {
   await fastify.register(sellingAgentRoutes, { prefix: '/api/v1/selling-agents' });
   await fastify.register(inboxRoutes, { prefix: '/api/v1/inbox' });
   await fastify.register(inboxWebhookRoutes, { prefix: '/api/v1/inbox/webhooks' });
+  await fastify.register(taskRoutes, { prefix: '/api/v1/tasks' });
+  await fastify.register(workflowRoutes, { prefix: '/api/v1/workflows' });
+  await fastify.register(documentRoutes, { prefix: '/api/v1/documents' });
+  await fastify.register(portalRoutes, { prefix: '/api/v1/portal' });
+  await fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
+  await fastify.register(socialPostRoutes, { prefix: '/api/v1/social-posts' });
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', service: 'realflow-api' }));

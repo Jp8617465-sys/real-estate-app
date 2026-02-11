@@ -1,24 +1,48 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useContact } from '../../src/hooks/use-contacts';
+import type { Contact } from '@realflow/shared';
 
 export default function ContactDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { data: contact, isLoading, error } = useContact(id ?? '');
+
+  if (isLoading || !contact) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Failed to load contact</Text>
+      </View>
+    );
+  }
+
+  const name = `${contact.firstName} ${contact.lastName}`;
+  const initials = name
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Contact Header */}
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>MJ</Text>
+          <Text style={styles.avatarText}>{initials}</Text>
         </View>
-        <Text style={styles.name}>Michael Johnson</Text>
+        <Text style={styles.name}>{name}</Text>
         <View style={styles.badges}>
-          <View style={styles.typeBadge}>
-            <Text style={styles.typeBadgeText}>Buyer</Text>
-          </View>
-          <View style={styles.scoreBadge}>
-            <Text style={styles.scoreBadgeText}>Score: 82</Text>
-          </View>
+          {contact.types.map((type) => (
+            <View key={type} style={styles.typeBadge}>
+              <Text style={styles.typeBadgeText}>{type}</Text>
+            </View>
+          ))}
         </View>
       </View>
 
@@ -47,57 +71,72 @@ export default function ContactDetailScreen() {
         <Text style={styles.cardTitle}>Contact Info</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Phone</Text>
-          <Text style={styles.infoValue}>0413 111 001</Text>
+          <Text style={styles.infoValue}>{contact.phone}</Text>
         </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Email</Text>
-          <Text style={styles.infoValue}>michael.j@email.com</Text>
-        </View>
+        {contact.email && (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{contact.email}</Text>
+          </View>
+        )}
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Source</Text>
-          <Text style={styles.infoValue}>Domain</Text>
+          <Text style={styles.infoValue}>{contact.source}</Text>
         </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Agent</Text>
-          <Text style={styles.infoValue}>James Chen</Text>
-        </View>
+        {contact.communicationPreference && (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Preferred</Text>
+            <Text style={styles.infoValue}>{contact.communicationPreference}</Text>
+          </View>
+        )}
       </View>
 
       {/* Buyer Profile */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Buyer Profile</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Budget</Text>
-          <Text style={styles.infoValue}>$800K - $1.2M</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Pre-Approved</Text>
-          <Text style={styles.infoValue}>$1.1M</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Suburbs</Text>
-          <Text style={styles.infoValue}>Bondi, Coogee, Randwick</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Beds / Bath / Car</Text>
-          <Text style={styles.infoValue}>3+ / 2+ / 1+</Text>
-        </View>
-      </View>
-
-      {/* Activity */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Recent Activity</Text>
-        {[
-          { title: 'Inspected 42 Ocean St, Bondi', time: '2h ago' },
-          { title: 'Sent 5 property matches', time: '2 days ago' },
-          { title: 'Initial discovery call', time: '5 days ago' },
-        ].map((activity, i) => (
-          <View key={i} style={styles.activityItem}>
-            <Text style={styles.activityTitle}>{activity.title}</Text>
-            <Text style={styles.activityTime}>{activity.time}</Text>
+      {contact.buyerProfile && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Buyer Profile</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Budget</Text>
+            <Text style={styles.infoValue}>
+              ${contact.buyerProfile.budgetMin.toLocaleString()} - ${contact.buyerProfile.budgetMax.toLocaleString()}
+            </Text>
           </View>
-        ))}
-      </View>
+          {contact.buyerProfile.preApproved && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Pre-Approved</Text>
+              <Text style={styles.infoValue}>
+                ${(contact.buyerProfile.preApprovalAmount ?? 0).toLocaleString()}
+              </Text>
+            </View>
+          )}
+          {contact.buyerProfile.suburbs.length > 0 && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Suburbs</Text>
+              <Text style={styles.infoValue}>{contact.buyerProfile.suburbs.join(', ')}</Text>
+            </View>
+          )}
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Beds / Bath / Car</Text>
+            <Text style={styles.infoValue}>
+              {contact.buyerProfile.bedrooms.min}+ / {contact.buyerProfile.bathrooms.min}+ / {contact.buyerProfile.carSpaces.min}+
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Tags */}
+      {contact.tags && contact.tags.length > 0 && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Tags</Text>
+          <View style={styles.tagsRow}>
+            {contact.tags.map((tag) => (
+              <View key={tag} style={styles.tagBadge}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -105,6 +144,8 @@ export default function ContactDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  errorText: { fontSize: 16, color: '#dc2626' },
   header: { alignItems: 'center', marginBottom: 20 },
   avatar: {
     width: 64,
@@ -120,8 +161,6 @@ const styles = StyleSheet.create({
   badges: { flexDirection: 'row', gap: 8, marginTop: 8 },
   typeBadge: { backgroundColor: '#dcfce7', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
   typeBadgeText: { fontSize: 12, fontWeight: '600', color: '#15803d' },
-  scoreBadge: { backgroundColor: '#fee2e2', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
-  scoreBadgeText: { fontSize: 12, fontWeight: '600', color: '#dc2626' },
   actions: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
   actionButton: { alignItems: 'center' },
   actionEmoji: { fontSize: 24, marginBottom: 4 },
@@ -138,12 +177,7 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   infoLabel: { fontSize: 13, color: '#6b7280' },
   infoValue: { fontSize: 13, color: '#111827', fontWeight: '500' },
-  activityItem: {
-    borderLeftWidth: 2,
-    borderLeftColor: '#e5e7eb',
-    paddingLeft: 12,
-    paddingVertical: 8,
-  },
-  activityTitle: { fontSize: 14, color: '#111827', fontWeight: '500' },
-  activityTime: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tagBadge: { backgroundColor: '#dbeafe', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  tagText: { fontSize: 12, fontWeight: '600', color: '#2563eb' },
 });

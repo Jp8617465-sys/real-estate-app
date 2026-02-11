@@ -1,19 +1,30 @@
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { BUYER_STAGE_LABELS, type BuyerStage } from '@realflow/shared';
-
-const stageData: Record<string, { name: string; budget: string }[]> = {
-  'new-enquiry': [{ name: 'Tom Richards', budget: '$600K-$800K' }],
-  'qualified-lead': [{ name: 'Priya Patel', budget: '$500K-$750K' }],
-  'active-search': [{ name: 'Michael Johnson', budget: '$800K-$1.2M' }],
-  'property-shortlisted': [{ name: 'Lisa Nguyen', budget: '$1.5M-$2M' }],
-  'due-diligence': [],
-  'offer-made': [],
-  'under-contract': [{ name: 'Mark Stevens', budget: '$1.1M' }],
-  settled: [],
-};
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { SELLER_STAGE_LABELS, type SellerStage } from '@realflow/shared';
+import { usePipeline } from '../../src/hooks/use-pipeline';
 
 export default function PipelineScreen() {
-  const stages = Object.entries(BUYER_STAGE_LABELS) as [BuyerStage, string][];
+  const { data: transactions, isLoading } = usePipeline('selling');
+  const stages = Object.entries(SELLER_STAGE_LABELS) as [SellerStage, string][];
+
+  if (isLoading && !transactions) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  // Group transactions by current_stage
+  const grouped: Record<string, typeof transactions> = {};
+  for (const stage of stages) {
+    grouped[stage[0]] = [];
+  }
+  for (const tx of transactions ?? []) {
+    const stage = tx.currentStage ?? tx.current_stage;
+    if (grouped[stage]) {
+      grouped[stage]!.push(tx);
+    }
+  }
 
   return (
     <ScrollView
@@ -23,7 +34,7 @@ export default function PipelineScreen() {
       contentContainerStyle={styles.content}
     >
       {stages.map(([key, label]) => {
-        const cards = stageData[key] ?? [];
+        const cards = grouped[key] ?? [];
         return (
           <View key={key} style={styles.column}>
             <View style={styles.columnHeader}>
@@ -32,12 +43,26 @@ export default function PipelineScreen() {
                 <Text style={styles.countText}>{cards.length}</Text>
               </View>
             </View>
-            {cards.map((card, i) => (
-              <View key={i} style={styles.card}>
-                <Text style={styles.cardName}>{card.name}</Text>
-                <Text style={styles.cardBudget}>{card.budget}</Text>
-              </View>
-            ))}
+            {cards.map((card) => {
+              const contact = (card as Record<string, unknown>).contact as
+                | { first_name: string; last_name: string }
+                | undefined;
+              const name = contact
+                ? `${contact.first_name} ${contact.last_name}`
+                : 'Unknown';
+              const price = card.contractPrice
+                ? `$${card.contractPrice.toLocaleString()}`
+                : card.offerAmount
+                  ? `$${card.offerAmount.toLocaleString()}`
+                  : '';
+
+              return (
+                <View key={card.id} style={styles.card}>
+                  <Text style={styles.cardName}>{name}</Text>
+                  {price ? <Text style={styles.cardBudget}>{price}</Text> : null}
+                </View>
+              );
+            })}
             {cards.length === 0 && (
               <Text style={styles.emptyText}>No contacts</Text>
             )}
@@ -51,6 +76,7 @@ export default function PipelineScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
   column: {
     width: 240,
     backgroundColor: '#f3f4f6',

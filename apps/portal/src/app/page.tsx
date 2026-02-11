@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   FileText,
@@ -8,13 +10,12 @@ import {
   MessageSquare,
   ArrowRight,
   CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 import type { BuyersAgentStage } from '@realflow/shared';
 import { BUYERS_AGENT_STAGE_LABELS, BUYERS_AGENT_STAGE_ORDER } from '@realflow/shared';
-
-// ── Mock data ────────────────────────────────────────────────────────
-const MOCK_CLIENT_NAME = 'Sarah';
-const MOCK_CURRENT_STAGE: BuyersAgentStage = 'active-search';
+import { usePortalClient } from '@/hooks/use-auth';
+import { usePortalDashboard } from '@/hooks/use-portal-dashboard';
 
 interface QuickLink {
   label: string;
@@ -24,64 +25,84 @@ interface QuickLink {
   stat?: string;
 }
 
-const QUICK_LINKS: QuickLink[] = [
-  {
-    label: 'My Brief',
-    description: 'View your property search criteria',
-    href: '/brief',
-    icon: FileText,
-    stat: 'v3 - Signed Off',
-  },
-  {
-    label: 'Property Shortlist',
-    description: 'Properties matched to your brief',
-    href: '/properties',
-    icon: Home,
-    stat: '6 properties',
-  },
-  {
-    label: 'Due Diligence',
-    description: 'Check progress on active property',
-    href: '/due-diligence',
-    icon: ClipboardCheck,
-    stat: '72% complete',
-  },
-  {
-    label: 'Key Dates',
-    description: 'Important upcoming dates',
-    href: '/timeline',
-    icon: Calendar,
-    stat: '3 upcoming',
-  },
-  {
-    label: 'Documents',
-    description: 'Contracts, reports, and files',
-    href: '/documents',
-    icon: FolderOpen,
-    stat: '12 files',
-  },
-  {
-    label: 'Messages',
-    description: 'Chat with your buyers agent',
-    href: '/messages',
-    icon: MessageSquare,
-    stat: '2 unread',
-  },
-];
-
 const ALL_STAGES = Object.entries(BUYERS_AGENT_STAGE_ORDER)
   .sort(([, a], [, b]) => a - b)
   .map(([stage]) => stage as BuyersAgentStage);
 
 export default function PortalDashboard() {
-  const currentStageIndex = ALL_STAGES.indexOf(MOCK_CURRENT_STAGE);
+  const { data: portalClient, isLoading: isClientLoading } = usePortalClient();
+  const { data: dashboard, isLoading: isDashboardLoading } = usePortalDashboard();
+
+  const isLoading = isClientLoading || isDashboardLoading;
+
+  const clientName =
+    portalClient?.contact?.first_name ?? 'there';
+  const currentStage: BuyersAgentStage = dashboard?.currentStage ?? 'enquiry';
+  const currentStageIndex = ALL_STAGES.indexOf(currentStage);
+
+  const quickLinks: QuickLink[] = [
+    {
+      label: 'My Brief',
+      description: 'View your property search criteria',
+      href: '/brief',
+      icon: FileText,
+      stat: dashboard?.briefStat ?? 'Loading...',
+    },
+    {
+      label: 'Property Shortlist',
+      description: 'Properties matched to your brief',
+      href: '/properties',
+      icon: Home,
+      stat: dashboard ? `${dashboard.propertiesCount} properties` : 'Loading...',
+    },
+    {
+      label: 'Due Diligence',
+      description: 'Check progress on active property',
+      href: '/due-diligence',
+      icon: ClipboardCheck,
+      stat: dashboard ? `${dashboard.ddCompletion}% complete` : 'Loading...',
+    },
+    {
+      label: 'Key Dates',
+      description: 'Important upcoming dates',
+      href: '/timeline',
+      icon: Calendar,
+      stat: dashboard ? `${dashboard.keyDatesCount} upcoming` : 'Loading...',
+    },
+    {
+      label: 'Documents',
+      description: 'Contracts, reports, and files',
+      href: '/documents',
+      icon: FolderOpen,
+      stat: dashboard ? `${dashboard.documentsCount} files` : 'Loading...',
+    },
+    {
+      label: 'Messages',
+      description: 'Chat with your buyers agent',
+      href: '/messages',
+      icon: MessageSquare,
+      stat: dashboard
+        ? dashboard.unreadMessagesCount > 0
+          ? `${dashboard.unreadMessagesCount} unread`
+          : 'All read'
+        : 'Loading...',
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-portal-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
       {/* Welcome section */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-          Welcome back, {MOCK_CLIENT_NAME}
+          Welcome back, {clientName}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           Here is an overview of your property search progress.
@@ -149,14 +170,14 @@ export default function PortalDashboard() {
         <p className="mt-4 text-sm text-gray-600 sm:hidden">
           Current stage:{' '}
           <span className="font-semibold text-portal-700">
-            {BUYERS_AGENT_STAGE_LABELS[MOCK_CURRENT_STAGE]}
+            {BUYERS_AGENT_STAGE_LABELS[currentStage]}
           </span>
         </p>
       </div>
 
       {/* Quick links grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {QUICK_LINKS.map((link) => {
+        {quickLinks.map((link) => {
           const Icon = link.icon;
           return (
             <Link

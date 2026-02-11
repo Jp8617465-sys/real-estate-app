@@ -1,8 +1,37 @@
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useProperty } from '../../src/hooks/use-properties';
+import type { Property } from '@realflow/shared';
+
+function formatAddress(address: Property['address']): string {
+  const parts: string[] = [];
+  if (address.unitNumber) parts.push(`${address.unitNumber}/`);
+  parts.push(`${address.streetNumber} ${address.streetName}`);
+  parts.push(`, ${address.suburb} ${address.state} ${address.postcode}`);
+  return parts.join('');
+}
 
 export default function PropertyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { data: property, isLoading, error } = useProperty(id ?? '');
+
+  if (isLoading || !property) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Failed to load property</Text>
+      </View>
+    );
+  }
+
+  const displayPrice = property.priceGuide ?? (property.listPrice ? `$${property.listPrice.toLocaleString()}` : 'Price TBC');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -10,61 +39,69 @@ export default function PropertyDetailScreen() {
         <Text style={styles.imageEmoji}>🏠</Text>
       </View>
 
-      <Text style={styles.address}>42 Ocean Street, Bondi NSW 2026</Text>
-      <Text style={styles.type}>House</Text>
+      <Text style={styles.address}>{formatAddress(property.address)}</Text>
+      <Text style={styles.type}>{property.propertyType}</Text>
 
       <View style={styles.features}>
         <View style={styles.feature}>
-          <Text style={styles.featureValue}>4</Text>
+          <Text style={styles.featureValue}>{property.bedrooms}</Text>
           <Text style={styles.featureLabel}>Beds</Text>
         </View>
         <View style={styles.feature}>
-          <Text style={styles.featureValue}>2</Text>
+          <Text style={styles.featureValue}>{property.bathrooms}</Text>
           <Text style={styles.featureLabel}>Baths</Text>
         </View>
         <View style={styles.feature}>
-          <Text style={styles.featureValue}>2</Text>
+          <Text style={styles.featureValue}>{property.carSpaces}</Text>
           <Text style={styles.featureLabel}>Cars</Text>
         </View>
-        <View style={styles.feature}>
-          <Text style={styles.featureValue}>450</Text>
-          <Text style={styles.featureLabel}>m²</Text>
-        </View>
+        {property.landSize && (
+          <View style={styles.feature}>
+            <Text style={styles.featureValue}>{property.landSize}</Text>
+            <Text style={styles.featureLabel}>m2</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Listing Details</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Status</Text>
-          <Text style={[styles.infoValue, { color: '#15803d' }]}>Active</Text>
+          <Text style={[styles.infoValue, { color: property.listingStatus === 'active' ? '#15803d' : '#111827' }]}>
+            {property.listingStatus}
+          </Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Sale Type</Text>
-          <Text style={styles.infoValue}>Auction</Text>
+          <Text style={styles.infoValue}>{property.saleType}</Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Agent</Text>
-          <Text style={styles.infoValue}>James Chen</Text>
+          <Text style={styles.infoLabel}>Price</Text>
+          <Text style={styles.infoValue}>{displayPrice}</Text>
         </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Vendor</Text>
-          <Text style={styles.infoValue}>David Williams</Text>
-        </View>
+        {property.auctionDate && (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Auction Date</Text>
+            <Text style={styles.infoValue}>
+              {new Date(property.auctionDate).toLocaleDateString('en-AU')}
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Performance</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Portal Views</Text>
-          <Text style={styles.infoValue}>342</Text>
+          <Text style={styles.infoValue}>{property.portalViews}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Enquiries</Text>
-          <Text style={styles.infoValue}>12</Text>
+          <Text style={styles.infoValue}>{property.enquiryCount}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Inspections</Text>
-          <Text style={styles.infoValue}>8</Text>
+          <Text style={styles.infoValue}>{property.inspectionCount}</Text>
         </View>
       </View>
     </ScrollView>
@@ -74,6 +111,8 @@ export default function PropertyDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { paddingBottom: 32 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  errorText: { fontSize: 16, color: '#dc2626' },
   imagePlaceholder: {
     height: 220,
     backgroundColor: '#e5e7eb',

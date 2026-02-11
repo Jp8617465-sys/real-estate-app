@@ -1,3 +1,5 @@
+'use client';
+
 import {
   CheckCircle2,
   Circle,
@@ -5,164 +7,14 @@ import {
   AlertTriangle,
   Ban,
   ShieldAlert,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import type {
   DueDiligenceCategory,
   DueDiligenceItemStatus,
 } from '@realflow/shared';
-
-// ── Mock data ────────────────────────────────────────────────────────
-interface MockDueDiligenceItem {
-  id: string;
-  name: string;
-  category: DueDiligenceCategory;
-  status: DueDiligenceItemStatus;
-  assignedTo: string;
-  isBlocking: boolean;
-  notes?: string;
-}
-
-const MOCK_COMPLETION = 72;
-
-const MOCK_ITEMS: MockDueDiligenceItem[] = [
-  // Legal
-  {
-    id: '1',
-    name: 'Title search',
-    category: 'legal',
-    status: 'completed',
-    assignedTo: 'Solicitor',
-    isBlocking: false,
-  },
-  {
-    id: '2',
-    name: 'Contract review',
-    category: 'legal',
-    status: 'completed',
-    assignedTo: 'Solicitor',
-    isBlocking: false,
-  },
-  {
-    id: '3',
-    name: 'Special conditions review',
-    category: 'legal',
-    status: 'in_progress',
-    assignedTo: 'Solicitor',
-    isBlocking: true,
-    notes: 'Awaiting seller response on sunset clause amendment',
-  },
-  {
-    id: '4',
-    name: 'Easement & covenant check',
-    category: 'legal',
-    status: 'completed',
-    assignedTo: 'Solicitor',
-    isBlocking: false,
-  },
-  // Physical
-  {
-    id: '5',
-    name: 'Building & pest inspection',
-    category: 'physical',
-    status: 'completed',
-    assignedTo: 'Building Inspector',
-    isBlocking: false,
-    notes: 'Minor timber damage noted - not structural. Report uploaded.',
-  },
-  {
-    id: '6',
-    name: 'Pool safety compliance',
-    category: 'physical',
-    status: 'not_applicable',
-    assignedTo: 'Buyers Agent',
-    isBlocking: false,
-  },
-  {
-    id: '7',
-    name: 'Structural assessment',
-    category: 'physical',
-    status: 'completed',
-    assignedTo: 'Building Inspector',
-    isBlocking: false,
-  },
-  // Financial
-  {
-    id: '8',
-    name: 'Finance pre-approval confirmation',
-    category: 'financial',
-    status: 'completed',
-    assignedTo: 'Broker',
-    isBlocking: false,
-  },
-  {
-    id: '9',
-    name: 'Bank valuation',
-    category: 'financial',
-    status: 'in_progress',
-    assignedTo: 'Broker',
-    isBlocking: true,
-    notes: 'Valuation booked for 14 Feb. Lender expects 3-5 business days for report.',
-  },
-  {
-    id: '10',
-    name: 'Stamp duty calculation',
-    category: 'financial',
-    status: 'completed',
-    assignedTo: 'Buyers Agent',
-    isBlocking: false,
-  },
-  // Environmental
-  {
-    id: '11',
-    name: 'Flood map check',
-    category: 'environmental',
-    status: 'completed',
-    assignedTo: 'Buyers Agent',
-    isBlocking: false,
-  },
-  {
-    id: '12',
-    name: 'Contaminated land register',
-    category: 'environmental',
-    status: 'completed',
-    assignedTo: 'Solicitor',
-    isBlocking: false,
-  },
-  {
-    id: '13',
-    name: 'Bushfire overlay check',
-    category: 'environmental',
-    status: 'not_started',
-    assignedTo: 'Buyers Agent',
-    isBlocking: false,
-  },
-  // Council
-  {
-    id: '14',
-    name: 'Council rates search',
-    category: 'council',
-    status: 'completed',
-    assignedTo: 'Solicitor',
-    isBlocking: false,
-  },
-  {
-    id: '15',
-    name: 'Town planning check',
-    category: 'council',
-    status: 'issue_found',
-    assignedTo: 'Buyers Agent',
-    isBlocking: false,
-    notes: 'Neighbouring block has DA lodged for multi-dwelling. Reviewing impact.',
-  },
-  {
-    id: '16',
-    name: 'Building approvals search',
-    category: 'council',
-    status: 'in_progress',
-    assignedTo: 'Solicitor',
-    isBlocking: false,
-  },
-];
+import { usePortalDueDiligence } from '@/hooks/use-due-diligence';
 
 const CATEGORY_CONFIG: Record<
   DueDiligenceCategory,
@@ -211,10 +63,18 @@ const STATUS_CONFIG: Record<
   },
 };
 
-function groupByCategory(
-  items: MockDueDiligenceItem[]
-): Record<string, MockDueDiligenceItem[]> {
-  const grouped: Record<string, MockDueDiligenceItem[]> = {};
+interface DDItem {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  assigned_to: string;
+  is_blocking: boolean;
+  notes: string | null;
+}
+
+function groupByCategory(items: DDItem[]): Record<string, DDItem[]> {
+  const grouped: Record<string, DDItem[]> = {};
   for (const item of items) {
     if (!grouped[item.category]) {
       grouped[item.category] = [];
@@ -224,10 +84,57 @@ function groupByCategory(
   return grouped;
 }
 
+function formatAssignedTo(value: string): string {
+  return value
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export default function DueDiligencePage() {
-  const grouped = groupByCategory(MOCK_ITEMS);
-  const blockingItems = MOCK_ITEMS.filter(
-    (item) => item.isBlocking && item.status !== 'completed'
+  const { data, isLoading, error } = usePortalDueDiligence();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-portal-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="h-10 w-10 text-gray-300" />
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">Unable to load due diligence</h2>
+        <p className="mt-1 text-sm text-gray-500">Please try again later.</p>
+      </div>
+    );
+  }
+
+  const items = data?.items ?? [];
+  const completion = data?.completion ?? 0;
+
+  if (items.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Due Diligence</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <ClipboardIcon className="h-10 w-10 text-gray-300" />
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">No due diligence items yet</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Due diligence tracking will appear here once you are under contract.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const grouped = groupByCategory(items);
+  const blockingItems = items.filter(
+    (item) => item.is_blocking && item.status !== 'completed',
   );
 
   return (
@@ -235,9 +142,6 @@ export default function DueDiligencePage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Due Diligence</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          42 Latrobe Terrace, Paddington QLD 4064
-        </p>
       </div>
 
       {/* Overall progress bar */}
@@ -247,27 +151,27 @@ export default function DueDiligencePage() {
             Overall Completion
           </h2>
           <span className="text-2xl font-bold text-portal-600">
-            {MOCK_COMPLETION}%
+            {completion}%
           </span>
         </div>
         <div className="mt-3 h-3 overflow-hidden rounded-full bg-gray-100">
           <div
             className="h-full rounded-full bg-portal-500 transition-all"
-            style={{ width: `${MOCK_COMPLETION}%` }}
+            style={{ width: `${completion}%` }}
           />
         </div>
         <div className="mt-3 flex gap-4 text-xs text-gray-500">
           <span>
-            {MOCK_ITEMS.filter((i) => i.status === 'completed').length} completed
+            {items.filter((i) => i.status === 'completed').length} completed
           </span>
           <span>
-            {MOCK_ITEMS.filter((i) => i.status === 'in_progress').length} in progress
+            {items.filter((i) => i.status === 'in_progress').length} in progress
           </span>
           <span>
-            {MOCK_ITEMS.filter((i) => i.status === 'not_started').length} not started
+            {items.filter((i) => i.status === 'not_started').length} not started
           </span>
           <span>
-            {MOCK_ITEMS.filter((i) => i.status === 'issue_found').length} issues
+            {items.filter((i) => i.status === 'issue_found').length} issues
           </span>
         </div>
       </div>
@@ -296,11 +200,14 @@ export default function DueDiligencePage() {
 
       {/* Category sections */}
       <div className="space-y-4">
-        {Object.entries(grouped).map(([category, items]) => {
+        {Object.entries(grouped).map(([category, categoryItems]) => {
           const config =
-            CATEGORY_CONFIG[category as DueDiligenceCategory];
-          const completedCount = items.filter(
-            (i) => i.status === 'completed' || i.status === 'not_applicable'
+            CATEGORY_CONFIG[category as DueDiligenceCategory] ?? {
+              label: category,
+              color: 'text-gray-600 bg-gray-50',
+            };
+          const completedCount = categoryItems.filter(
+            (i) => i.status === 'completed' || i.status === 'not_applicable',
           ).length;
 
           return (
@@ -318,21 +225,22 @@ export default function DueDiligencePage() {
                   </span>
                 </div>
                 <span className="text-xs text-gray-400">
-                  {completedCount}/{items.length} done
+                  {completedCount}/{categoryItems.length} done
                 </span>
               </div>
 
               {/* Items list */}
               <div className="divide-y divide-gray-50">
-                {items.map((item) => {
-                  const statusConfig = STATUS_CONFIG[item.status];
+                {categoryItems.map((item) => {
+                  const statusConfig =
+                    STATUS_CONFIG[item.status as DueDiligenceItemStatus] ?? STATUS_CONFIG.not_started;
                   const StatusIcon = statusConfig.icon;
 
                   return (
                     <div
                       key={item.id}
                       className={`flex items-start gap-3 px-5 py-3 ${
-                        item.isBlocking && item.status !== 'completed'
+                        item.is_blocking && item.status !== 'completed'
                           ? 'bg-amber-50/50'
                           : ''
                       }`}
@@ -351,7 +259,7 @@ export default function DueDiligencePage() {
                           >
                             {item.name}
                           </span>
-                          {item.isBlocking &&
+                          {item.is_blocking &&
                             item.status !== 'completed' && (
                               <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-700">
                                 Blocking
@@ -359,7 +267,7 @@ export default function DueDiligencePage() {
                             )}
                         </div>
                         <p className="text-xs text-gray-400">
-                          {item.assignedTo}
+                          {formatAssignedTo(item.assigned_to)}
                         </p>
                         {item.notes && (
                           <p className="mt-1 text-xs text-gray-500">
@@ -381,5 +289,24 @@ export default function DueDiligencePage() {
         })}
       </div>
     </div>
+  );
+}
+
+// Simple clipboard icon for empty state
+function ClipboardIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
+      />
+    </svg>
   );
 }

@@ -1,10 +1,11 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import {
   InboxFilterSchema,
   SendMessageRequestSchema,
   type MessageChannel,
 } from '@realflow/shared';
 import { createSupabaseClient } from '../middleware/supabase';
+import { IntegrationRegistry } from '../services/integration-registry';
 
 /**
  * Unified Inbox API routes.
@@ -127,7 +128,7 @@ export async function inboxRoutes(fastify: FastifyInstance) {
     }
 
     // Dispatch to the appropriate channel sender
-    const sendResult = await dispatchOutboundMessage(msg.channel, msg, fastify);
+    const sendResult = await dispatchOutboundMessage(msg.channel, msg, fastify, request);
 
     // Record the outbound message in the conversation
     const { data, error } = await supabase
@@ -297,36 +298,128 @@ export async function inboxRoutes(fastify: FastifyInstance) {
 
 // ─── Helper Functions ──────────────────────────────────────────────────
 
+/**
+ * Look up a contact's communication details from the contacts table.
+ */
+async function getContactDetails(
+  request: FastifyRequest,
+  contactId: string,
+): Promise<{ email: string | null; phone: string | null } | null> {
+  const supabase = createSupabaseClient(request);
+  const { data } = await supabase
+    .from('contacts')
+    .select('email, phone')
+    .eq('id', contactId)
+    .eq('is_deleted', false)
+    .single();
+  return data;
+}
+
+/**
+ * Dispatch an outbound message to the appropriate integration client.
+ * Looks up OAuth tokens from the DB via the IntegrationRegistry,
+ * resolves the contact's email/phone, and sends via the real client.
+ * Returns { success: false } gracefully if the integration is not connected.
+ */
 async function dispatchOutboundMessage(
   channel: MessageChannel,
-  _msg: { contactId: string; content: { text?: string; subject?: string; html?: string } },
+  msg: { contactId: string; content: { text?: string; subject?: string; html?: string } },
   fastify: FastifyInstance,
+  request: FastifyRequest,
 ): Promise<{ success: boolean; externalId?: string; metadata?: Record<string, unknown> }> {
-  // In production, this dispatches to the appropriate integration client
-  // (Gmail, Twilio, WhatsApp, Meta) based on the channel.
-  // For now, we log and return success.
   fastify.log.info({ channel }, 'Dispatching outbound message');
 
+  // Get the authenticated user's ID for token lookup
+  const supabase = createSupabaseClient(request);
+  const { data: userData } = await supabase.from('users').select('id').single();
+  if (!userData) return { success: false };
+
+  const registry = new IntegrationRegistry(request, userData.id);
+  const contact = await getContactDetails(request, msg.contactId);
+
   switch (channel) {
-    case 'email':
-      // Would use GmailClient.sendMessage() or Microsoft Graph
-      return { success: true, externalId: `email_${Date.now()}` };
-    case 'sms':
-      // Would use TwilioClient.sendSms()
-      return { success: true, externalId: `sms_${Date.now()}` };
-    case 'whatsapp':
-      // Would use WhatsAppClient.sendTextMessage()
-      return { success: true, externalId: `wa_${Date.now()}` };
+    case 'email': {
+      const gmail = await registry.getGmailClient();
+      if (!gmail) return { success: false };
+      const recipientEmail = contact?.email;
+      if (!recipientEmail) return { success: false };
+
+      const result = await gmail.sendMessage({
+        to: [recipientEmail],
+        subject: msg.content.subject ?? '(No subject)',
+        textBody: msg.content.text ?? '',
+        htmlBody: msg.content.html,
+      });
+      return { success: true, externalId: result.id, metadata: { threadId: result.threadId } };
+    }
+
+    case 'sms': {
+      const twilio = await registry.getTwilioClient();
+      if (!twilio) return { success: false };
+      const recipientPhone = contact?.phone;
+      if (!recipientPhone) return { success: false };
+
+      const result = await twilio.sendSms({
+        to: recipientPhone,
+        body: msg.content.text ?? '',
+      });
+      return { success: true, externalId: result.sid, metadata: { status: result.status } };
+    }
+
+    case 'whatsapp': {
+      const whatsapp = await registry.getWhatsAppClient();
+      if (!whatsapp) return { success: false };
+      const recipientPhone = contact?.phone;
+      if (!recipientPhone) return { success: false };
+
+      const result = await whatsapp.sendTextMessage({
+        to: recipientPhone,
+        text: msg.content.text ?? '',
+      });
+      const messageId = result.messages?.[0]?.id;
+      return { success: true, externalId: messageId };
+    }
+
     case 'instagram_dm':
-    case 'facebook_messenger':
-      // Would use MetaSocialClient messaging API
-      return { success: true, externalId: `meta_${Date.now()}` };
-    case 'phone_call':
-      // Would use TwilioClient.initiateCall()
-      return { success: true, externalId: `call_${Date.now()}` };
+    case 'facebook_messenger': {
+      const meta = await registry.getMetaClient();
+      if (!meta) return { success: false };
+
+      // Look up the contact's social conversation ID from contact_channels
+      const { data: channels } = await supabase
+        .from('contact_channels')
+        .select('*')
+        .eq('contact_id', msg.contactId)
+        .single();
+
+      const conversationId = channel === 'instagram_dm'
+        ? (channels?.instagram_id as string | undefined)
+        : (channels?.facebook_id as string | undefined);
+
+      if (!conversationId) return { success: false };
+
+      const result = await meta.sendPageMessage(conversationId, msg.content.text ?? '');
+      return { success: true, externalId: result.id };
+    }
+
+    case 'phone_call': {
+      const twilio = await registry.getTwilioClient();
+      if (!twilio) return { success: false };
+      const recipientPhone = contact?.phone;
+      if (!recipientPhone) return { success: false };
+
+      const twimlUrl = process.env.TWILIO_TWIML_URL ?? '';
+      const result = await twilio.initiateCall({
+        to: recipientPhone,
+        twimlUrl,
+      });
+      return { success: true, externalId: result.sid, metadata: { status: result.status } };
+    }
+
     case 'internal_note':
-      // No external dispatch needed — just stored in DB
+      // No external dispatch needed -- just stored in DB
       return { success: true };
+
     default:
       return { success: false };
   }

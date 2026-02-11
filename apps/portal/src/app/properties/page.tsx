@@ -1,115 +1,9 @@
-import { MapPin, Bed, Bath, Car, Star } from 'lucide-react';
+'use client';
+
+import { MapPin, Bed, Bath, Car, Star, Loader2, AlertCircle } from 'lucide-react';
 import type { PropertyMatchStatus } from '@realflow/shared';
-
-// ── Mock data ────────────────────────────────────────────────────────
-interface MockProperty {
-  id: string;
-  address: string;
-  suburb: string;
-  state: string;
-  postcode: string;
-  priceGuide: string;
-  bedrooms: number;
-  bathrooms: number;
-  carSpaces: number;
-  propertyType: string;
-  matchScore: number;
-  status: PropertyMatchStatus;
-  agentNotes: string;
-}
-
-const MOCK_PROPERTIES: MockProperty[] = [
-  {
-    id: '1',
-    address: '42 Latrobe Terrace',
-    suburb: 'Paddington',
-    state: 'QLD',
-    postcode: '4064',
-    priceGuide: '$1,050,000 - $1,150,000',
-    bedrooms: 4,
-    bathrooms: 2,
-    carSpaces: 2,
-    propertyType: 'House',
-    matchScore: 94,
-    status: 'inspection_booked',
-    agentNotes: 'Strong match. North-facing rear yard. Renovation done 2023. Inspection Saturday 10am.',
-  },
-  {
-    id: '2',
-    address: '15/28 Musgrave Road',
-    suburb: 'Red Hill',
-    state: 'QLD',
-    postcode: '4059',
-    priceGuide: '$980,000+',
-    bedrooms: 3,
-    bathrooms: 2,
-    carSpaces: 2,
-    propertyType: 'Townhouse',
-    matchScore: 87,
-    status: 'client_interested',
-    agentNotes: 'Modern build, low body corp. Walking distance to cafes. Check settlement timeline.',
-  },
-  {
-    id: '3',
-    address: '8 Frasers Road',
-    suburb: 'Ashgrove',
-    state: 'QLD',
-    postcode: '4060',
-    priceGuide: '$1,100,000 - $1,200,000',
-    bedrooms: 4,
-    bathrooms: 2,
-    carSpaces: 2,
-    propertyType: 'House',
-    matchScore: 82,
-    status: 'sent_to_client',
-    agentNotes: 'Excellent school zone. Needs some cosmetic updates. Large 607sqm block.',
-  },
-  {
-    id: '4',
-    address: '33 Beatrice Street',
-    suburb: 'Paddington',
-    state: 'QLD',
-    postcode: '4064',
-    priceGuide: '$1,180,000',
-    bedrooms: 3,
-    bathrooms: 2,
-    carSpaces: 1,
-    propertyType: 'House',
-    matchScore: 76,
-    status: 'under_review',
-    agentNotes: 'Character Queenslander. Only 1 car space - check if dealbreaker. Great street.',
-  },
-  {
-    id: '5',
-    address: '12 Stewart Road',
-    suburb: 'Ashgrove',
-    state: 'QLD',
-    postcode: '4060',
-    priceGuide: '$1,050,000',
-    bedrooms: 4,
-    bathrooms: 2,
-    carSpaces: 2,
-    propertyType: 'House',
-    matchScore: 71,
-    status: 'sent_to_client',
-    agentNotes: 'Post-war home, renovated kitchen/bath. Slightly above main road - check noise.',
-  },
-  {
-    id: '6',
-    address: '5/16 Prospect Terrace',
-    suburb: 'Red Hill',
-    state: 'QLD',
-    postcode: '4059',
-    priceGuide: '$920,000 - $980,000',
-    bedrooms: 3,
-    bathrooms: 2,
-    carSpaces: 2,
-    propertyType: 'Townhouse',
-    matchScore: 68,
-    status: 'rejected',
-    agentNotes: 'Body corporate $6,200/yr. Good location but building age may be a concern.',
-  },
-];
+import { usePortalProperties } from '@/hooks/use-portal-properties';
+import type { PortalProperty } from '@/hooks/use-portal-properties';
 
 const STATUS_STYLES: Record<PropertyMatchStatus, { label: string; className: string }> = {
   new: {
@@ -145,9 +39,59 @@ function getScoreColor(score: number): string {
   return 'text-gray-500';
 }
 
+function formatAddress(property: PortalProperty): {
+  street: string;
+  suburb: string;
+  state: string;
+  postcode: string;
+} {
+  const addr = property.property?.address;
+  if (typeof addr === 'object' && addr !== null) {
+    return {
+      street: addr.street ?? '',
+      suburb: addr.suburb ?? '',
+      state: addr.state ?? '',
+      postcode: addr.postcode ?? '',
+    };
+  }
+  return { street: '', suburb: '', state: '', postcode: '' };
+}
+
 export default function PropertiesPage() {
-  const activeProperties = MOCK_PROPERTIES.filter((p) => p.status !== 'rejected');
-  const passedProperties = MOCK_PROPERTIES.filter((p) => p.status === 'rejected');
+  const { data: properties, isLoading, error } = usePortalProperties();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-portal-500" />
+      </div>
+    );
+  }
+
+  if (error || !properties) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="h-10 w-10 text-gray-300" />
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">Unable to load properties</h2>
+        <p className="mt-1 text-sm text-gray-500">Please try again later.</p>
+      </div>
+    );
+  }
+
+  const activeProperties = properties.filter((p) => p.status !== 'rejected');
+  const passedProperties = properties.filter((p) => p.status === 'rejected');
+
+  if (properties.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <MapPin className="h-10 w-10 text-gray-300" />
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">No properties yet</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Your buyers agent is searching for properties that match your brief.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -161,11 +105,14 @@ export default function PropertiesPage() {
 
       {/* Active properties grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {activeProperties.map((property) => {
-          const statusStyle = STATUS_STYLES[property.status];
+        {activeProperties.map((match) => {
+          const statusStyle = STATUS_STYLES[match.status as PropertyMatchStatus] ?? STATUS_STYLES.new;
+          const addr = formatAddress(match);
+          const prop = match.property;
+
           return (
             <div
-              key={property.id}
+              key={match.id}
               className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
             >
               {/* Photo placeholder */}
@@ -175,9 +122,9 @@ export default function PropertiesPage() {
                 </div>
                 {/* Match score badge */}
                 <div className="absolute right-2 top-2 flex items-center gap-1 rounded-lg bg-white/90 px-2 py-1 backdrop-blur">
-                  <Star className={`h-3.5 w-3.5 ${getScoreColor(property.matchScore)}`} />
-                  <span className={`text-sm font-bold ${getScoreColor(property.matchScore)}`}>
-                    {property.matchScore}%
+                  <Star className={`h-3.5 w-3.5 ${getScoreColor(match.overall_score)}`} />
+                  <span className={`text-sm font-bold ${getScoreColor(match.overall_score)}`}>
+                    {match.overall_score}%
                   </span>
                 </div>
                 {/* Status badge */}
@@ -192,38 +139,44 @@ export default function PropertiesPage() {
 
               {/* Details */}
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900">{property.address}</h3>
+                <h3 className="font-semibold text-gray-900">{addr.street}</h3>
                 <p className="text-sm text-gray-500">
-                  {property.suburb}, {property.state} {property.postcode}
+                  {addr.suburb}, {addr.state} {addr.postcode}
                 </p>
-                <p className="mt-2 text-lg font-bold text-gray-900">
-                  {property.priceGuide}
-                </p>
+                {prop?.price_guide && (
+                  <p className="mt-2 text-lg font-bold text-gray-900">
+                    {prop.price_guide}
+                  </p>
+                )}
 
                 {/* Features */}
                 <div className="mt-3 flex items-center gap-3 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
                     <Bed className="h-3.5 w-3.5" />
-                    {property.bedrooms}
+                    {prop?.bedrooms ?? 0}
                   </span>
                   <span className="flex items-center gap-1">
                     <Bath className="h-3.5 w-3.5" />
-                    {property.bathrooms}
+                    {prop?.bathrooms ?? 0}
                   </span>
                   <span className="flex items-center gap-1">
                     <Car className="h-3.5 w-3.5" />
-                    {property.carSpaces}
+                    {prop?.car_spaces ?? 0}
                   </span>
                   <span className="ml-auto text-xs text-gray-400">
-                    {property.propertyType}
+                    {prop?.property_type
+                      ? prop.property_type.charAt(0).toUpperCase() + prop.property_type.slice(1)
+                      : ''}
                   </span>
                 </div>
 
                 {/* Agent notes */}
-                <div className="mt-3 border-t border-gray-100 pt-3">
-                  <p className="text-xs font-medium text-gray-500">Agent Notes</p>
-                  <p className="mt-0.5 text-sm text-gray-600">{property.agentNotes}</p>
-                </div>
+                {match.agent_notes && (
+                  <div className="mt-3 border-t border-gray-100 pt-3">
+                    <p className="text-xs font-medium text-gray-500">Agent Notes</p>
+                    <p className="mt-0.5 text-sm text-gray-600">{match.agent_notes}</p>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -237,20 +190,24 @@ export default function PropertiesPage() {
             Passed ({passedProperties.length})
           </h2>
           <div className="space-y-2">
-            {passedProperties.map((property) => (
-              <div
-                key={property.id}
-                className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-4 py-3"
-              >
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {property.address}, {property.suburb}
-                  </p>
-                  <p className="text-xs text-gray-400">{property.priceGuide}</p>
+            {passedProperties.map((match) => {
+              const addr = formatAddress(match);
+              const prop = match.property;
+              return (
+                <div
+                  key={match.id}
+                  className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-4 py-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {addr.street}, {addr.suburb}
+                    </p>
+                    <p className="text-xs text-gray-400">{prop?.price_guide ?? ''}</p>
+                  </div>
+                  <span className="text-sm text-gray-400">{match.overall_score}% match</span>
                 </div>
-                <span className="text-sm text-gray-400">{property.matchScore}% match</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

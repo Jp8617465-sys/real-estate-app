@@ -7,8 +7,10 @@ import {
   TextInput,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useOffer, useAddOfferRound, useUpdateAuctionResult } from '../../src/hooks/use-offers';
 import type { AuctionResult } from '@realflow/shared';
 
 interface BidEntry {
@@ -17,27 +19,6 @@ interface BidEntry {
   isOurBid: boolean;
   timestamp: string;
 }
-
-interface MockAuctionData {
-  offerId: string;
-  address: string;
-  clientName: string;
-  clientMaxPrice: number;
-  walkAwayPrice: number;
-  biddingStrategy: string;
-  registrationNumber: string;
-}
-
-const mockAuction: MockAuctionData = {
-  offerId: 'o1',
-  address: '42 Ocean St, Bondi NSW 2026',
-  clientName: 'Michael Johnson',
-  clientMaxPrice: 1200000,
-  walkAwayPrice: 1100000,
-  biddingStrategy:
-    'Start with $1M opening bid. Bid in $25K increments up to $1.1M, then slow to $10K. Never exceed $1.2M. Be confident, bid quickly.',
-  registrationNumber: 'Bidder #7',
-};
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-AU', {
@@ -49,20 +30,40 @@ function formatCurrency(amount: number): string {
 
 export default function AuctionDayScreen() {
   const { offerId } = useLocalSearchParams<{ offerId: string }>();
-
-  // TODO: Fetch from API using offerId
-  const auction = mockAuction;
+  const { data: offer, isLoading, error } = useOffer(offerId ?? '');
+  const addOfferRound = useAddOfferRound(offerId ?? '');
+  const updateAuctionResult = useUpdateAuctionResult(offerId ?? '');
 
   const [bids, setBids] = useState<BidEntry[]>([]);
   const [newBidAmount, setNewBidAmount] = useState('');
   const [showBidInput, setShowBidInput] = useState(false);
   const [numberOfBidders, setNumberOfBidders] = useState('');
   const [result, setResult] = useState<AuctionResult | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  if (isLoading || !offer) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#60a5fa" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Failed to load offer</Text>
+      </View>
+    );
+  }
+
+  const clientMaxPrice = offer.clientMaxPrice ?? 0;
+  const walkAwayPrice = offer.walkAwayPrice ?? 0;
+  const biddingStrategy = offer.strategyNotes ?? '';
+  const registrationNumber = offer.auctionEvent?.registrationNumber ?? '';
 
   const lastBid = bids.length > 0 ? bids[bids.length - 1] : null;
-  const isNearMax = lastBid !== null && lastBid.amount >= auction.walkAwayPrice;
-  const isOverMax = lastBid !== null && lastBid.amount >= auction.clientMaxPrice;
+  const isNearMax = lastBid !== null && lastBid.amount >= walkAwayPrice;
+  const isOverMax = lastBid !== null && lastBid.amount >= clientMaxPrice;
 
   function addBid(isOurs: boolean) {
     const amount = parseInt(newBidAmount.replace(/[^0-9]/g, ''), 10);
@@ -71,10 +72,10 @@ export default function AuctionDayScreen() {
       return;
     }
 
-    if (isOurs && amount > auction.clientMaxPrice) {
+    if (isOurs && amount > clientMaxPrice) {
       Alert.alert(
         'Over Client Max',
-        `This bid exceeds the client maximum of ${formatCurrency(auction.clientMaxPrice)}. Are you sure?`,
+        `This bid exceeds the client maximum of ${formatCurrency(clientMaxPrice)}. Are you sure?`,
         [
           { text: 'Cancel', style: 'cancel' },
           {
@@ -102,6 +103,16 @@ export default function AuctionDayScreen() {
     setBids((prev) => [...prev, bid]);
     setNewBidAmount('');
     setShowBidInput(false);
+
+    // Submit to API as an offer round
+    if (isOurs) {
+      addOfferRound.mutate({
+        offerId: offerId ?? '',
+        amount,
+        conditions: [],
+        response: 'pending',
+      });
+    }
   }
 
   function handleResult(selectedResult: AuctionResult) {
@@ -115,7 +126,17 @@ export default function AuctionDayScreen() {
       'This will record the auction result.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Confirm', onPress: () => setResult(selectedResult) },
+        {
+          text: 'Confirm',
+          onPress: () => {
+            setResult(selectedResult);
+            updateAuctionResult.mutate({
+              result: selectedResult,
+              finalPrice: lastBid?.amount,
+              numberOfBidders: numberOfBidders ? parseInt(numberOfBidders, 10) : undefined,
+            });
+          },
+        },
       ]
     );
   }
@@ -124,20 +145,21 @@ export default function AuctionDayScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Property Address */}
       <View style={styles.headerCard}>
-        <Text style={styles.headerAddress}>{auction.address}</Text>
-        <Text style={styles.headerClient}>{auction.clientName}</Text>
-        <Text style={styles.headerRego}>{auction.registrationNumber}</Text>
+        <Text style={styles.headerClient}>Offer #{offer.id.substring(0, 8)}</Text>
+        {registrationNumber ? (
+          <Text style={styles.headerRego}>{registrationNumber}</Text>
+        ) : null}
       </View>
 
       {/* Price Limits -- Most Prominent */}
       <View style={styles.limitsRow}>
         <View style={[styles.limitCard, styles.limitCardMax]}>
           <Text style={styles.limitLabel}>CLIENT MAX</Text>
-          <Text style={styles.limitAmount}>{formatCurrency(auction.clientMaxPrice)}</Text>
+          <Text style={styles.limitAmount}>{formatCurrency(clientMaxPrice)}</Text>
         </View>
         <View style={[styles.limitCard, styles.limitCardWalk]}>
           <Text style={styles.limitLabel}>WALK-AWAY</Text>
-          <Text style={styles.limitAmountWalk}>{formatCurrency(auction.walkAwayPrice)}</Text>
+          <Text style={styles.limitAmountWalk}>{formatCurrency(walkAwayPrice)}</Text>
         </View>
       </View>
 
@@ -154,10 +176,12 @@ export default function AuctionDayScreen() {
       )}
 
       {/* Strategy Notes */}
-      <View style={styles.strategyCard}>
-        <Text style={styles.strategyTitle}>Bidding Strategy</Text>
-        <Text style={styles.strategyText}>{auction.biddingStrategy}</Text>
-      </View>
+      {biddingStrategy ? (
+        <View style={styles.strategyCard}>
+          <Text style={styles.strategyTitle}>Bidding Strategy</Text>
+          <Text style={styles.strategyText}>{biddingStrategy}</Text>
+        </View>
+      ) : null}
 
       {/* Bid Log */}
       <View style={styles.card}>
@@ -176,7 +200,7 @@ export default function AuctionDayScreen() {
             style={[
               styles.bidRow,
               bid.isOurBid && styles.bidRowOurs,
-              bid.amount >= auction.clientMaxPrice && styles.bidRowDanger,
+              bid.amount >= clientMaxPrice && styles.bidRowDanger,
             ]}
           >
             <View style={styles.bidInfo}>
@@ -320,6 +344,8 @@ export default function AuctionDayScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
   content: { padding: 16 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a' },
+  errorText: { fontSize: 16, color: '#f87171' },
 
   // Header
   headerCard: {

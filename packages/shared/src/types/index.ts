@@ -15,3 +15,8 @@ export * from './due-diligence';
 export * from './key-date';
 export * from './fee';
 export * from './conversation';
+export * from './document';
+export * from './portal-client';
+export * from './oauth-token';
+export * from './integration-connection';
+export * from './social-post';
