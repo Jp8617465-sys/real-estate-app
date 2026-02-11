@@ -1,3 +1,4 @@
+import { env } from './config/env';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { contactRoutes } from './routes/contacts';
@@ -59,9 +60,8 @@ async function start() {
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', service: 'realflow-api' }));
 
-  const port = parseInt(process.env.PORT ?? '3001', 10);
-  await fastify.listen({ port, host: '0.0.0.0' });
-  console.log(`RealFlow API running on port ${port}`);
+  await fastify.listen({ port: env.PORT, host: '0.0.0.0' });
+  console.log(`RealFlow API running on port ${env.PORT}`);
 }
 
 start().catch((err) => {

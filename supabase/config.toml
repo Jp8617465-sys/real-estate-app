@@ -1,5 +1,3 @@
-[project]
-id = "realflow"
 
 [api]
 port = 54321
