@@ -10,6 +10,7 @@ const DomainConfigSchema = z.object({
   scopes: z.array(z.string()).default(['api_listings_read', 'api_salesresults_read']),
 });
 
+type DomainConfigInput = z.input<typeof DomainConfigSchema>;
 type DomainConfig = z.infer<typeof DomainConfigSchema>;
 
 interface DomainTokenResponse {
@@ -30,7 +31,7 @@ export class DomainClient {
   private accessToken: string | null = null;
   private tokenExpiry: Date | null = null;
 
-  constructor(config: DomainConfig) {
+  constructor(config: DomainConfigInput) {
     this.config = DomainConfigSchema.parse(config);
   }
 

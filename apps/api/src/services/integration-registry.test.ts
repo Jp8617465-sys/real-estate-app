@@ -11,28 +11,19 @@ vi.mock('../middleware/supabase', () => ({
 
 // ─── Mock Integration Clients ──────────────────────────────────────
 
-vi.mock('@realflow/integrations/gmail/client', () => ({
+vi.mock('@realflow/integrations', () => ({
   GmailClient: vi.fn().mockImplementation((config: Record<string, unknown>) => ({
     config,
     sendMessage: vi.fn(),
   })),
-}));
-
-vi.mock('@realflow/integrations/twilio/client', () => ({
   TwilioClient: vi.fn().mockImplementation((config: Record<string, unknown>) => ({
     config,
     sendSms: vi.fn(),
   })),
-}));
-
-vi.mock('@realflow/integrations/whatsapp/client', () => ({
   WhatsAppClient: vi.fn().mockImplementation((config: Record<string, unknown>) => ({
     config,
     sendTextMessage: vi.fn(),
   })),
-}));
-
-vi.mock('@realflow/integrations/meta/client', () => ({
   MetaSocialClient: vi.fn().mockImplementation((config: Record<string, unknown>) => ({
     config,
     postToFacebook: vi.fn(),
