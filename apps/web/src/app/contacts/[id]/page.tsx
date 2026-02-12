@@ -1,9 +1,10 @@
 import { ContactDetail } from '@/components/contacts/contact-detail';
 
 interface ContactPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function ContactPage({ params }: ContactPageProps) {
-  return <ContactDetail contactId={params.id} />;
+export default async function ContactPage({ params }: ContactPageProps) {
+  const { id } = await params;
+  return <ContactDetail contactId={id} />;
 }

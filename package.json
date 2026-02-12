@@ -16,16 +16,9 @@
     "db:reset": "cd supabase && supabase db reset",
     "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > packages/shared/src/database.types.ts"
   },
-  "overrides": {
-    "react": "$react",
-    "react-dom": "$react-dom"
-  },
-  "dependencies": {
-    "next": "14.2.13",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0"
-  },
   "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "@eslint/js": "^9.39.2",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
