@@ -24,3 +24,9 @@ export type {
 export { MessageNormaliser } from './message-normaliser';
 export { ContactMatcher } from './contact-matcher';
 export { EmailParser } from './email-parser';
+export { toDbSchema, fromDbSchema, type ClientBriefDbRow } from './client-brief-transformer';
+export {
+  PipelineMigrationEngine,
+  type MigrationContext,
+  type MigrationDecision,
+} from './pipeline-migration';

@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { CreateClientBriefSchema, UpdateClientBriefSchema } from '@realflow/shared';
+import { toDbSchema, fromDbSchema } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
 
 export async function clientBriefRoutes(fastify: FastifyInstance) {
@@ -21,7 +22,7 @@ export async function clientBriefRoutes(fastify: FastifyInstance) {
     const { data, error } = await query;
     if (error) return reply.status(500).send({ error: error.message });
 
-    return { data };
+    return { data: data.map(fromDbSchema) };
   });
 
   // Get single brief
@@ -37,7 +38,7 @@ export async function clientBriefRoutes(fastify: FastifyInstance) {
       .single();
 
     if (error) return reply.status(404).send({ error: 'Client brief not found' });
-    return { data };
+    return { data: fromDbSchema(data) };
   });
 
   // Create brief
@@ -51,19 +52,78 @@ export async function clientBriefRoutes(fastify: FastifyInstance) {
 
     const brief = parsed.data;
 
+    // Manually map CreateClientBrief to DB schema (can't use toDbSchema as it expects full ClientBrief)
     const { data, error } = await supabase
       .from('client_briefs')
       .insert({
         contact_id: brief.contactId,
-        transaction_id: brief.transactionId,
+        transaction_id: brief.transactionId ?? null,
         purchase_type: brief.purchaseType,
         enquiry_type: brief.enquiryType,
-        budget: brief.budget,
-        finance: brief.finance,
-        requirements: brief.requirements,
-        timeline: brief.timeline,
-        communication: brief.communication,
-        solicitor: brief.solicitor,
+
+        // Budget (flatten)
+        budget_min: brief.budget.min,
+        budget_max: brief.budget.max,
+        budget_absolute_max: brief.budget.absoluteMax ?? null,
+        stamp_duty_budgeted: brief.budget.stampDutyBudgeted,
+
+        // Finance (flatten)
+        pre_approved: brief.finance.preApproved,
+        pre_approval_amount: brief.finance.preApprovalAmount ?? null,
+        pre_approval_expiry: brief.finance.preApprovalExpiry ?? null,
+        lender: brief.finance.lender ?? null,
+        broker_name: brief.finance.brokerName ?? null,
+        broker_phone: brief.finance.brokerPhone ?? null,
+        broker_email: brief.finance.brokerEmail ?? null,
+        deposit_available: brief.finance.depositAvailable ?? null,
+        first_home_buyer: brief.finance.firstHomeBuyer,
+
+        // Requirements - Property details (flatten)
+        property_types: brief.requirements.propertyTypes,
+        bedrooms_min: brief.requirements.bedrooms.min,
+        bedrooms_ideal: brief.requirements.bedrooms.ideal ?? null,
+        bathrooms_min: brief.requirements.bathrooms.min,
+        bathrooms_ideal: brief.requirements.bathrooms.ideal ?? null,
+        car_spaces_min: brief.requirements.carSpaces.min,
+        car_spaces_ideal: brief.requirements.carSpaces.ideal ?? null,
+        land_size_min: brief.requirements.landSize?.min ?? null,
+        land_size_max: brief.requirements.landSize?.max ?? null,
+        building_age_min: brief.requirements.buildingAge?.min ?? null,
+        building_age_max: brief.requirements.buildingAge?.max ?? null,
+
+        // Requirements - Location (JSONB/arrays)
+        suburbs: brief.requirements.suburbs,
+        max_commute: brief.requirements.maxCommute ?? null,
+        school_zones: brief.requirements.schoolZones ?? null,
+
+        // Requirements - Preferences
+        must_haves: brief.requirements.mustHaves ?? [],
+        nice_to_haves: brief.requirements.niceToHaves ?? [],
+        deal_breakers: brief.requirements.dealBreakers ?? [],
+
+        // Requirements - Investor criteria
+        investor_criteria: brief.requirements.investorCriteria ?? null,
+
+        // Timeline (flatten)
+        urgency: brief.timeline.urgency,
+        must_settle_before: brief.timeline.mustSettleBefore ?? null,
+        ideal_settlement: brief.timeline.idealSettlement ?? null,
+
+        // Communication (flatten)
+        preferred_contact_method: brief.communication.preferredMethod ?? null,
+        update_frequency: brief.communication.updateFrequency ?? null,
+        best_time_to_call: brief.communication.bestTimeToCall ?? null,
+        partner_name: brief.communication.partnerName ?? null,
+        partner_phone: brief.communication.partnerPhone ?? null,
+        partner_email: brief.communication.partnerEmail ?? null,
+
+        // Solicitor (flatten)
+        solicitor_firm: brief.solicitor?.firmName ?? null,
+        solicitor_contact: brief.solicitor?.contactName ?? null,
+        solicitor_phone: brief.solicitor?.phone ?? null,
+        solicitor_email: brief.solicitor?.email ?? null,
+
+        // Metadata
         brief_version: 1,
         client_signed_off: brief.clientSignedOff ?? false,
         created_by: brief.createdBy,
@@ -72,7 +132,7 @@ export async function clientBriefRoutes(fastify: FastifyInstance) {
       .single();
 
     if (error) return reply.status(500).send({ error: error.message });
-    return reply.status(201).send({ data });
+    return reply.status(201).send({ data: fromDbSchema(data) });
   });
 
   // Update brief (increment brief_version)
@@ -87,10 +147,10 @@ export async function clientBriefRoutes(fastify: FastifyInstance) {
 
     const updates = parsed.data;
 
-    // Fetch current brief to get the current version
+    // Fetch current brief to get the current version and full data
     const { data: current, error: fetchError } = await supabase
       .from('client_briefs')
-      .select('brief_version')
+      .select('*')
       .eq('id', id)
       .eq('is_deleted', false)
       .single();
@@ -99,23 +159,21 @@ export async function clientBriefRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ error: 'Client brief not found' });
     }
 
-    const updatePayload: Record<string, unknown> = {
+    // Transform current DB row to nested structure
+    const currentBrief = fromDbSchema(current);
+
+    // Merge updates with current brief
+    const mergedBrief = { ...currentBrief, ...updates };
+
+    // Transform back to DB schema
+    const dbUpdates = toDbSchema(mergedBrief);
+
+    // Apply version increment
+    const updatePayload = {
+      ...dbUpdates,
       brief_version: (current.brief_version as number) + 1,
       updated_at: new Date().toISOString(),
     };
-
-    if (updates.contactId !== undefined) updatePayload.contact_id = updates.contactId;
-    if (updates.transactionId !== undefined) updatePayload.transaction_id = updates.transactionId;
-    if (updates.purchaseType !== undefined) updatePayload.purchase_type = updates.purchaseType;
-    if (updates.enquiryType !== undefined) updatePayload.enquiry_type = updates.enquiryType;
-    if (updates.budget !== undefined) updatePayload.budget = updates.budget;
-    if (updates.finance !== undefined) updatePayload.finance = updates.finance;
-    if (updates.requirements !== undefined) updatePayload.requirements = updates.requirements;
-    if (updates.timeline !== undefined) updatePayload.timeline = updates.timeline;
-    if (updates.communication !== undefined) updatePayload.communication = updates.communication;
-    if (updates.solicitor !== undefined) updatePayload.solicitor = updates.solicitor;
-    if (updates.clientSignedOff !== undefined) updatePayload.client_signed_off = updates.clientSignedOff;
-    if (updates.createdBy !== undefined) updatePayload.created_by = updates.createdBy;
 
     const { data, error } = await supabase
       .from('client_briefs')
@@ -125,7 +183,7 @@ export async function clientBriefRoutes(fastify: FastifyInstance) {
       .single();
 
     if (error) return reply.status(500).send({ error: error.message });
-    return { data };
+    return { data: fromDbSchema(data) };
   });
 
   // Sign-off brief
@@ -146,7 +204,7 @@ export async function clientBriefRoutes(fastify: FastifyInstance) {
       .single();
 
     if (error) return reply.status(500).send({ error: error.message });
-    return { data };
+    return { data: fromDbSchema(data) };
   });
 
   // Soft delete brief

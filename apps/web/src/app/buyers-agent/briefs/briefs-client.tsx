@@ -74,8 +74,8 @@ export default function ClientBriefsClient() {
                 budgetMax={budget?.max ?? 0}
                 suburbs={suburbs}
                 urgency={timeline?.urgency ?? 'no_rush'}
-                briefVersion={brief.brief_version as number ?? 1}
-                clientSignedOff={brief.client_signed_off as boolean ?? false}
+                briefVersion={brief.briefVersion ?? 1}
+                clientSignedOff={brief.clientSignedOff ?? false}
               />
             );
           })}

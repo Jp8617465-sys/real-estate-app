@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { CreatePropertyMatchSchema, UpdatePropertyMatchSchema } from '@realflow/shared';
-import { PropertyMatchEngine } from '@realflow/business-logic';
+import { PropertyMatchEngine, fromDbSchema } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
 
 export async function propertyMatchRoutes(fastify: FastifyInstance) {
@@ -129,16 +129,19 @@ export async function propertyMatchRoutes(fastify: FastifyInstance) {
       }
 
       // Fetch client brief
-      const { data: brief, error: briefError } = await supabase
+      const { data: briefData, error: briefError } = await supabase
         .from('client_briefs')
         .select('*')
         .eq('id', clientBriefId)
         .eq('is_deleted', false)
         .single();
 
-      if (briefError || !brief) {
+      if (briefError || !briefData) {
         return reply.status(404).send({ error: 'Client brief not found' });
       }
+
+      // Transform DB row to nested structure for business logic
+      const brief = fromDbSchema(briefData);
 
       const result = PropertyMatchEngine.scoreProperty(property, brief);
 
