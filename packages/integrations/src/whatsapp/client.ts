@@ -10,6 +10,7 @@ const WhatsAppConfigSchema = z.object({
   webhookVerifyToken: z.string(),
 });
 
+type WhatsAppConfigInput = z.input<typeof WhatsAppConfigSchema>;
 type WhatsAppConfig = z.infer<typeof WhatsAppConfigSchema>;
 
 // ─── WhatsApp API Types ─────────────────────────────────────────────────
@@ -47,7 +48,7 @@ export class WhatsAppClient {
   private config: WhatsAppConfig;
   private baseUrl: string;
 
-  constructor(config: WhatsAppConfig) {
+  constructor(config: WhatsAppConfigInput) {
     this.config = WhatsAppConfigSchema.parse(config);
     this.baseUrl = `https://graph.facebook.com/${this.config.apiVersion}/${this.config.phoneNumberId}`;
   }

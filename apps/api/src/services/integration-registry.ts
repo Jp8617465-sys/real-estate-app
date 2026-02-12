@@ -1,9 +1,6 @@
 import type { FastifyRequest } from 'fastify';
 import { createSupabaseClient } from '../middleware/supabase';
-import { GmailClient } from '@realflow/integrations/gmail/client';
-import { TwilioClient } from '@realflow/integrations/twilio/client';
-import { WhatsAppClient } from '@realflow/integrations/whatsapp/client';
-import { MetaSocialClient } from '@realflow/integrations/meta/client';
+import { GmailClient, TwilioClient, WhatsAppClient, MetaSocialClient } from '@realflow/integrations';
 
 /**
  * Integration Registry Service.

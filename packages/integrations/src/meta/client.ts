@@ -8,6 +8,7 @@ const MetaConfigSchema = z.object({
   apiVersion: z.string().default('v19.0'),
 });
 
+type MetaConfigInput = z.input<typeof MetaConfigSchema>;
 type MetaConfig = z.infer<typeof MetaConfigSchema>;
 
 /**
@@ -19,7 +20,7 @@ export class MetaSocialClient {
   private config: MetaConfig;
   private baseUrl: string;
 
-  constructor(config: MetaConfig) {
+  constructor(config: MetaConfigInput) {
     this.config = MetaConfigSchema.parse(config);
     this.baseUrl = `https://graph.facebook.com/${this.config.apiVersion}`;
   }
