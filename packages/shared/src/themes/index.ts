@@ -16,8 +16,7 @@ export const themes: Record<ClientThemeId, ThemeConfig> = {
  * Falls back to default theme if not found
  */
 export function getTheme(themeId: ClientThemeId): ThemeConfig {
-  const theme = themes[themeId];
-  return theme !== undefined ? theme : themes.default;
+  return themes[themeId] ?? themes.default!;
 }
 
 /**
