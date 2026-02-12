@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import type { ClientBrief } from '@realflow/shared';
+import { fromDbSchema } from '@realflow/business-logic';
 
 export function useClientBrief(clientId: string) {
   return useQuery({
@@ -14,7 +15,7 @@ export function useClientBrief(clientId: string) {
         .limit(1)
         .single();
       if (error) throw error;
-      return data as ClientBrief;
+      return fromDbSchema(data);
     },
     enabled: !!clientId,
   });
@@ -30,9 +31,7 @@ export function useClientBriefs() {
         .eq('is_deleted', false)
         .order('updated_at', { ascending: false });
       if (error) throw error;
-      return data as (ClientBrief & {
-        contact: { id: string; first_name: string; last_name: string };
-      })[];
+      return data.map(fromDbSchema);
     },
   });
 }

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth, usePortalClient } from './use-auth';
 import type { BuyersAgentStage } from '@realflow/shared';
+import { fromDbSchema } from '@realflow/business-logic';
 
 const supabase = createClient();
 
@@ -41,7 +42,7 @@ export function usePortalDashboard() {
       const currentStage = (transaction?.current_stage ?? 'enquiry') as BuyersAgentStage;
 
       // Fetch brief stat
-      const { data: brief } = await supabase
+      const { data: briefData } = await supabase
         .from('client_briefs')
         .select('brief_version, client_signed_off')
         .eq('contact_id', contactId)
@@ -49,8 +50,8 @@ export function usePortalDashboard() {
         .limit(1)
         .single();
 
-      const briefStat = brief
-        ? `v${brief.brief_version} - ${brief.client_signed_off ? 'Signed Off' : 'Draft'}`
+      const briefStat = briefData
+        ? `v${briefData.brief_version} - ${briefData.client_signed_off ? 'Signed Off' : 'Draft'}`
         : 'Not started';
 
       // Fetch property matches count
