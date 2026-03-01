@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch"
+    ]
+  },
+  "preferences": {
+    "codeStyle": "TypeScript strict, Zod schemas, no any types",
+    "testFramework": "vitest",
+    "commitStyle": "conventional"
+  }
+}

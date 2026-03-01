@@ -33,6 +33,41 @@ export const WorkflowTriggerSchema = z.discriminatedUnion('type', [
     type: z.literal('form_submitted'),
     formId: z.string(),
   }),
+  // ─── AI-Powered Triggers ──────────────────────────────────────────
+  z.object({
+    type: z.literal('ai_insight'),
+    insightType: z.enum([
+      'high_match_property',
+      'market_shift',
+      'brief_conflict',
+      'risk_detected',
+      'opportunity_identified',
+    ]),
+    minConfidence: z.enum(['high', 'medium', 'low']).default('medium'),
+  }),
+  z.object({
+    type: z.literal('market_change'),
+    metric: z.enum(['median_price', 'days_on_market', 'auction_clearance', 'listing_volume']),
+    threshold: z.number(),
+    direction: z.enum(['above', 'below', 'change_percent']),
+    suburb: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal('consolidation_ready'),
+    reportType: z.enum([
+      'client_brief_summary',
+      'property_comparison',
+      'market_analysis',
+      'search_progress',
+      'due_diligence_summary',
+      'settlement_outcome',
+    ]),
+  }),
+  z.object({
+    type: z.literal('match_score_threshold'),
+    minScore: z.number().int().min(0).max(100),
+    propertyCount: z.number().int().positive().default(1),
+  }),
 ]);
 export type WorkflowTrigger = z.infer<typeof WorkflowTriggerSchema>;
 
@@ -61,6 +96,40 @@ export const WorkflowActionSchema = z.discriminatedUnion('type', [
     type: z.literal('create_follow_up'),
     daysFromNow: z.number().int().positive(),
     taskType: z.string(),
+  }),
+  // ─── AI-Powered Actions ───────────────────────────────────────────
+  z.object({
+    type: z.literal('ai_analyze'),
+    analysisType: z.enum([
+      'property_description',
+      'market_comparison',
+      'brief_refinement',
+      'risk_assessment',
+    ]),
+    targetId: z.string().uuid().optional(),
+  }),
+  z.object({
+    type: z.literal('generate_report'),
+    reportType: z.enum([
+      'client_brief_summary',
+      'property_comparison',
+      'market_analysis',
+      'search_progress',
+      'due_diligence_summary',
+      'settlement_outcome',
+    ]),
+    autoSendToClient: z.boolean().default(false),
+  }),
+  z.object({
+    type: z.literal('ai_draft_message'),
+    recipient: z.enum(['client', 'selling_agent', 'solicitor', 'broker']),
+    purpose: z.string(),
+    channel: z.enum(['email', 'sms']).default('email'),
+    autoSend: z.boolean().default(false),
+  }),
+  z.object({
+    type: z.literal('ai_score_property'),
+    enhanceWithNLP: z.boolean().default(true),
   }),
 ]);
 export type WorkflowAction = z.infer<typeof WorkflowActionSchema>;

@@ -21,3 +21,4 @@ export * from './oauth-token';
 export * from './integration-connection';
 export * from './social-post';
 export * from './theme';
+export * from './consolidation-report';
