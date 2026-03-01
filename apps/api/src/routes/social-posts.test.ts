@@ -12,9 +12,9 @@ vi.mock('../middleware/supabase', () => ({
 // ─── Mock Integration Registry ─────────────────────────────────────
 
 vi.mock('../services/integration-registry', () => ({
-  IntegrationRegistry: vi.fn().mockImplementation(() => ({
-    getMetaClient: vi.fn().mockResolvedValue(null),
-  })),
+  IntegrationRegistry: vi.fn(function(this: Record<string, unknown>) {
+    this.getMetaClient = vi.fn().mockResolvedValue(null);
+  }),
 }));
 
 // ─── Import after mocks ───────────────────────────────────────────

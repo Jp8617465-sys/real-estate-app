@@ -1,7 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import type { CreateClientBrief, UpdateClientBrief } from '@realflow/shared';
+import type { CreateClientBrief, UpdateClientBrief, AIBriefRefinement } from '@realflow/shared';
 import { toDbSchema, fromDbSchema } from '@realflow/business-logic';
+
+export function useRefineBrief() {
+  return useMutation({
+    mutationFn: async (clientBriefId: string): Promise<AIBriefRefinement> => {
+      const response = await fetch('/api/v1/ai/refine-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientBriefId }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: 'Request failed' }));
+        throw new Error((err as { error?: string }).error ?? 'Failed to refine brief');
+      }
+
+      const json = await response.json();
+      return json.data as AIBriefRefinement;
+    },
+  });
+}
 
 const supabase = createClient();
 

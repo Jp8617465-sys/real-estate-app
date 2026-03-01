@@ -30,3 +30,6 @@ export {
   type MigrationContext,
   type MigrationDecision,
 } from './pipeline-migration';
+export { DomainSyncEngine, type DomainSearchParams, type SyncResult } from './domain-sync-engine';
+export { AnalyticsEngine } from './analytics-engine';
+export { AmlEngine } from './aml-engine';

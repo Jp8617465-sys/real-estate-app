@@ -22,6 +22,15 @@ import { portalRoutes } from './routes/portal';
 import { settingsRoutes } from './routes/settings';
 import { socialPostRoutes } from './routes/social-posts';
 import { pipelineMigrationRoutes } from './routes/pipeline-migration';
+import { aiRoutes } from './routes/ai';
+import { dailyActionRoutes } from './routes/daily-actions';
+import { notificationRoutes } from './routes/notifications';
+import { pushTokenRoutes } from './routes/push-tokens';
+import { followUpSequenceRoutes } from './routes/follow-up-sequences';
+import { getWorkflowScheduler } from './services/workflow-scheduler';
+import { domainSyncRoutes } from './routes/domain-sync';
+import { analyticsRoutes } from './routes/analytics';
+import { complianceRoutes } from './routes/compliance';
 
 const fastify = Fastify({
   logger: true,
@@ -58,12 +67,29 @@ async function start() {
   await fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
   await fastify.register(socialPostRoutes, { prefix: '/api/v1/social-posts' });
   await fastify.register(pipelineMigrationRoutes, { prefix: '/api/v1/pipeline-migration' });
+  await fastify.register(aiRoutes, { prefix: '/api/v1/ai' });
+  await fastify.register(domainSyncRoutes, { prefix: '/api/v1/domain' });
+  await fastify.register(dailyActionRoutes, { prefix: '/api/v1/daily-actions' });
+  await fastify.register(notificationRoutes, { prefix: '/api/v1/notifications' });
+  await fastify.register(pushTokenRoutes, { prefix: '/api/v1/push-tokens' });
+  await fastify.register(followUpSequenceRoutes, { prefix: '/api/v1/follow-up-sequences' });
+  await fastify.register(analyticsRoutes, { prefix: '/api/v1/analytics' });
+  await fastify.register(complianceRoutes, { prefix: '/api/v1/compliance' });
+
+  // Scheduler tick — manual trigger for dev/test environments
+  fastify.post('/api/v1/scheduler/tick', async () => {
+    const result = await getWorkflowScheduler().tick();
+    return { data: result };
+  });
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', service: 'realflow-api' }));
 
   await fastify.listen({ port: env.PORT, host: '0.0.0.0' });
   console.log(`RealFlow API running on port ${env.PORT}`);
+
+  // Start workflow scheduler after server is up
+  getWorkflowScheduler().start();
 }
 
 start().catch((err) => {
