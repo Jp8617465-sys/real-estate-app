@@ -27,3 +27,5 @@ export * from './follow-up-sequence';
 export * from './domain-sync';
 export * from './analytics';
 export * from './compliance';
+export * from './theme';
+export * from './consolidation-report';

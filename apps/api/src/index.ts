@@ -31,6 +31,7 @@ import { getWorkflowScheduler } from './services/workflow-scheduler';
 import { domainSyncRoutes } from './routes/domain-sync';
 import { analyticsRoutes } from './routes/analytics';
 import { complianceRoutes } from './routes/compliance';
+import { consolidationReportRoutes } from './routes/consolidation-reports';
 
 const fastify = Fastify({
   logger: true,
@@ -75,6 +76,7 @@ async function start() {
   await fastify.register(followUpSequenceRoutes, { prefix: '/api/v1/follow-up-sequences' });
   await fastify.register(analyticsRoutes, { prefix: '/api/v1/analytics' });
   await fastify.register(complianceRoutes, { prefix: '/api/v1/compliance' });
+  await fastify.register(consolidationReportRoutes, { prefix: '/api/v1/consolidation-reports' });
 
   // Scheduler tick — manual trigger for dev/test environments
   fastify.post('/api/v1/scheduler/tick', async () => {
