@@ -5,7 +5,9 @@ export { PropertyMatchEngine } from './property-match-engine';
 export { DueDiligenceEngine } from './due-diligence-engine';
 export { FeeCalculator } from './fee-calculator';
 export { KeyDatesEngine } from './key-dates-engine';
-export { BUYERS_AGENT_WORKFLOW_TEMPLATES, type WorkflowTemplate } from './workflow-templates';
+export { BUYERS_AGENT_WORKFLOW_TEMPLATES, AI_POWERED_WORKFLOW_TEMPLATES, type WorkflowTemplate } from './workflow-templates';
+export { ResearchConsolidationEngine } from './research-consolidation-engine';
+export type { ConsolidationDataInput, ConsolidationOptions } from './research-consolidation-engine';
 export {
   evaluateTrigger,
   evaluateConditions,

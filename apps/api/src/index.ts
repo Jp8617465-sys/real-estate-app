@@ -21,6 +21,8 @@ import { documentRoutes } from './routes/documents';
 import { portalRoutes } from './routes/portal';
 import { settingsRoutes } from './routes/settings';
 import { socialPostRoutes } from './routes/social-posts';
+import { consolidationReportRoutes } from './routes/consolidation-reports';
+import { aiAnalysisRoutes } from './routes/ai-analysis';
 
 const fastify = Fastify({
   logger: true,
@@ -56,6 +58,8 @@ async function start() {
   await fastify.register(portalRoutes, { prefix: '/api/v1/portal' });
   await fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
   await fastify.register(socialPostRoutes, { prefix: '/api/v1/social-posts' });
+  await fastify.register(consolidationReportRoutes, { prefix: '/api/v1/consolidation-reports' });
+  await fastify.register(aiAnalysisRoutes, { prefix: '/api/v1/ai' });
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', service: 'realflow-api' }));
