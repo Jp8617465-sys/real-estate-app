@@ -6,10 +6,10 @@ import { complianceRoutes } from './compliance';
 
 const NOW = new Date().toISOString();
 
-const AGENT_ID = 'agent-00000000-0000-0000-0000-000000000001';
-const CONTACT_ID = 'contact-00000000-0000-0000-0000-000000000001';
-const CHECK_ID = 'check-00000000-0000-0000-0000-000000000001';
-const DOC_ID = 'doc-00000000-0000-0000-0000-000000000001';
+const AGENT_ID = '00000000-0000-0000-0000-000000000001';
+const CONTACT_ID = '00000000-0000-0000-0000-000000000002';
+const CHECK_ID = '00000000-0000-0000-0000-000000000003';
+const DOC_ID = '00000000-0000-0000-0000-000000000004';
 
 const makeCheckRow = (overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> => ({
   id: CHECK_ID,
@@ -63,7 +63,7 @@ vi.mock('@realflow/business-logic', () => ({
     tryAutoComplete: vi.fn().mockResolvedValue(null),
     getExpiringChecks: vi.fn().mockResolvedValue([]),
     generateComplianceReport: vi.fn().mockResolvedValue({
-      agentId: AGENT_ID,
+      agentId: 'agent-00000000-0000-0000-0000-000000000001',
       agentName: 'Test Agent',
       periodFrom: '2026-01-01',
       periodTo: '2026-03-31',
@@ -73,7 +73,7 @@ vi.mock('@realflow/business-logic', () => ({
       pendingChecks: 0,
       expiringWithin90Days: 1,
       smrCount: 0,
-      generatedAt: NOW,
+      generatedAt: new Date().toISOString(),
       checks: [],
     }),
   },
@@ -89,6 +89,7 @@ function makeChainFor(data: unknown, error: unknown = null) {
   const self = () => chain;
   chain.select = vi.fn(self);
   chain.eq = vi.fn(self);
+  chain.is = vi.fn(self);
   chain.gte = vi.fn(self);
   chain.lte = vi.fn(self);
   chain.order = vi.fn(self);
@@ -282,8 +283,6 @@ describe('GET /api/v1/compliance/checks/:id', () => {
       },
     ];
 
-    // Need two separate calls: one for the check, one for documents
-    let callCount = 0;
     const supabase = {
       from: vi.fn((table: string) => {
         if (table === 'aml_checks') {
@@ -297,6 +296,11 @@ describe('GET /api/v1/compliance/checks/:id', () => {
         }
         return makeChainFor(null);
       }),
+      auth: {
+        getUser: vi.fn(() =>
+          Promise.resolve({ data: { user: { id: AGENT_ID } }, error: null }),
+        ),
+      },
     };
     vi.mocked(createSupabaseClient).mockReturnValue(supabase as never);
 
@@ -317,6 +321,11 @@ describe('GET /api/v1/compliance/checks/:id', () => {
   it('returns 404 when check not found', async () => {
     const supabase = {
       from: vi.fn(() => makeChainFor(null, { message: 'Not found' })),
+      auth: {
+        getUser: vi.fn(() =>
+          Promise.resolve({ data: { user: { id: AGENT_ID } }, error: null }),
+        ),
+      },
     };
     vi.mocked(createSupabaseClient).mockReturnValue(supabase as never);
 
@@ -372,6 +381,7 @@ describe('POST /api/v1/compliance/checks/:id/documents', () => {
           const self = () => chain;
           chain.select = vi.fn(self);
           chain.eq = vi.fn(self);
+          chain.is = vi.fn(self);
           chain.order = vi.fn(self);
           chain.insert = vi.fn(() => {
             insertCalled = true;
@@ -435,6 +445,7 @@ describe('POST /api/v1/compliance/checks/:id/documents', () => {
           const self = () => chain;
           chain.select = vi.fn(self);
           chain.eq = vi.fn(self);
+          chain.is = vi.fn(self);
           chain.order = vi.fn(self);
           chain.insert = vi.fn(self);
           chain.single = vi.fn(() => Promise.resolve({ data: doc, error: null }));
@@ -491,7 +502,7 @@ describe('POST /api/v1/compliance/checks/:id/complete', () => {
   });
 
   it('marks a check as passed with expiry date 2 years from now', async () => {
-    const existingCheck = makeCheckRow();
+    const existingCheck = makeCheckRow({ total_points: 110 });
     const passedCheck = makeCheckRow({
       status: 'passed',
       completed_at: NOW,

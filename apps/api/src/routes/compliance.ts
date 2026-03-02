@@ -18,11 +18,19 @@ export async function complianceRoutes(fastify: FastifyInstance) {
     Querystring: { status?: string; contactId?: string };
   }>('/checks', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
     const { status, contactId } = request.query;
 
     let query = supabase
       .from('aml_checks')
       .select('*')
+      .eq('agent_id', user.id)
       .order('created_at', { ascending: false });
 
     if (status) {
@@ -40,7 +48,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
 
   // ─── POST /checks ──────────────────────────────────────────────────────────
   // Create a new AML/KYC check for a contact.
-  fastify.post('/', async (request, reply) => {
+  fastify.post('/checks', async (request, reply) => {
     const supabase = createSupabaseClient(request);
     const parsed = CreateAmlCheckSchema.safeParse(request.body);
 
@@ -84,6 +92,13 @@ export async function complianceRoutes(fastify: FastifyInstance) {
   // Fetch a single AML check with its associated identity documents.
   fastify.get<{ Params: { id: string } }>('/checks/:id', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
     const { id } = request.params;
 
     const { data: check, error: checkError } = await supabase
@@ -100,6 +115,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       .from('aml_identity_documents')
       .select('*')
       .eq('check_id', id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: true });
 
     if (docsError) return reply.status(500).send({ error: docsError.message });
@@ -111,6 +127,13 @@ export async function complianceRoutes(fastify: FastifyInstance) {
   // Update identity fields, notes, or verification method on an existing check.
   fastify.patch<{ Params: { id: string } }>('/checks/:id', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
     const { id } = request.params;
     const parsed = UpdateAmlCheckSchema.safeParse(request.body);
 
@@ -189,11 +212,12 @@ export async function complianceRoutes(fastify: FastifyInstance) {
 
     if (docError) return reply.status(500).send({ error: docError.message });
 
-    // Recalculate total points from all documents for this check
+    // Recalculate total points from all active (non-deleted) documents for this check
     const { data: allDocs } = await supabase
       .from('aml_identity_documents')
       .select('points, is_expired')
-      .eq('check_id', checkId);
+      .eq('check_id', checkId)
+      .is('deleted_at', null);
 
     const totalPoints = (allDocs ?? []).reduce(
       (sum: number, d: { points: number; is_expired: boolean }) => {
@@ -246,18 +270,20 @@ export async function complianceRoutes(fastify: FastifyInstance) {
         return reply.status(404).send({ error: 'Document not found on this check' });
       }
 
+      // Soft-delete: AUSTRAC requires AML documents be retained for 7 years
       const { error: deleteError } = await supabase
         .from('aml_identity_documents')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', docId);
 
       if (deleteError) return reply.status(500).send({ error: deleteError.message });
 
-      // Recalculate total points from remaining documents
+      // Recalculate total points from remaining active documents
       const { data: remainingDocs } = await supabase
         .from('aml_identity_documents')
         .select('points, is_expired')
-        .eq('check_id', checkId);
+        .eq('check_id', checkId)
+        .is('deleted_at', null);
 
       const totalPoints = (remainingDocs ?? []).reduce(
         (sum: number, d: { points: number; is_expired: boolean }) => {
@@ -292,15 +318,32 @@ export async function complianceRoutes(fastify: FastifyInstance) {
 
     const { outcome, rejectionReason } = parsed.data;
 
-    // Verify check exists
+    // Reject 'failed' without a reason — AUSTRAC expects documented grounds for rejection
+    if (outcome === 'failed' && !rejectionReason) {
+      return reply.status(422).send({ error: 'rejectionReason is required when outcome is failed' });
+    }
+
+    // Verify check exists and fetch current point total
     const { data: existingCheck, error: fetchError } = await supabase
       .from('aml_checks')
-      .select('id, status')
+      .select('id, status, total_points')
       .eq('id', id)
       .single();
 
     if (fetchError || !existingCheck) {
       return reply.status(404).send({ error: 'AML check not found' });
+    }
+
+    // Enforce 100-point requirement before allowing a manual 'passed' outcome
+    if (outcome === 'passed') {
+      const { total_points } = existingCheck as { id: string; status: string; total_points: number };
+      if (total_points < 100) {
+        return reply.status(422).send({
+          error: 'Cannot mark as passed: insufficient points',
+          totalPoints: total_points,
+          pointsRequired: 100,
+        });
+      }
     }
 
     const now = new Date();
@@ -316,7 +359,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       payload.expiry_date = expiryDate.toISOString().split('T')[0];
     }
 
-    if (outcome === 'failed' && rejectionReason) {
+    if (outcome === 'failed') {
       payload.rejection_reason = rejectionReason;
     }
 

@@ -116,14 +116,15 @@ export class AmlEngine {
     for (const doc of documents) {
       const type = doc.documentType as AmlDocumentType;
 
-      // Check for duplicates regardless of expiry
+      // Check for duplicates regardless of expiry — subsequent entries do NOT earn points
       if (seenTypes.has(type)) {
         if (!duplicateTypes.includes(type)) {
           duplicateTypes.push(type);
         }
-      } else {
-        seenTypes.add(type);
+        continue; // Duplicate type: skip points calculation entirely
       }
+
+      seenTypes.add(type);
 
       // Only count non-expired documents for points and category checks
       if (!doc.isExpired) {
@@ -193,11 +194,12 @@ export class AmlEngine {
       return mapCheckRowToAmlCheck(check);
     }
 
-    // Fetch associated documents
+    // Fetch associated active (non-deleted) documents
     const { data: docRows, error: docsError } = await supabase
       .from('aml_identity_documents')
       .select('document_type, points, is_expired')
-      .eq('check_id', checkId);
+      .eq('check_id', checkId)
+      .is('deleted_at', null);
 
     if (docsError) return null;
 
