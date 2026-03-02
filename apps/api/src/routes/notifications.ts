@@ -6,10 +6,12 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   // GET / — List notifications for authenticated user
   fastify.get('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const query = request.query as Record<string, string | undefined>;
 
-    const userId = query.user_id;
-    if (!userId) return reply.status(400).send({ error: 'user_id is required' });
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
+    const userId = user.id;
+
+    const query = request.query as Record<string, string | undefined>;
 
     let dbQuery = supabase
       .from('notifications')
@@ -40,10 +42,10 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   // GET /unread-count — Fast unread count for bell badge
   fastify.get('/unread-count', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const query = request.query as Record<string, string | undefined>;
-    const userId = query.user_id;
 
-    if (!userId) return reply.status(400).send({ error: 'user_id is required' });
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
+    const userId = user.id;
 
     const { count, error } = await supabase
       .from('notifications')
@@ -125,10 +127,10 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   // GET /preferences — Get notification preferences
   fastify.get('/preferences', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const query = request.query as Record<string, string | undefined>;
-    const userId = query.user_id;
 
-    if (!userId) return reply.status(400).send({ error: 'user_id is required' });
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
+    const userId = user.id;
 
     const { data, error } = await supabase
       .from('notification_preferences')
@@ -163,18 +165,17 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   // PATCH /preferences — Update notification preferences (upsert)
   fastify.patch('/preferences', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const parsed = UpdateNotificationPreferencesSchema.safeParse(request.body);
 
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
+    const userId = user.id;
+
+    const parsed = UpdateNotificationPreferencesSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten() });
     }
 
     const updates = parsed.data;
-    const body = request.body as Record<string, string | undefined>;
-    const userId = body?.userId;
-
-    if (!userId) return reply.status(400).send({ error: 'userId is required' });
-
     const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (updates.quietHoursStart !== undefined) updatePayload.quiet_hours_start = updates.quietHoursStart;
     if (updates.quietHoursEnd !== undefined) updatePayload.quiet_hours_end = updates.quietHoursEnd;

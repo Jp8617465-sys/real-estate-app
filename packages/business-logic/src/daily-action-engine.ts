@@ -3,6 +3,7 @@
  *
  * Generates a prioritised action list for a buyers agent by:
  * 1. Querying overdue/due-today tasks, upcoming key dates, and stale contacts
+ *    (all three queries run in parallel via Promise.all)
  * 2. Scoring each candidate using the priority matrix
  * 3. Taking the top 20 candidates to Claude for "why now" subtitle generation
  * 4. Persisting the ranked list to daily_action_items
@@ -88,12 +89,10 @@ export function scoreCandidate(candidate: Omit<DailyActionCandidate, 'compositeS
  * Generate the daily action list for an agent.
  *
  * Steps:
- * 1. Query overdue/due-today tasks
- * 2. Query upcoming key dates (≤7 days)
- * 3. Query stale active contacts (no activity >7 days)
- * 4. Score all candidates
- * 5. Take top `maxItems` (default 20) to AI for subtitles
- * 6. Persist to daily_action_items (upsert by user_id + date + rank)
+ * 1. Query overdue/due-today tasks, upcoming key dates, and stale contacts in parallel
+ * 2. Score all candidates
+ * 3. Take top `maxItems` (default 20) to AI for subtitles
+ * 4. Persist to daily_action_items (upsert by user_id + date + rank)
  */
 export async function generateDailyActions(opts: GenerateDailyActionsOptions): Promise<DailyActionResult> {
   const { agentId, date, supabase, aiClient, maxItems = 20 } = opts;
@@ -107,22 +106,57 @@ export async function generateDailyActions(opts: GenerateDailyActionsOptions): P
   const sevenDaysLater = new Date(today);
   sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
 
-  // ─── 1. Overdue & due-today tasks ─────────────────────────────────────────
-  const tasksResult = await new Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>(
-    (resolve) => {
-      supabase
-        .from('tasks')
-        .select('id, title, type, priority, due_date, contact_id, transaction_id, status')
-        .eq('is_deleted', false)
-        .in('status', ['pending', 'in-progress'])
-        .eq('assigned_to', agentId)
-        .lte('due_date', todayISO)
-        .order('due_date', { ascending: true })
-        .limit(50)
-        .then(resolve as Parameters<QueryBuilder['then']>[0]);
-    },
-  );
+  // ─── 1–3. Fetch all candidates in parallel ────────────────────────────────
+  const [tasksResult, keyDatesResult, staleResult] = await Promise.all([
+    new Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>(
+      (resolve) => {
+        supabase
+          .from('tasks')
+          .select('id, title, type, priority, due_date, contact_id, transaction_id, status')
+          .eq('is_deleted', false)
+          .in('status', ['pending', 'in-progress'])
+          .eq('assigned_to', agentId)
+          .lte('due_date', todayISO)
+          .order('due_date', { ascending: true })
+          .limit(50)
+          .then(resolve as Parameters<QueryBuilder['then']>[0]);
+      },
+    ),
+    new Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>(
+      (resolve) => {
+        supabase
+          .from('key_dates')
+          .select('id, title, type, due_date, transaction_id, status')
+          .eq('is_deleted', false)
+          .in('status', ['upcoming', 'due_soon'])
+          .gte('due_date', todayISO)
+          .lte('due_date', sevenDaysLater.toISOString())
+          .order('due_date', { ascending: true })
+          .limit(20)
+          .then(resolve as Parameters<QueryBuilder['then']>[0]);
+      },
+    ),
+    new Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>(
+      (resolve) => {
+        supabase
+          .from('contacts')
+          .select('id, first_name, last_name, lead_score, last_activity_at, assigned_agent_id')
+          .eq('is_deleted', false)
+          .eq('assigned_agent_id', agentId)
+          .in('type', ['buyer', 'investor'])
+          .lte('last_activity_at', sevenDaysAgo.toISOString())
+          .order('lead_score', { ascending: false })
+          .limit(20)
+          .then(resolve as Parameters<QueryBuilder['then']>[0]);
+      },
+    ),
+  ]);
 
+  if (tasksResult.error) console.error('[DailyActionEngine] tasks query failed:', tasksResult.error.message);
+  if (keyDatesResult.error) console.error('[DailyActionEngine] key_dates query failed:', keyDatesResult.error.message);
+  if (staleResult.error) console.error('[DailyActionEngine] stale contacts query failed:', staleResult.error.message);
+
+  // ─── Process overdue & due-today tasks ───────────────────────────────────────
   if (tasksResult.data) {
     for (const task of tasksResult.data) {
       const dueDate = new Date(task.due_date as string);
@@ -154,22 +188,7 @@ export async function generateDailyActions(opts: GenerateDailyActionsOptions): P
     }
   }
 
-  // ─── 2. Upcoming key dates (≤7 days) ─────────────────────────────────────
-  const keyDatesResult = await new Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>(
-    (resolve) => {
-      supabase
-        .from('key_dates')
-        .select('id, title, type, due_date, transaction_id, status')
-        .eq('is_deleted', false)
-        .in('status', ['upcoming', 'due_soon'])
-        .gte('due_date', todayISO)
-        .lte('due_date', sevenDaysLater.toISOString())
-        .order('due_date', { ascending: true })
-        .limit(20)
-        .then(resolve as Parameters<QueryBuilder['then']>[0]);
-    },
-  );
-
+  // ─── Process upcoming key dates (≤7 days) ────────────────────────────────────
   if (keyDatesResult.data) {
     for (const kd of keyDatesResult.data) {
       const dueDate = new Date(kd.due_date as string);
@@ -197,22 +216,7 @@ export async function generateDailyActions(opts: GenerateDailyActionsOptions): P
     }
   }
 
-  // ─── 3. Stale active contacts ─────────────────────────────────────────────
-  const staleResult = await new Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>(
-    (resolve) => {
-      supabase
-        .from('contacts')
-        .select('id, first_name, last_name, lead_score, last_activity_at, assigned_agent_id')
-        .eq('is_deleted', false)
-        .eq('assigned_agent_id', agentId)
-        .in('type', ['buyer', 'investor'])
-        .lte('last_activity_at', sevenDaysAgo.toISOString())
-        .order('lead_score', { ascending: false })
-        .limit(20)
-        .then(resolve as Parameters<QueryBuilder['then']>[0]);
-    },
-  );
-
+  // ─── Process stale active contacts ───────────────────────────────────────────
   if (staleResult.data) {
     for (const contact of staleResult.data) {
       const lastActivity = new Date(contact.last_activity_at as string);
@@ -266,8 +270,8 @@ export async function generateDailyActions(opts: GenerateDailyActionsOptions): P
           }
         }
       }
-    } catch {
-      // Graceful degradation — use title as subtitle
+    } catch (error: unknown) {
+      console.error('[DailyActionEngine] AI subtitle generation failed, using titles as fallback:', error instanceof Error ? error.message : String(error));
       for (const candidate of topCandidates) {
         if (!candidate.subtitle) {
           candidate.subtitle = candidate.title;

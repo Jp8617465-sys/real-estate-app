@@ -10,9 +10,6 @@ import { useRouter } from 'expo-router';
 import { useNotifications, useMarkNotificationRead, useDismissNotification } from '../../src/hooks/use-notifications';
 import type { Notification } from '@realflow/shared';
 
-// Replace with auth context
-const MOCK_USER_ID = 'user-placeholder';
-
 function getCategoryIcon(category: string): string {
   const map: Record<string, string> = {
     new_lead: '👤',
@@ -54,7 +51,7 @@ function formatTimeAgo(dateStr: string): string {
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const { data: notifications = [], isLoading } = useNotifications(MOCK_USER_ID);
+  const { data: notifications = [], isLoading } = useNotifications();
   const markRead = useMarkNotificationRead();
   const dismiss = useDismissNotification();
 

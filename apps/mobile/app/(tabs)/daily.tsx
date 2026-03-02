@@ -11,9 +11,6 @@ import { useRouter } from 'expo-router';
 import { useDailyActions, useCompleteDailyAction } from '../../src/hooks/use-daily-actions';
 import type { DailyActionItem } from '@realflow/shared';
 
-// Replace with auth context when available
-const MOCK_AGENT_ID = 'agent-placeholder';
-
 function getPriorityColor(score: number): string {
   if (score >= 80) return '#ef4444'; // red — urgent
   if (score >= 50) return '#f97316'; // orange — high
@@ -37,7 +34,7 @@ function getCategoryEmoji(category: string): string {
 
 export default function DailyActionsScreen() {
   const router = useRouter();
-  const { data: response, isLoading, refetch } = useDailyActions(MOCK_AGENT_ID);
+  const { data: response, isLoading, refetch } = useDailyActions();
   const completeAction = useCompleteDailyAction();
 
   const items = response?.data ?? [];

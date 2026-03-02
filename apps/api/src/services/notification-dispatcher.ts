@@ -278,8 +278,12 @@ export class NotificationDispatcher {
           .update({ is_active: false, updated_at: new Date().toISOString() })
           .in('token', toDeactivate);
       }
-    } catch {
-      // Push failures are non-fatal
+    } catch (error: unknown) {
+      console.error('[NotificationDispatcher] sendPush failed', {
+        userId,
+        tokenCount: tokens.length,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 }

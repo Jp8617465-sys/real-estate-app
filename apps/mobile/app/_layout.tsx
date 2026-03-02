@@ -33,7 +33,9 @@ async function registerPushToken() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
     body: JSON.stringify({ userId, token, platform: 'ios' }),
-  }).catch(() => { /* non-fatal */ });
+  }).catch((error: unknown) => {
+    console.error('[PushToken] Registration failed:', error instanceof Error ? error.message : String(error));
+  });
 }
 
 const queryClient = new QueryClient({
