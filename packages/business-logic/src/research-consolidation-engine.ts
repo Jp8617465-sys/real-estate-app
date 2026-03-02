@@ -323,6 +323,7 @@ export class ResearchConsolidationEngine {
         action: `Review ${newHighMatches.length} new high-scoring property matches`,
         priority: 'high',
         assignee: 'agent',
+        completed: false,
       });
     }
 
@@ -335,6 +336,7 @@ export class ResearchConsolidationEngine {
         action: `${inspectionBooked.length} inspections to attend`,
         priority: 'high',
         assignee: 'agent',
+        completed: false,
       });
     }
 
@@ -347,6 +349,7 @@ export class ResearchConsolidationEngine {
         action: `Prepare offer strategy for ${clientInterested.length} client-approved properties`,
         priority: 'high',
         assignee: 'agent',
+        completed: false,
       });
     }
 
@@ -359,6 +362,7 @@ export class ResearchConsolidationEngine {
         action: `Follow up on ${activeOffers.length} active offers`,
         priority: 'high',
         assignee: 'agent',
+        completed: false,
       });
     }
 
@@ -372,6 +376,7 @@ export class ResearchConsolidationEngine {
           priority: daysLeft <= 14 ? 'high' : 'medium',
           assignee: 'client',
           deadline: new Date(expiry.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          completed: false,
         });
       }
     }
@@ -382,6 +387,7 @@ export class ResearchConsolidationEngine {
         action: 'Get client sign-off on brief',
         priority: 'medium',
         assignee: 'agent',
+        completed: false,
       });
     }
 
@@ -391,6 +397,7 @@ export class ResearchConsolidationEngine {
         action: 'Gather market data for target suburbs',
         priority: 'medium',
         assignee: 'agent',
+        completed: false,
       });
     }
 
@@ -470,8 +477,10 @@ export class ResearchConsolidationEngine {
   }
 
   private static formatAddress(property: Property): string {
-    const { streetAddress, suburb, state, postcode } = property.address;
-    return `${streetAddress}, ${suburb} ${state} ${postcode}`;
+    const { streetNumber, streetName, unitNumber, suburb, state, postcode } = property.address;
+    const unit = unitNumber ? `${unitNumber}/` : '';
+    const street = `${unit}${streetNumber} ${streetName}`;
+    return `${street}, ${suburb} ${state} ${postcode}`;
   }
 
   private static listDataSources(

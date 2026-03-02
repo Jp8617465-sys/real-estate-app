@@ -103,8 +103,12 @@ export interface SyncResult {
 export class DomainSyncEngine {
   private readonly domain: DomainClient;
 
-  constructor() {
-    this.domain = new DomainClient({
+  /**
+   * @param domain Optional DomainClient instance (inject for testing).
+   *               When omitted, a client is created from environment variables.
+   */
+  constructor(domain?: DomainClient) {
+    this.domain = domain ?? new DomainClient({
       clientId: process.env['DOMAIN_CLIENT_ID'] ?? '',
       clientSecret: process.env['DOMAIN_CLIENT_SECRET'] ?? '',
     });

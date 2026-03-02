@@ -1,16 +1,14 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DomainSyncEngine } from './domain-sync-engine';
 
-// ─── Mock DomainClient ────────────────────────────────────────────────────────
+// ─── Mock DomainClient (injected via DI) ──────────────────────────────────────
 
-vi.mock('@realflow/integrations', () => ({
-  DomainClient: vi.fn().mockImplementation(() => ({
-    searchListings: vi.fn(),
-    getListing: vi.fn(),
-    getSalesResults: vi.fn(),
-    getSuburbPerformance: vi.fn(),
-  })),
-}));
+const mockDomain = {
+  searchListings: vi.fn(),
+  getListing: vi.fn(),
+  getSalesResults: vi.fn(),
+  getSuburbPerformance: vi.fn(),
+};
 
 // ─── Supabase mock builder ────────────────────────────────────────────────────
 
@@ -32,7 +30,7 @@ function buildSupabaseMock(overrides: Record<string, unknown> = {}) {
 // ─── buildSearchParams ────────────────────────────────────────────────────────
 
 describe('DomainSyncEngine.buildSearchParams', () => {
-  const engine = new DomainSyncEngine();
+  const engine = new DomainSyncEngine(mockDomain as never);
 
   it('returns one param object per suburb', () => {
     const result = engine.buildSearchParams({
@@ -151,16 +149,9 @@ describe('DomainSyncEngine.buildSearchParams', () => {
 
 describe('DomainSyncEngine.syncListingsForAgent', () => {
   let engine: DomainSyncEngine;
-  let mockSearchListings: Mock;
 
-  beforeEach(async () => {
-    engine = new DomainSyncEngine();
-    // Access the DomainClient mock instance via the engine
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value;
-    mockSearchListings = instance?.searchListings as Mock;
+  beforeEach(() => {
+    engine = new DomainSyncEngine(mockDomain as never);
     vi.clearAllMocks();
   });
 
@@ -185,12 +176,7 @@ describe('DomainSyncEngine.syncListingsForAgent', () => {
   });
 
   it('returns zero counts when Domain API returns no listings', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { searchListings: Mock };
-
-    instance.searchListings.mockResolvedValue({ listings: [] });
+    mockDomain.searchListings.mockResolvedValue({ listings: [] });
 
     const briefs = [
       {
@@ -234,12 +220,7 @@ describe('DomainSyncEngine.syncListingsForAgent', () => {
   });
 
   it('handles Domain API errors gracefully without throwing', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { searchListings: Mock };
-
-    instance.searchListings.mockRejectedValue(new Error('Domain API 503'));
+    mockDomain.searchListings.mockRejectedValue(new Error('Domain API 503'));
 
     const briefs = [
       {
@@ -300,7 +281,7 @@ describe('DomainSyncEngine.detectPriceChanges', () => {
   let engine: DomainSyncEngine;
 
   beforeEach(() => {
-    engine = new DomainSyncEngine();
+    engine = new DomainSyncEngine(mockDomain as never);
     vi.clearAllMocks();
   });
 
@@ -318,12 +299,7 @@ describe('DomainSyncEngine.detectPriceChanges', () => {
   });
 
   it('detects a price reduction and inserts a price change record', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getListing: Mock };
-
-    instance.getListing.mockResolvedValue({
+    mockDomain.getListing.mockResolvedValue({
       priceDetails: { price: 850000 },
     });
 
@@ -384,12 +360,7 @@ describe('DomainSyncEngine.detectPriceChanges', () => {
   });
 
   it('returns empty array when prices are unchanged', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getListing: Mock };
-
-    instance.getListing.mockResolvedValue({
+    mockDomain.getListing.mockResolvedValue({
       priceDetails: { price: 900000 },
     });
 
@@ -422,12 +393,7 @@ describe('DomainSyncEngine.detectPriceChanges', () => {
   });
 
   it('records price_guide_set when previous price was null', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getListing: Mock };
-
-    instance.getListing.mockResolvedValue({
+    mockDomain.getListing.mockResolvedValue({
       priceDetails: { price: 1100000 },
     });
 
@@ -483,12 +449,7 @@ describe('DomainSyncEngine.detectPriceChanges', () => {
   });
 
   it('handles Domain API errors per listing without throwing', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getListing: Mock };
-
-    instance.getListing.mockRejectedValue(new Error('404 not found'));
+    mockDomain.getListing.mockRejectedValue(new Error('404 not found'));
 
     const properties = [
       { id: 'prop-4', domain_listing_id: 'dom-000', list_price: 500000 },
@@ -537,7 +498,7 @@ describe('DomainSyncEngine.ingestAuctionResults', () => {
   let engine: DomainSyncEngine;
 
   beforeEach(() => {
-    engine = new DomainSyncEngine();
+    engine = new DomainSyncEngine(mockDomain as never);
     vi.clearAllMocks();
   });
 
@@ -548,12 +509,7 @@ describe('DomainSyncEngine.ingestAuctionResults', () => {
   });
 
   it('processes Domain sales results and returns mapped auction records', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getSalesResults: Mock };
-
-    instance.getSalesResults.mockResolvedValue({
+    mockDomain.getSalesResults.mockResolvedValue({
       salesResults: [
         {
           domainListingId: 'dom-sale-1',
@@ -610,12 +566,7 @@ describe('DomainSyncEngine.ingestAuctionResults', () => {
   });
 
   it('maps "passed_in" result correctly', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getSalesResults: Mock };
-
-    instance.getSalesResults.mockResolvedValue({
+    mockDomain.getSalesResults.mockResolvedValue({
       salesResults: [
         {
           domainListingId: 'dom-sale-2',
@@ -669,12 +620,7 @@ describe('DomainSyncEngine.ingestAuctionResults', () => {
   });
 
   it('handles Domain API errors per suburb without throwing', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getSalesResults: Mock };
-
-    instance.getSalesResults.mockRejectedValue(new Error('Rate limited'));
+    mockDomain.getSalesResults.mockRejectedValue(new Error('Rate limited'));
 
     const supabase = buildSupabaseMock();
     const results = await engine.ingestAuctionResults(['Surry Hills'], supabase as never);
@@ -682,12 +628,7 @@ describe('DomainSyncEngine.ingestAuctionResults', () => {
   });
 
   it('processes multiple suburbs independently', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getSalesResults: Mock };
-
-    instance.getSalesResults
+    mockDomain.getSalesResults
       .mockResolvedValueOnce({
         salesResults: [
           {
@@ -761,12 +702,7 @@ describe('DomainSyncEngine.ingestAuctionResults', () => {
   });
 
   it('gracefully handles empty salesResults array from Domain', async () => {
-    const { DomainClient } = await import('@realflow/integrations');
-    const instance = (DomainClient as Mock).mock.results[
-      (DomainClient as Mock).mock.results.length - 1
-    ]?.value as { getSalesResults: Mock };
-
-    instance.getSalesResults.mockResolvedValue({ salesResults: [] });
+    mockDomain.getSalesResults.mockResolvedValue({ salesResults: [] });
 
     const supabase = buildSupabaseMock();
     const results = await engine.ingestAuctionResults(['EmptySuburb'], supabase as never);

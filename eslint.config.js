@@ -5,13 +5,43 @@ import tsparser from '@typescript-eslint/parser';
 export default [
   js.configs.recommended,
   {
+    files: ['**/*.config.js', '**/*.config.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        module: 'readonly',
+        require: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+      },
+    },
+  },
+  {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './tsconfig.base.json',
+        project: [
+          './tsconfig.json',
+          './tsconfig.base.json',
+          './apps/*/tsconfig.json',
+          './packages/*/tsconfig.json',
+        ],
+      },
+      globals: {
+        React: 'readonly',
+        JSX: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        NodeJS: 'readonly',
       },
     },
     plugins: {

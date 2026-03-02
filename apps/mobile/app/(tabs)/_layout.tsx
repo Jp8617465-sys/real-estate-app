@@ -57,6 +57,13 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>✅</Text>,
         }}
       />
+      <Tabs.Screen
+        name="daily"
+        options={{
+          title: 'Today',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>⭐</Text>,
+        }}
+      />
     </Tabs>
   );
 }

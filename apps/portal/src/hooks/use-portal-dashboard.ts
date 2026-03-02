@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth, usePortalClient } from './use-auth';
 import type { BuyersAgentStage } from '@realflow/shared';
-import { fromDbSchema } from '@realflow/business-logic';
 
 const supabase = createClient();
 
@@ -27,7 +26,6 @@ export function usePortalDashboard() {
     queryKey: ['portal-dashboard', portalClient?.contact_id],
     queryFn: async (): Promise<DashboardData> => {
       const contactId = portalClient!.contact_id;
-      const agentId = portalClient!.agent_id;
 
       // Fetch transaction
       const { data: transaction } = await supabase
