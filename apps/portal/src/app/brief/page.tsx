@@ -107,20 +107,20 @@ export default function BriefPage() {
     );
   }
 
-  const purchaseType = brief.purchase_type as PurchaseType;
+  const purchaseType = brief.purchaseType as PurchaseType;
   const urgency = brief.timeline?.urgency as Urgency | undefined;
-  const updateFrequency = brief.communication?.update_frequency as UpdateFrequency | undefined;
-  const preferredMethod = brief.communication?.preferred_method as BriefContactMethod | undefined;
+  const updateFrequency = brief.communication?.updateFrequency as UpdateFrequency | undefined;
+  const preferredMethod = brief.communication?.preferredMethod as BriefContactMethod | undefined;
   const suburbs = (brief.requirements?.suburbs ?? []) as Array<{
     suburb: string;
     state: string;
     postcode: string;
     rank?: number;
   }>;
-  const mustHaves = (brief.requirements?.must_haves ?? []) as string[];
-  const niceToHaves = (brief.requirements?.nice_to_haves ?? []) as string[];
-  const dealBreakers = (brief.requirements?.deal_breakers ?? []) as string[];
-  const propertyTypes = (brief.requirements?.property_types ?? []) as string[];
+  const mustHaves = (brief.requirements?.mustHaves ?? []) as string[];
+  const niceToHaves = (brief.requirements?.niceToHaves ?? []) as string[];
+  const dealBreakers = (brief.requirements?.dealBreakers ?? []) as string[];
+  const propertyTypes = (brief.requirements?.propertyTypes ?? []) as string[];
 
   return (
     <div className="space-y-6">
@@ -131,15 +131,15 @@ export default function BriefPage() {
           <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
             <span className="flex items-center gap-1">
               <FileText className="h-3.5 w-3.5" />
-              Version {brief.brief_version ?? 1}
+              Version {brief.briefVersion ?? 1}
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
-              Last updated {formatDate(brief.updated_at)}
+              Last updated {formatDate(brief.updatedAt)}
             </span>
           </div>
         </div>
-        {brief.client_signed_off && (
+        {brief.clientSignedOff && (
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700">
             <CheckCircle2 className="h-4 w-4" />
             Signed Off
@@ -164,15 +164,15 @@ export default function BriefPage() {
             label="Range"
             value={`${formatCurrency(brief.budget?.min ?? 0)} - ${formatCurrency(brief.budget?.max ?? 0)}`}
           />
-          {brief.budget?.absolute_max && (
+          {brief.budget?.absoluteMax && (
             <DetailRow
               label="Absolute Maximum"
-              value={formatCurrency(brief.budget.absolute_max)}
+              value={formatCurrency(brief.budget.absoluteMax)}
             />
           )}
           <DetailRow
             label="Stamp Duty Budgeted"
-            value={brief.budget?.stamp_duty_budgeted ? 'Yes' : 'No'}
+            value={brief.budget?.stampDutyBudgeted ? 'Yes' : 'No'}
           />
         </dl>
       </SectionCard>
@@ -200,10 +200,10 @@ export default function BriefPage() {
               value={`Min ${brief.requirements.bathrooms.min}${brief.requirements.bathrooms.ideal ? `, ideally ${brief.requirements.bathrooms.ideal}` : ''}`}
             />
           )}
-          {brief.requirements?.car_spaces && (
+          {brief.requirements?.carSpaces && (
             <DetailRow
               label="Car Spaces"
-              value={`Min ${brief.requirements.car_spaces.min}${brief.requirements.car_spaces.ideal ? `, ideally ${brief.requirements.car_spaces.ideal}` : ''}`}
+              value={`Min ${brief.requirements.carSpaces.min}${brief.requirements.carSpaces.ideal ? `, ideally ${brief.requirements.carSpaces.ideal}` : ''}`}
             />
           )}
 
@@ -275,10 +275,10 @@ export default function BriefPage() {
               value={URGENCY_LABELS[urgency] ?? urgency}
             />
           )}
-          {brief.timeline?.ideal_settlement && (
+          {brief.timeline?.idealSettlement && (
             <DetailRow
               label="Ideal Settlement"
-              value={brief.timeline.ideal_settlement}
+              value={brief.timeline.idealSettlement}
             />
           )}
         </dl>
@@ -303,16 +303,16 @@ export default function BriefPage() {
                 : 'Not specified'
             }
           />
-          {brief.communication?.best_time_to_call && (
+          {brief.communication?.bestTimeToCall && (
             <DetailRow
               label="Best Time to Call"
-              value={brief.communication.best_time_to_call}
+              value={brief.communication.bestTimeToCall}
             />
           )}
-          {brief.communication?.partner_name && (
+          {brief.communication?.partnerName && (
             <DetailRow
               label="Partner"
-              value={brief.communication.partner_name}
+              value={brief.communication.partnerName}
             />
           )}
         </dl>
@@ -322,11 +322,11 @@ export default function BriefPage() {
       {brief.solicitor && (
         <SectionCard title="Solicitor">
           <dl className="space-y-3">
-            {brief.solicitor.firm_name && (
-              <DetailRow label="Firm" value={brief.solicitor.firm_name} />
+            {brief.solicitor.firmName && (
+              <DetailRow label="Firm" value={brief.solicitor.firmName} />
             )}
-            {brief.solicitor.contact_name && (
-              <DetailRow label="Contact" value={brief.solicitor.contact_name} />
+            {brief.solicitor.contactName && (
+              <DetailRow label="Contact" value={brief.solicitor.contactName} />
             )}
             {brief.solicitor.phone && (
               <DetailRow label="Phone" value={brief.solicitor.phone} />

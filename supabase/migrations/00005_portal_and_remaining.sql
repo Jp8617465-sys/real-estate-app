@@ -1,6 +1,10 @@
 -- ============================================================================
--- Migration 00005: Portal Clients, Documents, OAuth Tokens, Integration Config
+-- Migration 00005: Portal Clients and Documents
 -- ============================================================================
+-- Note: This migration only contains tables NOT defined in previous migrations.
+-- Tables defined elsewhere:
+--   - oauth_tokens, integration_connections: 00004_unified_inbox.sql
+--   - workflows, workflow_runs: 00001_initial_schema.sql
 
 -- ─── Portal Clients ─────────────────────────────────────────────────────────
 -- Links Supabase Auth users (client-side) to their contact record in CRM
@@ -44,86 +48,6 @@ CREATE INDEX idx_documents_transaction_id ON documents(transaction_id);
 CREATE INDEX idx_documents_property_id ON documents(property_id);
 CREATE INDEX idx_documents_category ON documents(category);
 CREATE INDEX idx_documents_is_deleted ON documents(is_deleted);
-
--- ─── OAuth Tokens ───────────────────────────────────────────────────────────
--- Store OAuth credentials for integration clients (Gmail, Meta, etc.)
-
-CREATE TABLE oauth_tokens (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  provider TEXT NOT NULL,
-  access_token TEXT NOT NULL,
-  refresh_token TEXT,
-  expires_at TIMESTAMPTZ NOT NULL,
-  scopes TEXT[] NOT NULL DEFAULT '{}',
-  account_email TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(user_id, provider)
-);
-
-CREATE INDEX idx_oauth_tokens_user_provider ON oauth_tokens(user_id, provider);
-
--- ─── Integration Connections ────────────────────────────────────────────────
--- Track which integrations are active per user/office
-
-CREATE TABLE integration_connections (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  office_id UUID NOT NULL REFERENCES offices(id) ON DELETE CASCADE,
-  provider TEXT NOT NULL,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  config JSONB NOT NULL DEFAULT '{}',
-  last_sync_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(user_id, provider)
-);
-
-CREATE INDEX idx_integration_connections_user ON integration_connections(user_id);
-CREATE INDEX idx_integration_connections_provider ON integration_connections(provider);
-
--- ─── Workflow Runs Table ────────────────────────────────────────────────────
--- Track execution history for the workflow engine
-
-CREATE TABLE workflow_runs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  workflow_id UUID NOT NULL,
-  contact_id UUID REFERENCES contacts(id) ON DELETE SET NULL,
-  transaction_id UUID REFERENCES transactions(id) ON DELETE SET NULL,
-  status TEXT NOT NULL DEFAULT 'running',
-  current_action_index INTEGER NOT NULL DEFAULT 0,
-  resume_at TIMESTAMPTZ,
-  error TEXT,
-  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
-);
-
-CREATE INDEX idx_workflow_runs_workflow_id ON workflow_runs(workflow_id);
-CREATE INDEX idx_workflow_runs_status ON workflow_runs(status);
-CREATE INDEX idx_workflow_runs_resume_at ON workflow_runs(resume_at);
-
--- ─── Workflows Table ────────────────────────────────────────────────────────
--- Store workflow definitions (trigger, conditions, actions)
-
-CREATE TABLE workflows (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name TEXT NOT NULL,
-  description TEXT,
-  trigger_config JSONB NOT NULL,
-  conditions JSONB NOT NULL DEFAULT '[]',
-  actions JSONB NOT NULL DEFAULT '[]',
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  is_deleted BOOLEAN NOT NULL DEFAULT false,
-  deleted_at TIMESTAMPTZ,
-  created_by UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_workflows_is_active ON workflows(is_active);
-CREATE INDEX idx_workflows_is_deleted ON workflows(is_deleted);
-CREATE INDEX idx_workflows_created_by ON workflows(created_by);
 
 -- ─── Social Posts Enhancements ──────────────────────────────────────────────
 -- Add soft delete support and image URL to existing social_posts table

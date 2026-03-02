@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth, usePortalClient } from './use-auth';
+import { fromDbSchema } from '@realflow/business-logic';
 
 const supabase = createClient();
 
@@ -22,7 +23,7 @@ export function useBrief() {
         .single();
 
       if (error) throw error;
-      return data;
+      return fromDbSchema(data);
     },
     enabled: !!user?.id && !!portalClient?.contact_id,
   });

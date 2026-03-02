@@ -3,15 +3,12 @@ export { MetaSocialClient } from './meta/client';
 export { GmailClient } from './gmail/client';
 export { TwilioClient } from './twilio/client';
 export { WhatsAppClient } from './whatsapp/client';
-export { AIClient, AIServiceError, PropertyAnalysisService, SYSTEM_PROMPTS, PROMPT_TEMPLATES } from './ai';
+export { AnthropicClient, AICache } from './ai/index';
 export type {
-  AIConfig,
-  AIConfigInput,
-  AIProvider,
-  AIMessage,
-  AICompletionRequest,
-  AICompletionResponse,
-  AIInsight,
-  ConfidenceLevel,
-  PropertyDescriptionAnalysis,
-} from './ai';
+  PropertyAnalysisResult,
+  LeadScoringResult,
+  BriefRefinementResult,
+  MessageDraftResult,
+  EmailSignalsResult,
+  CacheStats,
+} from './ai/index';

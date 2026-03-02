@@ -13,6 +13,7 @@ export const AI_POWERED_WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     trigger: {
       type: 'match_score_threshold',
       minScore: 65,
+      propertyCount: 1,
     },
     conditions: [],
     actions: [

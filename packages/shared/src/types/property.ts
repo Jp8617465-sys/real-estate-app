@@ -41,6 +41,7 @@ export const PropertySchema = z.object({
   listingStatus: ListingStatusSchema.default('pre-market'),
   listPrice: z.number().positive().optional(),
   priceGuide: z.string().optional(),
+  listingDescription: z.string().optional(),
   saleType: SaleTypeSchema,
   auctionDate: z.string().datetime().optional(),
 

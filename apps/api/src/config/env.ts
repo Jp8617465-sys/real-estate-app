@@ -10,6 +10,17 @@ const envSchema = z.object({
     .default('3001')
     .transform((val) => parseInt(val, 10)),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  // Optional AI credentials (system functions without these — graceful degradation)
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_MODEL: z.string().optional(),
+  ANTHROPIC_MAX_TOKENS: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : undefined)),
+  ANTHROPIC_RATE_LIMIT_PER_MINUTE: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : undefined)),
   // Optional integration credentials
   DOMAIN_CLIENT_ID: z.string().optional(),
   DOMAIN_CLIENT_SECRET: z.string().optional(),

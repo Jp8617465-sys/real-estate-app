@@ -33,3 +33,16 @@ export class MetaAPIError extends IntegrationAPIError {
     this.name = 'MetaAPIError';
   }
 }
+
+/**
+ * Error thrown by Anthropic (Claude) API client.
+ */
+export class AnthropicAPIError extends IntegrationAPIError {
+  public readonly errorType: string;
+
+  constructor(message: string, statusCode: number, statusText: string, errorType = 'api_error') {
+    super(message, statusCode, statusText);
+    this.name = 'AnthropicAPIError';
+    this.errorType = errorType;
+  }
+}

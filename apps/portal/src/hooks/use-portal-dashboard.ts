@@ -26,7 +26,6 @@ export function usePortalDashboard() {
     queryKey: ['portal-dashboard', portalClient?.contact_id],
     queryFn: async (): Promise<DashboardData> => {
       const contactId = portalClient!.contact_id;
-      const agentId = portalClient!.agent_id;
 
       // Fetch transaction
       const { data: transaction } = await supabase
@@ -41,7 +40,7 @@ export function usePortalDashboard() {
       const currentStage = (transaction?.current_stage ?? 'enquiry') as BuyersAgentStage;
 
       // Fetch brief stat
-      const { data: brief } = await supabase
+      const { data: briefData } = await supabase
         .from('client_briefs')
         .select('brief_version, client_signed_off')
         .eq('contact_id', contactId)
@@ -49,8 +48,8 @@ export function usePortalDashboard() {
         .limit(1)
         .single();
 
-      const briefStat = brief
-        ? `v${brief.brief_version} - ${brief.client_signed_off ? 'Signed Off' : 'Draft'}`
+      const briefStat = briefData
+        ? `v${briefData.brief_version} - ${briefData.client_signed_off ? 'Signed Off' : 'Draft'}`
         : 'Not started';
 
       // Fetch property matches count

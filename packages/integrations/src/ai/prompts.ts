@@ -1,157 +1,387 @@
 /**
- * System prompts and prompt templates for AI-powered features.
- * All prompts are buyers-agent-specific for the Australian market.
+ * Prompt templates for Anthropic Claude API calls.
+ * Each function returns a { system, user } pair for the Messages API.
  */
 
-export const SYSTEM_PROMPTS = {
-  propertyAnalysis: `You are an expert Australian buyers agent assistant. You analyze property listings against client briefs.
+interface PropertyAnalysisInput {
+  listingDescription: string;
+  mustHaves: string[];
+  niceToHaves: string[];
+  dealBreakers: string[];
+  propertyContext?: {
+    suburb: string;
+    propertyType: string;
+    bedrooms: number;
+  };
+}
 
-Your role:
-- Evaluate property descriptions against specific client requirements
-- Identify must-have matches, deal-breaker triggers, and nice-to-have features
-- Consider Australian real estate terminology and conventions
-- Flag concerns that a buyers agent should investigate
-- Be factual and evidence-based — quote from the listing description
+interface LeadScoringInput {
+  enquiryText: string;
+  contactContext?: {
+    name: string;
+    source: string;
+  };
+}
 
-Always respond in structured JSON format.`,
-
-  researchConsolidation: `You are a research analyst for an Australian buyers agent. You consolidate multiple data sources into clear, actionable client briefs.
-
-Your role:
-- Synthesize property match scores, inspection notes, market data, and due diligence findings
-- Produce executive summaries suitable for client presentations
-- Highlight key risks and opportunities
-- Compare properties against each other and against the client brief
-- Use Australian real estate terminology (e.g., "settlement" not "closing", "strata" not "HOA")
-- All monetary values are in AUD
-
-Structure your analysis with clear sections: Summary, Property Rankings, Market Context, Risk Assessment, Recommendations.`,
-
-  briefRefinement: `You are an experienced Australian buyers agent helping refine a client brief.
-
-Your role:
-- Analyze the current brief for completeness and clarity
-- Suggest missing requirements based on the client's stated goals
-- Identify potential conflicts (e.g., budget vs location expectations)
-- Recommend suburb alternatives based on requirements
-- Consider Australian market realities (stamp duty, LMI, settlement periods)
-
-Be direct and practical. Buyers agents value efficiency.`,
-
-  marketAnalysis: `You are a property market analyst specializing in the Australian residential market.
-
-Your role:
-- Analyze suburb-level market data (median prices, days on market, auction clearance rates)
-- Identify trends and compare suburbs
-- Provide context for price expectations
-- Consider seasonal patterns in Australian property markets
-- Reference state-specific factors (stamp duty, land tax, zoning)
-
-All prices in AUD. Be data-driven and concise.`,
-
-  messageDrafting: `You are a professional communication assistant for Australian buyers agents.
-
-Your role:
-- Draft professional emails and SMS messages
-- Match the tone to the recipient (client, selling agent, solicitor)
-- Use Australian business communication conventions
-- Keep messages concise and action-oriented
-- Include relevant property details and next steps
-
-Never fabricate details. Use placeholders like [property address] for missing information.`,
-} as const;
-
-export const PROMPT_TEMPLATES = {
-  analyzePropertyDescription: (params: {
-    description: string;
+interface BriefRefinementInput {
+  brief: {
     mustHaves: string[];
-    dealBreakers: string[];
     niceToHaves: string[];
-    budgetMin: number;
-    budgetMax: number;
+    dealBreakers: string[];
+    suburbs: string[];
     propertyTypes: string[];
-  }) => `Analyze the following property listing against the client's requirements.
+    budget: { min: number; max: number };
+  };
+  searchHistory?: {
+    rejectedProperties: number;
+    averageScore: number;
+    commonRejectionReasons: string[];
+  };
+}
 
-## Property Listing Description
-${params.description}
+export function buildPropertyAnalysisPrompt(input: PropertyAnalysisInput): {
+  system: string;
+  user: string;
+} {
+  const contextLine = input.propertyContext
+    ? `\nProperty context: ${input.propertyContext.bedrooms}-bed ${input.propertyContext.propertyType} in ${input.propertyContext.suburb}`
+    : '';
 
-## Client Requirements
-- **Budget:** $${params.budgetMin.toLocaleString()} - $${params.budgetMax.toLocaleString()} AUD
-- **Property Types:** ${params.propertyTypes.join(', ')}
-- **Must-Haves:** ${params.mustHaves.join(', ')}
-- **Deal Breakers:** ${params.dealBreakers.join(', ')}
-- **Nice-to-Haves:** ${params.niceToHaves.join(', ')}
+  return {
+    system: `You are an Australian buyers agent analyst. Analyse property listing descriptions against buyer requirements.
 
-Respond with JSON matching this structure:
+You must respond with valid JSON matching this exact schema:
 {
-  "mustHaveMatches": [{"requirement": "...", "found": true/false, "evidence": "quote from listing", "confidence": "high|medium|low"}],
-  "dealBreakerMatches": [{"dealBreaker": "...", "triggered": true/false, "evidence": "...", "confidence": "high|medium|low"}],
-  "niceToHaveMatches": [{"preference": "...", "found": true/false, "evidence": "...", "confidence": "high|medium|low"}],
-  "keyFeatures": ["feature1", "feature2"],
-  "concerns": ["concern1", "concern2"],
-  "overallSentiment": "positive|neutral|negative",
-  "summary": "2-3 sentence assessment"
+  "featureScore": <number 0-100>,
+  "features": [
+    {
+      "feature": "<requirement text>",
+      "status": "matched" | "not_matched" | "partial" | "unknown",
+      "confidence": <number 0-1>,
+      "explanation": "<brief explanation>",
+      "source": "must_have" | "nice_to_have" | "deal_breaker"
+    }
+  ],
+  "dealBreakerFlags": ["<string descriptions of confirmed deal breakers>"],
+  "summary": "<2-3 sentence summary of how well the property matches>"
+}
+
+Scoring rules:
+- Start at 50 (neutral baseline)
+- Each matched must_have: +10 (up to 100)
+- Each not_matched must_have: -15
+- Each matched nice_to_have: +5
+- Each confirmed deal_breaker: -25 (minimum score 0)
+- If no information found for a requirement, mark as "unknown" with confidence 0.3
+- Clamp final featureScore to 0-100`,
+
+    user: `Analyse this property listing against the buyer's requirements.
+
+Listing description:
+${input.listingDescription}
+${contextLine}
+
+Must-haves (required features):
+${input.mustHaves.length > 0 ? input.mustHaves.map((h, i) => `${i + 1}. ${h}`).join('\n') : '(none specified)'}
+
+Nice-to-haves (preferred features):
+${input.niceToHaves.length > 0 ? input.niceToHaves.map((h, i) => `${i + 1}. ${h}`).join('\n') : '(none specified)'}
+
+Deal-breakers (must NOT have):
+${input.dealBreakers.length > 0 ? input.dealBreakers.map((d, i) => `${i + 1}. ${d}`).join('\n') : '(none specified)'}
+
+Respond with JSON only, no other text.`,
+  };
+}
+
+export function buildLeadScoringPrompt(input: LeadScoringInput): {
+  system: string;
+  user: string;
+} {
+  const contextLine = input.contactContext
+    ? `\nContact: ${input.contactContext.name} (source: ${input.contactContext.source})`
+    : '';
+
+  return {
+    system: `You are an Australian real estate lead qualification specialist. Analyse enquiry text for buying signals.
+
+You must respond with valid JSON matching this exact schema:
+{
+  "signals": [
+    {
+      "signal": "<signal description>",
+      "impact": "positive" | "negative" | "neutral",
+      "weight": <number 1-10>,
+      "explanation": "<brief explanation>"
+    }
+  ],
+  "urgencyLevel": "immediate" | "high" | "medium" | "low" | "none",
+  "estimatedTimeline": "<e.g. '1-3 months' or null>",
+  "budgetConfidence": "high" | "medium" | "low" | "unknown",
+  "suggestedScore": <number 0-100>
+}
+
+Positive signals (increase score): pre-approval mention, specific budget, urgency language, property type preferences, suburb specificity, settlement timeline, solicitor details, inspection requests.
+Negative signals (decrease score): vague enquiry, "just looking", no timeline, unrealistic expectations.
+Australian context: "pre-approval", "finance ready", "settlement", "conveyancer", "stamp duty", "FHBG" (First Home Buyer Grant).`,
+
+    user: `Analyse this property enquiry for lead quality signals.
+${contextLine}
+
+Enquiry text:
+${input.enquiryText}
+
+Respond with JSON only, no other text.`,
+  };
+}
+
+interface MessageDraftInput {
+  channel: 'email' | 'sms' | 'whatsapp';
+  intent: string;
+  toneHint?: 'formal' | 'friendly' | 'professional';
+  contactContext?: {
+    name: string;
+    source?: string;
+    pipelineStage?: string;
+    recentActivities?: string[];
+  };
+}
+
+interface EmailSignalExtractionInput {
+  subject: string;
+  body: string;
+  fromEmail?: string;
+  classifiedType?: string;
+}
+
+export function buildMessageDraftPrompt(input: MessageDraftInput): {
+  system: string;
+  user: string;
+} {
+  const channelGuidance =
+    input.channel === 'sms'
+      ? 'Channel: SMS — keep body under 160 characters, casual and direct, no subject line.'
+      : input.channel === 'whatsapp'
+        ? 'Channel: WhatsApp — conversational and warm, up to 500 characters, no subject line. Supports plain text only (no markdown).'
+        : 'Channel: Email — include a subject line, professional structure, can be multi-paragraph.';
+
+  const toneGuidance = input.toneHint
+    ? `Requested tone: ${input.toneHint}.`
+    : 'Use professional tone by default.';
+
+  const contactSection = input.contactContext
+    ? `Contact: ${input.contactContext.name}${input.contactContext.source ? ` (source: ${input.contactContext.source})` : ''}${input.contactContext.pipelineStage ? `, stage: ${input.contactContext.pipelineStage}` : ''}.${input.contactContext.recentActivities?.length ? `\nRecent activity: ${input.contactContext.recentActivities.slice(0, 3).join('; ')}.` : ''}`
+    : '';
+
+  return {
+    system: `You are an Australian real estate communication specialist drafting messages for buyers agents.
+
+${channelGuidance}
+${toneGuidance}
+
+You must respond with valid JSON matching this exact schema:
+{
+  "subject": "<email subject line, omit for SMS/WhatsApp>",
+  "body": "<message body>",
+  "suggestedTone": "formal" | "friendly" | "professional",
+  "alternativePhrasing": ["<alternative version 1>", "<alternative version 2>"]
+}
+
+Guidelines:
+- Use Australian English spelling (realise, programme, etc.)
+- Reference AU real estate norms (settlement, exchange, stamp duty, solicitor/conveyancer)
+- Keep SMS/WhatsApp under 160 characters in body
+- Provide exactly 2 alternative phrasings
+- Omit "subject" key entirely for SMS/WhatsApp channels`,
+
+    user: `Draft a ${input.channel} message with intent: "${input.intent}".${contactSection ? `\n\n${contactSection}` : ''}
+
+Respond with JSON only, no other text.`,
+  };
+}
+
+export function buildEmailSignalExtractionPrompt(input: EmailSignalExtractionInput): {
+  system: string;
+  user: string;
+} {
+  const classifiedLine = input.classifiedType
+    ? `\nRule-based classification: ${input.classifiedType}`
+    : '';
+
+  return {
+    system: `You are an Australian real estate lead qualification specialist. Extract buying signals and intent from inbound emails.
+
+You must respond with valid JSON matching this exact schema:
+{
+  "intent": "buy" | "sell" | "invest" | "general" | "unknown",
+  "urgency": "immediate" | "high" | "medium" | "low" | "none",
+  "budgetMin": <number or omit if unknown>,
+  "budgetMax": <number or omit if unknown>,
+  "financeStatus": "pre_approved" | "self_funded" | "seeking" | "unknown",
+  "estimatedTimeline": "<e.g. '1-3 months' or null>",
+  "propertyPreferences": ["<suburb>", "<property type>", "<feature>"],
+  "signals": [
+    {
+      "signal": "<signal description>",
+      "impact": "positive" | "negative" | "neutral",
+      "confidence": <number 0-1>
+    }
+  ],
+  "overallConfidence": <number 0-1>
+}
+
+AU real estate context: "pre-approval", "finance ready", "settlement", "conveyancer", "stamp duty", "FHBG", "LVR", "strata", "body corporate". Budget figures are in AUD.`,
+
+    user: `Extract lead signals from this inbound email.
+From: ${input.fromEmail ?? 'unknown'}
+Subject: ${input.subject}${classifiedLine}
+
+Body:
+${input.body}
+
+Respond with JSON only, no other text.`,
+  };
+}
+
+// ─── Daily Action Insights ────────────────────────────────────────────────────
+
+export interface DailyActionCandidateInput {
+  category: string;
+  title: string;
+  contactName?: string;
+  daysOverdue?: number;
+  daysUntilDeadline?: number;
+  compositeScore: number;
+}
+
+export function buildDailyActionsPrompt(candidates: DailyActionCandidateInput[]): {
+  system: string;
+  user: string;
+} {
+  const candidateList = candidates
+    .map(
+      (c, i) =>
+        `${i + 1}. [${c.category.toUpperCase()}] ${c.title}${c.contactName ? ` — contact: ${c.contactName}` : ''}${c.daysOverdue != null && c.daysOverdue > 0 ? ` (${c.daysOverdue} days overdue)` : ''}${c.daysUntilDeadline != null ? ` (deadline in ${c.daysUntilDeadline} days)` : ''} | score: ${c.compositeScore.toFixed(0)}`,
+    )
+    .join('\n');
+
+  return {
+    system: `You are an Australian buyers agent AI assistant generating the daily action list for a buyers agent.
+For each action item, write a concise subtitle (max 15 words) explaining WHY this item is urgent today.
+Be specific and actionable. Use Australian real estate context.
+
+You must respond with valid JSON matching this exact schema:
+{
+  "items": [
+    {
+      "index": <number — 1-based index matching input>,
+      "subtitle": "<why now, max 15 words, specific>"
+    }
+  ]
+}
+
+Examples of good subtitles:
+- "Pre-approval expires in 4 days, 2 active inspections this week"
+- "No contact in 9 days, lead score 87 — high intent buyer"
+- "Finance approval deadline tomorrow — solicitor needs confirmation"
+- "Stale lead, last message 14 days ago — re-engage now"`,
+
+    user: `Generate "why now" subtitles for these ${candidates.length} action items:
+
+${candidateList}
+
+Respond with JSON only, no other text.`,
+  };
+}
+
+// ─── Follow-Up Sequence Content ───────────────────────────────────────────────
+
+export interface SequenceContentInput {
+  stepAction: 'send_email' | 'send_sms';
+  stepLabel?: string;
+  dayOffset: number;
+  contactContext: {
+    name: string;
+    pipelineStage?: string;
+    source?: string;
+    recentActivities?: string[];
+  };
+  sequenceName: string;
+}
+
+export function buildSequenceContentPrompt(input: SequenceContentInput): {
+  system: string;
+  user: string;
+} {
+  const channelGuidance =
+    input.stepAction === 'send_sms'
+      ? 'Channel: SMS — body under 160 characters, casual and direct, no subject line.'
+      : 'Channel: Email — include a subject line, professional structure, 2-3 short paragraphs.';
+
+  const timing =
+    input.dayOffset === 0 ? 'immediately upon enrollment' : `${input.dayOffset} days after initial contact`;
+
+  return {
+    system: `You are an Australian real estate communication specialist drafting automated sequence messages for buyers agents.
+${channelGuidance}
+Use Australian English spelling. Reference AU real estate norms (settlement, exchange, stamp duty, conveyancer).
+
+You must respond with valid JSON:
+{
+  "subject": "<email subject, omit for SMS>",
+  "body": "<message body>",
+  "suggestedTone": "formal" | "friendly" | "professional"
 }`,
 
-  consolidateResearch: (params: {
-    clientName: string;
-    briefSummary: string;
-    properties: Array<{ address: string; score: number; notes: string }>;
-    marketData: string;
-    ddStatus: string;
-  }) => `Generate a consolidated research report for the following client.
+    user: `Draft a ${input.stepAction === 'send_sms' ? 'SMS' : 'email'} for the "${input.sequenceName}" sequence.
+This message is sent ${timing}.
+Contact: ${input.contactContext.name}${input.contactContext.pipelineStage ? `, stage: ${input.contactContext.pipelineStage}` : ''}${input.contactContext.source ? `, source: ${input.contactContext.source}` : ''}.${input.contactContext.recentActivities?.length ? `\nRecent activity: ${input.contactContext.recentActivities.slice(0, 2).join('; ')}.` : ''}
 
-## Client
-**Name:** ${params.clientName}
-**Brief Summary:** ${params.briefSummary}
+Respond with JSON only, no other text.`,
+  };
+}
 
-## Properties Under Review
-${params.properties.map((p, i) => `${i + 1}. **${p.address}** — Score: ${p.score}/100\n   Notes: ${p.notes}`).join('\n')}
+export function buildBriefRefinementPrompt(input: BriefRefinementInput): {
+  system: string;
+  user: string;
+} {
+  const historySection = input.searchHistory
+    ? `\nSearch history:
+- Rejected properties: ${input.searchHistory.rejectedProperties}
+- Average match score: ${input.searchHistory.averageScore}%
+- Common rejection reasons: ${input.searchHistory.commonRejectionReasons.join(', ') || 'none recorded'}`
+    : '';
 
-## Market Context
-${params.marketData}
+  return {
+    system: `You are an Australian buyers agent advisor. Suggest improvements to a client's property brief based on their requirements and search history.
 
-## Due Diligence Status
-${params.ddStatus}
-
-Generate a comprehensive but concise report with:
-1. Executive Summary (2-3 sentences)
-2. Property Rankings with pros/cons for each
-3. Market Context (how do these properties compare to market?)
-4. Risk Assessment (what should the client be aware of?)
-5. Recommended Next Steps (specific actions)
-
-Respond in JSON format:
+You must respond with valid JSON matching this exact schema:
 {
-  "executiveSummary": "...",
-  "propertyRankings": [{"address": "...", "rank": 1, "score": 85, "pros": ["..."], "cons": ["..."], "recommendation": "..."}],
-  "marketContext": "...",
-  "riskAssessment": ["risk1", "risk2"],
-  "recommendedActions": [{"action": "...", "priority": "high|medium|low", "deadline": "..."}],
-  "confidence": "high|medium|low"
-}`,
+  "suggestions": [
+    {
+      "field": "<field name e.g. 'suburbs', 'budget.max', 'mustHaves'>",
+      "currentValue": "<current value or null>",
+      "suggestedValue": "<suggested change>",
+      "reason": "<why this change would help>",
+      "confidence": <number 0-1>
+    }
+  ],
+  "completenessScore": <number 0-100>,
+  "missingFields": ["<field names that should be filled in>"]
+}
 
-  refineBrief: (params: {
-    currentBrief: string;
-    searchHistory: string;
-    clientFeedback: string;
-  }) => `Review the following client brief and suggest refinements.
+Consider Australian market norms: typical suburb groupings, realistic price expectations, common property features in different price ranges.`,
 
-## Current Brief
-${params.currentBrief}
+    user: `Analyse this buyer's brief and suggest refinements.
 
-## Search History & Feedback
-${params.searchHistory}
+Budget: $${input.brief.budget.min.toLocaleString()} - $${input.brief.budget.max.toLocaleString()} AUD
+Property types: ${input.brief.propertyTypes.join(', ') || 'not specified'}
+Suburbs: ${input.brief.suburbs.join(', ') || 'not specified'}
+Must-haves: ${input.brief.mustHaves.join(', ') || 'none'}
+Nice-to-haves: ${input.brief.niceToHaves.join(', ') || 'none'}
+Deal-breakers: ${input.brief.dealBreakers.join(', ') || 'none'}
+${historySection}
 
-## Client Feedback on Recent Properties
-${params.clientFeedback}
-
-Suggest refinements in JSON format:
-{
-  "suggestedChanges": [{"field": "...", "currentValue": "...", "suggestedValue": "...", "reason": "..."}],
-  "missingInformation": ["..."],
-  "conflictsIdentified": [{"conflict": "...", "suggestion": "..."}],
-  "suburbSuggestions": [{"suburb": "...", "reason": "...", "medianPrice": "..."}],
-  "overallAssessment": "..."
-}`,
-} as const;
+Respond with JSON only, no other text.`,
+  };
+}
