@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { createSupabaseClient } from '../middleware/supabase';
 import { CreateFollowUpSequenceSchema, CreateEnrollmentSchema } from '@realflow/shared';
-import { enrollContact } from '../../../../packages/business-logic/src/follow-up-sequence-engine';
+import { enrollContact, type FSESupabaseClient } from '@realflow/business-logic';
 
 export async function followUpSequenceRoutes(fastify: FastifyInstance) {
   // GET / — List sequences (own + templates)
@@ -92,7 +92,7 @@ export async function followUpSequenceRoutes(fastify: FastifyInstance) {
         contactId,
         transactionId,
         enrolledBy,
-        supabase: supabase as Parameters<typeof enrollContact>[0]['supabase'],
+        supabase: supabase as unknown as FSESupabaseClient,
       });
 
       return reply.status(201).send({ data: result });

@@ -13,12 +13,22 @@ vi.mock('../middleware/supabase', () => ({
 }));
 
 // ─── Mock AnalyticsEngine ─────────────────────────────────────────────────────
+// Use vi.hoisted so these variables are available when vi.mock factory runs
+// (vi.mock is hoisted above const declarations in Vitest)
 
-const mockGetPipelineVelocity = vi.fn();
-const mockGetAgentPerformance = vi.fn();
-const mockGetMarketInsights = vi.fn();
-const mockGetRevenueForecast = vi.fn();
-const mockGetDashboardSnapshot = vi.fn();
+const {
+  mockGetPipelineVelocity,
+  mockGetAgentPerformance,
+  mockGetMarketInsights,
+  mockGetRevenueForecast,
+  mockGetDashboardSnapshot,
+} = vi.hoisted(() => ({
+  mockGetPipelineVelocity: vi.fn(),
+  mockGetAgentPerformance: vi.fn(),
+  mockGetMarketInsights: vi.fn(),
+  mockGetRevenueForecast: vi.fn(),
+  mockGetDashboardSnapshot: vi.fn(),
+}));
 
 vi.mock('@realflow/business-logic', () => ({
   AnalyticsEngine: {

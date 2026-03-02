@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import crypto from 'crypto';
-import { createSupabaseClient } from '../middleware/supabase';
+import { createSupabaseServiceClient } from '../middleware/supabase';
 import { env } from '../config/env';
 
 /**
@@ -47,7 +47,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
       }
     }
 
-    const supabase = createSupabaseClient(request);
+    const supabase = createSupabaseServiceClient();
     const body = request.body as Record<string, unknown>;
 
     fastify.log.info({ body }, 'Received Domain enquiry webhook');

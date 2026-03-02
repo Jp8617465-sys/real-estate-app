@@ -1,9 +1,10 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { createSupabaseClient } from '../middleware/supabase';
 import { fromDbSchema } from '@realflow/business-logic';
 import {
   AIMessageDraftRequestSchema,
   AIEmailSignalsRequestSchema,
+  AINarrativeRequestSchema,
 } from '@realflow/shared';
 import {
   getAIPropertyMatchingService,
@@ -11,7 +12,49 @@ import {
   getAICacheStats,
   isAIEnabled,
   getAnthropicClientOrNull,
+  checkAIRateLimit,
 } from '../services/ai-service-factory';
+
+/** Rejects unauthenticated requests before AI endpoints that don't do a DB lookup. */
+function requireAuth(request: FastifyRequest, reply: FastifyReply): boolean {
+  if (!request.headers.authorization?.startsWith('Bearer ')) {
+    reply.status(401).send({ error: 'Unauthorized' });
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Extract the Supabase user ID (sub claim) from the Bearer JWT without a
+ * full signature verification pass — Supabase has already validated the token.
+ * Returns null if the token is malformed.
+ */
+function extractUserIdFromToken(request: FastifyRequest): string | null {
+  const token = request.headers.authorization?.slice(7);
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    const payloadB64 = parts[1];
+    if (!payloadB64) return null;
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as { sub?: string };
+    return payload.sub ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Enforce per-user AI rate limit (20 req/min).
+ * Returns false and sends 429 if the limit is exceeded.
+ */
+function enforceAIRateLimit(request: FastifyRequest, reply: FastifyReply): boolean {
+  const userId = extractUserIdFromToken(request) ?? request.ip;
+  if (!checkAIRateLimit(userId)) {
+    reply.status(429).send({ error: 'Too many AI requests. Please wait a moment before retrying.' });
+    return false;
+  }
+  return true;
+}
 
 // Typed shapes for Supabase projection results
 interface ContactProjection {
@@ -31,10 +74,10 @@ export async function aiRoutes(fastify: FastifyInstance) {
    * GET /api/v1/ai/status
    * Returns whether AI is enabled and cache statistics.
    */
-  fastify.get('/status', async () => ({
-    enabled: isAIEnabled(),
-    cacheStats: getAICacheStats(),
-  }));
+  fastify.get('/status', async (request, reply) => {
+    if (!requireAuth(request, reply)) return;
+    return { enabled: isAIEnabled(), cacheStats: getAICacheStats() };
+  });
 
   // ─── Analyze Match ───────────────────────────────────────────────
 
@@ -48,6 +91,8 @@ export async function aiRoutes(fastify: FastifyInstance) {
   fastify.post<{
     Body: { propertyId: string; clientBriefId: string };
   }>('/analyze-match', async (request, reply) => {
+    if (!enforceAIRateLimit(request, reply)) return;
+
     const { propertyId, clientBriefId } = request.body ?? {};
 
     if (!propertyId || !clientBriefId) {
@@ -97,6 +142,8 @@ export async function aiRoutes(fastify: FastifyInstance) {
   fastify.post<{
     Body: { contactId: string; enquiryText?: string };
   }>('/score-lead', async (request, reply) => {
+    if (!enforceAIRateLimit(request, reply)) return;
+
     const { contactId, enquiryText } = request.body ?? {};
 
     if (!contactId) {
@@ -141,6 +188,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
   fastify.post<{
     Body: { clientBriefId: string };
   }>('/refine-brief', async (request, reply) => {
+    if (!enforceAIRateLimit(request, reply)) return;
     if (!isAIEnabled()) {
       return reply.status(503).send({ error: 'AI service not configured' });
     }
@@ -227,6 +275,8 @@ export async function aiRoutes(fastify: FastifyInstance) {
    * Body: { contactId: string; channel: 'email' | 'sms' | 'whatsapp'; intent: string; toneHint?: 'formal' | 'friendly' | 'professional' }
    */
   fastify.post('/draft-message', async (request, reply) => {
+    if (!enforceAIRateLimit(request, reply)) return;
+
     const anthropic = getAnthropicClientOrNull();
     if (!anthropic) {
       return reply.status(503).send({ error: 'AI service not configured' });
@@ -294,6 +344,9 @@ export async function aiRoutes(fastify: FastifyInstance) {
    * Body: { subject: string; body: string; fromEmail?: string; classifiedType?: string }
    */
   fastify.post('/extract-email-signals', async (request, reply) => {
+    if (!requireAuth(request, reply)) return;
+    if (!enforceAIRateLimit(request, reply)) return;
+
     const anthropic = getAnthropicClientOrNull();
     if (!anthropic) {
       return reply.status(503).send({ error: 'AI service not configured' });
@@ -324,6 +377,121 @@ export async function aiRoutes(fastify: FastifyInstance) {
         propertyPreferences: result.propertyPreferences,
         signals: result.signals,
         overallConfidence: result.overallConfidence,
+        tokenUsage: result.tokenUsage,
+      },
+    };
+  });
+
+  // ─── Search Narrative ────────────────────────────────────────────
+
+  /**
+   * POST /api/v1/ai/narrative
+   * Generate a plain-prose search progress update for a client.
+   * Pulls their brief summary + top shortlisted properties automatically.
+   * Returns 503 if AI is not configured.
+   *
+   * Body: { clientId: string; propertyIds?: string[] }
+   */
+  fastify.post('/narrative', async (request, reply) => {
+    if (!enforceAIRateLimit(request, reply)) return;
+
+    const anthropic = getAnthropicClientOrNull();
+    if (!anthropic) {
+      return reply.status(503).send({ error: 'AI service not configured' });
+    }
+
+    const parsed = AINarrativeRequestSchema.safeParse(request.body);
+
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() });
+    }
+
+    const { clientId, propertyIds } = parsed.data;
+    const supabase = createSupabaseClient(request);
+
+    // Fetch contact name
+    const { data: contact } = await supabase
+      .from('contacts')
+      .select('first_name, last_name')
+      .eq('id', clientId)
+      .eq('is_deleted', false)
+      .single();
+
+    if (!contact) {
+      return reply.status(404).send({ error: 'Client not found' });
+    }
+
+    // Fetch latest brief for summary
+    const { data: brief } = await supabase
+      .from('client_briefs')
+      .select('budget, requirements')
+      .eq('contact_id', clientId)
+      .is('is_deleted', false)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    // Fetch top shortlisted matches (optionally filtered by propertyIds)
+    let matchQuery = supabase
+      .from('property_matches')
+      .select('overall_score, status, agent_notes, property:properties(address)')
+      .eq('client_id', clientId)
+      .not('status', 'eq', 'rejected')
+      .order('overall_score', { ascending: false })
+      .limit(8);
+
+    if (propertyIds && propertyIds.length > 0) {
+      matchQuery = matchQuery.in('property_id', propertyIds);
+    }
+
+    const { data: matches } = await matchQuery;
+
+    // Count total reviewed (all statuses)
+    const { count: totalSearched } = await supabase
+      .from('property_matches')
+      .select('*', { count: 'exact', head: true })
+      .eq('client_id', clientId);
+
+    const c = contact as { first_name: string | null; last_name: string | null };
+    const briefData = brief as Record<string, unknown> | null;
+
+    const briefSummary = briefData
+      ? (() => {
+          const budget = briefData.budget as Record<string, number> | null;
+          const reqs = briefData.requirements as Record<string, unknown> | null;
+          const suburbs = (reqs?.suburbs as Array<Record<string, string>> | null)
+            ?.map(s => s.suburb)
+            .filter(Boolean)
+            .join(', ');
+          return [
+            budget ? `Budget: $${budget.min?.toLocaleString()}–$${budget.max?.toLocaleString()} AUD` : null,
+            suburbs ? `Suburbs: ${suburbs}` : null,
+          ].filter(Boolean).join(', ');
+        })()
+      : 'Brief not yet completed';
+
+    const result = await anthropic.generateSearchNarrative({
+      clientName: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'your client',
+      briefSummary,
+      properties: (matches ?? []).map((m: Record<string, unknown>) => {
+        const prop = m.property as Record<string, unknown> | null;
+        const addr = prop?.address as Record<string, string> | null;
+        return {
+          address: addr
+            ? `${addr.street_address ?? ''}, ${addr.suburb ?? ''} ${addr.state ?? ''}`.trim()
+            : 'Address not available',
+          score: (m.overall_score as number) ?? 0,
+          status: (m.status as string) ?? 'unknown',
+          notes: (m.agent_notes as string | null) ?? undefined,
+        };
+      }),
+      totalSearched: totalSearched ?? 0,
+    });
+
+    return {
+      data: {
+        clientId,
+        narrative: result.narrative,
         tokenUsage: result.tokenUsage,
       },
     };

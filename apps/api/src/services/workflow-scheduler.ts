@@ -12,8 +12,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { processDueEnrollments } from '../../../../packages/business-logic/src/follow-up-sequence-engine';
-import { generateDailyActions } from '../../../../packages/business-logic/src/daily-action-engine';
+import { processDueEnrollments, type FSESupabaseClient, generateDailyActions, type DAESupabaseClient } from '@realflow/business-logic';
 import { getNotificationDispatcher } from './notification-dispatcher';
 import { env } from '../config/env';
 
@@ -73,7 +72,7 @@ export class WorkflowScheduler {
     // ─── 1. Process due follow-up sequence enrollments ─────────────────────
     try {
       const enrollmentResult = await processDueEnrollments({
-        supabase: this.supabase as Parameters<typeof processDueEnrollments>[0]['supabase'],
+        supabase: this.supabase as unknown as FSESupabaseClient,
       });
       result.enrollmentsProcessed = enrollmentResult.processed;
       result.enrollmentsFailed = enrollmentResult.failed;
@@ -157,7 +156,7 @@ export class WorkflowScheduler {
         await generateDailyActions({
           agentId: userId,
           date: todayDate,
-          supabase: this.supabase as Parameters<typeof generateDailyActions>[0]['supabase'],
+          supabase: this.supabase as unknown as DAESupabaseClient,
         });
 
         // Send daily action list notification
@@ -170,6 +169,7 @@ export class WorkflowScheduler {
           category: 'daily_action_list',
           actionPrimary: 'view_daily_actions',
           dedupKey: `daily_action_list:${userId}:${todayDate}`,
+          isDigestItem: false,
         });
 
         count++;

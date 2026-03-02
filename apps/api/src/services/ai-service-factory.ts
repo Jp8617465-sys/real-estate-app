@@ -10,6 +10,41 @@ import { AILeadScoringService } from './ai-lead-scoring';
 let _cache: AICache | null = null;
 let _anthropicClient: AnthropicClient | null = null;
 
+// ─── Per-user AI Rate Limiter ────────────────────────────────────────
+// Simple sliding-window counter: max 20 AI requests per user per minute.
+// Stored in-process (sufficient for single-instance v1; replace with Redis for multi-instance).
+const AI_RATE_LIMIT = 20; // requests per window
+const AI_RATE_WINDOW_MS = 60_000; // 1 minute
+
+interface RateLimitEntry {
+  count: number;
+  windowStart: number;
+}
+
+const _userRateLimits = new Map<string, RateLimitEntry>();
+
+/**
+ * Check whether the given user ID is within the per-user AI rate limit.
+ * Returns true if the request is allowed, false if the limit is exceeded.
+ */
+export function checkAIRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = _userRateLimits.get(userId);
+
+  if (!entry || now - entry.windowStart >= AI_RATE_WINDOW_MS) {
+    // Start a fresh window
+    _userRateLimits.set(userId, { count: 1, windowStart: now });
+    return true;
+  }
+
+  if (entry.count >= AI_RATE_LIMIT) {
+    return false;
+  }
+
+  entry.count += 1;
+  return true;
+}
+
 function getCache(): AICache {
   if (!_cache) {
     _cache = new AICache({
@@ -66,4 +101,5 @@ export function getAnthropicClientOrNull(): AnthropicClient | null {
 export function _resetAIServicesForTesting(): void {
   _cache = null;
   _anthropicClient = null;
+  _userRateLimits.clear();
 }

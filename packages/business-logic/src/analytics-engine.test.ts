@@ -744,7 +744,12 @@ describe('AnalyticsEngine edge cases', () => {
 
     const supabase = makeSupabase(() => {
       const result = callResults[callIndex] ?? { data: [], error: null };
+      const index = callIndex;
       callIndex++;
+      if (index === 2) {
+        // fee_structures: query terminates at select() with no further chaining
+        return { select: vi.fn().mockResolvedValue(result) };
+      }
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),

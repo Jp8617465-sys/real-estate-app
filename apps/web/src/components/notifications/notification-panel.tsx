@@ -115,7 +115,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
                   notification={notification}
                   onDismiss={() => dismiss.mutate(notification.id)}
                   onRead={() => {
-                    if (!notification.isRead) markRead.mutate(notification.id);
+                    if (notification.status !== 'read') markRead.mutate(notification.id);
                     onClose();
                   }}
                 />

@@ -119,6 +119,13 @@ export const AIEmailSignalsRequestSchema = z.object({
 });
 export type AIEmailSignalsRequest = z.infer<typeof AIEmailSignalsRequestSchema>;
 
+// ─── AI Narrative Request ────────────────────────────────────────────
+export const AINarrativeRequestSchema = z.object({
+  clientId: z.string().uuid(),
+  propertyIds: z.array(z.string().uuid()).max(20).optional(),
+});
+export type AINarrativeRequest = z.infer<typeof AINarrativeRequestSchema>;
+
 // ─── AI Email Signal Extraction ──────────────────────────────────────
 export const AIEmailSignalSchema = z.object({
   signal: z.string(),
