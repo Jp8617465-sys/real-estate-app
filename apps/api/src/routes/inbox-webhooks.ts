@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { MessageNormaliser, EmailParser } from '@realflow/business-logic';
 import type { NormalisedInboundMessage } from '@realflow/shared';
-import { createSupabaseClient } from '../middleware/supabase';
+import { createSupabaseServiceClient } from '../middleware/supabase';
 
 /**
  * Inbound webhook handlers for the unified inbox.
@@ -18,7 +18,7 @@ import { createSupabaseClient } from '../middleware/supabase';
 export async function inboxWebhookRoutes(fastify: FastifyInstance) {
   // ─── Twilio SMS Inbound ─────────────────────────────────────────────
   fastify.post('/sms', async (request, reply) => {
-    const supabase = createSupabaseClient(request);
+    const supabase = createSupabaseServiceClient();
     const payload = request.body as Record<string, string>;
 
     fastify.log.info({ from: payload['From'] }, 'Inbound SMS received');
@@ -51,7 +51,7 @@ export async function inboxWebhookRoutes(fastify: FastifyInstance) {
 
   // ─── Twilio Voice Status Callback ───────────────────────────────────
   fastify.post('/voice/status', async (_request, _reply) => {
-    const supabase = createSupabaseClient(_request);
+    const supabase = createSupabaseServiceClient();
     const payload = _request.body as Record<string, string>;
     const callStatus = payload['CallStatus'] ?? '';
 
@@ -79,7 +79,7 @@ export async function inboxWebhookRoutes(fastify: FastifyInstance) {
 
   // ─── Meta (Instagram + Facebook) Messaging Webhook ──────────────────
   fastify.post('/meta/messaging', async (request, _reply) => {
-    const supabase = createSupabaseClient(request);
+    const supabase = createSupabaseServiceClient();
     const payload = request.body as Record<string, unknown>;
 
     fastify.log.info('Meta messaging webhook received');
@@ -126,7 +126,7 @@ export async function inboxWebhookRoutes(fastify: FastifyInstance) {
 
   // ─── WhatsApp Inbound Webhook ──────────────────────────────────────
   fastify.post('/whatsapp', async (request, _reply) => {
-    const supabase = createSupabaseClient(request);
+    const supabase = createSupabaseServiceClient();
     const payload = request.body as Record<string, unknown>;
 
     fastify.log.info('WhatsApp webhook received');
@@ -166,7 +166,7 @@ export async function inboxWebhookRoutes(fastify: FastifyInstance) {
 
   // ─── Gmail Push Notification (Pub/Sub) ──────────────────────────────
   fastify.post('/gmail/push', async (request, reply) => {
-    const supabase = createSupabaseClient(request);
+    const supabase = createSupabaseServiceClient();
     const body = request.body as { message?: { data?: string; messageId?: string } };
 
     if (!body.message?.data) {
@@ -194,7 +194,7 @@ export async function inboxWebhookRoutes(fastify: FastifyInstance) {
 
   // ─── Email Forwarding Inbound (for portal enquiries) ────────────────
   fastify.post('/email/inbound', async (request, reply) => {
-    const supabase = createSupabaseClient(request);
+    const supabase = createSupabaseServiceClient();
     const payload = request.body as {
       from: string;
       to: string[];
@@ -255,7 +255,7 @@ interface ProcessResult {
 
 async function processInboundMessage(
   normalised: NormalisedInboundMessage,
-  supabase: ReturnType<typeof createSupabaseClient>,
+  supabase: ReturnType<typeof createSupabaseServiceClient>,
   fastify: FastifyInstance,
 ): Promise<ProcessResult> {
   let contactId: string;
@@ -397,7 +397,7 @@ async function processInboundMessage(
 
 async function matchContactFromMessage(
   normalised: NormalisedInboundMessage,
-  supabase: ReturnType<typeof createSupabaseClient>,
+  supabase: ReturnType<typeof createSupabaseServiceClient>,
 ): Promise<{ contactId: string; matchedBy: string } | null> {
   // 1. Match by phone number
   if (normalised.senderPhone) {

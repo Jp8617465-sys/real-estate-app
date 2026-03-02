@@ -117,15 +117,9 @@ export async function consolidationReportRoutes(fastify: FastifyInstance) {
     const content = ResearchConsolidationEngine.consolidate(
       {
         clientBrief: brief,
-        propertyMatches: (matches ?? []).map((m: Record<string, unknown>) => ({
-          ...m,
-          property: m.property,
-        })),
+        propertyMatches: (matches ?? []) as Parameters<typeof ResearchConsolidationEngine.consolidate>[0]['propertyMatches'],
         inspections: inspections ?? [],
-        dueDiligenceChecklists: (ddChecklists ?? []).map((c: Record<string, unknown>) => ({
-          ...c,
-          items: (c.items as unknown[]) ?? [],
-        })),
+        dueDiligenceChecklists: (ddChecklists ?? []) as Parameters<typeof ResearchConsolidationEngine.consolidate>[0]['dueDiligenceChecklists'],
         keyDates: keyDates ?? [],
         offers: offers ?? [],
         marketData: [],

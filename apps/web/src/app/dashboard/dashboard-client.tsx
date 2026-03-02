@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import type { DashboardSnapshot, AnalyticsPeriod, MarketInsight, PipelineVelocity } from '@realflow/shared';
 
 // ─── Currency formatter ───────────────────────────────────────────────────────
@@ -334,7 +334,7 @@ export default function DashboardClient() {
       setError(null);
 
       try {
-        const supabase = createClientComponentClient();
+        const supabase = createClient();
         const {
           data: { session },
         } = await supabase.auth.getSession();

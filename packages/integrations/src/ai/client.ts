@@ -9,8 +9,10 @@ import {
   buildEmailSignalExtractionPrompt,
   buildDailyActionsPrompt,
   buildSequenceContentPrompt,
+  buildSearchNarrativePrompt,
   type DailyActionCandidateInput,
   type SequenceContentInput,
+  type SearchNarrativeInput,
 } from './prompts';
 
 // ─── Configuration ──────────────────────────────────────────────────
@@ -364,6 +366,16 @@ export class AnthropicClient {
       suggestedTone: parsed.suggestedTone ?? 'professional',
       tokenUsage: response.tokenUsage,
     };
+  }
+
+  /**
+   * Generate a plain-prose search progress narrative for a client.
+   * Returns free-form text (not JSON) — not cached, as search data changes frequently.
+   */
+  async generateSearchNarrative(params: SearchNarrativeInput): Promise<{ narrative: string; tokenUsage: AITokenUsage }> {
+    const prompt = buildSearchNarrativePrompt(params);
+    const response = await this.sendMessage(prompt.system, prompt.user);
+    return { narrative: response.text.trim(), tokenUsage: response.tokenUsage };
   }
 
   // ─── Private Methods ────────────────────────────────────────────

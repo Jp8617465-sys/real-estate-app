@@ -88,8 +88,8 @@ describe('useBrief', () => {
       expect(result.current.data).toBeDefined();
     });
 
-    expect(result.current.data?.purchase_type).toBe('owner_occupier');
-    expect(result.current.data?.brief_version).toBe(3);
+    expect(result.current.data?.purchaseType).toBe('owner_occupier');
+    expect(result.current.data?.briefVersion).toBe(3);
   });
 
   it('handles error when brief not found', async () => {

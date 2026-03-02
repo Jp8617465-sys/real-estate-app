@@ -55,30 +55,34 @@ export function SequenceStepList({ steps }: SequenceStepListProps) {
               </div>
 
               {/* Action details */}
-              {actionType === 'send_email' && step.action && 'subject' in step.action && (
-                <div className="mt-2 space-y-1">
-                  {step.action.subject && (
-                    <p className="text-xs text-gray-700">
-                      <span className="font-medium">Subject:</span> {step.action.subject}
-                    </p>
-                  )}
-                  {step.action.useAiContent && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
-                      ✨ AI-generated content
-                    </span>
-                  )}
-                </div>
-              )}
+              {actionType === 'send_email' && step.action && (() => {
+                const emailAction = step.action as Record<string, unknown>;
+                return (emailAction.subject || emailAction.useAiContent) ? (
+                  <div className="mt-2 space-y-1">
+                    {!!emailAction.subject && (
+                      <p className="text-xs text-gray-700">
+                        <span className="font-medium">Subject:</span> {String(emailAction.subject)}
+                      </p>
+                    )}
+                    {!!emailAction.useAiContent && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                        ✨ AI-generated content
+                      </span>
+                    )}
+                  </div>
+                ) : null;
+              })()}
 
-              {actionType === 'send_sms' && step.action && 'useAiContent' in step.action && (
-                <div className="mt-2">
-                  {step.action.useAiContent && (
+              {actionType === 'send_sms' && step.action && (() => {
+                const smsAction = step.action as Record<string, unknown>;
+                return smsAction.useAiContent ? (
+                  <div className="mt-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
                       ✨ AI-generated content
                     </span>
-                  )}
-                </div>
-              )}
+                  </div>
+                ) : null;
+              })()}
 
               {actionType === 'create_task' && step.action && 'taskTitle' in step.action && (
                 <p className="mt-2 text-xs text-gray-700">
