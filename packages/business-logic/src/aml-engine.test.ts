@@ -46,7 +46,7 @@ function makeSupabaseMock(overrides?: {
 }) {
   const now = new Date().toISOString();
   const defaultCheck: Record<string, unknown> = {
-    id: 'check-1',
+    id: '00000000-0000-0000-0000-000000000001',
     contact_id: '00000000-0000-0000-0000-000000000002',
     agent_id: '00000000-0000-0000-0000-000000000003',
     status: 'in_progress',
@@ -107,13 +107,14 @@ function makeSupabaseMock(overrides?: {
     return chain;
   };
 
-  // We need per-table routing. Use a smarter mock.
-  const selectCallsByTable: Record<string, number> = {};
+  // Track how many times aml_checks has been awaited as a list query.
+  // generateComplianceReport queries aml_checks twice: first for period checks,
+  // second for expiry count. Route them to allChecks and expiringChecks respectively.
+  let amlChecksListCallNum = 0;
 
   const supabase = {
     from: vi.fn((table: string) => {
       currentTable = table;
-      selectCallsByTable[table] = (selectCallsByTable[table] ?? 0);
 
       if (table === 'aml_checks') {
         const checkData = overrides?.check !== undefined ? overrides.check : defaultCheck;
@@ -142,8 +143,18 @@ function makeSupabaseMock(overrides?: {
           }
           return Promise.resolve({ data: checkData, error: checkErr });
         });
-        // Thenable for list queries
+        // Thenable for list queries.
+        // When allChecks is explicitly provided (generateComplianceReport pattern):
+        //   - 1st call → allChecks (the period query)
+        //   - 2nd+ call → expiringChecks (the expiry count query)
+        // When only expiringChecks is provided (getExpiringChecks pattern):
+        //   - every call → expiringChecks
         chain.then = (resolve: (v: { data: unknown; error: unknown }) => void) => {
+          const callNum = ++amlChecksListCallNum;
+          const hasAllChecksOverride = overrides?.allChecks !== undefined;
+          if (hasAllChecksOverride && callNum === 1) {
+            return Promise.resolve({ data: allChecks, error: null }).then(resolve);
+          }
           if (overrides?.expiringChecks !== undefined) {
             return Promise.resolve({ data: overrides.expiringChecks, error: overrides.expiringError ?? null }).then(resolve);
           }
@@ -159,6 +170,7 @@ function makeSupabaseMock(overrides?: {
         const chain: Record<string, unknown> = {};
         chain.select = vi.fn().mockReturnValue(chain);
         chain.eq = vi.fn().mockReturnValue(chain);
+        chain.is = vi.fn().mockReturnValue(chain);
         chain.order = vi.fn().mockReturnValue(chain);
         chain.then = (resolve: (v: { data: unknown; error: unknown }) => void) =>
           Promise.resolve({ data: docsData, error: docsErr }).then(resolve);
@@ -376,7 +388,7 @@ describe('AmlEngine.tryAutoComplete', () => {
   it('returns null when full_legal_name is missing', async () => {
     const supabase = makeSupabaseMock({
       check: {
-        id: 'check-1',
+        id: '00000000-0000-0000-0000-000000000001',
         contact_id: '00000000-0000-0000-0000-000000000002',
         agent_id: '00000000-0000-0000-0000-000000000003',
         status: 'in_progress',
@@ -406,7 +418,7 @@ describe('AmlEngine.tryAutoComplete', () => {
   it('returns null when date_of_birth is missing', async () => {
     const supabase = makeSupabaseMock({
       check: {
-        id: 'check-1',
+        id: '00000000-0000-0000-0000-000000000001',
         contact_id: '00000000-0000-0000-0000-000000000002',
         agent_id: '00000000-0000-0000-0000-000000000003',
         status: 'in_progress',
@@ -447,7 +459,7 @@ describe('AmlEngine.tryAutoComplete', () => {
     const now = new Date().toISOString();
     const supabase = makeSupabaseMock({
       check: {
-        id: 'check-1',
+        id: '00000000-0000-0000-0000-000000000001',
         contact_id: '00000000-0000-0000-0000-000000000002',
         agent_id: '00000000-0000-0000-0000-000000000003',
         status: 'passed',
@@ -494,7 +506,7 @@ describe('AmlEngine.getExpiringChecks', () => {
     soonExpiry.setDate(soonExpiry.getDate() + 30);
 
     const expiringCheck: Record<string, unknown> = {
-      id: 'check-exp-1',
+      id: '00000000-0000-0000-0000-000000000010',
       contact_id: '00000000-0000-0000-0000-000000000002',
       agent_id: '00000000-0000-0000-0000-000000000003',
       status: 'passed',
@@ -520,7 +532,7 @@ describe('AmlEngine.getExpiringChecks', () => {
     const result = await AmlEngine.getExpiringChecks('agent-1', 90, supabase as never);
 
     expect(result).toHaveLength(1);
-    expect(result[0]!.id).toBe('check-exp-1');
+    expect(result[0]!.id).toBe('00000000-0000-0000-0000-000000000010');
     expect(result[0]!.status).toBe('passed');
   });
 
@@ -572,11 +584,11 @@ describe('AmlEngine.generateComplianceReport', () => {
 
   it('returns correct total, passed, failed, pending counts', async () => {
     const allChecks = [
-      makeCheckRow('passed', 'c1'),
-      makeCheckRow('passed', 'c2'),
-      makeCheckRow('failed', 'c3'),
-      makeCheckRow('pending', 'c4'),
-      makeCheckRow('in_progress', 'c5'),
+      makeCheckRow('passed', '00000000-0000-0000-0000-000000000011'),
+      makeCheckRow('passed', '00000000-0000-0000-0000-000000000012'),
+      makeCheckRow('failed', '00000000-0000-0000-0000-000000000013'),
+      makeCheckRow('pending', '00000000-0000-0000-0000-000000000014'),
+      makeCheckRow('in_progress', '00000000-0000-0000-0000-000000000015'),
     ];
 
     const supabase = makeSupabaseMock({
@@ -617,7 +629,7 @@ describe('AmlEngine.generateComplianceReport', () => {
   });
 
   it('includes expiringWithin90Days count', async () => {
-    const expiringCheck = makeCheckRow('passed', 'exp-1');
+    const expiringCheck = makeCheckRow('passed', '00000000-0000-0000-0000-000000000016');
     const supabase = makeSupabaseMock({
       allChecks: [],
       expiringChecks: [expiringCheck],

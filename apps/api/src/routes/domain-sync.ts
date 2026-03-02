@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
-import type { FastifyInstance } from 'fastify';
+import { PassThrough } from 'node:stream';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { DomainSyncEngine } from '@realflow/business-logic';
 import { DomainClient } from '@realflow/integrations';
@@ -39,6 +40,24 @@ const AuctionResultsQuerySchema = z.object({
 // ─── Routes ──────────────────────────────────────────────────────────────────
 
 export async function domainSyncRoutes(fastify: FastifyInstance) {
+  // Capture raw request body bytes before parsing — required for HMAC validation
+  // on the webhook route. Uses PassThrough to tee the stream without consuming it.
+  fastify.addHook('preParsing', (_req, _reply, payload, done) => {
+    const chunks: Buffer[] = [];
+    const pt = new PassThrough();
+    payload.on('data', (chunk: unknown) => {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
+      chunks.push(buf);
+      pt.push(buf);
+    });
+    payload.on('end', () => {
+      (_req as FastifyRequest & { rawBody: Buffer }).rawBody = Buffer.concat(chunks);
+      pt.push(null);
+    });
+    payload.on('error', (err) => pt.destroy(err));
+    done(null, pt);
+  });
+
   // ─── GET /status ────────────────────────────────────────────────────────────
 
   /**
@@ -186,6 +205,12 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
    * Query params: suburb, state, postcode, minPrice, maxPrice, bedrooms, pageSize, pageNumber
    */
   fastify.get('/listings', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const parse = ListingsQuerySchema.safeParse(request.query);
     if (!parse.success) {
       return reply.status(400).send({
@@ -296,8 +321,10 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
       return reply.status(401).send({ error: 'Missing signature' });
     }
 
-    // Compute expected HMAC-SHA256 over the raw body
-    const rawBody = JSON.stringify(request.body);
+    // Compute expected HMAC-SHA256 over the original raw request bytes
+    const rawBody =
+      (request as FastifyRequest & { rawBody?: Buffer }).rawBody ??
+      Buffer.from(JSON.stringify(request.body));
     const expected = crypto
       .createHmac('sha256', secret)
       .update(rawBody)
@@ -344,14 +371,18 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
    * Query params: limit (default 20), offset (default 0)
    */
   fastify.get('/price-changes', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const parse = PriceChangesQuerySchema.safeParse(request.query);
     if (!parse.success) {
       return reply.status(400).send({ error: 'Invalid query parameters' });
     }
 
     const { limit, offset } = parse.data;
-
-    const supabase = createSupabaseClient(request);
 
     const { data, error, count } = await supabase
       .from('property_price_changes')
@@ -394,14 +425,18 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
    * Query params: suburb?, from?, to?, limit (default 20), offset (default 0)
    */
   fastify.get('/auction-results', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const parse = AuctionResultsQuerySchema.safeParse(request.query);
     if (!parse.success) {
       return reply.status(400).send({ error: 'Invalid query parameters' });
     }
 
     const { suburb, from, to, limit, offset } = parse.data;
-
-    const supabase = createSupabaseClient(request);
 
     let query = supabase
       .from('auction_results')
