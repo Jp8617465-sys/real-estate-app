@@ -1,0 +1,5 @@
+# Compiled output emitted into src/ (tsc without outDir or direct compilation)
+src/*.js
+src/*.js.map
+src/*.d.ts
+src/*.d.ts.map
