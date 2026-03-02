@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { createSupabaseClient } from '../middleware/supabase';
-import { generateDailyActions } from '../../../../packages/business-logic/src/daily-action-engine';
+import { generateDailyActions, type DAESupabaseClient } from '@realflow/business-logic';
 import { getNotificationDispatcher } from '../services/notification-dispatcher';
 
 export async function dailyActionRoutes(fastify: FastifyInstance) {
@@ -8,13 +8,13 @@ export async function dailyActionRoutes(fastify: FastifyInstance) {
   // Generates on demand if not already cached for today.
   fastify.get('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const query = request.query as Record<string, string | undefined>;
-    const agentId = query.agent_id;
-    const date = query.date ?? new Date().toISOString().split('T')[0]!;
 
-    if (!agentId) {
-      return reply.status(400).send({ error: 'agent_id is required' });
-    }
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
+    const agentId = user.id;
+
+    const query = request.query as Record<string, string | undefined>;
+    const date = query.date ?? new Date().toISOString().split('T')[0]!;
 
     // Check for cached list
     const { data: existing, error: existingError } = await supabase
@@ -49,7 +49,7 @@ export async function dailyActionRoutes(fastify: FastifyInstance) {
       const result = await generateDailyActions({
         agentId,
         date,
-        supabase: supabase as Parameters<typeof generateDailyActions>[0]['supabase'],
+        supabase: supabase as unknown as DAESupabaseClient,
       });
 
       // Fetch persisted rows
@@ -100,19 +100,19 @@ export async function dailyActionRoutes(fastify: FastifyInstance) {
   // POST /regenerate — Force-regenerate the daily action list (dev/test helper)
   fastify.post('/regenerate', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const body = request.body as Record<string, string | undefined>;
-    const agentId = body?.agent_id;
-    const date = body?.date ?? new Date().toISOString().split('T')[0]!;
 
-    if (!agentId) {
-      return reply.status(400).send({ error: 'agent_id is required' });
-    }
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
+    const agentId = user.id;
+
+    const body = request.body as Record<string, string | undefined>;
+    const date = body?.date ?? new Date().toISOString().split('T')[0]!;
 
     try {
       const result = await generateDailyActions({
         agentId,
         date,
-        supabase: supabase as Parameters<typeof generateDailyActions>[0]['supabase'],
+        supabase: supabase as unknown as DAESupabaseClient,
       });
 
       // Send push notification
@@ -125,6 +125,7 @@ export async function dailyActionRoutes(fastify: FastifyInstance) {
         category: 'daily_action_list',
         actionPrimary: 'view_daily_actions',
         dedupKey: `daily_action_list:${agentId}:${date}:regen:${Date.now()}`,
+        isDigestItem: false,
       });
 
       return { success: true, itemCount: result.items.length, generatedAt: result.generatedAt };

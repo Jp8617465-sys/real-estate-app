@@ -203,8 +203,8 @@ export async function processEnrollmentStep(opts: ProcessEnrollmentOptions): Pro
         .from('sequence_enrollments')
         .update({ ai_content_overrides: overrides, updated_at: new Date().toISOString() })
         .eq('id', enrollmentId);
-    } catch {
-      // Graceful degradation — use template as-is
+    } catch (error: unknown) {
+      console.error('[SequenceEngine] AI content generation failed, using template as-is:', error instanceof Error ? error.message : String(error));
     }
   }
 

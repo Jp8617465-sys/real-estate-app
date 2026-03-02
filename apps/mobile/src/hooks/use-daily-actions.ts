@@ -4,41 +4,40 @@ import type { DailyActionItem } from '@realflow/shared';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5000';
 
-export function useDailyActions(agentId?: string) {
+async function getToken(): Promise<string> {
+  return (await supabase.auth.getSession()).data.session?.access_token ?? '';
+}
+
+export function useDailyActions() {
   const today = new Date().toISOString().split('T')[0]!;
 
   return useQuery({
-    queryKey: ['daily-actions', agentId, today],
+    queryKey: ['daily-actions', today],
     queryFn: async () => {
-      if (!agentId) return { data: [], meta: { urgentCount: 0, completedCount: 0, totalCount: 0 } };
-
+      const token = await getToken();
       const res = await fetch(
-        `${API_BASE}/api/v1/daily-actions?agent_id=${encodeURIComponent(agentId)}&date=${today}`,
+        `${API_BASE}/api/v1/daily-actions?date=${today}`,
         {
-          headers: {
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ''}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         },
       );
 
       if (!res.ok) throw new Error('Failed to fetch daily actions');
       return res.json() as Promise<{ data: DailyActionItem[]; meta: { urgentCount: number; completedCount: number; totalCount: number; cached?: boolean } }>;
     },
-    enabled: !!agentId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
 export function useCompleteDailyAction() {
   const queryClient = useQueryClient();
-  const today = new Date().toISOString().split('T')[0]!;
 
   return useMutation({
     mutationFn: async (actionId: string) => {
       const res = await fetch(`${API_BASE}/api/v1/daily-actions/${actionId}/complete`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ''}`,
+          Authorization: `Bearer ${await getToken()}`,
         },
       });
       if (!res.ok) throw new Error('Failed to complete action');
@@ -71,15 +70,15 @@ export function useRegenerateDailyActions() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (agentId: string) => {
+    mutationFn: async () => {
       const today = new Date().toISOString().split('T')[0]!;
       const res = await fetch(`${API_BASE}/api/v1/daily-actions/regenerate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ''}`,
+          Authorization: `Bearer ${await getToken()}`,
         },
-        body: JSON.stringify({ agent_id: agentId, date: today }),
+        body: JSON.stringify({ date: today }),
       });
       if (!res.ok) throw new Error('Regeneration failed');
       return res.json();

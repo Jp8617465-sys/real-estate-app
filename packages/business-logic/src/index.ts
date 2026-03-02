@@ -35,3 +35,21 @@ export {
 export { DomainSyncEngine, type DomainSearchParams, type SyncResult } from './domain-sync-engine';
 export { AnalyticsEngine } from './analytics-engine';
 export { AmlEngine } from './aml-engine';
+export { generateDailyActions, scoreCandidate } from './daily-action-engine';
+export type {
+  DAESupabaseClient,
+  DAEAIClient,
+  GenerateDailyActionsOptions,
+  DailyActionResult,
+} from './daily-action-engine';
+export { enrollContact, processEnrollmentStep, processDueEnrollments } from './follow-up-sequence-engine';
+export type {
+  FSESupabaseClient,
+  FSEAIClient,
+  EnrollContactOptions,
+  EnrollContactResult,
+  ProcessEnrollmentOptions,
+  ProcessStepResult,
+  ProcessDueEnrollmentsOptions,
+  BulkProcessResult,
+} from './follow-up-sequence-engine';

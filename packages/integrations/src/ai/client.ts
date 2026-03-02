@@ -439,7 +439,7 @@ export class AnthropicClient {
 
     try {
       return JSON.parse(cleaned) as T;
-    } catch {
+    } catch (error: unknown) {
       throw new AnthropicAPIError(
         `Failed to parse AI response as JSON: ${cleaned.slice(0, 200)}`,
         0,

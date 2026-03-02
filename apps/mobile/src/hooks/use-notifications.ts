@@ -8,41 +8,38 @@ async function getToken(): Promise<string> {
   return (await supabase.auth.getSession()).data.session?.access_token ?? '';
 }
 
-export function useNotifications(userId?: string, filter?: { category?: string; status?: string }) {
+export function useNotifications(filter?: { category?: string; status?: string }) {
   return useQuery({
-    queryKey: ['notifications', userId, filter],
+    queryKey: ['notifications', filter],
     queryFn: async () => {
-      if (!userId) return [];
-      const params = new URLSearchParams({ user_id: userId });
+      const params = new URLSearchParams();
       if (filter?.category) params.set('category', filter.category);
       if (filter?.status) params.set('status', filter.status);
 
-      const res = await fetch(`${API_BASE}/api/v1/notifications?${params.toString()}`, {
+      const query = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetch(`${API_BASE}/api/v1/notifications${query}`, {
         headers: { Authorization: `Bearer ${await getToken()}` },
       });
       if (!res.ok) throw new Error('Failed to fetch notifications');
       const json = await res.json() as { data: Notification[] };
       return json.data;
     },
-    enabled: !!userId,
     refetchInterval: 30_000, // Poll every 30s
   });
 }
 
-export function useUnreadCount(userId?: string) {
+export function useUnreadCount() {
   return useQuery({
-    queryKey: ['notifications-unread-count', userId],
+    queryKey: ['notifications-unread-count'],
     queryFn: async () => {
-      if (!userId) return 0;
       const res = await fetch(
-        `${API_BASE}/api/v1/notifications/unread-count?user_id=${encodeURIComponent(userId)}`,
+        `${API_BASE}/api/v1/notifications/unread-count`,
         { headers: { Authorization: `Bearer ${await getToken()}` } },
       );
       if (!res.ok) return 0;
       const json = await res.json() as { count: number };
       return json.count;
     },
-    enabled: !!userId,
     refetchInterval: 15_000,
   });
 }
