@@ -51,6 +51,12 @@ export {
   type MigrationDecision,
 } from './pipeline-migration';
 export { DomainSyncEngine, type DomainSearchParams, type SyncResult } from './domain-sync-engine';
+export { PropertyMatcher } from './property-matcher';
+export type {
+  PropertyMatcherConfig,
+  EnhancedMatchResult,
+  FeatureMatchDetail,
+} from './property-matcher';
 export { AnalyticsEngine } from './analytics-engine';
 export { AmlEngine } from './aml-engine';
 export { generateDailyActions, scoreCandidate } from './daily-action-engine';
