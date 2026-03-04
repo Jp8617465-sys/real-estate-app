@@ -72,7 +72,7 @@ export class CachedQueryService {
     filters: ContactFilters,
     options?: CachedQueryOptions,
   ): Promise<Record<string, unknown>[]> {
-    const cacheId = this.buildFilteredKey('list', filters);
+    const cacheId = this.buildFilteredKey('list', filters as unknown as Record<string, unknown>);
     const ttl = DEFAULT_TTL['contacts'] ?? 30;
 
     if (!options?.forceRefresh) {
