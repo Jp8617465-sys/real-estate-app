@@ -6,9 +6,23 @@ import {
   executeAction,
   runWorkflow,
   parseDuration,
+  pauseExecution,
+  resumeExecution,
+  scheduleResume,
 } from './workflow-engine';
-import type { WorkflowEvent, WorkflowContext, SupabaseClient } from './workflow-engine';
-import type { WorkflowTrigger, WorkflowCondition, WorkflowAction, Workflow } from '@realflow/shared';
+import type { WorkflowEvent, WorkflowContext, SupabaseClient, RunWorkflowOptions } from './workflow-engine';
+import type { WorkflowTrigger, WorkflowCondition, WorkflowAction, Workflow, CompoundCondition, ConditionNode } from '@realflow/shared';
+import {
+  evaluateFieldCondition,
+  evaluateConditionNode,
+  evaluateConditionNodes,
+} from './workflow-condition-evaluator';
+import {
+  classifyError,
+  calculateRetryDelay,
+  getErrorPolicy,
+  recoverFromError,
+} from './workflow-error-recovery';
 
 // ─── Mock Helpers ─────────────────────────────────────────────────
 
@@ -741,5 +755,874 @@ describe('runWorkflow', () => {
     expect(result.status).toBe('completed');
     expect(result.actionsExecuted).toBe(1); // Only the last email
     expect(result.results[0]!.actionType).toBe('send_email');
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════
+// NEW TESTS: Condition Evaluator (AND/OR/NOT, date, domain-specific)
+// ════════════════════════════════════════════════════════════════════
+
+describe('evaluateFieldCondition (enhanced operators)', () => {
+  const ctx = createMockContext;
+
+  // ─── starts_with ──────────────────────────────────────────────
+
+  it('starts_with: matches when string starts with value', () => {
+    const condition: WorkflowCondition = { field: 'name', operator: 'starts_with', value: 'John' };
+    const context = ctx({ entityData: { name: 'John Smith' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('starts_with: fails when string does not start with value', () => {
+    const condition: WorkflowCondition = { field: 'name', operator: 'starts_with', value: 'Jane' };
+    const context = ctx({ entityData: { name: 'John Smith' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  // ─── Date operators ───────────────────────────────────────────
+
+  it('before: matches when field date is before comparison', () => {
+    const condition: WorkflowCondition = {
+      field: 'createdAt',
+      operator: 'before',
+      value: '2026-06-01T00:00:00.000Z',
+    };
+    const context = ctx({ entityData: { createdAt: '2026-01-15T00:00:00.000Z' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('before: fails when field date is after comparison', () => {
+    const condition: WorkflowCondition = {
+      field: 'createdAt',
+      operator: 'before',
+      value: '2026-01-01T00:00:00.000Z',
+    };
+    const context = ctx({ entityData: { createdAt: '2026-06-15T00:00:00.000Z' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('after: matches when field date is after comparison', () => {
+    const condition: WorkflowCondition = {
+      field: 'createdAt',
+      operator: 'after',
+      value: '2026-01-01T00:00:00.000Z',
+    };
+    const context = ctx({ entityData: { createdAt: '2026-06-15T00:00:00.000Z' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('after: fails when field date is before comparison', () => {
+    const condition: WorkflowCondition = {
+      field: 'createdAt',
+      operator: 'after',
+      value: '2026-12-01T00:00:00.000Z',
+    };
+    const context = ctx({ entityData: { createdAt: '2026-06-15T00:00:00.000Z' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('within_days: matches when date is within range', () => {
+    const now = new Date();
+    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const condition: WorkflowCondition = {
+      field: 'lastContact',
+      operator: 'within_days',
+      value: 5,
+    };
+    const context = ctx({ entityData: { lastContact: twoDaysAgo.toISOString() } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('within_days: fails when date is outside range', () => {
+    const now = new Date();
+    const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
+    const condition: WorkflowCondition = {
+      field: 'lastContact',
+      operator: 'within_days',
+      value: 5,
+    };
+    const context = ctx({ entityData: { lastContact: tenDaysAgo.toISOString() } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('before: returns false for invalid date', () => {
+    const condition: WorkflowCondition = {
+      field: 'createdAt',
+      operator: 'before',
+      value: '2026-06-01T00:00:00.000Z',
+    };
+    const context = ctx({ entityData: { createdAt: 'not-a-date' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  // ─── Contact-specific operators ───────────────────────────────
+
+  it('has_tag: matches when tags array contains the value', () => {
+    const condition: WorkflowCondition = { field: 'tags', operator: 'has_tag', value: 'vip' };
+    const context = ctx({ entityData: { tags: ['vip', 'buyer'] } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('has_tag: fails when tags array does not contain the value', () => {
+    const condition: WorkflowCondition = { field: 'tags', operator: 'has_tag', value: 'seller' };
+    const context = ctx({ entityData: { tags: ['vip', 'buyer'] } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('has_tag: fails when field is not an array', () => {
+    const condition: WorkflowCondition = { field: 'tags', operator: 'has_tag', value: 'vip' };
+    const context = ctx({ entityData: { tags: 'vip' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('in_stage: matches when value is a string and matches', () => {
+    const condition: WorkflowCondition = { field: 'stage', operator: 'in_stage', value: 'active-search' };
+    const context = ctx({ entityData: { stage: 'active-search' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('in_stage: matches when value is an array containing the stage', () => {
+    const condition: WorkflowCondition = {
+      field: 'stage',
+      operator: 'in_stage',
+      value: ['active-search', 'offer-negotiate'],
+    };
+    const context = ctx({ entityData: { stage: 'offer-negotiate' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('in_stage: fails when stage is not in array', () => {
+    const condition: WorkflowCondition = {
+      field: 'stage',
+      operator: 'in_stage',
+      value: ['active-search', 'offer-negotiate'],
+    };
+    const context = ctx({ entityData: { stage: 'settled' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('lead_score_above: matches when score is above threshold', () => {
+    const condition: WorkflowCondition = { field: 'leadScore', operator: 'lead_score_above', value: 70 };
+    const context = ctx({ entityData: { leadScore: 85 } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('lead_score_above: fails when score is below threshold', () => {
+    const condition: WorkflowCondition = { field: 'leadScore', operator: 'lead_score_above', value: 90 };
+    const context = ctx({ entityData: { leadScore: 85 } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  // ─── Property-specific operators ──────────────────────────────
+
+  it('price_range: matches when price is within range', () => {
+    const condition: WorkflowCondition = {
+      field: 'price',
+      operator: 'price_range',
+      value: { min: 500000, max: 1500000 },
+    };
+    const context = ctx({ entityData: { price: 800000 } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('price_range: fails when price is below range', () => {
+    const condition: WorkflowCondition = {
+      field: 'price',
+      operator: 'price_range',
+      value: { min: 500000, max: 1500000 },
+    };
+    const context = ctx({ entityData: { price: 300000 } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('price_range: fails when price is above range', () => {
+    const condition: WorkflowCondition = {
+      field: 'price',
+      operator: 'price_range',
+      value: { min: 500000, max: 1500000 },
+    };
+    const context = ctx({ entityData: { price: 2000000 } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('suburb_match: matches single suburb (case insensitive)', () => {
+    const condition: WorkflowCondition = {
+      field: 'suburb',
+      operator: 'suburb_match',
+      value: 'Bondi',
+    };
+    const context = ctx({ entityData: { suburb: 'bondi' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('suburb_match: matches from suburb array', () => {
+    const condition: WorkflowCondition = {
+      field: 'suburb',
+      operator: 'suburb_match',
+      value: ['Bondi', 'Coogee', 'Manly'],
+    };
+    const context = ctx({ entityData: { suburb: 'Coogee' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('suburb_match: fails when suburb not in array', () => {
+    const condition: WorkflowCondition = {
+      field: 'suburb',
+      operator: 'suburb_match',
+      value: ['Bondi', 'Coogee'],
+    };
+    const context = ctx({ entityData: { suburb: 'Parramatta' } });
+    expect(evaluateFieldCondition(condition, context)).toBe(false);
+  });
+
+  it('days_on_market: matches when days exceed threshold', () => {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const condition: WorkflowCondition = {
+      field: 'listedDate',
+      operator: 'days_on_market',
+      value: 20,
+    };
+    const context = ctx({ entityData: { listedDate: thirtyDaysAgo.toISOString() } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+
+  it('days_on_market: matches within min/max range', () => {
+    const twentyDaysAgo = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000);
+    const condition: WorkflowCondition = {
+      field: 'listedDate',
+      operator: 'days_on_market',
+      value: { min: 10, max: 30 },
+    };
+    const context = ctx({ entityData: { listedDate: twentyDaysAgo.toISOString() } });
+    expect(evaluateFieldCondition(condition, context)).toBe(true);
+  });
+});
+
+// ─── Compound Conditions (AND / OR / NOT) ────────────────────────
+
+describe('evaluateConditionNode (compound logic)', () => {
+  const ctx = createMockContext;
+
+  it('AND: passes when all child conditions are true', () => {
+    const compound: CompoundCondition = {
+      logic: 'AND',
+      conditions: [
+        { field: 'status', operator: 'equals', value: 'active' },
+        { field: 'score', operator: 'greater_than', value: 50 },
+      ],
+    };
+    const context = ctx({ entityData: { status: 'active', score: 75 } });
+    expect(evaluateConditionNode(compound, context)).toBe(true);
+  });
+
+  it('AND: fails when any child condition is false', () => {
+    const compound: CompoundCondition = {
+      logic: 'AND',
+      conditions: [
+        { field: 'status', operator: 'equals', value: 'active' },
+        { field: 'score', operator: 'greater_than', value: 80 },
+      ],
+    };
+    const context = ctx({ entityData: { status: 'active', score: 75 } });
+    expect(evaluateConditionNode(compound, context)).toBe(false);
+  });
+
+  it('OR: passes when at least one child condition is true', () => {
+    const compound: CompoundCondition = {
+      logic: 'OR',
+      conditions: [
+        { field: 'status', operator: 'equals', value: 'inactive' },
+        { field: 'score', operator: 'greater_than', value: 50 },
+      ],
+    };
+    const context = ctx({ entityData: { status: 'active', score: 75 } });
+    expect(evaluateConditionNode(compound, context)).toBe(true);
+  });
+
+  it('OR: fails when all child conditions are false', () => {
+    const compound: CompoundCondition = {
+      logic: 'OR',
+      conditions: [
+        { field: 'status', operator: 'equals', value: 'inactive' },
+        { field: 'score', operator: 'greater_than', value: 90 },
+      ],
+    };
+    const context = ctx({ entityData: { status: 'active', score: 75 } });
+    expect(evaluateConditionNode(compound, context)).toBe(false);
+  });
+
+  it('NOT: negates a true condition to false', () => {
+    const compound: CompoundCondition = {
+      logic: 'NOT',
+      condition: { field: 'status', operator: 'equals', value: 'active' },
+    };
+    const context = ctx({ entityData: { status: 'active' } });
+    expect(evaluateConditionNode(compound, context)).toBe(false);
+  });
+
+  it('NOT: negates a false condition to true', () => {
+    const compound: CompoundCondition = {
+      logic: 'NOT',
+      condition: { field: 'status', operator: 'equals', value: 'inactive' },
+    };
+    const context = ctx({ entityData: { status: 'active' } });
+    expect(evaluateConditionNode(compound, context)).toBe(true);
+  });
+
+  it('nested: AND containing OR containing NOT', () => {
+    const compound: CompoundCondition = {
+      logic: 'AND',
+      conditions: [
+        { field: 'status', operator: 'equals', value: 'active' },
+        {
+          logic: 'OR',
+          conditions: [
+            { field: 'score', operator: 'greater_than', value: 90 },
+            {
+              logic: 'NOT',
+              condition: { field: 'tags', operator: 'has_tag', value: 'disqualified' },
+            },
+          ],
+        },
+      ],
+    };
+    const context = ctx({
+      entityData: { status: 'active', score: 50, tags: ['buyer'] },
+    });
+    // status=active (true) AND (score>90 (false) OR NOT has_tag disqualified (true)) => true
+    expect(evaluateConditionNode(compound, context)).toBe(true);
+  });
+
+  it('evaluateConditionNodes: evaluates mixed simple and compound conditions', () => {
+    const conditions: ConditionNode[] = [
+      { field: 'status', operator: 'equals', value: 'active' },
+      {
+        logic: 'OR',
+        conditions: [
+          { field: 'source', operator: 'equals', value: 'domain' },
+          { field: 'source', operator: 'equals', value: 'rea' },
+        ],
+      },
+    ];
+    const context = ctx({ entityData: { status: 'active', source: 'rea' } });
+    expect(evaluateConditionNodes(conditions, context)).toBe(true);
+  });
+
+  it('evaluateConditionNodes: returns true for empty array', () => {
+    const context = ctx({ entityData: {} });
+    expect(evaluateConditionNodes([], context)).toBe(true);
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════
+// NEW TESTS: Pause / Resume
+// ════════════════════════════════════════════════════════════════════
+
+describe('pauseExecution', () => {
+  it('calls supabase update with paused status', async () => {
+    const context = createMockContext();
+    const result = await pauseExecution('run-1', context);
+
+    expect(result.success).toBe(true);
+    expect(context.supabase.from).toHaveBeenCalledWith('workflow_runs');
+  });
+
+  it('returns error when supabase update fails', async () => {
+    const supabase = createMockSupabase({
+      updateResult: { data: null, error: { message: 'Update failed' } },
+    });
+    const context = createMockContext({ supabase });
+    const result = await pauseExecution('run-1', context);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Update failed');
+  });
+});
+
+describe('resumeExecution', () => {
+  it('calls supabase update with running status', async () => {
+    const context = createMockContext();
+    const result = await resumeExecution('run-1', context);
+
+    expect(result.success).toBe(true);
+    expect(context.supabase.from).toHaveBeenCalledWith('workflow_runs');
+  });
+
+  it('returns error when supabase update fails', async () => {
+    const supabase = createMockSupabase({
+      updateResult: { data: null, error: { message: 'Update failed' } },
+    });
+    const context = createMockContext({ supabase });
+    const result = await resumeExecution('run-1', context);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Update failed');
+  });
+});
+
+describe('scheduleResume', () => {
+  it('sets resume_at in the future', async () => {
+    const context = createMockContext();
+    const futureDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+    const result = await scheduleResume('run-1', futureDate, context);
+
+    expect(result.success).toBe(true);
+    expect(context.supabase.from).toHaveBeenCalledWith('workflow_runs');
+  });
+
+  it('rejects resume_at in the past', async () => {
+    const context = createMockContext();
+    const pastDate = new Date(Date.now() - 1000);
+    const result = await scheduleResume('run-1', pastDate, context);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('resumeAt must be in the future');
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════
+// NEW TESTS: Retry with Exponential Backoff
+// ════════════════════════════════════════════════════════════════════
+
+describe('calculateRetryDelay', () => {
+  it('immediate: always returns 0', () => {
+    expect(calculateRetryDelay('immediate', 0, 1000, 300000)).toBe(0);
+    expect(calculateRetryDelay('immediate', 5, 1000, 300000)).toBe(0);
+  });
+
+  it('linear: scales linearly with attempt', () => {
+    expect(calculateRetryDelay('linear', 0, 1000, 300000)).toBe(1000);
+    expect(calculateRetryDelay('linear', 1, 1000, 300000)).toBe(2000);
+    expect(calculateRetryDelay('linear', 2, 1000, 300000)).toBe(3000);
+  });
+
+  it('exponential: doubles each attempt', () => {
+    expect(calculateRetryDelay('exponential', 0, 1000, 300000)).toBe(1000);
+    expect(calculateRetryDelay('exponential', 1, 1000, 300000)).toBe(2000);
+    expect(calculateRetryDelay('exponential', 2, 1000, 300000)).toBe(4000);
+    expect(calculateRetryDelay('exponential', 3, 1000, 300000)).toBe(8000);
+  });
+
+  it('caps delay at maxDelayMs', () => {
+    expect(calculateRetryDelay('exponential', 10, 1000, 5000)).toBe(5000);
+    expect(calculateRetryDelay('linear', 100, 1000, 5000)).toBe(5000);
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════
+// NEW TESTS: Error Classification & Recovery
+// ════════════════════════════════════════════════════════════════════
+
+describe('classifyError', () => {
+  it('classifies timeout errors as transient', () => {
+    expect(classifyError('Request timeout')).toBe('transient');
+    expect(classifyError('ETIMEDOUT')).toBe('transient');
+  });
+
+  it('classifies connection errors as transient', () => {
+    expect(classifyError('ECONNRESET')).toBe('transient');
+    expect(classifyError('ECONNREFUSED')).toBe('transient');
+  });
+
+  it('classifies rate limit errors as transient', () => {
+    expect(classifyError('429 Too Many Requests')).toBe('transient');
+    expect(classifyError('Rate limit exceeded')).toBe('transient');
+  });
+
+  it('classifies 503 as transient', () => {
+    expect(classifyError('503 Service Unavailable')).toBe('transient');
+  });
+
+  it('classifies not found errors as permanent', () => {
+    expect(classifyError('Resource not found')).toBe('permanent');
+    expect(classifyError('404 Not Found')).toBe('permanent');
+  });
+
+  it('classifies unauthorized errors as permanent', () => {
+    expect(classifyError('Unauthorized access')).toBe('permanent');
+    expect(classifyError('401 Unauthorized')).toBe('permanent');
+  });
+
+  it('classifies forbidden errors as permanent', () => {
+    expect(classifyError('403 Forbidden')).toBe('permanent');
+  });
+
+  it('classifies context missing errors as permanent', () => {
+    expect(classifyError('No contact ID in context')).toBe('permanent');
+    expect(classifyError('No entity ID in context')).toBe('permanent');
+  });
+
+  it('defaults to transient for unknown errors', () => {
+    expect(classifyError('Something unexpected happened')).toBe('transient');
+  });
+});
+
+describe('getErrorPolicy', () => {
+  it('returns default policy for known action types', () => {
+    const policy = getErrorPolicy('send_email');
+    expect(policy.classification).toBe('transient');
+    expect(policy.recoveryStrategy).toBe('retry');
+    expect(policy.retryConfig).toBeDefined();
+    expect(policy.retryConfig!.maxRetries).toBe(3);
+  });
+
+  it('returns default policy for assign_contact (permanent/fail)', () => {
+    const policy = getErrorPolicy('assign_contact');
+    expect(policy.classification).toBe('permanent');
+    expect(policy.recoveryStrategy).toBe('fail');
+  });
+
+  it('returns continue_with_warning for notify_agent', () => {
+    const policy = getErrorPolicy('notify_agent');
+    expect(policy.recoveryStrategy).toBe('continue_with_warning');
+  });
+
+  it('applies overrides when provided', () => {
+    const policy = getErrorPolicy('send_email', { recoveryStrategy: 'skip' });
+    expect(policy.recoveryStrategy).toBe('skip');
+    // classification should still be from defaults
+    expect(policy.classification).toBe('transient');
+  });
+
+  it('returns fallback policy for unknown action types', () => {
+    const policy = getErrorPolicy('unknown_action');
+    expect(policy.classification).toBe('transient');
+    expect(policy.recoveryStrategy).toBe('retry');
+  });
+});
+
+describe('recoverFromError', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('skip strategy: returns success so workflow continues', async () => {
+    const action: WorkflowAction = { type: 'notify_agent', message: 'test' };
+    const failedResult = { success: false, actionType: 'notify_agent', error: 'DB error' };
+    const context = createMockContext();
+
+    const result = await recoverFromError(
+      action,
+      failedResult,
+      context,
+      { classification: 'transient', recoveryStrategy: 'skip' },
+      { stepIndex: 0, runId: 'run-1', workflowId: 'wf-1' },
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.strategyApplied).toBe('skip');
+    expect(result.warning).toContain('skipped');
+  });
+
+  it('continue_with_warning strategy: returns success with warning', async () => {
+    const action: WorkflowAction = { type: 'notify_agent', message: 'test' };
+    const failedResult = { success: false, actionType: 'notify_agent', error: 'DB error' };
+    const context = createMockContext();
+
+    const result = await recoverFromError(
+      action,
+      failedResult,
+      context,
+      { classification: 'transient', recoveryStrategy: 'continue_with_warning' },
+      { stepIndex: 0, runId: 'run-1', workflowId: 'wf-1' },
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.strategyApplied).toBe('continue_with_warning');
+    expect(result.warning).toContain('failed but workflow continues');
+  });
+
+  it('permanent fail strategy: dead-letters immediately', async () => {
+    const action: WorkflowAction = {
+      type: 'assign_contact',
+      agentId: '00000000-0000-0000-0000-000000000001',
+    };
+    const failedResult = { success: false, actionType: 'assign_contact', error: 'No contact ID in context' };
+    const context = createMockContext();
+
+    const result = await recoverFromError(
+      action,
+      failedResult,
+      context,
+      { classification: 'permanent', recoveryStrategy: 'fail' },
+      { stepIndex: 0, runId: 'run-1', workflowId: 'wf-1' },
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.strategyApplied).toBe('fail');
+    expect(result.deadLettered).toBe(true);
+    expect(result.retryAttempts).toBe(0);
+  });
+
+  it('retry strategy: retries and succeeds on second attempt', async () => {
+    let callCount = 0;
+    const supabase: SupabaseClient = {
+      from: vi.fn().mockImplementation(() => ({
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockImplementation(() => {
+              callCount++;
+              if (callCount <= 1) {
+                return Promise.resolve({ data: null, error: { message: 'Temporary error' } });
+              }
+              return Promise.resolve({ data: { id: 'mock-id' }, error: null });
+            }),
+          }),
+        }),
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      })),
+    };
+
+    const action: WorkflowAction = {
+      type: 'create_task',
+      taskTitle: 'Test',
+      taskType: 'call',
+      dueDaysFromNow: 0,
+    };
+    const failedResult = { success: false, actionType: 'create_task', error: 'Temporary error' };
+    const context = createMockContext({ supabase });
+
+    const onRetryAttempt = vi.fn();
+
+    const result = await recoverFromError(
+      action,
+      failedResult,
+      context,
+      {
+        classification: 'transient',
+        recoveryStrategy: 'retry',
+        retryConfig: { maxRetries: 3, strategy: 'immediate', baseDelayMs: 0, maxDelayMs: 0 },
+      },
+      {
+        stepIndex: 0,
+        runId: 'run-1',
+        workflowId: 'wf-1',
+        onRetryAttempt,
+      },
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.strategyApplied).toBe('retry');
+    expect(result.retryAttempts).toBeGreaterThanOrEqual(1);
+  });
+
+  it('fallback strategy: executes fallback action when primary fails', async () => {
+    const action: WorkflowAction = { type: 'send_email', templateId: 'welcome' };
+    const failedResult = { success: false, actionType: 'send_email', error: 'SMTP down' };
+    const context = createMockContext();
+
+    const result = await recoverFromError(
+      action,
+      failedResult,
+      context,
+      {
+        classification: 'transient',
+        recoveryStrategy: 'fallback',
+        fallbackAction: { type: 'notify_agent', message: 'Email failed - manual follow up needed' },
+      },
+      { stepIndex: 0, runId: 'run-1', workflowId: 'wf-1' },
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.strategyApplied).toBe('fallback');
+    expect(result.warning).toContain('fallback succeeded');
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════
+// NEW TESTS: Execution History Logging
+// ════════════════════════════════════════════════════════════════════
+
+describe('execution history logging', () => {
+  it('includes execution log in completed workflow result', async () => {
+    const workflow = createMockWorkflow({
+      trigger: { type: 'new_lead' },
+      conditions: [],
+      actions: [
+        { type: 'notify_agent', message: 'New lead!' },
+        { type: 'add_tag', tag: 'new' },
+      ],
+    });
+
+    const event: WorkflowEvent = { type: 'new_lead', data: {} };
+    const context = createMockContext({ entityData: { tags: [] } });
+    const result = await runWorkflow(workflow, event, context);
+
+    expect(result.executionLog).toBeDefined();
+    expect(result.executionLog).toHaveLength(2);
+    expect(result.executionLog[0]!.stepIndex).toBe(0);
+    expect(result.executionLog[0]!.actionType).toBe('notify_agent');
+    expect(result.executionLog[0]!.status).toBe('completed');
+    expect(result.executionLog[0]!.startedAt).toBeDefined();
+    expect(result.executionLog[0]!.completedAt).toBeDefined();
+    expect(result.executionLog[0]!.durationMs).toBeDefined();
+    expect(result.executionLog[1]!.stepIndex).toBe(1);
+    expect(result.executionLog[1]!.actionType).toBe('add_tag');
+    expect(result.executionLog[1]!.status).toBe('completed');
+  });
+
+  it('logs failed step in execution log', async () => {
+    const supabase = createMockSupabase({
+      insertResult: { data: null, error: { message: 'DB error' } },
+    });
+
+    const workflow = createMockWorkflow({
+      trigger: { type: 'new_lead' },
+      actions: [
+        { type: 'create_task', taskTitle: 'Task', taskType: 'call', dueDaysFromNow: 0 },
+      ],
+    });
+
+    const event: WorkflowEvent = { type: 'new_lead', data: {} };
+    const context = createMockContext({ supabase });
+    const result = await runWorkflow(workflow, event, context);
+
+    expect(result.executionLog).toHaveLength(1);
+    expect(result.executionLog[0]!.status).toBe('failed');
+    expect(result.executionLog[0]!.error).toBe('DB error');
+  });
+
+  it('includes execution log in paused workflow result', async () => {
+    const workflow = createMockWorkflow({
+      trigger: { type: 'stage_change', to: 'settled-nurture' },
+      actions: [
+        { type: 'send_email', templateId: 'congratulations' },
+        { type: 'wait', duration: '7d' },
+        { type: 'send_email', templateId: 'review-request' },
+      ],
+    });
+
+    const event: WorkflowEvent = { type: 'stage_change', data: { to: 'settled-nurture' } };
+    const context = createMockContext();
+    const result = await runWorkflow(workflow, event, context);
+
+    expect(result.status).toBe('paused');
+    expect(result.executionLog).toHaveLength(2);
+    expect(result.executionLog[0]!.actionType).toBe('send_email');
+    expect(result.executionLog[0]!.status).toBe('completed');
+    expect(result.executionLog[1]!.actionType).toBe('wait');
+    expect(result.executionLog[1]!.status).toBe('completed');
+  });
+
+  it('calls onStepLog callback for each step', async () => {
+    const workflow = createMockWorkflow({
+      trigger: { type: 'new_lead' },
+      conditions: [],
+      actions: [
+        { type: 'notify_agent', message: 'Step 1' },
+        { type: 'add_tag', tag: 'logged' },
+      ],
+    });
+
+    const event: WorkflowEvent = { type: 'new_lead', data: {} };
+    const context = createMockContext({ entityData: { tags: [] } });
+    const onStepLog = vi.fn();
+
+    await runWorkflow(workflow, event, context, 0, { onStepLog });
+
+    // Each step emits a started + completed log (started is replaced, so 2 steps = 4 calls)
+    expect(onStepLog).toHaveBeenCalled();
+    // At minimum we should have gotten the started + completed for each step
+    expect(onStepLog.mock.calls.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('tracks variable context snapshots when variables are set', async () => {
+    const workflow = createMockWorkflow({
+      trigger: { type: 'new_lead' },
+      conditions: [],
+      actions: [
+        { type: 'notify_agent', message: 'Step 1' },
+      ],
+    });
+
+    const event: WorkflowEvent = { type: 'new_lead', data: {} };
+    const context = createMockContext({ variables: { step: 'initial' } });
+    const result = await runWorkflow(workflow, event, context);
+
+    expect(result.executionLog[0]!.variableSnapshot).toEqual({ step: 'initial' });
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════
+// NEW TESTS: Retry integration with runWorkflow
+// ════════════════════════════════════════════════════════════════════
+
+describe('runWorkflow with retry enabled', () => {
+  it('retries a failed action and continues when recovery succeeds (continue_with_warning)', async () => {
+    const workflow = createMockWorkflow({
+      trigger: { type: 'new_lead' },
+      conditions: [],
+      actions: [
+        { type: 'notify_agent', message: 'This will fail then recover' },
+        { type: 'add_tag', tag: 'processed' },
+      ],
+    });
+
+    // notify_agent will fail, but its default policy is continue_with_warning
+    const supabase = createMockSupabase({
+      insertResult: { data: null, error: { message: 'Temporary failure' } },
+    });
+    // Override to make add_tag succeed
+    let callCount = 0;
+    supabase.from = vi.fn().mockImplementation(() => ({
+      insert: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockImplementation(() => {
+            callCount++;
+            if (callCount === 1) {
+              return Promise.resolve({ data: null, error: { message: 'Temporary failure' } });
+            }
+            return Promise.resolve({ data: { id: 'mock-id' }, error: null });
+          }),
+        }),
+      }),
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+      }),
+    }));
+
+    const event: WorkflowEvent = { type: 'new_lead', data: {} };
+    const context = createMockContext({ supabase, entityData: { tags: [] } });
+
+    const options: RunWorkflowOptions = {
+      enableRetry: true,
+      actionErrorPolicies: {
+        notify_agent: { recoveryStrategy: 'continue_with_warning' },
+      },
+    };
+
+    const result = await runWorkflow(workflow, event, context, 0, options);
+
+    // The workflow should complete because notify_agent uses continue_with_warning
+    expect(result.status).toBe('completed');
+    expect(result.actionsExecuted).toBe(2);
+    expect(result.results[0]!.warning).toContain('failed but workflow continues');
+  });
+
+  it('empty executionLog when trigger does not match', async () => {
+    const workflow = createMockWorkflow({
+      trigger: { type: 'stage_change', to: 'settled' },
+    });
+
+    const event: WorkflowEvent = { type: 'new_lead', data: {} };
+    const context = createMockContext();
+    const result = await runWorkflow(workflow, event, context);
+
+    expect(result.executionLog).toEqual([]);
+  });
+
+  it('empty executionLog when conditions not met', async () => {
+    const workflow = createMockWorkflow({
+      trigger: { type: 'new_lead' },
+      conditions: [{ field: 'status', operator: 'equals', value: 'vip' }],
+    });
+
+    const event: WorkflowEvent = { type: 'new_lead', data: {} };
+    const context = createMockContext({ entityData: { status: 'normal' } });
+    const result = await runWorkflow(workflow, event, context);
+
+    expect(result.executionLog).toEqual([]);
   });
 });

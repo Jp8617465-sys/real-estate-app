@@ -9,6 +9,9 @@ import {
   evaluateTrigger,
   evaluateConditions,
   runWorkflow,
+  pauseExecution,
+  resumeExecution,
+  scheduleResume,
 } from '@realflow/business-logic';
 import type { WorkflowEvent, WorkflowContext } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
@@ -221,6 +224,114 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
     if (error) return reply.status(500).send({ error: error.message });
     return { data };
+  });
+
+  // POST /runs/:runId/pause - Pause a running workflow execution
+  fastify.post<{ Params: { runId: string } }>('/runs/:runId/pause', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { runId } = request.params;
+
+    const context: WorkflowContext = {
+      entityData: {},
+      supabase: supabase as unknown as WorkflowContext['supabase'],
+    };
+
+    const result = await pauseExecution(runId, context);
+    if (!result.success) {
+      return reply.status(400).send({ error: result.error });
+    }
+    return { success: true };
+  });
+
+  // POST /runs/:runId/resume - Resume a paused workflow execution
+  fastify.post<{ Params: { runId: string } }>('/runs/:runId/resume', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { runId } = request.params;
+
+    const context: WorkflowContext = {
+      entityData: {},
+      supabase: supabase as unknown as WorkflowContext['supabase'],
+    };
+
+    const result = await resumeExecution(runId, context);
+    if (!result.success) {
+      return reply.status(400).send({ error: result.error });
+    }
+    return { success: true };
+  });
+
+  // POST /runs/:runId/schedule-resume - Schedule a paused execution to resume at a specific time
+  const ScheduleResumeBodySchema = z.object({
+    resumeAt: z.string().datetime(),
+  });
+
+  fastify.post<{ Params: { runId: string } }>('/runs/:runId/schedule-resume', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { runId } = request.params;
+    const parsed = ScheduleResumeBodySchema.safeParse(request.body);
+
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() });
+    }
+
+    const context: WorkflowContext = {
+      entityData: {},
+      supabase: supabase as unknown as WorkflowContext['supabase'],
+    };
+
+    const result = await scheduleResume(runId, new Date(parsed.data.resumeAt), context);
+    if (!result.success) {
+      return reply.status(400).send({ error: result.error });
+    }
+    return { success: true };
+  });
+
+  // GET /dead-letters - List dead letter queue entries
+  fastify.get('/dead-letters', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const query = request.query as Record<string, string | undefined>;
+
+    let dbQuery = supabase
+      .from('workflow_dead_letters')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (query.workflow_id) {
+      dbQuery = dbQuery.eq('workflow_id', query.workflow_id);
+    }
+
+    const { data, error } = await dbQuery;
+    if (error) return reply.status(500).send({ error: error.message });
+    return { data };
+  });
+
+  // GET /runs/:runId/log - Get detailed execution log for a run
+  fastify.get<{ Params: { runId: string } }>('/runs/:runId/log', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { runId } = request.params;
+
+    const { data, error } = await supabase
+      .from('workflow_runs')
+      .select('*')
+      .eq('id', runId)
+      .single();
+
+    if (error) return reply.status(404).send({ error: 'Run not found' });
+
+    const run = data as Record<string, unknown>;
+    return {
+      data: {
+        id: run.id,
+        workflowId: run.workflow_id,
+        status: run.status,
+        executionLog: run.execution_log ?? [],
+        variableContext: run.variable_context ?? {},
+        startedAt: run.started_at,
+        completedAt: run.completed_at,
+        pausedAt: run.paused_at,
+        resumeAt: run.resume_at,
+      },
+    };
   });
 
   // POST /evaluate - Scheduler endpoint for time-based triggers

@@ -15,14 +15,32 @@ export {
   executeAction,
   runWorkflow,
   parseDuration,
+  pauseExecution,
+  resumeExecution,
+  scheduleResume,
 } from './workflow-engine';
 export type {
   WorkflowEvent,
   WorkflowContext,
   ActionResult,
   WorkflowRunResult,
+  RunWorkflowOptions,
   SupabaseClient as WorkflowSupabaseClient,
 } from './workflow-engine';
+export {
+  evaluateFieldCondition,
+  evaluateConditionNode,
+  evaluateConditionNodes,
+} from './workflow-condition-evaluator';
+export {
+  classifyError,
+  calculateRetryDelay,
+  getErrorPolicy,
+  recoverFromError,
+  addToDeadLetterQueue,
+  notifyWorkflowError,
+} from './workflow-error-recovery';
+export type { RecoveryResult } from './workflow-error-recovery';
 export { MessageNormaliser } from './message-normaliser';
 export { ContactMatcher } from './contact-matcher';
 export { EmailParser } from './email-parser';

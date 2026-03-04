@@ -3,7 +3,12 @@ import type {
   WorkflowTrigger,
   WorkflowAction,
   WorkflowCondition,
+  ExecutionStepLog,
+  ActionErrorPolicy,
+  RetryConfig,
 } from '@realflow/shared';
+import { recoverFromError, getErrorPolicy, notifyWorkflowError } from './workflow-error-recovery';
+import type { RecoveryResult } from './workflow-error-recovery';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -32,6 +37,8 @@ export interface WorkflowContext {
   transactionId?: string;
   entityData: Record<string, unknown>;
   supabase: SupabaseClient;
+  /** Variable context carried across steps during execution. */
+  variables?: Record<string, unknown>;
 }
 
 export interface ActionResult {
@@ -39,8 +46,11 @@ export interface ActionResult {
   actionType: string;
   result?: Record<string, unknown>;
   error?: string;
+  warning?: string;
   paused?: boolean;
   resumeAt?: string;
+  retryAttempts?: number;
+  recoveryStrategy?: string;
 }
 
 export interface WorkflowRunResult {
@@ -49,7 +59,22 @@ export interface WorkflowRunResult {
   status: 'completed' | 'failed' | 'paused';
   actionsExecuted: number;
   results: ActionResult[];
+  executionLog: ExecutionStepLog[];
   error?: string;
+}
+
+/** Options for the enhanced runWorkflow function. */
+export interface RunWorkflowOptions {
+  /** Enable retry with error recovery for failed actions. */
+  enableRetry?: boolean;
+  /** Default retry configuration applied to all actions unless overridden. */
+  defaultRetryConfig?: RetryConfig;
+  /** Per-action error policies keyed by action type. */
+  actionErrorPolicies?: Record<string, Partial<ActionErrorPolicy>>;
+  /** Callback fired when a retry attempt begins. */
+  onRetryAttempt?: (stepIndex: number, attempt: number, delay: number) => void;
+  /** Callback fired when an execution step log entry is created. */
+  onStepLog?: (entry: ExecutionStepLog) => void;
 }
 
 // ─── Duration Parsing ─────────────────────────────────────────────
@@ -362,6 +387,31 @@ export async function executeAction(action: WorkflowAction, context: WorkflowCon
   }
 }
 
+// ─── Execution Step Logging ───────────────────────────────────────
+
+function createStepLog(
+  stepIndex: number,
+  actionType: string,
+  status: ExecutionStepLog['status'],
+  startedAt: string,
+  extras?: Partial<ExecutionStepLog>,
+): ExecutionStepLog {
+  const now = new Date().toISOString();
+  const startMs = new Date(startedAt).getTime();
+  const durationMs = Date.now() - startMs;
+
+  return {
+    stepIndex,
+    actionType,
+    status,
+    startedAt,
+    completedAt: status === 'started' ? undefined : now,
+    durationMs: status === 'started' ? undefined : durationMs,
+    retryAttempt: 0,
+    ...extras,
+  };
+}
+
 // ─── Workflow Runner ──────────────────────────────────────────────
 
 export async function runWorkflow(
@@ -369,9 +419,11 @@ export async function runWorkflow(
   event: WorkflowEvent,
   context: WorkflowContext,
   startIndex = 0,
+  options?: RunWorkflowOptions,
 ): Promise<WorkflowRunResult> {
   const runId = crypto.randomUUID();
   const results: ActionResult[] = [];
+  const executionLog: ExecutionStepLog[] = [];
 
   // Step 1: Check trigger matches
   if (startIndex === 0 && !evaluateTrigger(workflow.trigger, event)) {
@@ -381,6 +433,7 @@ export async function runWorkflow(
       status: 'completed',
       actionsExecuted: 0,
       results: [],
+      executionLog: [],
       error: 'Trigger did not match event',
     };
   }
@@ -393,6 +446,7 @@ export async function runWorkflow(
       status: 'completed',
       actionsExecuted: 0,
       results: [],
+      executionLog: [],
       error: 'Conditions not met',
     };
   }
@@ -400,11 +454,28 @@ export async function runWorkflow(
   // Step 3: Execute actions sequentially
   for (let i = startIndex; i < workflow.actions.length; i++) {
     const action = workflow.actions[i]!;
+    const stepStartedAt = new Date().toISOString();
+
+    // Log step started
+    const startLog = createStepLog(i, action.type, 'started', stepStartedAt, {
+      variableSnapshot: context.variables ? { ...context.variables } : undefined,
+    });
+    executionLog.push(startLog);
+    options?.onStepLog?.(startLog);
+
     const result = await executeAction(action, context);
-    results.push(result);
 
     // If action is 'wait', pause execution
     if (result.paused) {
+      const pauseLog = createStepLog(i, action.type, 'completed', stepStartedAt, {
+        result: { paused: true, resumeAt: result.resumeAt },
+      });
+      // Replace the started entry with completed
+      executionLog[executionLog.length - 1] = pauseLog;
+      options?.onStepLog?.(pauseLog);
+
+      results.push(result);
+
       // Record the workflow_run in DB with paused state
       try {
         await context.supabase
@@ -414,9 +485,13 @@ export async function runWorkflow(
             workflow_id: workflow.id,
             contact_id: context.contactId,
             transaction_id: context.transactionId,
-            status: 'running',
+            status: 'paused',
             current_action_index: i + 1,
             started_at: new Date().toISOString(),
+            paused_at: new Date().toISOString(),
+            resume_at: result.resumeAt,
+            execution_log: executionLog,
+            variable_context: context.variables ?? {},
           })
           .select()
           .single();
@@ -430,11 +505,117 @@ export async function runWorkflow(
         status: 'paused',
         actionsExecuted: results.length,
         results,
+        executionLog,
       };
     }
 
-    // If action failed, stop execution
+    // If action failed, attempt recovery if enabled
     if (!result.success) {
+      if (options?.enableRetry) {
+        const policy = getErrorPolicy(
+          action.type,
+          options.actionErrorPolicies?.[action.type],
+        );
+
+        const recoveryResult: RecoveryResult = await recoverFromError(
+          action,
+          result,
+          context,
+          policy,
+          {
+            stepIndex: i,
+            runId,
+            workflowId: workflow.id,
+            onRetryAttempt: (attempt, delay) => {
+              options.onRetryAttempt?.(i, attempt, delay);
+              const retryLog = createStepLog(i, action.type, 'retrying', stepStartedAt, {
+                retryAttempt: attempt + 1,
+              });
+              executionLog.push(retryLog);
+              options.onStepLog?.(retryLog);
+            },
+          },
+        );
+
+        if (recoveryResult.success) {
+          // Recovery succeeded — log and continue
+          const recoveredLog = createStepLog(i, action.type, recoveryResult.warning ? 'warning' : 'completed', stepStartedAt, {
+            retryAttempt: recoveryResult.retryAttempts,
+            warning: recoveryResult.warning,
+            result: recoveryResult.actionResult.result,
+          });
+          executionLog[executionLog.length - 1] = recoveredLog;
+          options?.onStepLog?.(recoveredLog);
+
+          results.push({
+            ...recoveryResult.actionResult,
+            retryAttempts: recoveryResult.retryAttempts,
+            recoveryStrategy: recoveryResult.strategyApplied,
+            warning: recoveryResult.warning,
+          });
+          continue;
+        }
+
+        // Recovery failed — log failure and stop
+        const failLog = createStepLog(i, action.type, 'failed', stepStartedAt, {
+          retryAttempt: recoveryResult.retryAttempts,
+          error: recoveryResult.actionResult.error,
+        });
+        executionLog[executionLog.length - 1] = failLog;
+        options?.onStepLog?.(failLog);
+
+        results.push({
+          ...recoveryResult.actionResult,
+          retryAttempts: recoveryResult.retryAttempts,
+          recoveryStrategy: recoveryResult.strategyApplied,
+        });
+
+        // Notify agent of critical failure
+        await notifyWorkflowError(context, workflow.id, runId, result.error ?? 'Unknown error');
+
+        // Record failure
+        try {
+          await context.supabase
+            .from('workflow_runs')
+            .insert({
+              id: runId,
+              workflow_id: workflow.id,
+              contact_id: context.contactId,
+              transaction_id: context.transactionId,
+              status: 'failed',
+              current_action_index: i,
+              error: result.error,
+              started_at: new Date().toISOString(),
+              completed_at: new Date().toISOString(),
+              execution_log: executionLog,
+              variable_context: context.variables ?? {},
+            })
+            .select()
+            .single();
+        } catch {
+          // Ignore recording failures
+        }
+
+        return {
+          workflowId: workflow.id,
+          runId,
+          status: 'failed',
+          actionsExecuted: results.length,
+          results,
+          executionLog,
+          error: result.error,
+        };
+      }
+
+      // No retry enabled — original behaviour: fail immediately
+      const failLog = createStepLog(i, action.type, 'failed', stepStartedAt, {
+        error: result.error,
+      });
+      executionLog[executionLog.length - 1] = failLog;
+      options?.onStepLog?.(failLog);
+
+      results.push(result);
+
       // Record failure
       try {
         await context.supabase
@@ -449,6 +630,7 @@ export async function runWorkflow(
             error: result.error,
             started_at: new Date().toISOString(),
             completed_at: new Date().toISOString(),
+            execution_log: executionLog,
           })
           .select()
           .single();
@@ -462,9 +644,20 @@ export async function runWorkflow(
         status: 'failed',
         actionsExecuted: results.length,
         results,
+        executionLog,
         error: result.error,
       };
     }
+
+    // Action succeeded
+    const successLog = createStepLog(i, action.type, 'completed', stepStartedAt, {
+      result: result.result,
+      variableSnapshot: context.variables ? { ...context.variables } : undefined,
+    });
+    executionLog[executionLog.length - 1] = successLog;
+    options?.onStepLog?.(successLog);
+
+    results.push(result);
   }
 
   // All actions completed
@@ -480,6 +673,8 @@ export async function runWorkflow(
         current_action_index: workflow.actions.length,
         started_at: new Date().toISOString(),
         completed_at: new Date().toISOString(),
+        execution_log: executionLog,
+        variable_context: context.variables ?? {},
       })
       .select()
       .single();
@@ -493,5 +688,87 @@ export async function runWorkflow(
     status: 'completed',
     actionsExecuted: results.length,
     results,
+    executionLog,
   };
+}
+
+// ─── Pause / Resume / Schedule Resume ────────────────────────────
+
+/**
+ * Pause a running workflow execution. Updates the DB record to 'paused' status.
+ */
+export async function pauseExecution(
+  executionId: string,
+  context: WorkflowContext,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await context.supabase
+      .from('workflow_runs')
+      .update({
+        status: 'paused',
+        paused_at: new Date().toISOString(),
+      })
+      .eq('id', executionId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Resume a paused workflow execution. Updates the DB record to 'running' status
+ * so the scheduler can pick it up.
+ */
+export async function resumeExecution(
+  executionId: string,
+  context: WorkflowContext,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await context.supabase
+      .from('workflow_runs')
+      .update({
+        status: 'running',
+        paused_at: null,
+        resume_at: null,
+      })
+      .eq('id', executionId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Schedule a paused execution to resume at a specific date/time.
+ */
+export async function scheduleResume(
+  executionId: string,
+  resumeAt: Date,
+  context: WorkflowContext,
+): Promise<{ success: boolean; error?: string }> {
+  if (resumeAt.getTime() <= Date.now()) {
+    return { success: false, error: 'resumeAt must be in the future' };
+  }
+
+  try {
+    const { error } = await context.supabase
+      .from('workflow_runs')
+      .update({
+        status: 'paused',
+        resume_at: resumeAt.toISOString(),
+      })
+      .eq('id', executionId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return { success: false, error: message };
+  }
 }
