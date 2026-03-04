@@ -669,8 +669,8 @@ describe('AnthropicClient.generateDailyActionInsights', () => {
     }));
 
     const result = await client.generateDailyActionInsights([
-      { contactName: 'Sarah Smith', action: 'Follow up', context: 'Pre-approval expiring' },
-      { contactName: 'Mike Jones', action: 'Call back', context: 'New lead from Domain' },
+      { category: 'follow_up', title: 'Follow up', contactName: 'Sarah Smith', daysOverdue: 5, compositeScore: 85 },
+      { category: 'new_lead', title: 'Call back', contactName: 'Mike Jones', daysUntilDeadline: 1, compositeScore: 90 },
     ]);
 
     expect(result).toHaveLength(2);
@@ -684,7 +684,7 @@ describe('AnthropicClient.generateDailyActionInsights', () => {
     mockAnthropicResponse(JSON.stringify({}));
 
     const result = await client.generateDailyActionInsights([
-      { contactName: 'Test', action: 'Test', context: 'Test' },
+      { category: 'task', title: 'Test', contactName: 'Test', compositeScore: 50 },
     ]);
 
     expect(result).toEqual([]);
@@ -703,11 +703,11 @@ describe('AnthropicClient.generateSequenceContent', () => {
     }));
 
     const result = await client.generateSequenceContent({
-      channel: 'email',
-      stepNumber: 2,
-      intent: 'weekly update',
-      contactName: 'Sarah',
-      previousMessages: ['Initial brief discussion'],
+      stepAction: 'send_email',
+      stepLabel: 'Weekly Update',
+      dayOffset: 7,
+      contactContext: { name: 'Sarah', pipelineStage: 'active-search', source: 'domain' },
+      sequenceName: 'Weekly Update Sequence',
     });
 
     expect(result.subject).toBe('Quick update on your property search');
@@ -723,10 +723,10 @@ describe('AnthropicClient.generateSequenceContent', () => {
     }));
 
     const result = await client.generateSequenceContent({
-      channel: 'sms',
-      stepNumber: 1,
-      intent: 'check-in',
-      contactName: 'Test',
+      stepAction: 'send_sms',
+      dayOffset: 3,
+      contactContext: { name: 'Test' },
+      sequenceName: 'Check-in Sequence',
     });
 
     expect(result.suggestedTone).toBe('professional');
@@ -745,10 +745,12 @@ describe('AnthropicClient.generateSearchNarrative', () => {
 
     const result = await client.generateSearchNarrative({
       clientName: 'Sarah Smith',
-      suburbs: ['Bondi', 'Coogee'],
-      propertiesReviewed: 8,
-      topMatches: 3,
-      periodDays: 14,
+      briefSummary: 'Looking for 3-4 bed house in Bondi or Coogee, $1.8M-$2.2M',
+      properties: [
+        { address: '42 Ocean St, Bondi NSW 2026', score: 88, status: 'inspection_booked' },
+        { address: '10 Beach Rd, Coogee NSW 2034', score: 72, status: 'new' },
+      ],
+      totalSearched: 8,
     });
 
     expect(result.narrative).toBe(narrativeText);
@@ -763,10 +765,9 @@ describe('AnthropicClient.generateSearchNarrative', () => {
 
     const result = await client.generateSearchNarrative({
       clientName: 'Test',
-      suburbs: ['Sydney'],
-      propertiesReviewed: 0,
-      topMatches: 0,
-      periodDays: 7,
+      briefSummary: 'Looking for property in Sydney',
+      properties: [],
+      totalSearched: 0,
     });
 
     expect(result.narrative).toBe('Some narrative with whitespace');

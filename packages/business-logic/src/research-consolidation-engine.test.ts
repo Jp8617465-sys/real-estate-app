@@ -658,13 +658,12 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('flags high-severity risk when pre-approval expires within 7 days', () => {
-      const brief = createClientBrief({
-        finance: {
-          preApproved: true,
-          preApprovalExpiry: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-          firstHomeBuyer: false,
-        },
-      });
+      const brief = createClientBrief();
+      brief.finance = {
+        ...brief.finance,
+        preApproved: true,
+        preApprovalExpiry: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      };
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -674,13 +673,12 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('flags medium-severity risk when pre-approval expires in 8-30 days', () => {
-      const brief = createClientBrief({
-        finance: {
-          preApproved: true,
-          preApprovalExpiry: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
-          firstHomeBuyer: false,
-        },
-      });
+      const brief = createClientBrief();
+      brief.finance = {
+        ...brief.finance,
+        preApproved: true,
+        preApprovalExpiry: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+      };
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -690,13 +688,12 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('does not flag pre-approval risk when expiry is more than 30 days away', () => {
-      const brief = createClientBrief({
-        finance: {
-          preApproved: true,
-          preApprovalExpiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-          firstHomeBuyer: false,
-        },
-      });
+      const brief = createClientBrief();
+      brief.finance = {
+        ...brief.finance,
+        preApproved: true,
+        preApprovalExpiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      };
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -741,9 +738,8 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('flags market risk when urgency is ASAP but no matches found', () => {
-      const brief = createClientBrief({
-        timeline: { urgency: 'asap' },
-      });
+      const brief = createClientBrief();
+      brief.timeline = { urgency: 'asap' };
       const data = createDefaultDataInput({ clientBrief: brief, propertyMatches: [] });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -752,13 +748,9 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('returns empty risks array when there are no risk conditions', () => {
-      const brief = createClientBrief({
-        finance: {
-          preApproved: false,
-          firstHomeBuyer: false,
-        },
-        timeline: { urgency: 'no_rush' },
-      });
+      const brief = createClientBrief();
+      brief.finance = { preApproved: false, firstHomeBuyer: false };
+      brief.timeline = { urgency: 'no_rush' };
       const match = createPropertyMatch({
         scoreBreakdown: { priceMatch: 80, locationMatch: 80, sizeMatch: 80, featureMatch: 70 },
       });
@@ -840,13 +832,12 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('recommends pre-approval renewal when expiry is within 30 days', () => {
-      const brief = createClientBrief({
-        finance: {
-          preApproved: true,
-          preApprovalExpiry: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
-          firstHomeBuyer: false,
-        },
-      });
+      const brief = createClientBrief();
+      brief.finance = {
+        ...brief.finance,
+        preApproved: true,
+        preApprovalExpiry: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+      };
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -858,7 +849,8 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('recommends client sign-off when brief is not signed off', () => {
-      const brief = createClientBrief({ clientSignedOff: false });
+      const brief = createClientBrief();
+      brief.clientSignedOff = false;
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -897,7 +889,8 @@ describe('ResearchConsolidationEngine', () => {
 
     it('calculates days in search from brief creation date', () => {
       const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
-      const brief = createClientBrief({ createdAt: tenDaysAgo });
+      const brief = createClientBrief();
+      brief.createdAt = tenDaysAgo;
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -906,7 +899,8 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('returns 0 days for a brief created today', () => {
-      const brief = createClientBrief({ createdAt: new Date().toISOString() });
+      const brief = createClientBrief();
+      brief.createdAt = new Date().toISOString();
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -1020,7 +1014,8 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('indicates urgency when client timeline is ASAP', () => {
-      const brief = createClientBrief({ timeline: { urgency: 'asap' } });
+      const brief = createClientBrief();
+      brief.timeline = { urgency: 'asap' };
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
@@ -1028,18 +1023,11 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('falls back to "target suburbs" when no suburbs are specified', () => {
-      const brief = createClientBrief({
-        requirements: {
-          propertyTypes: ['house'],
-          bedrooms: { min: 3 },
-          bathrooms: { min: 2 },
-          carSpaces: { min: 1 },
-          suburbs: [],
-          mustHaves: [],
-          niceToHaves: [],
-          dealBreakers: [],
-        },
-      });
+      const brief = createClientBrief();
+      brief.requirements = {
+        ...brief.requirements,
+        suburbs: [],
+      };
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 

@@ -14,14 +14,35 @@ vi.mock('../middleware/supabase', () => ({
   createSupabaseClient: () => mockSupabase,
 }));
 
+// ─── Mock integration dependencies (resolved before vi.mock takes effect) ────
+
+vi.mock('@realflow/integrations', () => ({
+  DomainClient: vi.fn().mockImplementation(() => ({
+    getSuburbPerformance: vi.fn(),
+  })),
+}));
+
+vi.mock('@realflow/integrations/src/errors', () => ({
+  DomainAPIError: class DomainAPIError extends Error {
+    statusCode: number;
+    statusText: string;
+    constructor(message: string, statusCode: number, statusText: string) {
+      super(`${message}: ${statusCode} ${statusText}`);
+      this.name = 'DomainAPIError';
+      this.statusCode = statusCode;
+      this.statusText = statusText;
+    }
+  },
+}));
+
 // ─── Mock MarketDataService ─────────────────────────────────────────
 
 vi.mock('../services/market-data-service', () => ({
-  MarketDataService: vi.fn().mockImplementation(() => ({
-    getSnapshotsForSuburbs: vi.fn().mockResolvedValue([
+  MarketDataService: class MockMarketDataService {
+    getSnapshotsForSuburbs = vi.fn().mockResolvedValue([
       { suburb: 'Bondi', state: 'NSW', medianPrice: 2350000 },
-    ]),
-  })),
+    ]);
+  },
 }));
 
 // ─── Import after mocks ────────────────────────────────────────────

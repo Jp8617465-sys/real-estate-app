@@ -8,7 +8,7 @@
  * - Query result count caching
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient, PostgrestFilterBuilder } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { cache } from './cache';
 
@@ -56,6 +56,16 @@ export interface PaginatedResponse<T> {
     hasMore: boolean;
   };
 }
+
+// ─── Filter Function Type ───────────────────────────────────────────────────────
+
+/**
+ * A filter function receives a Supabase query builder (after .select()) and
+ * returns it with additional filters applied. We use a generic signature
+ * compatible with PostgrestFilterBuilder.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FilterFn = (query: PostgrestFilterBuilder<any, any, any, any, any>) => PostgrestFilterBuilder<any, any, any, any, any>;
 
 // ─── Field Selection ────────────────────────────────────────────────────────────
 
@@ -153,7 +163,7 @@ export async function withOffsetPagination<T extends Record<string, unknown>>(
   params: {
     pagination: OffsetPagination;
     select?: string;
-    filters?: (query: ReturnType<SupabaseClient['from']>) => ReturnType<SupabaseClient['from']>;
+    filters?: FilterFn;
     orderBy?: string;
     ascending?: boolean;
     countCacheKey?: string;
@@ -183,7 +193,7 @@ export async function withOffsetPagination<T extends Record<string, unknown>>(
   if (total === undefined) {
     let countQuery = supabase.from(table).select('id', { count: 'exact', head: true });
     if (filters) {
-      countQuery = filters(countQuery) as typeof countQuery;
+      countQuery = filters(countQuery);
     }
 
     const { count, error: countError } = await countQuery;
@@ -205,22 +215,23 @@ export async function withOffsetPagination<T extends Record<string, unknown>>(
     .range(offset, offset + pagination.pageSize - 1);
 
   if (filters) {
-    dataQuery = filters(dataQuery) as typeof dataQuery;
+    dataQuery = filters(dataQuery);
   }
 
   const { data, error } = await dataQuery;
   if (error) throw new Error(`Paginated query failed: ${error.message}`);
 
+  const rows = (data ?? []) as unknown as T[];
   const totalPages = total !== undefined ? Math.ceil(total / pagination.pageSize) : undefined;
 
   return {
-    data: (data ?? []) as T[],
+    data: rows,
     pagination: {
       total,
       page: pagination.page,
       pageSize: pagination.pageSize,
       totalPages,
-      hasMore: total !== undefined ? pagination.page < (totalPages ?? 0) : (data?.length ?? 0) === pagination.pageSize,
+      hasMore: total !== undefined ? pagination.page < (totalPages ?? 0) : rows.length === pagination.pageSize,
     },
   };
 }
@@ -229,7 +240,7 @@ export async function withOffsetPagination<T extends Record<string, unknown>>(
  * Apply cursor-based pagination to a Supabase query builder.
  *
  * Uses `updated_at` + `id` as a composite cursor for stable ordering.
- * The cursor format is: `{updated_at}|{id}`.
+ * The cursor format is: `{updated_at}|{id}` (base64url encoded).
  */
 export async function withCursorPagination<T extends Record<string, unknown>>(
   supabase: SupabaseClient,
@@ -237,7 +248,7 @@ export async function withCursorPagination<T extends Record<string, unknown>>(
   params: {
     pagination: CursorPagination;
     select?: string;
-    filters?: (query: ReturnType<SupabaseClient['from']>) => ReturnType<SupabaseClient['from']>;
+    filters?: FilterFn;
     orderBy?: string;
   },
 ): Promise<PaginatedResponse<T>> {
@@ -260,7 +271,7 @@ export async function withCursorPagination<T extends Record<string, unknown>>(
     .limit(fetchLimit);
 
   if (filters) {
-    query = filters(query) as typeof query;
+    query = filters(query);
   }
 
   // Apply cursor filter
@@ -283,7 +294,7 @@ export async function withCursorPagination<T extends Record<string, unknown>>(
   const { data, error } = await query;
   if (error) throw new Error(`Cursor paginated query failed: ${error.message}`);
 
-  const rows = (data ?? []) as (T & { id: string; updated_at: string })[];
+  const rows = (data ?? []) as unknown as (T & { id: string; updated_at: string })[];
   const hasMore = rows.length > pagination.limit;
   const pageRows = hasMore ? rows.slice(0, pagination.limit) : rows;
 
@@ -291,7 +302,7 @@ export async function withCursorPagination<T extends Record<string, unknown>>(
   const lastRow = pageRows[pageRows.length - 1];
 
   return {
-    data: pageRows as T[],
+    data: pageRows as unknown as T[],
     pagination: {
       hasMore,
       nextCursor: hasMore && lastRow
@@ -360,7 +371,7 @@ export async function getCachedCount(
   supabase: SupabaseClient,
   table: string,
   cacheKey: string,
-  filters?: (query: ReturnType<SupabaseClient['from']>) => ReturnType<SupabaseClient['from']>,
+  filters?: FilterFn,
   ttl = 30,
 ): Promise<number> {
   // Try cache first
@@ -370,7 +381,7 @@ export async function getCachedCount(
   // Fetch from database
   let query = supabase.from(table).select('id', { count: 'exact', head: true });
   if (filters) {
-    query = filters(query) as typeof query;
+    query = filters(query);
   }
 
   const { count, error } = await query;
