@@ -29,6 +29,11 @@ const envSchema = z.object({
   META_PAGE_ID: z.string().optional(),
   META_INSTAGRAM_ACCOUNT_ID: z.string().optional(),
   META_APP_SECRET: z.string().optional(),
+  // Optional Redis cache
+  REDIS_URL: z.string().optional(),
+  // Observability
+  SENTRY_DSN: z.string().optional(),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'fatal']).default('info'),
 });
 
 // In test environment, use mock values if env vars not set

@@ -1,6 +1,11 @@
 import { env } from './config/env';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { createLogger } from '@realflow/shared/src/logger';
+import { errorHandlerPlugin } from './plugins/error-handler';
+import { requestLoggerPlugin } from './plugins/request-logger';
+import { healthRoutes } from './routes/health';
+import { initSentry, flushSentry } from './lib/sentry';
 import { contactRoutes } from './routes/contacts';
 import { propertyRoutes } from './routes/properties';
 import { pipelineRoutes } from './routes/pipeline';
@@ -32,12 +37,39 @@ import { domainSyncRoutes } from './routes/domain-sync';
 import { analyticsRoutes } from './routes/analytics';
 import { complianceRoutes } from './routes/compliance';
 import { consolidationReportRoutes } from './routes/consolidation-reports';
+import { cache } from './lib/cache';
+import { CachedQueryService } from './services/cached-queries';
+import { createSupabaseServiceClient } from './middleware/supabase';
+
+// ─── Initialize Observability ───────────────────────────────────────
+
+const isProduction = env.NODE_ENV === 'production';
+
+// Initialize structured logger
+const logger = createLogger({
+  level: env.LOG_LEVEL,
+  serviceName: 'realflow-api',
+  environment: env.NODE_ENV,
+});
+
+// Initialize Sentry (no-ops if SENTRY_DSN not set)
+initSentry({
+  dsn: env.SENTRY_DSN,
+  environment: env.NODE_ENV,
+});
+
+// ─── Create Fastify Instance ────────────────────────────────────────
 
 const fastify = Fastify({
-  logger: true,
+  // Disable Fastify's built-in logger — we use our own structured logger
+  logger: false,
 });
 
 async function start() {
+  // Register observability plugins first
+  await fastify.register(requestLoggerPlugin, { logger });
+  await fastify.register(errorHandlerPlugin, { logger, isProduction });
+
   await fastify.register(cors, {
     origin: [
       'http://localhost:3000', // Next.js dev
@@ -45,6 +77,9 @@ async function start() {
       'http://localhost:3002', // Portal dev
     ],
   });
+
+  // Health check routes (registered before auth-protected routes)
+  await fastify.register(healthRoutes, { prefix: '/health' });
 
   // Register routes
   await fastify.register(contactRoutes, { prefix: '/api/v1/contacts' });
@@ -84,17 +119,42 @@ async function start() {
     return { data: result };
   });
 
-  // Health check
-  fastify.get('/health', async () => ({ status: 'ok', service: 'realflow-api' }));
+  // ─── Initialize Redis cache (graceful — continues if unavailable) ───
+  await cache.connect();
 
   await fastify.listen({ port: env.PORT, host: '0.0.0.0' });
-  console.log(`RealFlow API running on port ${env.PORT}`);
+  logger.info(`RealFlow API running on port ${env.PORT}`, {
+    port: env.PORT,
+    environment: env.NODE_ENV,
+  });
 
   // Start workflow scheduler after server is up
   getWorkflowScheduler().start();
+
+  // Warm cache in background after server is ready
+  if (cache.isConnected()) {
+    const serviceClient = createSupabaseServiceClient();
+    void CachedQueryService.warmCache(serviceClient).catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.warn(`Cache warming failed: ${message}`);
+    });
+  }
 }
 
+// ─── Graceful Shutdown ──────────────────────────────────────────────
+
+async function shutdown(signal: string) {
+  logger.info(`Received ${signal}, shutting down gracefully`);
+  await fastify.close();
+  await cache.disconnect();
+  await flushSentry();
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
+process.on('SIGINT', () => void shutdown('SIGINT'));
+
 start().catch((err) => {
-  fastify.log.error(err);
+  logger.fatal('Failed to start server', { error: err instanceof Error ? err : new Error(String(err)) });
   process.exit(1);
 });
