@@ -1,6 +1,6 @@
 import type { FastifyRequest } from 'fastify';
 import { createSupabaseClient } from '../middleware/supabase';
-import { GmailClient, TwilioClient, WhatsAppClient, MetaSocialClient } from '@realflow/integrations';
+import { GmailClient, TwilioClient, WhatsAppClient, MetaSocialClient, LinkedInClient } from '@realflow/integrations';
 
 /**
  * Integration Registry Service.
@@ -93,6 +93,36 @@ export class IntegrationRegistry {
       phoneNumberId: config.phoneNumberId ?? '',
       businessAccountId: config.businessAccountId ?? '',
       webhookVerifyToken: config.webhookVerifyToken ?? '',
+    });
+  }
+
+  /**
+   * Get a LinkedIn client using stored OAuth tokens.
+   * Returns null if no LinkedIn connection exists for the user.
+   */
+  async getLinkedInClient(): Promise<LinkedInClient | null> {
+    const { data: token } = await this.supabase
+      .from('oauth_tokens')
+      .select('*')
+      .eq('user_id', this.userId)
+      .eq('provider', 'linkedin')
+      .single();
+
+    if (!token) return null;
+
+    const { data: connection } = await this.supabase
+      .from('integration_connections')
+      .select('*')
+      .eq('user_id', this.userId)
+      .eq('provider', 'linkedin')
+      .eq('is_active', true)
+      .single();
+
+    const config = (connection?.config ?? {}) as Record<string, string>;
+
+    return new LinkedInClient({
+      accessToken: token.access_token as string,
+      organisationId: config.organisationId,
     });
   }
 
