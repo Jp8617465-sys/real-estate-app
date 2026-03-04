@@ -8,7 +8,7 @@
  * - Query result count caching
  */
 
-import type { SupabaseClient, PostgrestFilterBuilder } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { cache } from './cache';
 
@@ -64,8 +64,13 @@ export interface PaginatedResponse<T> {
  * returns it with additional filters applied. We use a generic signature
  * compatible with PostgrestFilterBuilder.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FilterFn = (query: PostgrestFilterBuilder<any, any, any, any, any>) => PostgrestFilterBuilder<any, any, any, any, any>;
+/**
+ * A filter function receives a Supabase query builder chain and returns
+ * it with additional filters applied. We use ReturnType of .from().select()
+ * which produces a PostgrestFilterBuilder.
+ */
+type QueryBuilder = ReturnType<ReturnType<SupabaseClient['from']>['select']>;
+type FilterFn = (query: QueryBuilder) => QueryBuilder;
 
 // ─── Field Selection ────────────────────────────────────────────────────────────
 
