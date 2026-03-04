@@ -1,115 +1,296 @@
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
-import { SELLER_STAGE_LABELS, type SellerStage } from '@realflow/shared';
+import { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  RefreshControl,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import {
+  SELLER_STAGE_LABELS,
+  BUYER_STAGE_LABELS,
+  type SellerStage,
+  type BuyerStage,
+  type PipelineType,
+  type Transaction,
+} from '@realflow/shared';
 import { usePipeline } from '../../src/hooks/use-pipeline';
+import { DealCard, LoadingSpinner, EmptyState } from '../../src/components';
 
+// ─── Stage colors ───────────────────────────────────────────────────
+const SELLER_STAGE_COLORS: Record<SellerStage, string> = {
+  'appraisal-request': '#6b7280',
+  'listing-preparation': '#8b5cf6',
+  'on-market': '#2563eb',
+  'offers-negotiation': '#ca8a04',
+  'under-contract': '#ea580c',
+  'settled': '#16a34a',
+};
+
+const BUYER_STAGE_COLORS: Record<BuyerStage, string> = {
+  'new-enquiry': '#6b7280',
+  'qualified-lead': '#8b5cf6',
+  'active-search': '#2563eb',
+  'property-shortlisted': '#0891b2',
+  'due-diligence': '#ca8a04',
+  'offer-made': '#ea580c',
+  'under-contract': '#dc2626',
+  'settled': '#16a34a',
+};
+
+// ─── Pipeline type config ───────────────────────────────────────────
+interface PipelineConfig {
+  type: PipelineType;
+  label: string;
+  stages: [string, string][];
+  colors: Record<string, string>;
+}
+
+const PIPELINE_CONFIGS: PipelineConfig[] = [
+  {
+    type: 'selling',
+    label: 'Selling',
+    stages: Object.entries(SELLER_STAGE_LABELS),
+    colors: SELLER_STAGE_COLORS as Record<string, string>,
+  },
+  {
+    type: 'buying',
+    label: 'Buying',
+    stages: Object.entries(BUYER_STAGE_LABELS),
+    colors: BUYER_STAGE_COLORS as Record<string, string>,
+  },
+];
+
+// ─── Deal card contact type ─────────────────────────────────────────
+interface DealContact {
+  id: string;
+  first_name: string;
+  last_name: string;
+  buyer_profile: Record<string, unknown> | null;
+}
+
+type DealWithContact = Transaction & { contact: DealContact };
+
+// ─── Pipeline Screen ────────────────────────────────────────────────
 export default function PipelineScreen() {
-  const { data: transactions, isLoading } = usePipeline('selling');
-  const stages = Object.entries(SELLER_STAGE_LABELS) as [SellerStage, string][];
+  const router = useRouter();
+  const [activePipeline, setActivePipeline] = useState(0);
+  const config = PIPELINE_CONFIGS[activePipeline]!;
+
+  const { data: transactions, isLoading, refetch } = usePipeline(config.type);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   if (isLoading && !transactions) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
+    return <LoadingSpinner />;
   }
 
-  // Group transactions by current_stage
-  const grouped: Record<string, typeof transactions> = {};
-  for (const stage of stages) {
-    grouped[stage[0]] = [];
+  // Group transactions by stage
+  const grouped: Record<string, DealWithContact[]> = {};
+  for (const [stageKey] of config.stages) {
+    grouped[stageKey] = [];
   }
-  for (const tx of transactions ?? []) {
+  for (const tx of (transactions ?? []) as DealWithContact[]) {
     const stage = tx.currentStage ?? tx.current_stage;
     if (grouped[stage]) {
       grouped[stage]!.push(tx);
     }
   }
 
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.container}
-      contentContainerStyle={styles.content}
-    >
-      {stages.map(([key, label]) => {
-        const cards = grouped[key] ?? [];
-        return (
-          <View key={key} style={styles.column}>
-            <View style={styles.columnHeader}>
-              <Text style={styles.columnTitle}>{label}</Text>
-              <View style={styles.countBadge}>
-                <Text style={styles.countText}>{cards.length}</Text>
-              </View>
-            </View>
-            {cards.map((card) => {
-              const contact = (card as Record<string, unknown>).contact as
-                | { first_name: string; last_name: string }
-                | undefined;
-              const name = contact
-                ? `${contact.first_name} ${contact.last_name}`
-                : 'Unknown';
-              const price = card.contractPrice
-                ? `$${card.contractPrice.toLocaleString()}`
-                : card.offerAmount
-                  ? `$${card.offerAmount.toLocaleString()}`
-                  : '';
+  const totalDeals = transactions?.length ?? 0;
 
-              return (
-                <View key={card.id} style={styles.card}>
-                  <Text style={styles.cardName}>{name}</Text>
-                  {price ? <Text style={styles.cardBudget}>{price}</Text> : null}
+  return (
+    <View style={styles.container}>
+      {/* Pipeline Type Selector */}
+      <View style={styles.selectorContainer}>
+        {PIPELINE_CONFIGS.map((pConfig, index) => {
+          const isActive = activePipeline === index;
+          return (
+            <TouchableOpacity
+              key={pConfig.type}
+              style={[styles.selectorTab, isActive && styles.activeSelectorTab]}
+              onPress={() => setActivePipeline(index)}
+              activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+            >
+              <Text style={[styles.selectorText, isActive && styles.activeSelectorText]}>
+                {pConfig.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+        <View style={styles.dealCount}>
+          <Ionicons name="briefcase-outline" size={14} color="#6b7280" />
+          <Text style={styles.dealCountText}>{totalDeals} deals</Text>
+        </View>
+      </View>
+
+      {/* Horizontal Stages */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.stagesScroll}
+        contentContainerStyle={styles.stagesContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#2563eb" />
+        }
+      >
+        {config.stages.map(([key, label]) => {
+          const cards = grouped[key] ?? [];
+          const color = config.colors[key] ?? '#6b7280';
+
+          return (
+            <View key={key} style={styles.column}>
+              {/* Column Header */}
+              <View style={styles.columnHeader}>
+                <View style={[styles.stageIndicator, { backgroundColor: color }]} />
+                <Text style={styles.columnTitle} numberOfLines={1}>{label}</Text>
+                <View style={[styles.countBadge, { backgroundColor: color + '20' }]}>
+                  <Text style={[styles.countText, { color }]}>{cards.length}</Text>
                 </View>
-              );
-            })}
-            {cards.length === 0 && (
-              <Text style={styles.emptyText}>No contacts</Text>
-            )}
-          </View>
-        );
-      })}
-    </ScrollView>
+              </View>
+
+              {/* Cards */}
+              <ScrollView
+                style={styles.columnScroll}
+                contentContainerStyle={styles.columnContent}
+                showsVerticalScrollIndicator={false}
+              >
+                {cards.length === 0 ? (
+                  <View style={styles.emptyColumn}>
+                    <Ionicons name="folder-open-outline" size={20} color="#d1d5db" />
+                    <Text style={styles.emptyText}>No deals</Text>
+                  </View>
+                ) : (
+                  cards.map((card) => (
+                    <DealCard
+                      key={card.id}
+                      transaction={card}
+                      onPress={() => router.push(`/contact/${card.contactId ?? card.contact_id}` as never)}
+                    />
+                  ))
+                )}
+              </ScrollView>
+            </View>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 
+// ─── Styles ─────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
-  content: { padding: 16 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+  },
+  selectorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  selectorTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  activeSelectorTab: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  selectorText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  activeSelectorText: {
+    color: '#ffffff',
+  },
+  dealCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+    gap: 4,
+  },
+  dealCountText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  stagesScroll: {
+    flex: 1,
+  },
+  stagesContent: {
+    padding: 16,
+    paddingTop: 4,
+  },
   column: {
-    width: 240,
+    width: 260,
     backgroundColor: '#f3f4f6',
     borderRadius: 12,
     marginRight: 12,
     overflow: 'hidden',
+    maxHeight: '100%',
   },
   columnHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  columnTitle: { fontSize: 13, fontWeight: '600', color: '#111827' },
+  stageIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  columnTitle: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#111827',
+  },
   countBadge: {
-    backgroundColor: '#e5e7eb',
     borderRadius: 10,
-    paddingHorizontal: 7,
+    paddingHorizontal: 8,
     paddingVertical: 2,
+    marginLeft: 8,
   },
-  countText: { fontSize: 11, fontWeight: '600', color: '#4b5563' },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 12,
-    margin: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+  countText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
-  cardName: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  cardBudget: { fontSize: 12, color: '#6b7280', marginTop: 4 },
-  emptyText: { textAlign: 'center', color: '#9ca3af', fontSize: 12, padding: 16 },
+  columnScroll: {
+    flex: 1,
+  },
+  columnContent: {
+    paddingBottom: 8,
+  },
+  emptyColumn: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    gap: 4,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#9ca3af',
+    fontSize: 12,
+  },
 });
