@@ -7,7 +7,7 @@
 
 import type { FastifyInstance, FastifyError } from 'fastify';
 import type { ZodError } from 'zod';
-import type { StructuredLogger } from '@realflow/shared/src/logger';
+import type { StructuredLogger } from '@realflow/shared';
 
 // ─── Error Response Types ───────────────────────────────────────────
 
@@ -96,7 +96,7 @@ export async function errorHandlerPlugin(
 ) {
   const { logger, isProduction } = options;
 
-  fastify.setErrorHandler((err, request, reply) => {
+  fastify.setErrorHandler((err: Error | FastifyError, request, reply) => {
     const statusCode = getStatusCode(err);
     const errorCode = getErrorCode(statusCode, err);
     const requestId =

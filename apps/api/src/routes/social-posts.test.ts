@@ -14,6 +14,7 @@ vi.mock('../middleware/supabase', () => ({
 vi.mock('../services/integration-registry', () => ({
   IntegrationRegistry: vi.fn(function(this: Record<string, unknown>) {
     this.getMetaClient = vi.fn().mockResolvedValue(null);
+    this.getLinkedInClient = vi.fn().mockResolvedValue(null);
   }),
 }));
 
@@ -138,7 +139,7 @@ describe('GET /api/v1/social-posts/:id', () => {
 describe('POST /api/v1/social-posts', () => {
   it('creates a post successfully', async () => {
     const validBody = {
-      platform: 'facebook',
+      platforms: ['facebook'],
       content: 'New listing at 42 Ocean St, Bondi!',
     };
 
@@ -199,10 +200,27 @@ describe('POST /api/v1/social-posts', () => {
 
 describe('DELETE /api/v1/social-posts/:id', () => {
   it('soft deletes a post', async () => {
-    mockFrom.mockReturnValue({
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ error: null }),
-      }),
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        // select status lookup
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: { status: 'draft' }, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      // update call
+      return {
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        }),
+      };
     });
 
     const app = await buildApp();
@@ -217,10 +235,25 @@ describe('DELETE /api/v1/social-posts/:id', () => {
   });
 
   it('returns 500 on delete error', async () => {
-    mockFrom.mockReturnValue({
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ error: { message: 'DB error' } }),
-      }),
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: { status: 'draft' }, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: { message: 'DB error' } }),
+        }),
+      };
     });
 
     const app = await buildApp();
@@ -262,14 +295,14 @@ describe('POST /api/v1/social-posts/:id/publish', () => {
   it('returns 400 when Meta integration not connected', async () => {
     const post = {
       id: '1',
-      platform: 'facebook',
+      platforms: ['facebook'],
       content: 'Test post',
       status: 'draft',
-      image_url: null,
+      media_urls: [],
       created_by: 'user-1',
     };
 
-    // Post lookup, then user lookup
+    // Post lookup, then status revert update
     let callCount = 0;
     mockFrom.mockImplementation(() => {
       callCount++;
@@ -285,13 +318,18 @@ describe('POST /api/v1/social-posts/:id/publish', () => {
           }),
         };
       }
-      // users lookup
-      return {
-        select: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: { id: 'user-1' },
-            error: null,
+      if (callCount === 2) {
+        // social_posts update (mark as publishing)
+        return {
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
           }),
+        };
+      }
+      // social_posts update (revert to draft) or other calls
+      return {
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null }),
         }),
       };
     });

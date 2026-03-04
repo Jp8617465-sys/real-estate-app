@@ -49,10 +49,6 @@ function endOfWeek(date: Date): Date {
   return d;
 }
 
-function isOverdue(dueDate: string): boolean {
-  return new Date(dueDate) < startOfDay(new Date());
-}
-
 function formatSectionDate(dateStr: string): string {
   const date = new Date(dateStr);
   const today = startOfDay(new Date());

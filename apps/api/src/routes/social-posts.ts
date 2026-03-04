@@ -250,14 +250,34 @@ export async function socialPostRoutes(fastify: FastifyInstance) {
       const meta = await registry.getMetaClient();
       const linkedin = await registry.getLinkedInClient();
 
+      const platforms = (postRecord.platforms as SocialPlatform[]) ?? [];
+      const content = postRecord.content as string;
+      const mediaUrls = (postRecord.media_urls as string[]) ?? [];
+
+      // Verify required integrations are connected before publishing
+      const needsMeta = platforms.some((p) => p === 'facebook' || p === 'instagram');
+      const needsLinkedIn = platforms.some((p) => p === 'linkedin');
+
+      if (needsMeta && !meta) {
+        await supabase
+          .from('social_posts')
+          .update({ status: 'draft', updated_at: new Date().toISOString() })
+          .eq('id', id);
+        return reply.status(400).send({ error: 'Meta integration not connected' });
+      }
+
+      if (needsLinkedIn && !linkedin) {
+        await supabase
+          .from('social_posts')
+          .update({ status: 'draft', updated_at: new Date().toISOString() })
+          .eq('id', id);
+        return reply.status(400).send({ error: 'LinkedIn integration not connected' });
+      }
+
       const publishingService = new SocialPublishingService({
         meta: meta ?? undefined,
         linkedin: linkedin ?? undefined,
       });
-
-      const platforms = (postRecord.platforms as SocialPlatform[]) ?? [];
-      const content = postRecord.content as string;
-      const mediaUrls = (postRecord.media_urls as string[]) ?? [];
 
       try {
         const result = await publishingService.publishToMultiplePlatforms({

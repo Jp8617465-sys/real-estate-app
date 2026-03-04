@@ -1,7 +1,7 @@
 import { env } from './config/env';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import { createLogger } from '@realflow/shared/src/logger';
+import { createLogger } from '@realflow/shared';
 import { errorHandlerPlugin } from './plugins/error-handler';
 import { requestLoggerPlugin } from './plugins/request-logger';
 import { healthRoutes } from './routes/health';

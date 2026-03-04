@@ -18,7 +18,7 @@ import {
   type Transaction,
 } from '@realflow/shared';
 import { usePipeline } from '../../src/hooks/use-pipeline';
-import { DealCard, LoadingSpinner, EmptyState } from '../../src/components';
+import { DealCard, LoadingSpinner } from '../../src/components';
 
 // ─── Stage colors ───────────────────────────────────────────────────
 const SELLER_STAGE_COLORS: Record<SellerStage, string> = {

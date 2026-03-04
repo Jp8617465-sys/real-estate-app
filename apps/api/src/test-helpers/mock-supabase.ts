@@ -140,7 +140,7 @@ export function createMockSupabaseClient(options?: {
     storage: {
       from: vi.fn().mockReturnValue({
         upload: vi.fn().mockResolvedValue({ data: { path: 'uploads/test.pdf' }, error: null }),
-        download: vi.fn().mockResolvedValue({ data: new Blob(), error: null }),
+        download: vi.fn().mockResolvedValue({ data: new Blob([]), error: null }),
         getPublicUrl: vi.fn().mockReturnValue({
           data: { publicUrl: 'https://storage.example.com/test.pdf' },
         }),

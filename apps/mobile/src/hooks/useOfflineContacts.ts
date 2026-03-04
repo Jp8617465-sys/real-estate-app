@@ -110,7 +110,6 @@ export function useOfflineContacts(
   // ─── Load cached contacts on mount ─────────────────────────────
   useEffect(() => {
     void loadCachedContacts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   async function loadCachedContacts(): Promise<void> {

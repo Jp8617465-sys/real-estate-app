@@ -7,6 +7,7 @@ const mockSupabase = { from: mockFrom };
 
 vi.mock('../middleware/supabase', () => ({
   createSupabaseClient: () => mockSupabase,
+  createSupabaseServiceClient: () => mockSupabase,
 }));
 
 // ─── Import after mocks ───────────────────────────────────────────

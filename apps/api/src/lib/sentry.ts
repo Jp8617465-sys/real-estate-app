@@ -20,6 +20,22 @@ interface SentryConfig {
   readonly sampleRate?: number;
 }
 
+/** Minimal Sentry event shape used by beforeSend / beforeSendTransaction callbacks. */
+interface SentryEvent {
+  request?: {
+    url?: string;
+    headers?: Record<string, string>;
+  };
+  [key: string]: unknown;
+}
+
+/** Minimal Sentry scope shape used by withScope callback. */
+interface SentryScope {
+  setTag(key: string, value: string): void;
+  setUser(user: { id: string }): void;
+  setExtra(key: string, value: unknown): void;
+}
+
 // ─── Initialization ─────────────────────────────────────────────────
 
 let isInitialized = false;
@@ -43,7 +59,7 @@ export function initSentry(config: SentryConfig): void {
     tracesSampleRate: config.sampleRate ?? 0.1,
 
     // Filter out health check transactions
-    beforeSendTransaction(event) {
+    beforeSendTransaction(event: SentryEvent) {
       const url = event.request?.url ?? '';
       if (url.includes('/health')) {
         return null;
@@ -52,7 +68,7 @@ export function initSentry(config: SentryConfig): void {
     },
 
     // Scrub sensitive data from error reports
-    beforeSend(event) {
+    beforeSend(event: SentryEvent) {
       if (event.request?.headers) {
         const headers = { ...event.request.headers };
         delete headers['authorization'];
@@ -83,7 +99,7 @@ export function captureError(
 ): void {
   if (!isInitialized) return;
 
-  Sentry.withScope((scope) => {
+  Sentry.withScope((scope: SentryScope) => {
     if (context?.requestId) {
       scope.setTag('requestId', context.requestId);
     }

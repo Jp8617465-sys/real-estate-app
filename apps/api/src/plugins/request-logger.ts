@@ -8,7 +8,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import type { StructuredLogger } from '@realflow/shared/src/logger';
+import type { StructuredLogger } from '@realflow/shared';
 
 // ─── Types ──────────────────────────────────────────────────────────
 

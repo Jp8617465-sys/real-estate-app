@@ -52,11 +52,13 @@ export interface SupabaseServiceClient {
     };
     select: (columns?: string) => {
       eq: (field: string, value: unknown) => {
-        eq?: (field: string, value: unknown) => {
+        eq: (field: string, value: unknown) => {
           single: () => Promise<{
             data: Record<string, unknown> | null;
             error: { message: string } | null;
           }>;
+          is_active?: boolean;
+          is_deleted?: boolean;
         };
         single: () => Promise<{
           data: Record<string, unknown> | null;
@@ -74,20 +76,6 @@ export interface SupabaseServiceClient {
         data: Array<Record<string, unknown>> | null;
         error: { message: string } | null;
       }>;
-      eq: (field: string, value: unknown) => {
-        eq: (field: string, value: unknown) => {
-          single: () => Promise<{
-            data: Record<string, unknown> | null;
-            error: { message: string } | null;
-          }>;
-          is_active?: boolean;
-          is_deleted?: boolean;
-        };
-        single: () => Promise<{
-          data: Record<string, unknown> | null;
-          error: { message: string } | null;
-        }>;
-      };
     };
   };
 }

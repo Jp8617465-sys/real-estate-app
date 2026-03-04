@@ -23,7 +23,7 @@ vi.mock('../../lib/supabase', () => ({
   supabase: { from: mockFrom },
 }));
 
-import { useOffer, useOffers, useCreateOffer, useAddOfferRound, useUpdateAuctionResult } from '../use-offers';
+import { useOffer, useOffers, useAddOfferRound, useUpdateAuctionResult } from '../use-offers';
 
 function createWrapper() {
   const queryClient = new QueryClient({

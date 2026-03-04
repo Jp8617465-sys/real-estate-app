@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  storageGet,
   storageSet,
   storageGetWithMeta,
-  type StorageMetadata,
 } from '../lib/offline-storage';
 import { useNetworkStatus } from './useNetworkStatus';
 
@@ -74,7 +72,6 @@ export function useOfflineData<T>(
   // Load cached data on mount
   useEffect(() => {
     void loadCachedData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
   async function loadCachedData(): Promise<void> {
