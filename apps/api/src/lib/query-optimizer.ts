@@ -57,21 +57,6 @@ export interface PaginatedResponse<T> {
   };
 }
 
-// ─── Filter Function Type ───────────────────────────────────────────────────────
-
-/**
- * A filter function receives a Supabase query builder (after .select()) and
- * returns it with additional filters applied. We use a generic signature
- * compatible with PostgrestFilterBuilder.
- */
-/**
- * A filter function receives a Supabase query builder chain and returns
- * it with additional filters applied. We use ReturnType of .from().select()
- * which produces a PostgrestFilterBuilder.
- */
-type QueryBuilder = ReturnType<ReturnType<SupabaseClient['from']>['select']>;
-type FilterFn = (query: QueryBuilder) => QueryBuilder;
-
 // ─── Field Selection ────────────────────────────────────────────────────────────
 
 /**
@@ -155,29 +140,38 @@ export function toSelectString(fields: readonly string[] | string): string {
   return fields.join(', ');
 }
 
-// ─── Pagination Helpers ─────────────────────────────────────────────────────────
+// ─── Offset Pagination Helper ───────────────────────────────────────────────────
 
 /**
- * Apply offset-based pagination to a Supabase query builder.
- *
- * Returns a paginated response with total count (cached for performance).
+ * Parameters for building an offset-paginated query.
  */
-export async function withOffsetPagination<T extends Record<string, unknown>>(
+export interface OffsetPaginationParams {
+  pagination: OffsetPagination;
+  select?: string;
+  orderBy?: string;
+  ascending?: boolean;
+  countCacheKey?: string;
+}
+
+/**
+ * Execute an offset-paginated query against a Supabase table.
+ *
+ * Accepts a pre-built query builder (after applying your filters) and adds
+ * ordering, range, and count. This avoids complex generic filter callback types.
+ *
+ * Example:
+ *   const baseQuery = supabase.from('contacts').select('*').eq('is_deleted', false);
+ *   return executeOffsetPagination<Contact>(baseQuery, supabase, 'contacts', params);
+ */
+export async function executeOffsetPagination<T extends Record<string, unknown>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  filteredQuery: any,
   supabase: SupabaseClient,
   table: string,
-  params: {
-    pagination: OffsetPagination;
-    select?: string;
-    filters?: FilterFn;
-    orderBy?: string;
-    ascending?: boolean;
-    countCacheKey?: string;
-  },
+  params: OffsetPaginationParams,
 ): Promise<PaginatedResponse<T>> {
   const {
     pagination,
-    select = '*',
-    filters,
     orderBy = 'updated_at',
     ascending = false,
     countCacheKey,
@@ -196,37 +190,28 @@ export async function withOffsetPagination<T extends Record<string, unknown>>(
   }
 
   if (total === undefined) {
-    let countQuery = supabase.from(table).select('id', { count: 'exact', head: true });
-    if (filters) {
-      countQuery = filters(countQuery);
-    }
+    // Use a separate count query against the same table
+    const { count, error: countError } = await supabase
+      .from(table)
+      .select('id', { count: 'exact', head: true });
 
-    const { count, error: countError } = await countQuery;
     if (!countError && count !== null) {
       total = count;
 
-      // Cache the count for 30 seconds
       if (countCacheKey) {
         await cache.set('contacts', `count:${countCacheKey}`, total, { ttl: 30 });
       }
     }
   }
 
-  // Fetch page data
-  let dataQuery = supabase
-    .from(table)
-    .select(select)
+  // Apply ordering and range to the filtered query
+  const { data, error } = await filteredQuery
     .order(orderBy, { ascending })
     .range(offset, offset + pagination.pageSize - 1);
 
-  if (filters) {
-    dataQuery = filters(dataQuery);
-  }
-
-  const { data, error } = await dataQuery;
   if (error) throw new Error(`Paginated query failed: ${error.message}`);
 
-  const rows = (data ?? []) as unknown as T[];
+  const rows = (data ?? []) as T[];
   const totalPages = total !== undefined ? Math.ceil(total / pagination.pageSize) : undefined;
 
   return {
@@ -236,60 +221,58 @@ export async function withOffsetPagination<T extends Record<string, unknown>>(
       page: pagination.page,
       pageSize: pagination.pageSize,
       totalPages,
-      hasMore: total !== undefined ? pagination.page < (totalPages ?? 0) : rows.length === pagination.pageSize,
+      hasMore: total !== undefined
+        ? pagination.page < (totalPages ?? 0)
+        : rows.length === pagination.pageSize,
     },
   };
 }
 
+// ─── Cursor Pagination Helper ───────────────────────────────────────────────────
+
 /**
- * Apply cursor-based pagination to a Supabase query builder.
+ * Parameters for building a cursor-paginated query.
+ */
+export interface CursorPaginationParams {
+  pagination: CursorPagination;
+  orderBy?: string;
+}
+
+/**
+ * Execute a cursor-paginated query against a pre-filtered Supabase query.
  *
  * Uses `updated_at` + `id` as a composite cursor for stable ordering.
  * The cursor format is: `{updated_at}|{id}` (base64url encoded).
+ *
+ * Example:
+ *   const baseQuery = supabase.from('contacts').select('*').eq('is_deleted', false);
+ *   return executeCursorPagination<Contact>(baseQuery, params);
  */
-export async function withCursorPagination<T extends Record<string, unknown>>(
-  supabase: SupabaseClient,
-  table: string,
-  params: {
-    pagination: CursorPagination;
-    select?: string;
-    filters?: FilterFn;
-    orderBy?: string;
-  },
+export async function executeCursorPagination<T extends Record<string, unknown>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  filteredQuery: any,
+  params: CursorPaginationParams,
 ): Promise<PaginatedResponse<T>> {
-  const {
-    pagination,
-    select = '*',
-    filters,
-    orderBy = 'updated_at',
-  } = params;
+  const { pagination, orderBy = 'updated_at' } = params;
 
   // Fetch one extra to determine hasMore
   const fetchLimit = pagination.limit + 1;
   const isForward = pagination.direction === 'forward';
 
-  let query = supabase
-    .from(table)
-    .select(select)
+  let query = filteredQuery
     .order(orderBy, { ascending: !isForward })
     .order('id', { ascending: !isForward })
     .limit(fetchLimit);
-
-  if (filters) {
-    query = filters(query);
-  }
 
   // Apply cursor filter
   if (pagination.cursor) {
     const [cursorTimestamp, cursorId] = decodeCursor(pagination.cursor);
 
     if (isForward) {
-      // For descending order: get items older than cursor
       query = query.or(
         `${orderBy}.lt.${cursorTimestamp},and(${orderBy}.eq.${cursorTimestamp},id.lt.${cursorId})`,
       );
     } else {
-      // For ascending order: get items newer than cursor
       query = query.or(
         `${orderBy}.gt.${cursorTimestamp},and(${orderBy}.eq.${cursorTimestamp},id.gt.${cursorId})`,
       );
@@ -299,7 +282,7 @@ export async function withCursorPagination<T extends Record<string, unknown>>(
   const { data, error } = await query;
   if (error) throw new Error(`Cursor paginated query failed: ${error.message}`);
 
-  const rows = (data ?? []) as unknown as (T & { id: string; updated_at: string })[];
+  const rows = (data ?? []) as (T & { id: string; updated_at: string })[];
   const hasMore = rows.length > pagination.limit;
   const pageRows = hasMore ? rows.slice(0, pagination.limit) : rows;
 
@@ -307,14 +290,20 @@ export async function withCursorPagination<T extends Record<string, unknown>>(
   const lastRow = pageRows[pageRows.length - 1];
 
   return {
-    data: pageRows as unknown as T[],
+    data: pageRows as T[],
     pagination: {
       hasMore,
       nextCursor: hasMore && lastRow
-        ? encodeCursor(String(lastRow[orderBy as keyof typeof lastRow] ?? lastRow.updated_at), lastRow.id)
+        ? encodeCursor(
+            String(lastRow[orderBy as keyof typeof lastRow] ?? lastRow.updated_at),
+            lastRow.id,
+          )
         : null,
       prevCursor: firstRow
-        ? encodeCursor(String(firstRow[orderBy as keyof typeof firstRow] ?? firstRow.updated_at), firstRow.id)
+        ? encodeCursor(
+            String(firstRow[orderBy as keyof typeof firstRow] ?? firstRow.updated_at),
+            firstRow.id,
+          )
         : null,
     },
   };
@@ -370,13 +359,16 @@ export function eagerLoad(
 // ─── Count Caching ──────────────────────────────────────────────────────────────
 
 /**
- * Get a cached count for a table with filters, or fetch and cache it.
+ * Get a cached count for a table, or fetch and cache it.
+ *
+ * Example:
+ *   const query = supabase.from('contacts').select('id', { count: 'exact', head: true }).eq('is_deleted', false);
+ *   const total = await getCachedCount(query, 'contacts:active');
  */
 export async function getCachedCount(
-  supabase: SupabaseClient,
-  table: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  countQuery: any,
   cacheKey: string,
-  filters?: FilterFn,
   ttl = 30,
 ): Promise<number> {
   // Try cache first
@@ -384,12 +376,7 @@ export async function getCachedCount(
   if (cached !== null) return cached;
 
   // Fetch from database
-  let query = supabase.from(table).select('id', { count: 'exact', head: true });
-  if (filters) {
-    query = filters(query);
-  }
-
-  const { count, error } = await query;
+  const { count, error } = await countQuery;
   if (error) throw new Error(`Count query failed: ${error.message}`);
 
   const result = count ?? 0;
