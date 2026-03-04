@@ -15,9 +15,9 @@ vi.mock('../middleware/supabase', () => ({
 const mockGetSuburbPerformance = vi.fn();
 
 vi.mock('@realflow/integrations', () => ({
-  DomainClient: vi.fn().mockImplementation(() => ({
-    getSuburbPerformance: mockGetSuburbPerformance,
-  })),
+  DomainClient: class MockDomainClient {
+    getSuburbPerformance = mockGetSuburbPerformance;
+  },
 }));
 
 vi.mock('@realflow/integrations/src/errors', () => ({
@@ -343,9 +343,9 @@ describe('MarketDataService.getLatestSnapshot', () => {
     };
 
     const maybeSingle = vi.fn().mockResolvedValue({ data: dbRow, error: null });
-    const limit = vi.fn().mockReturnValue({ maybeSingle });
+    const eq = vi.fn().mockReturnValue({ maybeSingle });
+    const limit = vi.fn().mockReturnValue({ maybeSingle, eq });
     const order = vi.fn().mockReturnValue({ limit });
-    const eq = vi.fn().mockReturnValue({ order });
     const ilike2 = vi.fn().mockReturnValue({ order, eq });
     const ilike1 = vi.fn().mockReturnValue({ ilike: ilike2 });
     const select = vi.fn().mockReturnValue({ ilike: ilike1 });

@@ -56,7 +56,7 @@ export function useRealtimePipeline({
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const channelRef = useRef<RealtimeChannel | null>(null);
   const retryCountRef = useRef(0);
-  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
   const onOtherAgentChangeRef = useRef(onOtherAgentChange);
   onOtherAgentChangeRef.current = onOtherAgentChange;
 
@@ -164,7 +164,7 @@ export function useRealtimePipeline({
           setStatus('disconnected');
           const delay = getRetryDelay();
           retryCountRef.current += 1;
-          retryTimerRef.current = setTimeout(subscribe, delay);
+          retryTimerRef.current = globalThis.setTimeout(subscribe, delay);
         } else if (subscriptionStatus === 'CLOSED') {
           setStatus('disconnected');
         }
@@ -177,7 +177,7 @@ export function useRealtimePipeline({
 
     return () => {
       if (retryTimerRef.current) {
-        clearTimeout(retryTimerRef.current);
+        globalThis.clearTimeout(retryTimerRef.current);
         retryTimerRef.current = null;
       }
       if (channelRef.current) {

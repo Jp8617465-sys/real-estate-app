@@ -25,7 +25,7 @@ export function usePortalDashboard() {
   return useQuery({
     queryKey: ['portal-dashboard', portalClient?.contact_id],
     queryFn: async (): Promise<DashboardData> => {
-      const contactId = portalClient!.contact_id;
+      const contactId = portalClient?.contact_id ?? '';
 
       // Fetch transaction
       const { data: transaction } = await supabase

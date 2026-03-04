@@ -64,7 +64,6 @@ export function useOfflinePipeline(
   // ─── Load cached pipeline on mount ─────────────────────────────
   useEffect(() => {
     void loadCachedPipeline();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, pipelineType]);
 
   async function loadCachedPipeline(): Promise<void> {

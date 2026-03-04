@@ -331,12 +331,12 @@ export class PropertyMatcher {
   private checkStructuredData(property: Property, feature: string): boolean {
     const lower = feature.toLowerCase();
 
-    // Parking-related
-    if (lower.includes('garage') || lower.includes('parking') || lower.includes('car space')) {
-      return property.carSpaces >= 1;
-    }
+    // Parking-related (check double garage before single)
     if (lower.includes('double garage') || lower.includes('2 car')) {
       return property.carSpaces >= 2;
+    }
+    if (lower.includes('garage') || lower.includes('parking') || lower.includes('car space')) {
+      return property.carSpaces >= 1;
     }
 
     // Size-related

@@ -26,7 +26,7 @@ export function usePortalDueDiligence() {
   return useQuery({
     queryKey: ['portal-due-diligence', portalClient?.contact_id],
     queryFn: async (): Promise<DueDiligenceData> => {
-      const contactId = portalClient!.contact_id;
+      const contactId = portalClient?.contact_id ?? '';
 
       // Get active transaction
       const { data: transaction } = await supabase

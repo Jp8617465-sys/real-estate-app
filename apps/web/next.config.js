@@ -121,7 +121,11 @@ const nextConfig = {
     ];
   },
 
-  // ─── Webpack Customisation ───────────────────────────────────────────────────
+  // ─── Turbopack (default bundler in Next.js 15+) ─────────────────────────────
+  // Explicit empty config silences the build error when a webpack config exists.
+  turbopack: {},
+
+  // ─── Webpack Customisation (used when Turbopack is disabled or for ANALYZE) ─
   webpack(config, { isServer }) {
     // Bundle analyzer (opt-in via ANALYZE=true)
     if (process.env.ANALYZE === 'true') {

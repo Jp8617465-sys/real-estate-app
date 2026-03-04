@@ -9,7 +9,6 @@ import {
   Clock,
   Loader2,
   CheckCircle2,
-  AlertCircle,
   Pen,
 } from 'lucide-react';
 import type { PortalDocument } from '@/hooks/use-documents';

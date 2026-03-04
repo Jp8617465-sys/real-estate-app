@@ -42,12 +42,16 @@ export default [
         __filename: 'readonly',
         Buffer: 'readonly',
         NodeJS: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        globalThis: 'readonly',
       },
     },
     plugins: {
       '@typescript-eslint': tseslint,
     },
     rules: {
+      'no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',

@@ -56,7 +56,7 @@ export function useRealtimeNotifications({
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const channelRef = useRef<RealtimeChannel | null>(null);
   const retryCountRef = useRef(0);
-  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
   const onNewNotificationRef = useRef(onNewNotification);
   onNewNotificationRef.current = onNewNotification;
 
@@ -127,7 +127,7 @@ export function useRealtimeNotifications({
           setStatus('disconnected');
           const delay = getRetryDelay();
           retryCountRef.current += 1;
-          retryTimerRef.current = setTimeout(subscribe, delay);
+          retryTimerRef.current = globalThis.setTimeout(subscribe, delay);
         } else if (subscriptionStatus === 'CLOSED') {
           setStatus('disconnected');
         }
@@ -140,7 +140,7 @@ export function useRealtimeNotifications({
 
     return () => {
       if (retryTimerRef.current) {
-        clearTimeout(retryTimerRef.current);
+        globalThis.clearTimeout(retryTimerRef.current);
         retryTimerRef.current = null;
       }
       if (channelRef.current) {

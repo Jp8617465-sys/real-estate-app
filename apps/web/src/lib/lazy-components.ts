@@ -5,29 +5,16 @@
  * boundaries with loading fallbacks, and route preloading.
  *
  * Usage:
- *   import { LazyAnalyticsCharts, LazyWorkflowBuilder } from '@/lib/lazy-components';
+ *   import { LazyChartContainer, LazyWorkflowBuilder } from '@/lib/lazy-components';
  *
  *   <Suspense fallback={<ComponentSkeleton />}>
- *     <LazyAnalyticsCharts />
+ *     <LazyChartContainer {...props} />
  *   </Suspense>
  */
 
 import { lazy, type ComponentType } from 'react';
 
-// ─── Helper: Create lazy component with retry ───────────────────────────────────
-
-/**
- * Create a lazy-loaded component with automatic retry on chunk load failure.
- * Network issues can cause chunk loads to fail — retrying once after a short
- * delay resolves most transient failures.
- */
-function lazyWithRetry<T extends ComponentType<never>>(
-  importFn: () => Promise<{ default: T }>,
-  retries = 2,
-  delay = 1000,
-): React.LazyExoticComponent<T> {
-  return lazy(() => retryImport(importFn, retries, delay));
-}
+// ─── Helper: Retry dynamic import on chunk load failure ─────────────────────────
 
 async function retryImport<T>(
   importFn: () => Promise<T>,
@@ -43,54 +30,89 @@ async function retryImport<T>(
   }
 }
 
+/**
+ * Create a lazy component from a named export, with automatic retry on
+ * chunk load failure. Network issues can cause chunk loads to fail —
+ * retrying once after a short delay resolves most transient failures.
+ */
+function lazyNamed(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  factory: () => Promise<{ default: ComponentType<any> }>,
+  retries = 2,
+  delay = 1000,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): React.LazyExoticComponent<ComponentType<any>> {
+  return lazy(() => retryImport(factory, retries, delay));
+}
+
 // ─── Lazy Components: Analytics (heavy — recharts dependency) ───────────────────
 
-export const LazyChartContainer = lazyWithRetry(
-  () => import('@/components/analytics/chart-container'),
+export const LazyChartContainer = lazyNamed(() =>
+  import('@/components/analytics/chart-container').then((m) => ({
+    default: m.ChartContainer,
+  })),
 );
 
-export const LazyFunnelChart = lazyWithRetry(
-  () => import('@/components/analytics/funnel-chart'),
+export const LazyFunnelChart = lazyNamed(() =>
+  import('@/components/analytics/funnel-chart').then((m) => ({
+    default: m.FunnelChart,
+  })),
 );
 
-export const LazyDataTable = lazyWithRetry(
-  () => import('@/components/analytics/data-table'),
+export const LazyDataTable = lazyNamed(() =>
+  import('@/components/analytics/data-table').then((m) => ({
+    default: m.DataTable,
+  })),
 );
 
-export const LazyMetricCard = lazyWithRetry(
-  () => import('@/components/analytics/metric-card'),
+export const LazyMetricCard = lazyNamed(() =>
+  import('@/components/analytics/metric-card').then((m) => ({
+    default: m.MetricCard,
+  })),
 );
 
 // ─── Lazy Components: Workflow Builder (complex drag-and-drop) ──────────────────
 
-export const LazyWorkflowBuilder = lazyWithRetry(
-  () => import('@/components/workflows/workflow-builder'),
+export const LazyWorkflowBuilder = lazyNamed(() =>
+  import('@/components/workflows/workflow-builder').then((m) => ({
+    default: m.WorkflowBuilder,
+  })),
 );
 
 // ─── Lazy Components: Social Media (content calendar, post creation) ────────────
 
-export const LazyContentCalendar = lazyWithRetry(
-  () => import('@/components/social/content-calendar'),
+export const LazyContentCalendar = lazyNamed(() =>
+  import('@/components/social/content-calendar').then((m) => ({
+    default: m.ContentCalendar,
+  })),
 );
 
-export const LazyCreatePostDialog = lazyWithRetry(
-  () => import('@/components/social/create-post-dialog'),
+export const LazyCreatePostDialog = lazyNamed(() =>
+  import('@/components/social/create-post-dialog').then((m) => ({
+    default: m.CreatePostDialog,
+  })),
 );
 
 // ─── Lazy Components: Pipeline Board (drag-and-drop columns) ────────────────────
 
-export const LazyPipelineBoard = lazyWithRetry(
-  () => import('@/components/pipeline/pipeline-board'),
+export const LazyPipelineBoard = lazyNamed(() =>
+  import('@/components/pipeline/pipeline-board').then((m) => ({
+    default: m.PipelineBoard,
+  })),
 );
 
-export const LazyBAPipelineBoard = lazyWithRetry(
-  () => import('@/components/buyers-agent/ba-pipeline-board'),
+export const LazyBAPipelineBoard = lazyNamed(() =>
+  import('@/components/buyers-agent/ba-pipeline-board').then((m) => ({
+    default: m.BaPipelineBoard,
+  })),
 );
 
 // ─── Lazy Components: Inbox (conversation view) ────────────────────────────────
 
-export const LazyConversationView = lazyWithRetry(
-  () => import('@/components/inbox/conversation-view'),
+export const LazyConversationView = lazyNamed(() =>
+  import('@/components/inbox/conversation-view').then((m) => ({
+    default: m.ConversationView,
+  })),
 );
 
 // ─── Route Preloading ───────────────────────────────────────────────────────────

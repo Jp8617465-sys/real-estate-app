@@ -69,7 +69,7 @@ export function useNetworkStatus(
   const onOnlineRef = useRef(onOnline);
   const onOfflineRef = useRef(onOffline);
   const previousOnlineRef = useRef<boolean | null>(null);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
 
   onOnlineRef.current = onOnline;
   onOfflineRef.current = onOffline;
@@ -88,10 +88,10 @@ export function useNetworkStatus(
     (state: NetInfoState) => {
       // Clear any pending debounce
       if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+        globalThis.clearTimeout(debounceTimerRef.current);
       }
 
-      debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = globalThis.setTimeout(() => {
         const nowOnline = state.isConnected === true && state.isInternetReachable !== false;
         const connType = mapConnectionType(state);
 
@@ -130,7 +130,7 @@ export function useNetworkStatus(
     return () => {
       unsubscribe();
       if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+        globalThis.clearTimeout(debounceTimerRef.current);
       }
     };
   }, [handleConnectivityChange]);

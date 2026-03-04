@@ -38,7 +38,7 @@ export function MessageBubble({ message, senderName, isClient }: MessageBubblePr
           {/* Attachments */}
           {hasAttachments && (
             <div className="mt-2 space-y-1">
-              {message.content.attachments!.map((attachment) => (
+              {(message.content.attachments ?? []).map((attachment) => (
                 <a
                   key={attachment.id}
                   href={attachment.url}

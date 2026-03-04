@@ -154,49 +154,49 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                 </p>
                 <p className="mt-1 text-sm text-gray-900">{contactName}</p>
               </div>
-              {activeCheck?.date_of_birth && (
+              {!!activeCheck?.date_of_birth && (
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                     Date of Birth
                   </p>
                   <p className="mt-1 text-sm text-gray-900">
-                    {formatDate(activeCheck.date_of_birth as string)}
+                    {formatDate(String(activeCheck.date_of_birth))}
                   </p>
                 </div>
               )}
-              {activeCheck?.residential_address && (
+              {!!activeCheck?.residential_address && (
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                     Residential Address
                   </p>
                   <p className="mt-1 text-sm text-gray-900">
-                    {activeCheck.residential_address as string}
+                    {String(activeCheck.residential_address)}
                   </p>
                 </div>
               )}
-              {contactRecord.email && (
+              {!!contactRecord.email && (
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                     Email
                   </p>
-                  <p className="mt-1 text-sm text-gray-900">{contactRecord.email as string}</p>
+                  <p className="mt-1 text-sm text-gray-900">{String(contactRecord.email)}</p>
                 </div>
               )}
-              {contactRecord.phone && (
+              {!!contactRecord.phone && (
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                     Phone
                   </p>
-                  <p className="mt-1 text-sm text-gray-900">{contactRecord.phone as string}</p>
+                  <p className="mt-1 text-sm text-gray-900">{String(contactRecord.phone)}</p>
                 </div>
               )}
-              {activeCheck?.verification_method && (
+              {!!activeCheck?.verification_method && (
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                     Verification Method
                   </p>
                   <p className="mt-1 text-sm text-gray-900">
-                    {(activeCheck.verification_method as string).replace(/_/g, ' ')}
+                    {String(activeCheck.verification_method).replace(/_/g, ' ')}
                   </p>
                 </div>
               )}
@@ -476,10 +476,10 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                   <h3 className="text-sm font-semibold text-green-800">Verification Complete</h3>
                   <p className="mt-1 text-sm text-green-700">
                     This client's identity has been verified with{' '}
-                    {activeCheck.total_points as number} points.
-                    {activeCheck.expiry_date && (
+                    {Number(activeCheck.total_points)} points.
+                    {!!activeCheck.expiry_date && (
                       <>
-                        {' '}Verification expires on {formatDate(activeCheck.expiry_date as string)}.
+                        {' '}Verification expires on {formatDate(String(activeCheck.expiry_date))}.
                       </>
                     )}
                   </p>
@@ -504,11 +504,11 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                   >
                     <div>
                       <p className="text-sm text-gray-900">
-                        {(check.verification_method as string)?.replace(/_/g, ' ') ?? 'Unknown method'}
+                        {String(check.verification_method ?? 'Unknown method').replace(/_/g, ' ')}
                       </p>
                       <p className="text-xs text-gray-500">
-                        Started {formatDate(check.created_at as string)}
-                        {check.completed_at && ` -- Completed ${formatDate(check.completed_at as string)}`}
+                        Started {formatDate(String(check.created_at))}
+                        {!!check.completed_at && ` -- Completed ${formatDate(String(check.completed_at))}`}
                       </p>
                     </div>
                     <VerificationStatusBadge status={check.status as string} size="sm" />

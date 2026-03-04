@@ -36,7 +36,7 @@ export function useTimeline() {
   return useQuery({
     queryKey: ['portal-timeline', portalClient?.contact_id],
     queryFn: async (): Promise<TimelineKeyDate[]> => {
-      const contactId = portalClient!.contact_id;
+      const contactId = portalClient?.contact_id ?? '';
 
       // Get active transaction
       const { data: transaction } = await supabase
