@@ -4,12 +4,9 @@
  * Initializes Sentry error tracking for the Fastify API server.
  * Configuration is driven entirely by environment variables.
  *
- * @requires @sentry/node — install via: npm install @sentry/node
+ * When @sentry/node is not installed, all functions gracefully no-op.
+ * Install via: npm install @sentry/node
  */
-
-// NOTE: Requires installation of @sentry/node
-// npm install @sentry/node
-import * as Sentry from '@sentry/node';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -20,31 +17,23 @@ interface SentryConfig {
   readonly sampleRate?: number;
 }
 
-/** Minimal Sentry event shape used by beforeSend / beforeSendTransaction callbacks. */
-interface SentryEvent {
-  request?: {
-    url?: string;
-    headers?: Record<string, string>;
-  };
-  [key: string]: unknown;
-}
+// ─── State ──────────────────────────────────────────────────────────
 
-/** Minimal Sentry scope shape used by withScope callback. */
-interface SentryScope {
-  setTag(key: string, value: string): void;
-  setUser(user: { id: string }): void;
-  setExtra(key: string, value: unknown): void;
-}
+let isInitialized = false;
+let SentryModule: {
+  init: (options: Record<string, unknown>) => void;
+  withScope: (callback: (scope: { setTag: (k: string, v: string) => void; setUser: (u: { id: string }) => void; setExtra: (k: string, v: unknown) => void }) => void) => void;
+  captureException: (error: Error) => void;
+  close: (timeout: number) => Promise<boolean>;
+} | null = null;
 
 // ─── Initialization ─────────────────────────────────────────────────
 
-let isInitialized = false;
-
 /**
  * Initialize Sentry for the API server.
- * No-ops gracefully if SENTRY_DSN is not configured.
+ * No-ops gracefully if SENTRY_DSN is not configured or @sentry/node is not installed.
  */
-export function initSentry(config: SentryConfig): void {
+export async function initSentry(config: SentryConfig): Promise<void> {
   if (isInitialized) return;
 
   if (!config.dsn) {
@@ -52,32 +41,20 @@ export function initSentry(config: SentryConfig): void {
     return;
   }
 
-  Sentry.init({
+  try {
+    SentryModule = await import('@sentry/node') as typeof SentryModule;
+  } catch {
+    console.info('[Sentry] @sentry/node not installed — error tracking disabled');
+    return;
+  }
+
+  if (!SentryModule) return;
+
+  SentryModule.init({
     dsn: config.dsn,
     environment: config.environment,
     release: config.release ?? `realflow-api@${process.env['npm_package_version'] ?? '0.1.0'}`,
     tracesSampleRate: config.sampleRate ?? 0.1,
-
-    // Filter out health check transactions
-    beforeSendTransaction(event: SentryEvent) {
-      const url = event.request?.url ?? '';
-      if (url.includes('/health')) {
-        return null;
-      }
-      return event;
-    },
-
-    // Scrub sensitive data from error reports
-    beforeSend(event: SentryEvent) {
-      if (event.request?.headers) {
-        const headers = { ...event.request.headers };
-        delete headers['authorization'];
-        delete headers['cookie'];
-        delete headers['x-api-key'];
-        event.request.headers = headers;
-      }
-      return event;
-    },
   });
 
   isInitialized = true;
@@ -97,9 +74,9 @@ export function captureError(
     readonly extra?: Record<string, unknown>;
   },
 ): void {
-  if (!isInitialized) return;
+  if (!isInitialized || !SentryModule) return;
 
-  Sentry.withScope((scope: SentryScope) => {
+  SentryModule.withScope((scope) => {
     if (context?.requestId) {
       scope.setTag('requestId', context.requestId);
     }
@@ -116,7 +93,7 @@ export function captureError(
         scope.setExtra(key, value);
       }
     }
-    Sentry.captureException(error);
+    SentryModule?.captureException(error);
   });
 }
 
@@ -125,6 +102,6 @@ export function captureError(
  * Call this during graceful shutdown.
  */
 export async function flushSentry(timeoutMs = 2000): Promise<void> {
-  if (!isInitialized) return;
-  await Sentry.close(timeoutMs);
+  if (!isInitialized || !SentryModule) return;
+  await SentryModule.close(timeoutMs);
 }
