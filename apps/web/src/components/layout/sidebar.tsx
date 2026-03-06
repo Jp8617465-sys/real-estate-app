@@ -107,7 +107,6 @@ export function Sidebar() {
                 </p>
               )}
               {section.items.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
                 const isExactActive = pathname === item.href;
                 const isParentActive = !isExactActive && pathname.startsWith(item.href);
                 const active = isExactActive || isParentActive;

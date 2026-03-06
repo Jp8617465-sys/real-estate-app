@@ -3,11 +3,9 @@
 import { cn } from '@/lib/utils';
 import { VerificationStatusBadge } from './verification-status-badge';
 import {
-  AML_DOCUMENT_POINTS,
   AML_DOCUMENT_CATEGORIES,
   type AmlDocumentType,
   type AmlDocumentCategory,
-  type AmlIdentityDocument,
 } from '@realflow/shared';
 
 interface VerificationChecklistProps {

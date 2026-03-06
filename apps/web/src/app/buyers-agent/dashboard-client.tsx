@@ -4,7 +4,7 @@ import { StatCard } from '@/components/dashboard/stat-card';
 import { BaPipelineBoard } from '@/components/buyers-agent/ba-pipeline-board';
 import { usePipelineTransactions } from '@/hooks/use-pipeline';
 import { usePropertyMatches } from '@/hooks/use-property-matches';
-import { formatCurrency, formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime } from '@/lib/utils';
 import {
   BUYERS_AGENT_STAGE_LABELS,
   type BuyersAgentStage,

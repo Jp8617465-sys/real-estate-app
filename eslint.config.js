@@ -24,11 +24,7 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: [
-          './tsconfig.base.json',
-          './apps/*/tsconfig.json',
-          './packages/*/tsconfig.json',
-        ],
+        project: true,
       },
       globals: {
         React: 'readonly',

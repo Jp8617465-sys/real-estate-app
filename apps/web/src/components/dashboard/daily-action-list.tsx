@@ -4,12 +4,6 @@ import Link from 'next/link';
 import { useDailyActions, useCompleteDailyAction } from '@/hooks/use-daily-actions';
 import type { DailyActionItem } from '@realflow/shared';
 
-const PRIORITY_COLORS: Record<string, string> = {
-  high: 'bg-red-500',
-  medium: 'bg-orange-400',
-  low: 'bg-yellow-400',
-};
-
 const CATEGORY_EMOJI: Record<string, string> = {
   call: '📞',
   follow_up: '💬',

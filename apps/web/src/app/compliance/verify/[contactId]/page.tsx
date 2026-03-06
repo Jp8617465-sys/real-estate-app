@@ -4,7 +4,7 @@ interface PageProps {
   params: { contactId: string };
 }
 
-export function generateMetadata({ params }: PageProps) {
+export function generateMetadata({ params: _params }: PageProps) {
   return {
     title: `Verify Client -- Compliance -- RealFlow`,
     description: 'AML/KYC client identity verification',

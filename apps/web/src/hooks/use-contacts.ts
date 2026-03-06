@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import type { Contact, CreateContact, UpdateContact, ContactSearch } from '@realflow/shared';
+import type { CreateContact, UpdateContact, ContactSearch } from '@realflow/shared';
 
 const supabase = createClient();
 

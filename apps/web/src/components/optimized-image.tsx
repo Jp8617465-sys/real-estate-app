@@ -153,7 +153,7 @@ export default function OptimizedImage({
   alt,
   aspect,
   showPlaceholder = true,
-  bucket,
+  bucket: _bucket,
   cloudinaryCloud,
   containerClassName,
   className,

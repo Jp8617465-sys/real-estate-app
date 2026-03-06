@@ -3,9 +3,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  AmlDocumentTypeSchema,
-  AML_DOCUMENT_POINTS,
-  AML_DOCUMENT_CATEGORIES,
   type AmlDocumentType,
   type AddAmlDocument,
 } from '@realflow/shared';
