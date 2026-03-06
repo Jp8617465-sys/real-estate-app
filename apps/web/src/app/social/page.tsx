@@ -338,14 +338,14 @@ export default function SocialPage() {
                     <p className="text-sm text-gray-800 truncate">
                       {post.content as string}
                     </p>
-                    {post.scheduled_at && (
+                    {post.scheduled_at ? (
                       <p className="mt-1 text-xs text-gray-500">
                         {new Date(post.scheduled_at as string).toLocaleString('en-AU', {
                           dateStyle: 'medium',
                           timeStyle: 'short',
                         })}
                       </p>
-                    )}
+                    ) : null}
                   </div>
                   <div className="ml-4 flex gap-2">
                     {(status === 'draft' || status === 'failed') && (

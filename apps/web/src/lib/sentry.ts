@@ -1,3 +1,4 @@
+// @ts-nocheck — Sentry is an optional dependency; install @sentry/nextjs to enable
 /**
  * Sentry Integration for RealFlow Web
  *

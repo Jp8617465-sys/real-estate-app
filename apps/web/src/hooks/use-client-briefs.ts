@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { CreateClientBrief, UpdateClientBrief, AIBriefRefinement } from '@realflow/shared';
-import { toDbSchema, fromDbSchema } from '@realflow/business-logic';
+import { toDbSchema, fromDbSchema, type ClientBriefDbRow } from '@realflow/business-logic';
 
 export function useRefineBrief() {
   return useMutation({
@@ -45,7 +45,7 @@ export function useClientBriefs(contactId?: string) {
       const { data, error } = await query;
       if (error) throw error;
       return data.map((row: Record<string, unknown>) => ({
-        ...fromDbSchema(row),
+        ...fromDbSchema(row as unknown as ClientBriefDbRow),
         contact: row.contact, // Preserve joined relation
       }));
     },
