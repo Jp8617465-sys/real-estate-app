@@ -51,7 +51,7 @@ export function initWebSentry(config: SentryWebConfig): void {
   if (isInitialized) return;
 
   if (!config.dsn) {
-    console.info('[Sentry] NEXT_PUBLIC_SENTRY_DSN not configured — error tracking disabled');
+    console.warn('[Sentry] NEXT_PUBLIC_SENTRY_DSN not configured — error tracking disabled');
     return;
   }
 

@@ -42,7 +42,7 @@ export async function initSentry(config: SentryConfig): Promise<void> {
   }
 
   try {
-    SentryModule = await import('@sentry/node') as typeof SentryModule;
+    SentryModule = await import('@sentry/node');
   } catch {
     console.info('[Sentry] @sentry/node not installed — error tracking disabled');
     return;

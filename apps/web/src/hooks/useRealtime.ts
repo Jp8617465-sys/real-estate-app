@@ -178,7 +178,6 @@ export function useRealtimeSubscription<T>(
       }
       retryCountRef.current = 0;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelName, subscriptionFilter.table, subscriptionFilter.filter, subscriptionFilter.event, subscriptionFilter.schema, enabled]);
 
   return { status };

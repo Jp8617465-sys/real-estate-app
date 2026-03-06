@@ -101,7 +101,6 @@ export function PostPreview({ content, mediaUrls, platforms, activePlatform }: P
                   idx === 0 && mediaUrls.length === 3 && 'row-span-2 h-full',
                 )}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={url}
                   alt={`Media ${idx + 1}`}

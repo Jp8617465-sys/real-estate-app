@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRealtimeSubscription, type RealtimeChangePayload } from './useRealtime';
 import { RealtimeChannels } from '@realflow/shared';
 import type { TransactionRow } from '@realflow/shared';
-import type { PipelineType, Transaction } from '@realflow/shared';
+import type { PipelineType } from '@realflow/shared';
 
 // ─── Types ──────────────────────────────────────────────────────────────
 

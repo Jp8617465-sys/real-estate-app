@@ -11,6 +11,7 @@ export default [
       globals: {
         module: 'readonly',
         require: 'readonly',
+        process: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
       },
@@ -24,7 +25,6 @@ export default [
         ecmaVersion: 'latest',
         sourceType: 'module',
         project: [
-          './tsconfig.json',
           './tsconfig.base.json',
           './apps/*/tsconfig.json',
           './packages/*/tsconfig.json',
@@ -61,6 +61,9 @@ export default [
         Notification: 'readonly',
         Audio: 'readonly',
         HTMLAudioElement: 'readonly',
+        localStorage: 'readonly',
+        require: 'readonly',
+        HTMLImageElement: 'readonly',
       },
     },
     plugins: {

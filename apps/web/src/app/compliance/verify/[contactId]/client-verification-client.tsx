@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useContact } from '@/hooks/use-contacts';
 import {
   useVerifications,
-  useVerification,
   useCreateVerification,
   useUpdateVerification,
   useCompleteVerification,
