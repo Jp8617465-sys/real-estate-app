@@ -1,9 +1,14 @@
 'use client';
 
-import { MapPin, Bed, Bath, Car, Star, Loader2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, Bed, Bath, Car, Star, Loader2, AlertCircle, ThumbsUp, ThumbsDown, MessageCircle, CheckCircle2 } from 'lucide-react';
 import type { PropertyMatchStatus } from '@realflow/shared';
 import { usePortalProperties } from '@/hooks/use-portal-properties';
 import type { PortalProperty } from '@/hooks/use-portal-properties';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
+
+const supabase = createClient();
 
 const STATUS_STYLES: Record<PropertyMatchStatus, { label: string; className: string }> = {
   new: {
@@ -32,6 +37,8 @@ const STATUS_STYLES: Record<PropertyMatchStatus, { label: string; className: str
   },
 };
 
+type FeedbackValue = 'interested' | 'not_interested' | 'ask_agent';
+
 function getScoreColor(score: number): string {
   if (score >= 90) return 'text-green-600';
   if (score >= 75) return 'text-portal-600';
@@ -56,6 +63,121 @@ function formatAddress(property: PortalProperty): {
   }
   return { street: '', suburb: '', state: '', postcode: '' };
 }
+
+// ─── Property Feedback Buttons ────────────────────────────────────────────────
+
+function PropertyFeedbackButtons({ matchId }: { matchId: string }) {
+  const queryClient = useQueryClient();
+  const [currentFeedback, setCurrentFeedback] = useState<FeedbackValue | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: async (feedback: FeedbackValue) => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Not authenticated');
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/api/v1/portal/properties/${matchId}/feedback`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ feedback }),
+        },
+      );
+
+      if (!response.ok) {
+        const body = (await response.json()) as { error?: string };
+        throw new Error(body.error ?? 'Failed to submit feedback');
+      }
+
+      return feedback;
+    },
+    onSuccess: (feedback) => {
+      setCurrentFeedback(feedback);
+      queryClient.invalidateQueries({ queryKey: ['portal-properties'] });
+    },
+  });
+
+  if (currentFeedback) {
+    const labels: Record<FeedbackValue, string> = {
+      interested: 'Marked as Interested',
+      not_interested: 'Marked as Not Interested',
+      ask_agent: 'Agent will be in touch',
+    };
+    const styles: Record<FeedbackValue, string> = {
+      interested: 'text-green-700 bg-green-50',
+      not_interested: 'text-gray-600 bg-gray-50',
+      ask_agent: 'text-portal-700 bg-portal-50',
+    };
+    return (
+      <div
+        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${styles[currentFeedback]}`}
+      >
+        <CheckCircle2 className="h-3.5 w-3.5" />
+        {labels[currentFeedback]}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {mutation.isError && (
+        <p className="text-xs text-red-600">
+          {mutation.error instanceof Error
+            ? mutation.error.message
+            : 'Failed to submit'}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={mutation.isPending}
+          onClick={() => mutation.mutate('interested')}
+          className="flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 disabled:opacity-50"
+        >
+          {mutation.isPending && mutation.variables === 'interested' ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <ThumbsUp className="h-3 w-3" />
+          )}
+          Interested
+        </button>
+        <button
+          type="button"
+          disabled={mutation.isPending}
+          onClick={() => mutation.mutate('not_interested')}
+          className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-50"
+        >
+          {mutation.isPending && mutation.variables === 'not_interested' ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <ThumbsDown className="h-3 w-3" />
+          )}
+          Not Interested
+        </button>
+        <button
+          type="button"
+          disabled={mutation.isPending}
+          onClick={() => mutation.mutate('ask_agent')}
+          className="flex items-center gap-1.5 rounded-lg border border-portal-200 bg-portal-50 px-3 py-1.5 text-xs font-medium text-portal-700 transition-colors hover:bg-portal-100 disabled:opacity-50"
+        >
+          {mutation.isPending && mutation.variables === 'ask_agent' ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <MessageCircle className="h-3 w-3" />
+          )}
+          Ask Agent
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PropertiesPage() {
   const { data: properties, isLoading, error } = usePortalProperties();
@@ -109,6 +231,7 @@ export default function PropertiesPage() {
           const statusStyle = STATUS_STYLES[match.status as PropertyMatchStatus] ?? STATUS_STYLES.new;
           const addr = formatAddress(match);
           const prop = match.property;
+          const showFeedback = match.status === 'sent_to_client';
 
           return (
             <div
@@ -175,6 +298,16 @@ export default function PropertiesPage() {
                   <div className="mt-3 border-t border-gray-100 pt-3">
                     <p className="text-xs font-medium text-gray-500">Agent Notes</p>
                     <p className="mt-0.5 text-sm text-gray-600">{match.agent_notes}</p>
+                  </div>
+                )}
+
+                {/* Feedback buttons — shown for sent_to_client status */}
+                {showFeedback && (
+                  <div className="mt-3 border-t border-gray-100 pt-3">
+                    <p className="mb-2 text-xs font-medium text-gray-500">
+                      What do you think?
+                    </p>
+                    <PropertyFeedbackButtons matchId={match.id} />
                   </div>
                 )}
               </div>

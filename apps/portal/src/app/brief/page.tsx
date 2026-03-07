@@ -1,8 +1,13 @@
 'use client';
 
-import { CheckCircle2, Clock, FileText, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, FileText, Loader2, AlertCircle, PenLine } from 'lucide-react';
 import type { PurchaseType, Urgency, UpdateFrequency, BriefContactMethod } from '@realflow/shared';
 import { useBrief } from '@/hooks/use-brief';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
+import { usePortalClient } from '@/hooks/use-auth';
+
+const supabase = createClient();
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-AU', {
@@ -80,6 +85,121 @@ function TagList({ items }: { items: string[] }) {
           {item}
         </span>
       ))}
+    </div>
+  );
+}
+
+// ─── Acknowledgement Section ──────────────────────────────────────────────────
+
+function BriefAcknowledgement({ briefId }: { briefId: string }) {
+  const queryClient = useQueryClient();
+  usePortalClient();
+
+  // Fetch acknowledged_at directly (not in fromDbSchema)
+  const { data: ackData, isLoading: ackLoading } = useQuery({
+    queryKey: ['brief-ack', briefId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('client_briefs')
+        .select('id, acknowledged_at')
+        .eq('id', briefId)
+        .single();
+      if (error) throw error;
+      return data as { id: string; acknowledged_at: string | null };
+    },
+    enabled: !!briefId,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Not authenticated');
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/api/v1/portal/brief/acknowledge`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            clientBriefId: briefId,
+            acknowledgedAt: new Date().toISOString(),
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const body = (await response.json()) as { error?: string };
+        throw new Error(body.error ?? 'Failed to acknowledge brief');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['brief-ack', briefId] });
+    },
+  });
+
+  if (ackLoading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-400">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Loading acknowledgement status...
+      </div>
+    );
+  }
+
+  if (ackData?.acknowledged_at) {
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-green-100 bg-green-50 px-5 py-4">
+        <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
+        <div>
+          <p className="text-sm font-medium text-green-800">Brief Acknowledged</p>
+          <p className="text-xs text-green-600">
+            Acknowledged on{' '}
+            {new Date(ackData.acknowledged_at).toLocaleDateString('en-AU', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <PenLine className="mt-0.5 h-5 w-5 shrink-0 text-portal-600" />
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold text-gray-900">
+            Acknowledge Your Brief
+          </h3>
+          <p className="mt-0.5 text-sm text-gray-500">
+            Confirm that the information in this brief is correct and up to date.
+            Your agent will use this to find the best properties for you.
+          </p>
+          {mutation.isError && (
+            <p className="mt-2 text-xs text-red-600">
+              {mutation.error instanceof Error
+                ? mutation.error.message
+                : 'Failed to acknowledge brief'}
+            </p>
+          )}
+          <button
+            type="button"
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate()}
+            className="mt-3 flex items-center gap-1.5 rounded-lg bg-portal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-portal-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {mutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            I acknowledge this brief is correct
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -337,6 +457,9 @@ export default function BriefPage() {
           </dl>
         </SectionCard>
       )}
+
+      {/* Acknowledgement sign-off */}
+      <BriefAcknowledgement briefId={brief.id} />
     </div>
   );
 }
