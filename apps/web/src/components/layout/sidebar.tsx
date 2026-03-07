@@ -31,6 +31,7 @@ const navSections: NavSection[] = [
       { label: 'Sequences', href: '/workflows/sequences', icon: '🔄' },
       { label: 'Social', href: '/social', icon: '📱' },
       { label: 'Analytics', href: '/analytics', icon: '📉' },
+      { label: 'Alerts', href: '/alerts', icon: '🔔' },
     ],
   },
   {

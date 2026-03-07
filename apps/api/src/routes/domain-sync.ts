@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { PassThrough } from 'node:stream';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { DomainSyncEngine } from '@realflow/business-logic';
+import { DomainSyncEngine, PropertyAlertEngine } from '@realflow/business-logic';
 import { DomainClient } from '@realflow/integrations';
 import { CreateDomainSyncJobSchema } from '@realflow/shared';
 import { createSupabaseClient } from '../middleware/supabase';
@@ -168,6 +168,33 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
     setImmediate(async () => {
       try {
         const syncResult = await engine.syncListingsForAgent(agentId, supabase);
+
+        // Fire alerts for genuinely new matches (ignoreDuplicates prevents re-alerts on re-sync)
+        if (syncResult.newMatchIds.length > 0) {
+          const alertEngine = new PropertyAlertEngine(
+            supabase,
+            async () => {},  // push — stub until push service is wired
+            async () => {},  // email
+            async () => {},  // sms
+          );
+          for (const matchId of syncResult.newMatchIds) {
+            void alertEngine.handleNewMatch(matchId);  // fire-and-forget
+          }
+        }
+
+        // Detect price changes and fire alerts for any found
+        const priceChanges = await engine.detectPriceChanges(agentId, supabase);
+        if (priceChanges.length > 0) {
+          const alertEngine = new PropertyAlertEngine(
+            supabase,
+            async () => {},
+            async () => {},
+            async () => {},
+          );
+          for (const change of priceChanges) {
+            void alertEngine.handlePriceChange(change.id);  // fire-and-forget
+          }
+        }
 
         await supabase
           .from('domain_sync_jobs')

@@ -1,6 +1,9 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useContact } from '../../src/hooks/use-contacts';
+import { supabase } from '../../src/lib/supabase';
+
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5000';
 
 export default function ContactDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,6 +23,27 @@ export default function ContactDetailScreen() {
         <Text style={styles.errorText}>Failed to load contact</Text>
       </View>
     );
+  }
+
+  async function handlePortalInvite() {
+    // Extract to local var — TypeScript can't narrow closures via outer-scope guards
+    const email = contact?.email;
+    if (!email) {
+      Alert.alert('No email', 'This contact does not have an email address.');
+      return;
+    }
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token ?? '';
+      const res = await fetch(`${API_BASE}/api/v1/portal/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ contactId: id, email }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      Alert.alert('Portal invite sent', `Invite sent to ${email}`);
+    } catch {
+      Alert.alert('Error', 'Failed to send portal invite. Please try again.');
+    }
   }
 
   const name = `${contact.firstName} ${contact.lastName}`;
@@ -62,6 +86,10 @@ export default function ContactDetailScreen() {
         <TouchableOpacity style={styles.actionButton}>
           <Text style={styles.actionEmoji}>📝</Text>
           <Text style={styles.actionLabel}>Note</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} onPress={handlePortalInvite}>
+          <Text style={styles.actionEmoji}>🔗</Text>
+          <Text style={styles.actionLabel}>Portal</Text>
         </TouchableOpacity>
       </View>
 

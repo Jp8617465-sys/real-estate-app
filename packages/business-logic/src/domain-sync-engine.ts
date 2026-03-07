@@ -90,6 +90,7 @@ export interface SyncResult {
   listingsFound: number;
   listingsImported: number;
   matchesTriggered: number;
+  newMatchIds: string[];
 }
 
 // ─── Domain Sync Engine ─────────────────────────────────────────────────────
@@ -169,6 +170,7 @@ export class DomainSyncEngine {
       listingsFound: 0,
       listingsImported: 0,
       matchesTriggered: 0,
+      newMatchIds: [],
     };
 
     // 1. Fetch active client briefs for this agent
@@ -310,7 +312,7 @@ export class DomainSyncEngine {
       const propertyId = (insertedProperty as { id: string }).id;
 
       for (const brief of briefs as ClientBriefRow[]) {
-        const { error: matchError } = await supabase
+        const { data: newMatch, error: matchError } = await supabase
           .from('property_matches')
           .upsert(
             {
@@ -322,11 +324,14 @@ export class DomainSyncEngine {
               flags: JSON.stringify([]),
               is_deleted: false,
             },
-            { onConflict: 'property_id,brief_id' },
-          );
+            { onConflict: 'property_id,brief_id', ignoreDuplicates: true },
+          )
+          .select('id')
+          .single();
 
-        if (!matchError) {
+        if (!matchError && newMatch) {
           result.matchesTriggered++;
+          result.newMatchIds.push((newMatch as { id: string }).id);
         }
       }
     }
