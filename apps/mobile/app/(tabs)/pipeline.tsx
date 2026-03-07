@@ -99,7 +99,7 @@ export default function PipelineScreen() {
     grouped[stageKey] = [];
   }
   for (const tx of (transactions ?? []) as DealWithContact[]) {
-    const stage = tx.currentStage ?? tx.current_stage;
+    const stage = tx.currentStage;
     if (grouped[stage]) {
       grouped[stage]!.push(tx);
     }
@@ -175,7 +175,7 @@ export default function PipelineScreen() {
                     <DealCard
                       key={card.id}
                       transaction={card}
-                      onPress={() => router.push(`/contact/${card.contactId ?? card.contact_id}` as never)}
+                      onPress={() => router.push(`/contact/${card.contactId}` as never)}
                     />
                   ))
                 )}

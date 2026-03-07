@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: realflow-api
+    runtime: node
+    region: singapore  # closest available to AU
+    plan: starter      # upgrade to standard when you have paying users
+    branch: main
+    rootDir: .
+    buildCommand: npm ci && npx turbo build --filter=@realflow/api
+    startCommand: node apps/api/dist/index.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000         # Render injects $PORT — this is the default
+      - key: SUPABASE_URL
+        sync: false          # set manually in Render dashboard
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: PORTAL_URL
+        value: https://realflow-portal.vercel.app  # update after Vercel deploy
+      - key: ANTHROPIC_API_KEY
+        sync: false          # set manually — unlocks AI features
+      - key: DOMAIN_API_KEY
+        sync: false          # set manually — unlocks Domain sync

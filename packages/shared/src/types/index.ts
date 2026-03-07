@@ -29,3 +29,5 @@ export * from './analytics';
 export * from './compliance';
 export * from './theme';
 export * from './consolidation-report';
+export * from './portal';
+export * from './property-alerts';

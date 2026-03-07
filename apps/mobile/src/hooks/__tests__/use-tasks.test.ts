@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
@@ -163,11 +163,13 @@ describe('useCreateTask', () => {
 
     result.current.mutate({
       title: 'New Task',
-      type: 'follow_up',
+      type: 'follow-up',
       priority: 'medium',
       status: 'pending',
       dueDate: '2026-02-15',
       createdBy: 'agent-1',
+      assignedTo: '00000000-0000-0000-0000-000000000001',
+      isAutomated: false,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));

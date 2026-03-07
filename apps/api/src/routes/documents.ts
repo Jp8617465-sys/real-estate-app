@@ -168,4 +168,29 @@ export async function documentRoutes(fastify: FastifyInstance) {
     if (error) return reply.status(500).send({ error: error.message });
     return { success: true };
   });
+
+  // Update portal visibility for a document
+  const UpdatePortalVisibilitySchema = z.object({
+    portalVisible: z.boolean(),
+  });
+
+  fastify.patch<{ Params: { id: string } }>('/:id/portal-visibility', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { id } = request.params;
+    const body = UpdatePortalVisibilitySchema.safeParse(request.body);
+    if (!body.success) return reply.status(400).send({ error: body.error.flatten() });
+    const { portalVisible } = body.data;
+
+    const { data, error } = await supabase
+      .from('documents')
+      .update({ portal_visible: portalVisible, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('is_deleted', false)
+      .select()
+      .single();
+
+    if (error) return reply.status(500).send({ error: error.message });
+    if (!data) return reply.status(404).send({ error: 'Document not found' });
+    return reply.send({ data });
+  });
 }

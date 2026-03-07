@@ -33,13 +33,13 @@ export default function BAPipelineScreen() {
     );
   }
 
-  // Group transactions by current_stage
+  // Group transactions by currentStage
   const grouped: Record<string, typeof transactions> = {};
   for (const stage of stages) {
     grouped[stage[0]] = [];
   }
   for (const tx of transactions ?? []) {
-    const stage = tx.currentStage ?? tx.current_stage;
+    const stage = tx.currentStage;
     if (grouped[stage]) {
       grouped[stage]!.push(tx);
     }
@@ -79,7 +79,7 @@ export default function BAPipelineScreen() {
                 <TouchableOpacity
                   key={card.id}
                   style={styles.card}
-                  onPress={() => router.push(`/brief/${card.contactId ?? card.contact_id}`)}
+                  onPress={() => router.push(`/brief/${card.contactId}`)}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.cardName}>{clientName}</Text>

@@ -40,6 +40,7 @@ import { consolidationReportRoutes } from './routes/consolidation-reports';
 import { cache } from './lib/cache';
 import { CachedQueryService } from './services/cached-queries';
 import { createSupabaseServiceClient } from './middleware/supabase';
+import { alertsRoutes } from './routes/alerts';
 
 // ─── Initialize Observability ───────────────────────────────────────
 
@@ -112,6 +113,7 @@ async function start() {
   await fastify.register(analyticsRoutes, { prefix: '/api/v1/analytics' });
   await fastify.register(complianceRoutes, { prefix: '/api/v1/compliance' });
   await fastify.register(consolidationReportRoutes, { prefix: '/api/v1/consolidation-reports' });
+  await fastify.register(alertsRoutes, { prefix: '/api/v1' });
 
   // Scheduler tick — manual trigger for dev/test environments
   fastify.post('/api/v1/scheduler/tick', async () => {

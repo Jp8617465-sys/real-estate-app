@@ -84,9 +84,9 @@ ALTER TABLE transactions
 
 CREATE OR REPLACE VIEW pipeline_funnel_stats AS
 SELECT
-  cb.agent_id,
+  c.assigned_agent_id AS agent_id,
   t.pipeline_type,
-  t.stage,
+  t.current_stage                                                AS stage,
   COUNT(*)                                                       AS active_count,
   AVG(
     EXTRACT(EPOCH FROM (NOW() - COALESCE(t.stage_entered_at, t.created_at))) / 86400
@@ -97,8 +97,8 @@ SELECT
 FROM transactions t
 JOIN contacts   c  ON c.id  = t.contact_id
 JOIN client_briefs cb ON cb.contact_id = c.id AND cb.is_deleted = FALSE
-WHERE t.status = 'active'
-GROUP BY cb.agent_id, t.pipeline_type, t.stage;
+WHERE t.is_deleted = FALSE
+GROUP BY c.assigned_agent_id, t.pipeline_type, t.current_stage;
 
 -- ─── Row Level Security ───────────────────────────────────────────────────────
 

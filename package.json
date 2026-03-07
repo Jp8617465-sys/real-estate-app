@@ -11,22 +11,38 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "type-check": "turbo type-check",
+    "quality": "turbo quality",
+    "test:coverage": "turbo test:coverage",
+    "harden": "turbo harden",
     "clean": "turbo clean",
     "db:migrate": "cd supabase && supabase db push",
     "db:reset": "cd supabase && supabase db reset",
-    "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > packages/shared/src/database.types.ts"
+    "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > packages/shared/src/database.types.ts",
+    "prepare": "is-ci || husky"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.0.0",
-    "@eslint/js": "^9.39.2",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.55.0",
     "eslint": "^9.0.0",
+    "husky": "^9.1.7",
+    "is-ci": "^4.1.0",
+    "lint-staged": "^15.5.2",
     "prettier": "^3.3.0",
     "turbo": "^2.8.14",
     "typescript": "^5.5.0",
     "vitest": "^4.0.18"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   },
   "engines": {
     "node": ">=20"

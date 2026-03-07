@@ -95,9 +95,10 @@ CREATE POLICY "agents_see_relevant_price_changes"
     OR EXISTS (
       SELECT 1
       FROM   property_matches pm
-      JOIN   client_briefs cb ON cb.id = pm.brief_id
+      JOIN   client_briefs cb ON cb.id = pm.client_brief_id
+      JOIN   contacts c ON c.id = cb.contact_id
       WHERE  pm.property_id = property_price_changes.property_id
-        AND  cb.agent_id = auth.uid()
+        AND  c.assigned_agent_id = auth.uid()
     )
   );
 

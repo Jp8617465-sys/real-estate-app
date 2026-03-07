@@ -11,7 +11,7 @@
 -- ─── Pipeline Migration History Table ───────────────────────────────────
 
 CREATE TABLE pipeline_migration_history (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Transaction reference
   transaction_id UUID NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
