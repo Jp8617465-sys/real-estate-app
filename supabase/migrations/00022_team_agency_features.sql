@@ -33,8 +33,8 @@ ALTER TABLE workflows
   ADD COLUMN IF NOT EXISTS shared_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS workflows_team_template_idx
-  ON workflows(office_id, is_team_template)
-  WHERE is_team_template = true AND is_deleted = false;
+  ON workflows(is_team_template)
+  WHERE is_team_template = true AND is_active = true;
 
 -- Team performance snapshots (daily pre-aggregated, populated by TeamEngine.snapshotTeamPerformance)
 CREATE TABLE IF NOT EXISTS team_performance_snapshots (
