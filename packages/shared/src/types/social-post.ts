@@ -29,6 +29,7 @@ export const SocialAnalyticsSchema = z.object({
   clicks: z.number().int().nonnegative().default(0),
   shares: z.number().int().nonnegative().default(0),
   comments: z.number().int().nonnegative().default(0),
+  leadsGenerated: z.number().int().nonnegative().default(0),
 });
 export type SocialAnalytics = z.infer<typeof SocialAnalyticsSchema>;
 
