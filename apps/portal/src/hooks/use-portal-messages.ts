@@ -35,7 +35,7 @@ export function usePortalMessages() {
       const { data, error } = await supabase
         .from('conversation_messages')
         .select('id, direction, content, created_at, is_read')
-        .eq('contact_id', portalClient!.contact_id)
+        .eq('contact_id', portalClient?.contact_id ?? '')
         .eq('is_deleted', false)
         .order('created_at', { ascending: true });
 
@@ -57,8 +57,8 @@ export function useSendMessage() {
 
   return useMutation({
     mutationFn: async ({ text }: SendMessageParams) => {
-      const contactId = portalClient!.contact_id;
-      const agentId = portalClient!.agent_id;
+      const contactId = portalClient?.contact_id ?? '';
+      const agentId = portalClient?.agent_id ?? '';
 
       const { data, error } = await supabase
         .from('conversation_messages')

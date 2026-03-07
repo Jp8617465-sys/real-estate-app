@@ -15,14 +15,32 @@ export {
   executeAction,
   runWorkflow,
   parseDuration,
+  pauseExecution,
+  resumeExecution,
+  scheduleResume,
 } from './workflow-engine';
 export type {
   WorkflowEvent,
   WorkflowContext,
   ActionResult,
   WorkflowRunResult,
+  RunWorkflowOptions,
   SupabaseClient as WorkflowSupabaseClient,
 } from './workflow-engine';
+export {
+  evaluateFieldCondition,
+  evaluateConditionNode,
+  evaluateConditionNodes,
+} from './workflow-condition-evaluator';
+export {
+  classifyError,
+  calculateRetryDelay,
+  getErrorPolicy,
+  recoverFromError,
+  addToDeadLetterQueue,
+  notifyWorkflowError,
+} from './workflow-error-recovery';
+export type { RecoveryResult } from './workflow-error-recovery';
 export { MessageNormaliser } from './message-normaliser';
 export { ContactMatcher } from './contact-matcher';
 export { EmailParser } from './email-parser';
@@ -33,6 +51,12 @@ export {
   type MigrationDecision,
 } from './pipeline-migration';
 export { DomainSyncEngine, type DomainSearchParams, type SyncResult } from './domain-sync-engine';
+export { PropertyMatcher } from './property-matcher';
+export type {
+  PropertyMatcherConfig,
+  EnhancedMatchResult,
+  FeatureMatchDetail,
+} from './property-matcher';
 export { AnalyticsEngine } from './analytics-engine';
 export { AmlEngine } from './aml-engine';
 export { generateDailyActions, scoreCandidate } from './daily-action-engine';

@@ -4,6 +4,7 @@ import {
   UpdateAmlCheckSchema,
   AddAmlDocumentSchema,
   CompleteAmlCheckSchema,
+  CreateAmlSmrSchema,
   AML_DOCUMENT_POINTS,
 } from '@realflow/shared';
 import { AmlEngine } from '@realflow/business-logic';
@@ -441,5 +442,347 @@ export async function complianceRoutes(fastify: FastifyInstance) {
 
     const checks = await AmlEngine.getExpiringChecks(user.id, daysAhead, supabase);
     return { data: checks };
+  });
+
+  // ─── GET /dashboard ──────────────────────────────────────────────────────
+  // Aggregate compliance stats for the dashboard overview.
+  fastify.get('/dashboard', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorised' });
+    }
+
+    const { data: allChecks, error: checksError } = await supabase
+      .from('aml_checks')
+      .select('*, contacts!contact_id(first_name, last_name)')
+      .eq('agent_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (checksError) return reply.status(500).send({ error: checksError.message });
+
+    const checks = allChecks ?? [];
+    const now = new Date();
+    const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+    const totalClients = new Set(checks.map((c: Record<string, unknown>) => c.contact_id)).size;
+    const verified = checks.filter((c: Record<string, unknown>) => c.status === 'passed').length;
+    const pending = checks.filter((c: Record<string, unknown>) =>
+      c.status === 'pending' || c.status === 'in_progress'
+    ).length;
+    const expired = checks.filter((c: Record<string, unknown>) => c.status === 'expired').length;
+    const failed = checks.filter((c: Record<string, unknown>) => c.status === 'failed').length;
+
+    const expiringWithin90Days = checks.filter((c: Record<string, unknown>) => {
+      if (c.status !== 'passed' || !c.expiry_date) return false;
+      const expiryDate = new Date(c.expiry_date as string);
+      return expiryDate <= ninetyDaysFromNow && expiryDate > now;
+    }).length;
+
+    return {
+      data: {
+        totalClients,
+        verified,
+        pending,
+        expired,
+        failed,
+        expiringWithin90Days,
+      },
+    };
+  });
+
+  // ─── GET /verifications ──────────────────────────────────────────────────
+  // List all verifications with optional status and contactId filters.
+  fastify.get<{
+    Querystring: { status?: string; contactId?: string };
+  }>('/verifications', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
+    const { status, contactId } = request.query;
+
+    let query = supabase
+      .from('aml_checks')
+      .select('*, contacts!contact_id(first_name, last_name)')
+      .eq('agent_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+    if (contactId) {
+      query = query.eq('contact_id', contactId);
+    }
+
+    const { data, error } = await query;
+    if (error) return reply.status(500).send({ error: error.message });
+    return { data: data ?? [] };
+  });
+
+  // ─── GET /verifications/:contactId ───────────────────────────────────────
+  // Get all verifications for a specific contact.
+  fastify.get<{ Params: { contactId: string } }>(
+    '/verifications/:contactId',
+    async (request, reply) => {
+      const supabase = createSupabaseClient(request);
+
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
+      const { contactId } = request.params;
+
+      const { data, error } = await supabase
+        .from('aml_checks')
+        .select('*, contacts!contact_id(first_name, last_name)')
+        .eq('agent_id', user.id)
+        .eq('contact_id', contactId)
+        .order('created_at', { ascending: false });
+
+      if (error) return reply.status(500).send({ error: error.message });
+      return { data: data ?? [] };
+    },
+  );
+
+  // ─── POST /verifications ─────────────────────────────────────────────────
+  // Create a new verification record (alias for POST /checks).
+  fastify.post('/verifications', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const parsed = CreateAmlCheckSchema.safeParse(request.body);
+
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() });
+    }
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
+    const { contactId, verificationMethod, fullLegalName, dateOfBirth, residentialAddress } =
+      parsed.data;
+
+    const { data, error } = await supabase
+      .from('aml_checks')
+      .insert({
+        contact_id: contactId,
+        agent_id: user.id,
+        status: 'in_progress',
+        verification_method: verificationMethod,
+        full_legal_name: fullLegalName,
+        date_of_birth: dateOfBirth,
+        residential_address: residentialAddress,
+        started_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) return reply.status(500).send({ error: error.message });
+    return reply.status(201).send({ data });
+  });
+
+  // ─── PUT /verifications/:id ──────────────────────────────────────────────
+  // Update verification status/details.
+  fastify.put<{ Params: { id: string } }>('/verifications/:id', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
+    const { id } = request.params;
+    const parsed = UpdateAmlCheckSchema.safeParse(request.body);
+
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() });
+    }
+
+    const updates = parsed.data;
+    const payload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (updates.verificationMethod !== undefined) payload.verification_method = updates.verificationMethod;
+    if (updates.fullLegalName !== undefined) payload.full_legal_name = updates.fullLegalName;
+    if (updates.dateOfBirth !== undefined) payload.date_of_birth = updates.dateOfBirth;
+    if (updates.residentialAddress !== undefined) payload.residential_address = updates.residentialAddress;
+    if (updates.addressVerified !== undefined) payload.address_verified = updates.addressVerified;
+    if (updates.notes !== undefined) payload.notes = updates.notes;
+
+    const { data, error } = await supabase
+      .from('aml_checks')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) return reply.status(500).send({ error: error.message });
+    return { data };
+  });
+
+  // ─── GET /reports ────────────────────────────────────────────────────────
+  // List all AUSTRAC compliance reports for the agent.
+  fastify.get('/reports', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
+    const { data, error } = await supabase
+      .from('austrac_reports')
+      .select('*')
+      .eq('agent_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) return reply.status(500).send({ error: error.message });
+    return { data: data ?? [] };
+  });
+
+  // ─── POST /reports/generate ──────────────────────────────────────────────
+  // Generate an AUSTRAC compliance report for a given type and date range.
+  fastify.post('/reports/generate', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
+    const body = request.body as Record<string, unknown>;
+    const reportType = body.type as string;
+    const periodStart = body.periodStart as string;
+    const periodEnd = body.periodEnd as string;
+
+    if (!reportType || !periodStart || !periodEnd) {
+      return reply.status(400).send({ error: 'type, periodStart, and periodEnd are required' });
+    }
+
+    // Gather report data depending on type
+    let reportData: Record<string, unknown> = {};
+
+    if (reportType === 'suspicious_matter') {
+      const { data: smrs } = await supabase
+        .from('aml_suspicious_matter_reports')
+        .select('*')
+        .eq('agent_id', user.id)
+        .gte('report_date', periodStart)
+        .lte('report_date', periodEnd);
+
+      reportData = { suspiciousMatterReports: smrs ?? [], count: (smrs ?? []).length };
+    }
+
+    if (reportType === 'threshold_transaction') {
+      // Aggregate check data for TTR
+      const { data: checks } = await supabase
+        .from('aml_checks')
+        .select('*')
+        .eq('agent_id', user.id)
+        .gte('created_at', periodStart)
+        .lte('created_at', periodEnd);
+
+      reportData = { checks: checks ?? [], count: (checks ?? []).length };
+    }
+
+    const { data, error } = await supabase
+      .from('austrac_reports')
+      .insert({
+        agent_id: user.id,
+        type: reportType,
+        period_start: periodStart,
+        period_end: periodEnd,
+        status: 'draft',
+        generated_at: new Date().toISOString(),
+        data: reportData,
+      })
+      .select()
+      .single();
+
+    if (error) return reply.status(500).send({ error: error.message });
+    return reply.status(201).send({ data });
+  });
+
+  // ─── POST /smr ───────────────────────────────────────────────────────────
+  // File a Suspicious Matter Report.
+  fastify.post('/smr', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const parsed = CreateAmlSmrSchema.safeParse(request.body);
+
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() });
+    }
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
+    const { contactId, transactionId, description, suspicionBasis, amountAud } = parsed.data;
+
+    const { data, error } = await supabase
+      .from('aml_suspicious_matter_reports')
+      .insert({
+        agent_id: user.id,
+        contact_id: contactId ?? null,
+        transaction_id: transactionId ?? null,
+        description,
+        suspicion_basis: suspicionBasis,
+        amount_aud: amountAud ?? null,
+        report_date: new Date().toISOString().split('T')[0],
+        status: 'draft',
+      })
+      .select()
+      .single();
+
+    if (error) return reply.status(500).send({ error: error.message });
+    return reply.status(201).send({ data });
+  });
+
+  // ─── GET /smr ────────────────────────────────────────────────────────────
+  // List all Suspicious Matter Reports for the agent.
+  fastify.get('/smr', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+
+    const { data, error } = await supabase
+      .from('aml_suspicious_matter_reports')
+      .select('*, contacts!contact_id(first_name, last_name)')
+      .eq('agent_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) return reply.status(500).send({ error: error.message });
+    return { data: data ?? [] };
   });
 }

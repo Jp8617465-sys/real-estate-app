@@ -53,7 +53,7 @@ export function usePortalProperties() {
           )
         `,
         )
-        .eq('client_id', portalClient!.contact_id)
+        .eq('client_id', portalClient?.contact_id ?? '')
         .order('overall_score', { ascending: false });
 
       if (error) throw error;

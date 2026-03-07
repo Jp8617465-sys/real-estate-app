@@ -5,6 +5,7 @@ import {
 } from '@realflow/shared';
 import { ResearchConsolidationEngine } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
+import { MarketDataService } from '../services/market-data-service';
 
 export async function consolidationReportRoutes(fastify: FastifyInstance) {
   // List reports for a client
@@ -113,6 +114,42 @@ export async function consolidationReportRoutes(fastify: FastifyInstance) {
       .select('*')
       .eq('client_id', req.clientId);
 
+    // Fetch market data for relevant suburbs from market_snapshots
+    const marketDataService = new MarketDataService(supabase);
+    const briefRequirements = brief.requirements as {
+      suburbs?: Array<{ suburb: string; state: string }>;
+    } | null;
+
+    const targetSuburbs = briefRequirements?.suburbs ?? [];
+
+    // Also extract suburbs from matched properties
+    const propertySuburbs: Array<{ suburb: string; state: string }> = [];
+    for (const match of matches ?? []) {
+      const property = (match as Record<string, unknown>).property as {
+        address?: { suburb?: string; state?: string };
+      } | null;
+      if (property?.address?.suburb && property?.address?.state) {
+        propertySuburbs.push({
+          suburb: property.address.suburb,
+          state: property.address.state,
+        });
+      }
+    }
+
+    // Combine and deduplicate suburb list
+    const allSuburbs = [...targetSuburbs, ...propertySuburbs];
+    const uniqueSuburbMap = new Map<string, { suburb: string; state: string }>();
+    for (const s of allSuburbs) {
+      const key = `${s.suburb.toLowerCase()}|${s.state.toLowerCase()}`;
+      if (!uniqueSuburbMap.has(key)) {
+        uniqueSuburbMap.set(key, s);
+      }
+    }
+
+    const marketData = req.includeMarketData
+      ? await marketDataService.getSnapshotsForSuburbs(Array.from(uniqueSuburbMap.values()))
+      : [];
+
     // Consolidate
     const content = ResearchConsolidationEngine.consolidate(
       {
@@ -122,7 +159,7 @@ export async function consolidationReportRoutes(fastify: FastifyInstance) {
         dueDiligenceChecklists: (ddChecklists ?? []) as Parameters<typeof ResearchConsolidationEngine.consolidate>[0]['dueDiligenceChecklists'],
         keyDates: keyDates ?? [],
         offers: offers ?? [],
-        marketData: [],
+        marketData,
       },
       {
         reportType: req.type,

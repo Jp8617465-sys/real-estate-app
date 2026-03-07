@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
+import globals from 'globals';
 
 export default [
   js.configs.recommended,
@@ -16,21 +17,15 @@ export default [
         },
       },
       globals: {
-        process: 'readonly',
-        fetch: 'readonly',
-        console: 'readonly',
-        URLSearchParams: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
+        ...globals.browser,
+        ...globals.node,
       },
     },
     plugins: {
       '@typescript-eslint': tseslint,
     },
     rules: {
-      'no-unused-vars': 'off', // disabled in favour of @typescript-eslint/no-unused-vars
+      'no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',

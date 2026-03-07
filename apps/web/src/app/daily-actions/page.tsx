@@ -134,7 +134,7 @@ const SECTIONS = [
 ] as const;
 
 export default function DailyActionsPage() {
-  const { data: response, isLoading } = useDailyActions();
+  const { data: response, isLoading, refetch: _refetch } = useDailyActions();
   const completeAction = useCompleteDailyAction();
   const regenerate = useRegenerateDailyActions();
 

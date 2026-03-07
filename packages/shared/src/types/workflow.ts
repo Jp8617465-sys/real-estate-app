@@ -135,12 +135,68 @@ export const WorkflowActionSchema = z.discriminatedUnion('type', [
 export type WorkflowAction = z.infer<typeof WorkflowActionSchema>;
 
 // ─── Workflow Condition ─────────────────────────────────────────────
+
+export const ConditionOperatorSchema = z.enum([
+  'equals',
+  'not_equals',
+  'contains',
+  'starts_with',
+  'greater_than',
+  'less_than',
+  'is_empty',
+  'is_not_empty',
+  // Date operators
+  'before',
+  'after',
+  'within_days',
+  // Contact-specific operators
+  'has_tag',
+  'in_stage',
+  'lead_score_above',
+  // Property-specific operators
+  'price_range',
+  'suburb_match',
+  'days_on_market',
+]);
+export type ConditionOperator = z.infer<typeof ConditionOperatorSchema>;
+
 export const WorkflowConditionSchema = z.object({
   field: z.string(),
-  operator: z.enum(['equals', 'not_equals', 'contains', 'greater_than', 'less_than', 'is_empty', 'is_not_empty']),
+  operator: ConditionOperatorSchema,
   value: z.unknown().optional(),
 });
 export type WorkflowCondition = z.infer<typeof WorkflowConditionSchema>;
+
+// ─── Compound Condition (AND / OR / NOT logic) ──────────────────────
+
+export const CompoundConditionSchema: z.ZodType<CompoundCondition> = z.lazy(() =>
+  z.discriminatedUnion('logic', [
+    z.object({
+      logic: z.literal('AND'),
+      conditions: z.array(
+        z.union([WorkflowConditionSchema, CompoundConditionSchema]),
+      ),
+    }),
+    z.object({
+      logic: z.literal('OR'),
+      conditions: z.array(
+        z.union([WorkflowConditionSchema, CompoundConditionSchema]),
+      ),
+    }),
+    z.object({
+      logic: z.literal('NOT'),
+      condition: z.union([WorkflowConditionSchema, CompoundConditionSchema]),
+    }),
+  ]),
+);
+
+export type CompoundCondition =
+  | { logic: 'AND'; conditions: Array<WorkflowCondition | CompoundCondition> }
+  | { logic: 'OR'; conditions: Array<WorkflowCondition | CompoundCondition> }
+  | { logic: 'NOT'; condition: WorkflowCondition | CompoundCondition };
+
+/** A condition node is either a simple field condition or a compound logical expression. */
+export type ConditionNode = WorkflowCondition | CompoundCondition;
 
 // ─── Workflow ───────────────────────────────────────────────────────
 export const WorkflowSchema = z.object({
@@ -157,8 +213,88 @@ export const WorkflowSchema = z.object({
 });
 export type Workflow = z.infer<typeof WorkflowSchema>;
 
+// ─── Retry Configuration ────────────────────────────────────────────
+
+export const RetryStrategySchema = z.enum(['immediate', 'linear', 'exponential']);
+export type RetryStrategy = z.infer<typeof RetryStrategySchema>;
+
+export const RetryConfigSchema = z.object({
+  maxRetries: z.number().int().nonnegative().default(3),
+  strategy: RetryStrategySchema.default('exponential'),
+  baseDelayMs: z.number().int().positive().default(1000),
+  maxDelayMs: z.number().int().positive().default(300000), // 5 minutes
+});
+export type RetryConfig = z.infer<typeof RetryConfigSchema>;
+
+// ─── Error Classification ───────────────────────────────────────────
+
+export const ErrorClassificationSchema = z.enum(['transient', 'permanent', 'partial']);
+export type ErrorClassification = z.infer<typeof ErrorClassificationSchema>;
+
+export const ErrorRecoveryStrategySchema = z.enum([
+  'retry',
+  'skip',
+  'fail',
+  'fallback',
+  'continue_with_warning',
+]);
+export type ErrorRecoveryStrategy = z.infer<typeof ErrorRecoveryStrategySchema>;
+
+export const ActionErrorPolicySchema = z.object({
+  classification: ErrorClassificationSchema.default('transient'),
+  recoveryStrategy: ErrorRecoveryStrategySchema.default('retry'),
+  retryConfig: RetryConfigSchema.optional(),
+  fallbackAction: WorkflowActionSchema.optional(),
+});
+export type ActionErrorPolicy = z.infer<typeof ActionErrorPolicySchema>;
+
+// ─── Execution Step Log ─────────────────────────────────────────────
+
+export const ExecutionStepStatusSchema = z.enum([
+  'started',
+  'completed',
+  'failed',
+  'skipped',
+  'retrying',
+  'warning',
+]);
+export type ExecutionStepStatus = z.infer<typeof ExecutionStepStatusSchema>;
+
+export const ExecutionStepLogSchema = z.object({
+  stepIndex: z.number().int().nonnegative(),
+  actionType: z.string(),
+  status: ExecutionStepStatusSchema,
+  startedAt: z.string().datetime(),
+  completedAt: z.string().datetime().optional(),
+  durationMs: z.number().int().nonnegative().optional(),
+  retryAttempt: z.number().int().nonnegative().default(0),
+  error: z.string().optional(),
+  warning: z.string().optional(),
+  result: z.record(z.unknown()).optional(),
+  variableSnapshot: z.record(z.unknown()).optional(),
+});
+export type ExecutionStepLog = z.infer<typeof ExecutionStepLogSchema>;
+
+// ─── Dead Letter Entry ──────────────────────────────────────────────
+
+export const DeadLetterEntrySchema = z.object({
+  id: z.string().uuid(),
+  workflowId: z.string().uuid(),
+  runId: z.string().uuid(),
+  stepIndex: z.number().int().nonnegative(),
+  actionType: z.string(),
+  error: z.string(),
+  errorClassification: ErrorClassificationSchema,
+  context: z.record(z.unknown()),
+  retryCount: z.number().int().nonnegative(),
+  createdAt: z.string().datetime(),
+  resolvedAt: z.string().datetime().optional(),
+  resolution: z.enum(['retried', 'skipped', 'manual']).optional(),
+});
+export type DeadLetterEntry = z.infer<typeof DeadLetterEntrySchema>;
+
 // ─── Workflow Run ───────────────────────────────────────────────────
-export const WorkflowRunStatusSchema = z.enum(['running', 'completed', 'failed', 'cancelled']);
+export const WorkflowRunStatusSchema = z.enum(['running', 'completed', 'failed', 'cancelled', 'paused']);
 export type WorkflowRunStatus = z.infer<typeof WorkflowRunStatusSchema>;
 
 export const WorkflowRunSchema = z.object({
@@ -171,5 +307,14 @@ export const WorkflowRunSchema = z.object({
   error: z.string().optional(),
   startedAt: z.string().datetime(),
   completedAt: z.string().datetime().optional(),
+  pausedAt: z.string().datetime().optional(),
+  resumeAt: z.string().datetime().optional(),
+  executionLog: z.array(ExecutionStepLogSchema).optional(),
+  variableContext: z.record(z.unknown()).optional(),
+  retryState: z.object({
+    stepIndex: z.number().int().nonnegative(),
+    attempt: z.number().int().nonnegative(),
+    nextRetryAt: z.string().datetime().optional(),
+  }).optional(),
 });
 export type WorkflowRun = z.infer<typeof WorkflowRunSchema>;
