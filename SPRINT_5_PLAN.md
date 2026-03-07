@@ -652,3 +652,21 @@ To avoid blockers, follow this sequence within each team:
 ---
 
 *Next: `/sprint-start 5` is complete. Run `/build-db client-portal` and `/build-db property-alerts` to begin implementation.*
+---
+
+## Deferred to Sprint 6
+
+The following item was planned for Sprint 5 but deferred due to scope. The auction_date alert type and all shared types are already defined; only the cron trigger logic is missing.
+
+### Auction Date Reminder Cron Alerts (C1 — PR Review Deferral)
+
+**What:** Cron-based alerts dispatched at T-7 days, T-2 days, and T-1 day before an auction date (09:00 AEST).
+
+**Why deferred:** Requires a cron scheduler infrastructure (not yet wired in the API), and the existing Sprint 5 scope already delivered the alert subscription system, event dispatch pipeline, and agent UI. The auction_date alert type is already defined in `PropertyAlertEvent['alertType']` and in the migration DDL.
+
+**Sprint 6 tasks (pre-existing backlog):**
+- Wire a Fastify cron plugin (e.g. `fastify-cron` or a pg_cron trigger) to run daily at 09:00 AEST
+- Implement `PropertyAlertEngine.handleAuctionDate(propertyId)` — already stubbed
+- Add tests for `handleAuctionDate`
+
+**No schema changes required.** All tables and types are already in place.

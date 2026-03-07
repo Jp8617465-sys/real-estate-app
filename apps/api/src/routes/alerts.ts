@@ -3,8 +3,8 @@ import {
   CreateAlertSubscriptionSchema,
   UpdateAlertSubscriptionSchema,
 } from '@realflow/shared';
-import { PropertyAlertEngine } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
+import { makeAlertEngine } from '../lib/make-alert-engine';
 
 export async function alertsRoutes(fastify: FastifyInstance) {
   // ─── GET /alerts/subscriptions ────────────────────────────────────────────
@@ -18,12 +18,7 @@ export async function alertsRoutes(fastify: FastifyInstance) {
     } = await supabase.auth.getUser();
     if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
 
-    const engine = new PropertyAlertEngine(
-      supabase,
-      async () => {},
-      async () => {},
-      async () => {},
-    );
+    const engine = makeAlertEngine(supabase);
 
     try {
       const subs = await engine.getSubscriptions(user.id);
@@ -49,12 +44,7 @@ export async function alertsRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: parsed.error.flatten() });
     }
 
-    const engine = new PropertyAlertEngine(
-      supabase,
-      async () => {},
-      async () => {},
-      async () => {},
-    );
+    const engine = makeAlertEngine(supabase);
 
     try {
       const sub = await engine.createSubscription(user.id, parsed.data);
@@ -81,12 +71,7 @@ export async function alertsRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: parsed.error.flatten() });
     }
 
-    const engine = new PropertyAlertEngine(
-      supabase,
-      async () => {},
-      async () => {},
-      async () => {},
-    );
+    const engine = makeAlertEngine(supabase);
 
     try {
       const sub = await engine.updateSubscription(id, user.id, parsed.data);
@@ -112,12 +97,7 @@ export async function alertsRoutes(fastify: FastifyInstance) {
 
     const { id } = request.params;
 
-    const engine = new PropertyAlertEngine(
-      supabase,
-      async () => {},
-      async () => {},
-      async () => {},
-    );
+    const engine = makeAlertEngine(supabase);
 
     try {
       await engine.deleteSubscription(id, user.id);
@@ -145,12 +125,7 @@ export async function alertsRoutes(fastify: FastifyInstance) {
 
       const { matchId } = request.params;
 
-      const engine = new PropertyAlertEngine(
-        supabase,
-        async () => {},
-        async () => {},
-        async () => {},
-      );
+      const engine = makeAlertEngine(supabase);
 
       try {
         await engine.sendMatchToClient(matchId, user.id);
@@ -238,12 +213,7 @@ export async function alertsRoutes(fastify: FastifyInstance) {
     const rawLimit = request.query.limit ? parseInt(request.query.limit, 10) : 50;
     const limit = isNaN(rawLimit) ? 50 : Math.min(rawLimit, 100);
 
-    const engine = new PropertyAlertEngine(
-      supabase,
-      async () => {},
-      async () => {},
-      async () => {},
-    );
+    const engine = makeAlertEngine(supabase);
 
     try {
       const events = await engine.getAlertEvents(user.id, limit);

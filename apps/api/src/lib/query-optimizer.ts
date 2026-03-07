@@ -12,6 +12,19 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { cache } from './cache';
 
+// ─── Query Builder Interfaces ───────────────────────────────────────────────────
+
+/** Minimal structural type for a pre-filtered Supabase query ready for ordering and paging. */
+interface FilterableQuery extends PromiseLike<{ data: unknown[] | null; error: { message: string } | null }> {
+  order(column: string, options?: { ascending?: boolean }): FilterableQuery;
+  range(
+    from: number,
+    to: number,
+  ): PromiseLike<{ data: unknown[] | null; error: { message: string } | null }>;
+  limit(count: number): FilterableQuery;
+  or(filter: string): FilterableQuery;
+}
+
 // ─── Pagination Types ───────────────────────────────────────────────────────────
 
 /** Offset-based pagination request parameters */
@@ -164,8 +177,7 @@ export interface OffsetPaginationParams {
  *   return executeOffsetPagination<Contact>(baseQuery, supabase, 'contacts', params);
  */
 export async function executeOffsetPagination<T extends Record<string, unknown>>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filteredQuery: any,
+  filteredQuery: FilterableQuery,
   supabase: SupabaseClient,
   table: string,
   params: OffsetPaginationParams,
@@ -249,8 +261,7 @@ export interface CursorPaginationParams {
  *   return executeCursorPagination<Contact>(baseQuery, params);
  */
 export async function executeCursorPagination<T extends Record<string, unknown>>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filteredQuery: any,
+  filteredQuery: FilterableQuery,
   params: CursorPaginationParams,
 ): Promise<PaginatedResponse<T>> {
   const { pagination, orderBy = 'updated_at' } = params;
@@ -366,8 +377,7 @@ export function eagerLoad(
  *   const total = await getCachedCount(query, 'contacts:active');
  */
 export async function getCachedCount(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  countQuery: any,
+  countQuery: PromiseLike<{ count: number | null; error: { message: string } | null }>,
   cacheKey: string,
   ttl = 30,
 ): Promise<number> {

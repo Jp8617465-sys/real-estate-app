@@ -57,6 +57,16 @@ const makeEventRow = (overrides: Partial<Record<string, unknown>> = {}): Record<
   ...overrides,
 });
 
+const makePriceChangeRow = (overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> => ({
+  id: PRICE_CHANGE_ID,
+  property_id: PROPERTY_ID,
+  domain_listing_id: 'listing-domain-123',
+  new_price: 850000,
+  previous_price: 900000,
+  change_type: 'price_reduction',
+  ...overrides,
+});
+
 // ─── Mock injection functions ─────────────────────────────────────────────────
 
 function makeNotifiers() {
@@ -509,6 +519,58 @@ describe('PropertyAlertEngine.handleNewMatch', () => {
     const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
 
     await expect(engine.handleNewMatch(MATCH_ID)).resolves.toBeUndefined();
+    expect(notifyPush).not.toHaveBeenCalled();
+  });
+});
+
+// ─── handlePriceChange ────────────────────────────────────────────────────────
+
+describe('PropertyAlertEngine.handlePriceChange', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('dispatches push when price change found and match score is above threshold', async () => {
+    const priceChangeRow = makePriceChangeRow();
+    const matchRow = makeMatchRow({ overall_score: 85 });
+    const subRow = makeSubscriptionRow({ channels: ['push'], score_threshold: 70, digest_mode: false });
+    const tokenRow = { token: 'device-push-token-abc' };
+    const eventInsertChain = makeChain(null, null);
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_price_changes') return makeChain(priceChangeRow, null);
+        if (table === 'property_matches') return makeChain(null, null, [matchRow], null);
+        if (table === 'property_alert_subscriptions') return makeChain(null, null, [subRow], null);
+        if (table === 'push_device_tokens') return makeChain(tokenRow, null);
+        if (table === 'property_alert_events') return eventInsertChain;
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+    vi.spyOn(engine, 'isQuietHours').mockReturnValue(false);
+
+    await engine.handlePriceChange(PRICE_CHANGE_ID);
+
+    expect(notifyPush).toHaveBeenCalledWith(
+      'device-push-token-abc',
+      'Price Drop Alert',
+      expect.any(String),
+      expect.any(Object),
+    );
+  });
+
+  it('returns early without dispatching when price change record is not found', async () => {
+    const supabase = {
+      from: vi.fn(() => makeChain(null, { message: 'Not found' })),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+
+    await expect(engine.handlePriceChange(PRICE_CHANGE_ID)).resolves.toBeUndefined();
     expect(notifyPush).not.toHaveBeenCalled();
   });
 });

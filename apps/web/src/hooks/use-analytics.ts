@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { apiFetch } from '@/lib/api-client';
 import type {
   AnalyticsPeriod,
   DashboardSnapshot,
@@ -24,27 +25,18 @@ function apiUrl(): string {
   return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 }
 
-async function apiFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
+/** Analytics-specific wrapper: adds auth token, full URL construction, and unwraps { data }. */
+async function analyticsApiFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
   const token = await getAuthToken();
   const url = new URL(`${apiUrl()}${path}`);
   if (params) {
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   }
-
-  const res = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+  const { data } = await apiFetch<{ data: T }>(url.toString(), {
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     cache: 'no-store',
   });
-
-  if (!res.ok) {
-    throw new Error(`API returned ${res.status}`);
-  }
-
-  const json = (await res.json()) as { data: T };
-  return json.data;
+  return data;
 }
 
 // ─── Full Dashboard Snapshot ──────────────────────────────────────────────────
@@ -52,7 +44,7 @@ async function apiFetch<T>(path: string, params?: Record<string, string>): Promi
 export function useAnalyticsSnapshot(period: AnalyticsPeriod) {
   return useQuery({
     queryKey: ['analytics-snapshot', period],
-    queryFn: () => apiFetch<DashboardSnapshot>('/api/v1/analytics/snapshot', { period }),
+    queryFn: () => analyticsApiFetch<DashboardSnapshot>('/api/v1/analytics/snapshot', { period }),
     staleTime: 60_000,
   });
 }
@@ -68,7 +60,7 @@ export function usePipelineVelocity(
     queryFn: () => {
       const params: Record<string, string> = { period };
       if (pipelineType) params.pipelineType = pipelineType;
-      return apiFetch<PipelineVelocity[]>('/api/v1/analytics/pipeline-velocity', params);
+      return analyticsApiFetch<PipelineVelocity[]>('/api/v1/analytics/pipeline-velocity', params);
     },
     staleTime: 60_000,
   });
@@ -80,7 +72,7 @@ export function useAgentPerformance(period: AnalyticsPeriod) {
   return useQuery({
     queryKey: ['agent-performance', period],
     queryFn: () =>
-      apiFetch<AgentPerformance>('/api/v1/analytics/agent-performance', { period }),
+      analyticsApiFetch<AgentPerformance>('/api/v1/analytics/agent-performance', { period }),
     staleTime: 60_000,
   });
 }
@@ -91,7 +83,7 @@ export function useRevenueForecast(period: AnalyticsPeriod) {
   return useQuery({
     queryKey: ['revenue-forecast', period],
     queryFn: () =>
-      apiFetch<RevenueForecast>('/api/v1/analytics/revenue', { period }),
+      analyticsApiFetch<RevenueForecast>('/api/v1/analytics/revenue', { period }),
     staleTime: 60_000,
   });
 }
@@ -104,7 +96,7 @@ export function useMarketInsights(suburbs: string[], propertyType?: 'house' | 'u
     queryFn: () => {
       const params: Record<string, string> = { suburbs: suburbs.join(',') };
       if (propertyType) params.propertyType = propertyType;
-      return apiFetch<MarketInsight[]>('/api/v1/analytics/market-insights', params);
+      return analyticsApiFetch<MarketInsight[]>('/api/v1/analytics/market-insights', params);
     },
     enabled: suburbs.length > 0,
     staleTime: 5 * 60_000,
@@ -181,7 +173,7 @@ export function useRevenueComparison() {
       const periods: AnalyticsPeriod[] = ['7d', '30d', '90d', 'ytd'];
       const results = await Promise.all(
         periods.map((p) =>
-          apiFetch<RevenueForecast>('/api/v1/analytics/revenue', { period: p }),
+          analyticsApiFetch<RevenueForecast>('/api/v1/analytics/revenue', { period: p }),
         ),
       );
       return periods.map((p, i) => {

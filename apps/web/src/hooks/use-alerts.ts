@@ -6,18 +6,7 @@ import type {
   CreateAlertSubscription,
   UpdateAlertSubscription,
 } from '@realflow/shared';
-
-// ─── helpers ─────────────────────────────────────────────────────────────────
-
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error((body as { error?: string }).error ?? 'Request failed');
-  }
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
-}
+import { apiFetch } from '@/lib/api-client';
 
 // ─── hooks ───────────────────────────────────────────────────────────────────
 

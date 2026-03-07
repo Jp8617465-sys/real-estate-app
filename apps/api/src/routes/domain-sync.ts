@@ -2,10 +2,11 @@ import crypto from 'node:crypto';
 import { PassThrough } from 'node:stream';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { DomainSyncEngine, PropertyAlertEngine } from '@realflow/business-logic';
+import { DomainSyncEngine } from '@realflow/business-logic';
 import { DomainClient } from '@realflow/integrations';
 import { CreateDomainSyncJobSchema } from '@realflow/shared';
 import { createSupabaseClient } from '../middleware/supabase';
+import { makeAlertEngine } from '../lib/make-alert-engine';
 
 // ─── Shared engine instance ──────────────────────────────────────────────────
 
@@ -164,61 +165,9 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
 
     const jobId = (jobRow as { id: string }).id;
 
-    // Run sync asynchronously — respond immediately then update the job
-    setImmediate(async () => {
-      try {
-        const syncResult = await engine.syncListingsForAgent(agentId, supabase);
-
-        // Fire alerts for genuinely new matches (ignoreDuplicates prevents re-alerts on re-sync)
-        if (syncResult.newMatchIds.length > 0) {
-          const alertEngine = new PropertyAlertEngine(
-            supabase,
-            async () => {},  // push — stub until push service is wired
-            async () => {},  // email
-            async () => {},  // sms
-          );
-          for (const matchId of syncResult.newMatchIds) {
-            void alertEngine.handleNewMatch(matchId);  // fire-and-forget
-          }
-        }
-
-        // Detect price changes and fire alerts for any found
-        const priceChanges = await engine.detectPriceChanges(agentId, supabase);
-        if (priceChanges.length > 0) {
-          const alertEngine = new PropertyAlertEngine(
-            supabase,
-            async () => {},
-            async () => {},
-            async () => {},
-          );
-          for (const change of priceChanges) {
-            void alertEngine.handlePriceChange(change.id);  // fire-and-forget
-          }
-        }
-
-        await supabase
-          .from('domain_sync_jobs')
-          .update({
-            status: 'completed',
-            listings_found: syncResult.listingsFound,
-            listings_imported: syncResult.listingsImported,
-            matches_triggered: syncResult.matchesTriggered,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', jobId);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        fastify.log.error(`[domain/sync] Job ${jobId} failed: ${message}`);
-
-        await supabase
-          .from('domain_sync_jobs')
-          .update({
-            status: 'failed',
-            error_message: message,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', jobId);
-      }
+    // Run sync asynchronously — respond immediately then update the job row
+    setImmediate(() => {
+      void runSyncJob(jobId, agentId, supabase, engine, fastify.log);
     });
 
     return reply.status(202).send({ data: { jobId, status: 'running' } });
@@ -508,6 +457,63 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// ─── runSyncJob ──────────────────────────────────────────────────────────────
+
+/**
+ * Extracted from the POST /sync setImmediate callback.
+ * Runs a full sync + alert dispatch cycle for one agent, then updates the job row.
+ * Named so it appears in stack traces and can be independently tested.
+ */
+export async function runSyncJob(
+  jobId: string,
+  agentId: string,
+  supabase: ReturnType<typeof import('../middleware/supabase').createSupabaseClient>,
+  syncEngine: DomainSyncEngine,
+  log: { error: (msg: string) => void },
+): Promise<void> {
+  const alertEngine = makeAlertEngine(supabase);
+
+  try {
+    const syncResult = await syncEngine.syncListingsForAgent(agentId, supabase);
+
+    // Fire alerts for genuinely new matches (ignoreDuplicates prevents re-alerts on re-sync)
+    for (const matchId of syncResult.newMatchIds) {
+      void alertEngine.handleNewMatch(matchId);  // fire-and-forget
+    }
+
+    // Detect price changes and fire price-drop alerts
+    const priceChanges = await syncEngine.detectPriceChanges(agentId, supabase);
+    for (const change of priceChanges) {
+      void alertEngine.handlePriceChange(change.id);  // fire-and-forget
+    }
+
+    await supabase
+      .from('domain_sync_jobs')
+      .update({
+        status: 'completed',
+        listings_found: syncResult.listingsFound,
+        listings_imported: syncResult.listingsImported,
+        matches_triggered: syncResult.matchesTriggered,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', jobId);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error(`[domain/sync] Job ${jobId} failed: ${message}`);
+
+    await supabase
+      .from('domain_sync_jobs')
+      .update({
+        status: 'failed',
+        error_message: message,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', jobId);
+  }
+}
+
+// ─── computeNextSync ─────────────────────────────────────────────────────────
 
 /**
  * Compute an approximate next sync datetime based on the stored frequency string.

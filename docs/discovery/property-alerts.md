@@ -122,7 +122,7 @@ A real-time alerting layer that:
 
 ---
 
-### Story 3: Auction Date Alert (Agent)
+### Story 3: Auction Date Alert (Agent) 🔜 Deferred — Sprint 6
 
 **As** a buyers agent,
 **Given** a property in my active `property_matches` has an `auction_date` set (sourced from `properties.auction_date`),
