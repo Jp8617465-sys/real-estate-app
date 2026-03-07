@@ -1,9 +1,85 @@
 'use client';
 
+import React from 'react';
 import { cn } from '@/lib/utils';
+import { useContactDocuments, useTogglePortalVisibility, useSendPortalInvite } from '@/hooks/use-documents';
 
 interface ContactDetailProps {
   contactId: string;
+}
+
+function PortalInviteButton({ contactId, email }: { contactId: string; email: string }) {
+  const [sent, setSent] = React.useState(false);
+  const invite = useSendPortalInvite();
+
+  const handleInvite = async () => {
+    await invite.mutateAsync({ contactId, email });
+    setSent(true);
+    setTimeout(() => setSent(false), 3000);
+  };
+
+  if (sent) {
+    return (
+      <span className="rounded-lg bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
+        Invite sent!
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleInvite}
+      disabled={invite.isPending}
+      className="rounded-lg border border-brand-300 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-50"
+    >
+      {invite.isPending ? 'Sending...' : 'Portal invite'}
+    </button>
+  );
+}
+
+function DocumentsList({ contactId }: { contactId: string }) {
+  const { data, isLoading } = useContactDocuments(contactId);
+  const toggle = useTogglePortalVisibility();
+
+  if (isLoading) {
+    return (
+      <div className="mt-4 space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-8 animate-pulse rounded bg-gray-100" />
+        ))}
+      </div>
+    );
+  }
+
+  const docs = data ?? [];
+  if (docs.length === 0) {
+    return <p className="mt-4 text-sm text-gray-400">No documents uploaded yet.</p>;
+  }
+
+  return (
+    <ul className="mt-4 space-y-2">
+      {docs.map((doc) => (
+        <li key={doc.id} className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm text-gray-900">{doc.name}</p>
+            <p className="text-xs text-gray-400 capitalize">{doc.category ?? 'general'}</p>
+          </div>
+          <button
+            onClick={() => toggle.mutate({ id: doc.id, portalVisible: !doc.portal_visible })}
+            disabled={toggle.isPending}
+            className={cn(
+              'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium transition-colors',
+              doc.portal_visible
+                ? 'bg-brand-100 text-brand-700 hover:bg-brand-200'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200',
+            )}
+          >
+            {doc.portal_visible ? 'In portal' : 'Hidden'}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export function ContactDetail({ contactId }: ContactDetailProps) {
@@ -77,6 +153,7 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
           </div>
         </div>
         <div className="flex gap-2">
+          <PortalInviteButton contactId={contactId} email={contact.email} />
           <button className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
             Edit
           </button>
@@ -167,6 +244,12 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
               </dl>
             </div>
           )}
+
+          {/* Documents */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Documents</h2>
+            <DocumentsList contactId={contactId} />
+          </div>
         </div>
 
         {/* Activity Timeline */}

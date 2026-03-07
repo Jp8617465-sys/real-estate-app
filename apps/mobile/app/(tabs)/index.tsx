@@ -143,7 +143,7 @@ export default function DashboardScreen() {
     stageCounts[key] = 0;
   }
   for (const deal of sellingDeals ?? []) {
-    const stage = deal.currentStage ?? deal.current_stage;
+    const stage = deal.currentStage;
     if (stageCounts[stage] !== undefined) {
       stageCounts[stage]++;
     }
