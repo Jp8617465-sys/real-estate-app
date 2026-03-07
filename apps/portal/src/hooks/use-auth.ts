@@ -89,7 +89,7 @@ export function usePortalClient() {
           )
         `,
         )
-        .eq('auth_id', user!.id)
+        .eq('auth_id', user?.id ?? '')
         .eq('is_active', true)
         .single();
 

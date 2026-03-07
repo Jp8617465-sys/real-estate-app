@@ -30,6 +30,7 @@ const navSections: NavSection[] = [
       { label: 'Workflows', href: '/workflows', icon: '⚡' },
       { label: 'Sequences', href: '/workflows/sequences', icon: '🔄' },
       { label: 'Social', href: '/social', icon: '📱' },
+      { label: 'Analytics', href: '/analytics', icon: '📉' },
     ],
   },
   {
@@ -106,7 +107,6 @@ export function Sidebar() {
                 </p>
               )}
               {section.items.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
                 const isExactActive = pathname === item.href;
                 const isParentActive = !isExactActive && pathname.startsWith(item.href);
                 const active = isExactActive || isParentActive;

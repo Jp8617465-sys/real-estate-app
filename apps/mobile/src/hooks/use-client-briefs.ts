@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import type { ClientBrief } from '@realflow/shared';
 import { fromDbSchema } from '@realflow/business-logic';
 
 export function useClientBrief(clientId: string) {

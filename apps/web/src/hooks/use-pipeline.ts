@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { PipelineEngine } from '@realflow/business-logic';
-import type { PipelineType, Transaction } from '@realflow/shared';
+import type { PipelineType } from '@realflow/shared';
 
 const supabase = createClient();
 

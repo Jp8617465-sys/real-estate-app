@@ -17,7 +17,7 @@ export function useBrief() {
       const { data, error } = await supabase
         .from('client_briefs')
         .select('*')
-        .eq('contact_id', portalClient!.contact_id)
+        .eq('contact_id', portalClient?.contact_id ?? '')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();

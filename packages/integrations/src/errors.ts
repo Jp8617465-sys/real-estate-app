@@ -35,6 +35,16 @@ export class MetaAPIError extends IntegrationAPIError {
 }
 
 /**
+ * Error thrown by LinkedIn API client.
+ */
+export class LinkedInAPIError extends IntegrationAPIError {
+  constructor(message: string, statusCode: number, statusText: string) {
+    super(message, statusCode, statusText);
+    this.name = 'LinkedInAPIError';
+  }
+}
+
+/**
  * Error thrown by Anthropic (Claude) API client.
  */
 export class AnthropicAPIError extends IntegrationAPIError {

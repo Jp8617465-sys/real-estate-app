@@ -4,6 +4,7 @@ export const OAuthProviderSchema = z.enum([
   'gmail',
   'google_calendar',
   'meta',
+  'linkedin',
   'domain',
   'rea',
   'twilio',

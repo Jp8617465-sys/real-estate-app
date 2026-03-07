@@ -27,7 +27,7 @@ export function useDocuments() {
       const { data, error } = await supabase
         .from('documents')
         .select('id, name, file_path, mime_type, size_bytes, category, uploaded_by, created_at')
-        .eq('contact_id', portalClient!.contact_id)
+        .eq('contact_id', portalClient?.contact_id ?? '')
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -49,7 +49,7 @@ export function useUploadDocument() {
 
   return useMutation({
     mutationFn: async ({ file, category }: UploadDocumentParams) => {
-      const contactId = portalClient!.contact_id;
+      const contactId = portalClient?.contact_id ?? '';
 
       // 1. Get signed upload URL
       const timestamp = Date.now();

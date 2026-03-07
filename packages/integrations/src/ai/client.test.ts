@@ -532,3 +532,350 @@ describe('AnthropicClient.extractEmailSignals', () => {
     expect(result.tokenUsage.outputTokens).toBe(120);
   });
 });
+
+// ─── suggestBriefRefinements ──────────────────────────────────────
+
+describe('AnthropicClient.suggestBriefRefinements', () => {
+  it('returns suggestions, completeness score, and missing fields', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      suggestions: [
+        {
+          field: 'suburbs',
+          currentValue: 'Bondi',
+          suggestedValue: 'Bondi, Coogee, Bronte',
+          reason: 'Expanding search to nearby beachside suburbs increases options',
+          confidence: 0.85,
+        },
+      ],
+      completenessScore: 72,
+      missingFields: ['investorCriteria', 'maxCommute'],
+    }));
+
+    const result = await client.suggestBriefRefinements({
+      brief: {
+        mustHaves: ['pool', 'garden'],
+        niceToHaves: ['ocean views'],
+        dealBreakers: ['main road'],
+        suburbs: ['Bondi'],
+        propertyTypes: ['house'],
+        budget: { min: 1800000, max: 2200000 },
+      },
+    });
+
+    expect(result.suggestions).toHaveLength(1);
+    expect(result.suggestions[0]?.field).toBe('suburbs');
+    expect(result.completenessScore).toBe(72);
+    expect(result.missingFields).toContain('investorCriteria');
+    expect(result.tokenUsage).toBeDefined();
+  });
+
+  it('clamps completeness score to 0-100', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      suggestions: [],
+      completenessScore: -20,
+      missingFields: [],
+    }));
+
+    const result = await client.suggestBriefRefinements({
+      brief: {
+        mustHaves: [],
+        niceToHaves: [],
+        dealBreakers: [],
+        suburbs: [],
+        propertyTypes: [],
+        budget: { min: 0, max: 0 },
+      },
+    });
+
+    expect(result.completenessScore).toBe(0);
+  });
+
+  it('defaults missing fields to safe values', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({}));
+
+    const result = await client.suggestBriefRefinements({
+      brief: {
+        mustHaves: [],
+        niceToHaves: [],
+        dealBreakers: [],
+        suburbs: [],
+        propertyTypes: [],
+        budget: { min: 0, max: 0 },
+      },
+    });
+
+    expect(result.suggestions).toEqual([]);
+    expect(result.completenessScore).toBe(50);
+    expect(result.missingFields).toEqual([]);
+  });
+
+  it('includes search history context when provided', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      suggestions: [
+        {
+          field: 'budget.max',
+          suggestedValue: '2500000',
+          reason: 'Most rejections due to budget — consider increasing',
+          confidence: 0.9,
+        },
+      ],
+      completenessScore: 80,
+      missingFields: [],
+    }));
+
+    const result = await client.suggestBriefRefinements({
+      brief: {
+        mustHaves: ['pool'],
+        niceToHaves: [],
+        dealBreakers: [],
+        suburbs: ['Mosman'],
+        propertyTypes: ['house'],
+        budget: { min: 1800000, max: 2200000 },
+      },
+      searchHistory: {
+        rejectedProperties: 15,
+        averageScore: 55,
+        commonRejectionReasons: ['Over budget', 'Not in preferred suburb'],
+      },
+    });
+
+    expect(result.suggestions).toHaveLength(1);
+    expect(result.suggestions[0]?.field).toBe('budget.max');
+  });
+});
+
+// ─── generateDailyActionInsights ──────────────────────────────────
+
+describe('AnthropicClient.generateDailyActionInsights', () => {
+  it('returns empty array for empty candidates', async () => {
+    const client = new AnthropicClient(validConfig);
+    const result = await client.generateDailyActionInsights([]);
+
+    expect(result).toEqual([]);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('returns indexed subtitles for candidates', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      items: [
+        { index: 0, subtitle: 'Pre-approval expiring in 5 days' },
+        { index: 1, subtitle: 'High-value lead waiting 3 days for callback' },
+      ],
+    }));
+
+    const result = await client.generateDailyActionInsights([
+      { category: 'follow_up', title: 'Follow up', contactName: 'Sarah Smith', daysOverdue: 5, compositeScore: 85 },
+      { category: 'new_lead', title: 'Call back', contactName: 'Mike Jones', daysUntilDeadline: 1, compositeScore: 90 },
+    ]);
+
+    expect(result).toHaveLength(2);
+    expect(result[0]?.index).toBe(0);
+    expect(result[0]?.subtitle).toBe('Pre-approval expiring in 5 days');
+    expect(result[0]?.tokenUsage).toBeDefined();
+  });
+
+  it('handles missing items in response gracefully', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({}));
+
+    const result = await client.generateDailyActionInsights([
+      { category: 'task', title: 'Test', contactName: 'Test', compositeScore: 50 },
+    ]);
+
+    expect(result).toEqual([]);
+  });
+});
+
+// ─── generateSequenceContent ──────────────────────────────────────
+
+describe('AnthropicClient.generateSequenceContent', () => {
+  it('returns subject, body, and tone for email sequence', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      subject: 'Quick update on your property search',
+      body: 'Hi Sarah, just a quick update on properties matching your brief this week.',
+      suggestedTone: 'friendly',
+    }));
+
+    const result = await client.generateSequenceContent({
+      stepAction: 'send_email',
+      stepLabel: 'Weekly Update',
+      dayOffset: 7,
+      contactContext: { name: 'Sarah', pipelineStage: 'active-search', source: 'domain' },
+      sequenceName: 'Weekly Update Sequence',
+    });
+
+    expect(result.subject).toBe('Quick update on your property search');
+    expect(result.body).toContain('Sarah');
+    expect(result.suggestedTone).toBe('friendly');
+    expect(result.tokenUsage).toBeDefined();
+  });
+
+  it('defaults to professional tone when not specified in response', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      body: 'Update message',
+    }));
+
+    const result = await client.generateSequenceContent({
+      stepAction: 'send_sms',
+      dayOffset: 3,
+      contactContext: { name: 'Test' },
+      sequenceName: 'Check-in Sequence',
+    });
+
+    expect(result.suggestedTone).toBe('professional');
+    expect(result.body).toBe('Update message');
+    expect(result.subject).toBeUndefined();
+  });
+});
+
+// ─── generateSearchNarrative ──────────────────────────────────────
+
+describe('AnthropicClient.generateSearchNarrative', () => {
+  it('returns narrative text (not JSON) and token usage', async () => {
+    const client = new AnthropicClient(validConfig);
+    const narrativeText = 'Over the past fortnight, we reviewed 8 new properties across Bondi and Coogee. Three properties scored above 80 and warrant your attention.';
+    mockAnthropicResponse(narrativeText, 400, 200);
+
+    const result = await client.generateSearchNarrative({
+      clientName: 'Sarah Smith',
+      briefSummary: 'Looking for 3-4 bed house in Bondi or Coogee, $1.8M-$2.2M',
+      properties: [
+        { address: '42 Ocean St, Bondi NSW 2026', score: 88, status: 'inspection_booked' },
+        { address: '10 Beach Rd, Coogee NSW 2034', score: 72, status: 'new' },
+      ],
+      totalSearched: 8,
+    });
+
+    expect(result.narrative).toBe(narrativeText);
+    expect(result.tokenUsage.inputTokens).toBe(400);
+    expect(result.tokenUsage.outputTokens).toBe(200);
+    expect(result.tokenUsage.estimatedCostAud).toBeGreaterThan(0);
+  });
+
+  it('trims whitespace from narrative', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse('  Some narrative with whitespace  ');
+
+    const result = await client.generateSearchNarrative({
+      clientName: 'Test',
+      briefSummary: 'Looking for property in Sydney',
+      properties: [],
+      totalSearched: 0,
+    });
+
+    expect(result.narrative).toBe('Some narrative with whitespace');
+  });
+});
+
+// ─── Retry Logic (429 and 529) ────────────────────────────────────
+
+describe('AnthropicClient retry logic', () => {
+  it('retries on 529 overloaded and succeeds', async () => {
+    const client = new AnthropicClient({ ...validConfig, maxRetries: 2, retryBaseDelayMs: 0 });
+
+    mockErrorResponse(529, 'Overloaded', 'overloaded_error');
+    mockAnthropicResponse(JSON.stringify({
+      featureScore: 65,
+      features: [],
+      dealBreakerFlags: [],
+      summary: 'Recovered from overload',
+    }));
+
+    const result = await client.analyzePropertyMatch({
+      listingDescription: 'Test',
+      mustHaves: [],
+      niceToHaves: [],
+      dealBreakers: [],
+    });
+
+    expect(result.featureScore).toBe(65);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not retry on 500 server error', async () => {
+    const client = new AnthropicClient({ ...validConfig, maxRetries: 3 });
+    mockErrorResponse(500, 'Internal Server Error', 'server_error');
+
+    await expect(
+      client.analyzePropertyMatch({
+        listingDescription: 'Test',
+        mustHaves: [],
+        niceToHaves: [],
+        dealBreakers: [],
+      }),
+    ).rejects.toThrow(AnthropicAPIError);
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ─── featureScore edge cases ──────────────────────────────────────
+
+describe('AnthropicClient.analyzePropertyMatch edge cases', () => {
+  it('clamps negative featureScore to 0', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      featureScore: -10,
+      features: [],
+      dealBreakerFlags: [],
+      summary: 'No match',
+    }));
+
+    const result = await client.analyzePropertyMatch({
+      listingDescription: 'Empty lot',
+      mustHaves: ['house'],
+      niceToHaves: [],
+      dealBreakers: [],
+    });
+
+    expect(result.featureScore).toBe(0);
+  });
+
+  it('rounds featureScore to integer', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      featureScore: 73.7,
+      features: [],
+      dealBreakerFlags: [],
+      summary: 'Partial match',
+    }));
+
+    const result = await client.analyzePropertyMatch({
+      listingDescription: 'House with garden',
+      mustHaves: ['garden'],
+      niceToHaves: [],
+      dealBreakers: [],
+    });
+
+    expect(result.featureScore).toBe(74);
+    expect(Number.isInteger(result.featureScore)).toBe(true);
+  });
+
+  it('handles deal breaker flags from response', async () => {
+    const client = new AnthropicClient(validConfig);
+    mockAnthropicResponse(JSON.stringify({
+      featureScore: 20,
+      features: [],
+      dealBreakerFlags: ['On main road', 'Near flood zone'],
+      summary: 'Deal breakers identified',
+    }));
+
+    const result = await client.analyzePropertyMatch({
+      listingDescription: 'House on busy road near creek',
+      mustHaves: [],
+      niceToHaves: [],
+      dealBreakers: ['main road', 'flood zone'],
+    });
+
+    expect(result.dealBreakerFlags).toHaveLength(2);
+    expect(result.dealBreakerFlags).toContain('On main road');
+    expect(result.dealBreakerFlags).toContain('Near flood zone');
+  });
+});

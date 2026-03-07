@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { CreateClientBrief, UpdateClientBrief, AIBriefRefinement } from '@realflow/shared';
-import { toDbSchema, fromDbSchema } from '@realflow/business-logic';
+import { toDbSchema, fromDbSchema, type ClientBriefDbRow } from '@realflow/business-logic';
 
 export function useRefineBrief() {
   return useMutation({
@@ -44,8 +44,8 @@ export function useClientBriefs(contactId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data.map((row: any) => ({
-        ...fromDbSchema(row),
+      return data.map((row: Record<string, unknown>) => ({
+        ...fromDbSchema(row as unknown as ClientBriefDbRow),
         contact: row.contact, // Preserve joined relation
       }));
     },
@@ -67,7 +67,7 @@ export function useClientBrief(id: string) {
       if (error) throw error;
       return {
         ...fromDbSchema(data),
-        contact: (data as any).contact, // Preserve joined relation
+        contact: (data as Record<string, unknown>).contact, // Preserve joined relation
       };
     },
     enabled: !!id,
@@ -196,7 +196,7 @@ export function useUpdateClientBrief(id: string) {
       // Apply version increment
       const updatePayload = {
         ...dbUpdates,
-        brief_version: ((current as any).brief_version as number) + 1,
+        brief_version: ((current as Record<string, unknown>).brief_version as number) + 1,
         updated_at: new Date().toISOString(),
       };
 
