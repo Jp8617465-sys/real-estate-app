@@ -15,9 +15,9 @@
     "@realflow/business-logic": "*",
     "@realflow/integrations": "*",
     "@realflow/shared": "*",
-    "@supabase/supabase-js": "^2.45.0",
+    "@supabase/supabase-js": "^2.98.0",
     "dotenv": "^16.4.7",
-    "fastify": "^5.0.0",
+    "fastify": "^5.8.1",
     "fastify-plugin": "^5.0.0",
     "redis": "^4.7.0",
     "zod": "^3.23.0"
