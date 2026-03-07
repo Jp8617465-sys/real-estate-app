@@ -110,7 +110,7 @@ function ChangeBadge({ type }: { type: PriceChangeRow['change_type'] }) {
 
 // ─── Change Row ───────────────────────────────────────────────────────────────
 
-function PriceChangeRow({ change }: { change: PriceChangeRow }) {
+function PriceChangeRowItem({ change }: { change: PriceChangeRow }) {
   const isReduction = change.change_type === 'reduction';
   const percentDisplay =
     change.change_percent !== null
@@ -280,7 +280,7 @@ export default function PriceChangesClient() {
         <>
           <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
             {changes.map((change) => (
-              <PriceChangeRow key={change.id} change={change} />
+              <PriceChangeRowItem key={change.id} change={change} />
             ))}
           </div>
 

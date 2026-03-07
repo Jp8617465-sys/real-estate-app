@@ -6,7 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useInspection } from '../../src/hooks/use-inspections';
 import type { InspectionImpression, ClientSuitability } from '@realflow/shared';
 
@@ -34,7 +34,6 @@ function getSuitabilityDisplay(suitability: ClientSuitability): { label: string;
 
 export default function InspectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
   const { data: inspection, isLoading, error } = useInspection(id ?? '');
 
   if (isLoading || !inspection) {

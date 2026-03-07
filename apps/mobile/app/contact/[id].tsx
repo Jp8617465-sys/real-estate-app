@@ -1,7 +1,6 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useContact } from '../../src/hooks/use-contacts';
-import type { Contact } from '@realflow/shared';
 
 export default function ContactDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

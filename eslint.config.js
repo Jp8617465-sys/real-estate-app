@@ -38,6 +38,16 @@ export default [
         navigator: 'readonly',
         console: 'readonly',
         process: 'readonly',
+        fetch: 'readonly',
+        URLSearchParams: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        confirm: 'readonly',
+        alert: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
         Buffer: 'readonly',
@@ -48,6 +58,7 @@ export default [
       '@typescript-eslint': tseslint,
     },
     rules: {
+      'no-unused-vars': 'off', // disabled in favour of @typescript-eslint/no-unused-vars
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',

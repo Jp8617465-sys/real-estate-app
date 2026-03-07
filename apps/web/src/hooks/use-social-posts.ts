@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import type { CreateSocialPost, UpdateSocialPost, SocialPost } from '@realflow/shared';
+import type { CreateSocialPost, UpdateSocialPost } from '@realflow/shared';
 
 const supabase = createClient();
 

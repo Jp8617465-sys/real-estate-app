@@ -13,13 +13,6 @@ import { useRouter } from 'expo-router';
 import { useContacts } from '../../src/hooks/use-contacts';
 import type { Contact } from '@realflow/shared';
 
-function getScoreColor(score: number) {
-  if (score >= 75) return '#ef4444';
-  if (score >= 50) return '#eab308';
-  if (score >= 25) return '#3b82f6';
-  return '#9ca3af';
-}
-
 export default function ContactsScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');

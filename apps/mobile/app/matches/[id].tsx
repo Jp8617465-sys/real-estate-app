@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { usePropertyMatch, useUpdatePropertyMatchStatus } from '../../src/hooks/use-property-matches';
 import type { PropertyMatchStatus } from '@realflow/shared';
 
@@ -64,7 +64,6 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
 
 export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
   const { data: match, isLoading, error } = usePropertyMatch(id ?? '');
   const updateStatus = useUpdatePropertyMatchStatus(id ?? '');
 

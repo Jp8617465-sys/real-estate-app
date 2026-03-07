@@ -15,11 +15,22 @@ export default [
           jsx: true,
         },
       },
+      globals: {
+        process: 'readonly',
+        fetch: 'readonly',
+        console: 'readonly',
+        URLSearchParams: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': tseslint,
     },
     rules: {
+      'no-unused-vars': 'off', // disabled in favour of @typescript-eslint/no-unused-vars
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',

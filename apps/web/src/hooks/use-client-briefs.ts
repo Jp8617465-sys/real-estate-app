@@ -44,7 +44,8 @@ export function useClientBriefs(contactId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data.map((row: any) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (data as any[]).map((row) => ({
         ...fromDbSchema(row),
         contact: row.contact, // Preserve joined relation
       }));
@@ -67,6 +68,7 @@ export function useClientBrief(id: string) {
       if (error) throw error;
       return {
         ...fromDbSchema(data),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         contact: (data as any).contact, // Preserve joined relation
       };
     },
@@ -196,6 +198,7 @@ export function useUpdateClientBrief(id: string) {
       // Apply version increment
       const updatePayload = {
         ...dbUpdates,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         brief_version: ((current as any).brief_version as number) + 1,
         updated_at: new Date().toISOString(),
       };

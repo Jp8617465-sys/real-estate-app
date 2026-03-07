@@ -24,7 +24,7 @@ vi.mock('../../lib/supabase', () => ({
   supabase: { from: mockFrom },
 }));
 
-import { useTasks, useTask, useCreateTask, useCompleteTask, useUpdateTask } from '../use-tasks';
+import { useTasks, useTask, useCreateTask, useCompleteTask } from '../use-tasks';
 
 function createWrapper() {
   const queryClient = new QueryClient({
