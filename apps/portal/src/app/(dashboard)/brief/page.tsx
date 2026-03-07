@@ -1,13 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import { CheckCircle2, Clock, FileText, AlertCircle, Sparkles, MapPin } from 'lucide-react';
+import { CheckCircle2, Clock, FileText, Loader2, AlertCircle, PenLine } from 'lucide-react';
 import type { PurchaseType, Urgency, UpdateFrequency, BriefContactMethod } from '@realflow/shared';
 import { useBrief } from '@/hooks/use-brief';
-import { usePortalProperties } from '@/hooks/use-portal-properties';
-import { LoadingSpinner } from '@/components/loading-spinner';
-import { EmptyState } from '@/components/empty-state';
-import { PropertyCard } from '@/components/property-card';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
+import { usePortalClient } from '@/hooks/use-auth';
+
+const supabase = createClient();
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-AU', {
@@ -46,7 +46,13 @@ const FREQUENCY_LABELS: Record<UpdateFrequency, string> = {
   weekly: 'Weekly',
 };
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
       <div className="border-b border-gray-100 px-5 py-3">
@@ -83,21 +89,141 @@ function TagList({ items }: { items: string[] }) {
   );
 }
 
-export default function BriefPage() {
-  const { data: brief, isLoading: isBriefLoading, error: briefError } = useBrief();
-  const { data: properties, isLoading: isPropertiesLoading } = usePortalProperties();
+// ─── Acknowledgement Section ──────────────────────────────────────────────────
 
-  if (isBriefLoading) {
-    return <LoadingSpinner message="Loading your brief..." />;
+function BriefAcknowledgement({ briefId }: { briefId: string }) {
+  const queryClient = useQueryClient();
+  usePortalClient();
+
+  // Fetch acknowledged_at directly (not in fromDbSchema)
+  const { data: ackData, isLoading: ackLoading } = useQuery({
+    queryKey: ['brief-ack', briefId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('client_briefs')
+        .select('id, acknowledged_at')
+        .eq('id', briefId)
+        .single();
+      if (error) throw error;
+      return data as { id: string; acknowledged_at: string | null };
+    },
+    enabled: !!briefId,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Not authenticated');
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/api/v1/portal/brief/acknowledge`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            clientBriefId: briefId,
+            acknowledgedAt: new Date().toISOString(),
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const body = (await response.json()) as { error?: string };
+        throw new Error(body.error ?? 'Failed to acknowledge brief');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['brief-ack', briefId] });
+    },
+  });
+
+  if (ackLoading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-400">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Loading acknowledgement status...
+      </div>
+    );
   }
 
-  if (briefError || !brief) {
+  if (ackData?.acknowledged_at) {
     return (
-      <EmptyState
-        icon={AlertCircle}
-        heading="No brief found"
-        description="Your buyers agent has not created a brief yet. Check back soon."
-      />
+      <div className="flex items-center gap-2 rounded-xl border border-green-100 bg-green-50 px-5 py-4">
+        <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
+        <div>
+          <p className="text-sm font-medium text-green-800">Brief Acknowledged</p>
+          <p className="text-xs text-green-600">
+            Acknowledged on{' '}
+            {new Date(ackData.acknowledged_at).toLocaleDateString('en-AU', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <PenLine className="mt-0.5 h-5 w-5 shrink-0 text-portal-600" />
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold text-gray-900">
+            Acknowledge Your Brief
+          </h3>
+          <p className="mt-0.5 text-sm text-gray-500">
+            Confirm that the information in this brief is correct and up to date.
+            Your agent will use this to find the best properties for you.
+          </p>
+          {mutation.isError && (
+            <p className="mt-2 text-xs text-red-600">
+              {mutation.error instanceof Error
+                ? mutation.error.message
+                : 'Failed to acknowledge brief'}
+            </p>
+          )}
+          <button
+            type="button"
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate()}
+            className="mt-3 flex items-center gap-1.5 rounded-lg bg-portal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-portal-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {mutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            I acknowledge this brief is correct
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function BriefPage() {
+  const { data: brief, isLoading, error } = useBrief();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-portal-500" />
+      </div>
+    );
+  }
+
+  if (error || !brief) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="h-10 w-10 text-gray-300" />
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">No brief found</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Your buyers agent has not created a brief yet. Check back soon.
+        </p>
+      </div>
     );
   }
 
@@ -116,26 +242,6 @@ export default function BriefPage() {
   const dealBreakers = (brief.requirements?.dealBreakers ?? []) as string[];
   const propertyTypes = (brief.requirements?.propertyTypes ?? []) as string[];
 
-  // Matched properties (top 3)
-  const matchedProperties = (properties ?? [])
-    .filter((p) => p.status !== 'rejected')
-    .slice(0, 3);
-
-  // AI-like suggestions based on brief data
-  const suggestions: string[] = [];
-  if (suburbs.length <= 2) {
-    suggestions.push('Consider adding more suburbs to broaden your search and find better value.');
-  }
-  if (mustHaves.length > 5) {
-    suggestions.push('You have many must-haves. Prioritising the top 3-4 can speed up your search.');
-  }
-  if (!brief.budget?.absoluteMax) {
-    suggestions.push('Setting an absolute maximum budget helps your agent negotiate more effectively.');
-  }
-  if (dealBreakers.length === 0) {
-    suggestions.push('Adding deal breakers helps filter unsuitable properties early in the process.');
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -144,79 +250,52 @@ export default function BriefPage() {
           <h1 className="text-2xl font-bold text-gray-900">My Brief</h1>
           <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
             <span className="flex items-center gap-1">
-              <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+              <FileText className="h-3.5 w-3.5" />
               Version {brief.briefVersion ?? 1}
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+              <Clock className="h-3.5 w-3.5" />
               Last updated {formatDate(brief.updatedAt)}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {brief.clientSignedOff && (
-            <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700">
-              <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-              Signed Off
-            </span>
+        {brief.clientSignedOff && (
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700">
+            <CheckCircle2 className="h-4 w-4" />
+            Signed Off
+          </span>
+        )}
+      </div>
+
+      {/* Purchase Type */}
+      <SectionCard title="Purchase Type">
+        <dl className="space-y-3">
+          <DetailRow
+            label="Type"
+            value={PURCHASE_TYPE_LABELS[purchaseType] ?? purchaseType}
+          />
+        </dl>
+      </SectionCard>
+
+      {/* Budget */}
+      <SectionCard title="Budget">
+        <dl className="space-y-3">
+          <DetailRow
+            label="Range"
+            value={`${formatCurrency(brief.budget?.min ?? 0)} - ${formatCurrency(brief.budget?.max ?? 0)}`}
+          />
+          {brief.budget?.absoluteMax && (
+            <DetailRow
+              label="Absolute Maximum"
+              value={formatCurrency(brief.budget.absoluteMax)}
+            />
           )}
-          <Link
-            href="/messages"
-            className="inline-flex items-center gap-2 rounded-lg border border-portal-200 bg-portal-50 px-4 py-2 text-sm font-medium text-portal-700 transition-colors hover:bg-portal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-portal-500"
-          >
-            Request Brief Update
-          </Link>
-        </div>
-      </div>
-
-      {/* AI Suggestions */}
-      {suggestions.length > 0 && (
-        <div className="rounded-xl border border-portal-200 bg-portal-50 p-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-portal-600" aria-hidden="true" />
-            <h2 className="font-semibold text-portal-800">Suggestions to improve your search</h2>
-          </div>
-          <ul className="mt-3 space-y-2">
-            {suggestions.map((suggestion) => (
-              <li key={suggestion} className="flex items-start gap-2 text-sm text-portal-700">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-portal-400" aria-hidden="true" />
-                {suggestion}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Purchase Type & Budget */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SectionCard title="Purchase Type">
-          <dl className="space-y-3">
-            <DetailRow
-              label="Type"
-              value={PURCHASE_TYPE_LABELS[purchaseType] ?? purchaseType}
-            />
-          </dl>
-        </SectionCard>
-
-        <SectionCard title="Budget">
-          <dl className="space-y-3">
-            <DetailRow
-              label="Range"
-              value={`${formatCurrency(brief.budget?.min ?? 0)} - ${formatCurrency(brief.budget?.max ?? 0)}`}
-            />
-            {brief.budget?.absoluteMax && (
-              <DetailRow
-                label="Absolute Max"
-                value={formatCurrency(brief.budget.absoluteMax)}
-              />
-            )}
-            <DetailRow
-              label="Stamp Duty Budgeted"
-              value={brief.budget?.stampDutyBudgeted ? 'Yes' : 'No'}
-            />
-          </dl>
-        </SectionCard>
-      </div>
+          <DetailRow
+            label="Stamp Duty Budgeted"
+            value={brief.budget?.stampDutyBudgeted ? 'Yes' : 'No'}
+          />
+        </dl>
+      </SectionCard>
 
       {/* Requirements */}
       <SectionCard title="Requirements">
@@ -250,10 +329,15 @@ export default function BriefPage() {
 
           {suburbs.length > 0 && (
             <div className="border-t border-gray-100 pt-4">
-              <h3 className="mb-2 text-sm font-medium text-gray-700">Preferred Suburbs</h3>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">
+                Preferred Suburbs
+              </h3>
               <div className="space-y-1.5">
                 {suburbs.map((suburb) => (
-                  <div key={suburb.suburb} className="flex items-center gap-2 text-sm">
+                  <div
+                    key={suburb.suburb}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-portal-100 text-[10px] font-semibold text-portal-700">
                       {suburb.rank ?? '-'}
                     </span>
@@ -275,14 +359,18 @@ export default function BriefPage() {
 
           {niceToHaves.length > 0 && (
             <div>
-              <h3 className="mb-2 text-sm font-medium text-gray-700">Nice to Haves</h3>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">
+                Nice to Haves
+              </h3>
               <TagList items={niceToHaves} />
             </div>
           )}
 
           {dealBreakers.length > 0 && (
             <div>
-              <h3 className="mb-2 text-sm font-medium text-gray-700">Deal Breakers</h3>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">
+                Deal Breakers
+              </h3>
               <div className="flex flex-wrap gap-1.5">
                 {dealBreakers.map((item: string) => (
                   <span
@@ -298,36 +386,57 @@ export default function BriefPage() {
         </dl>
       </SectionCard>
 
-      {/* Timeline & Communication */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SectionCard title="Timeline">
-          <dl className="space-y-3">
-            {urgency && (
-              <DetailRow label="Urgency" value={URGENCY_LABELS[urgency] ?? urgency} />
-            )}
-            {brief.timeline?.idealSettlement && (
-              <DetailRow label="Ideal Settlement" value={brief.timeline.idealSettlement} />
-            )}
-          </dl>
-        </SectionCard>
+      {/* Timeline */}
+      <SectionCard title="Timeline">
+        <dl className="space-y-3">
+          {urgency && (
+            <DetailRow
+              label="Urgency"
+              value={URGENCY_LABELS[urgency] ?? urgency}
+            />
+          )}
+          {brief.timeline?.idealSettlement && (
+            <DetailRow
+              label="Ideal Settlement"
+              value={brief.timeline.idealSettlement}
+            />
+          )}
+        </dl>
+      </SectionCard>
 
-        <SectionCard title="Communication">
-          <dl className="space-y-3">
+      {/* Communication */}
+      <SectionCard title="Communication">
+        <dl className="space-y-3">
+          <DetailRow
+            label="Preferred Method"
+            value={
+              preferredMethod
+                ? preferredMethod.charAt(0).toUpperCase() + preferredMethod.slice(1)
+                : 'Not specified'
+            }
+          />
+          <DetailRow
+            label="Update Frequency"
+            value={
+              updateFrequency
+                ? FREQUENCY_LABELS[updateFrequency]
+                : 'Not specified'
+            }
+          />
+          {brief.communication?.bestTimeToCall && (
             <DetailRow
-              label="Preferred Method"
-              value={
-                preferredMethod
-                  ? preferredMethod.charAt(0).toUpperCase() + preferredMethod.slice(1)
-                  : 'Not specified'
-              }
+              label="Best Time to Call"
+              value={brief.communication.bestTimeToCall}
             />
+          )}
+          {brief.communication?.partnerName && (
             <DetailRow
-              label="Update Frequency"
-              value={updateFrequency ? FREQUENCY_LABELS[updateFrequency] : 'Not specified'}
+              label="Partner"
+              value={brief.communication.partnerName}
             />
-          </dl>
-        </SectionCard>
-      </div>
+          )}
+        </dl>
+      </SectionCard>
 
       {/* Solicitor */}
       {brief.solicitor && (
@@ -349,37 +458,8 @@ export default function BriefPage() {
         </SectionCard>
       )}
 
-      {/* Matched Properties */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-            Matched Properties
-          </h2>
-          {matchedProperties.length > 0 && (
-            <Link
-              href="/properties"
-              className="text-sm font-medium text-portal-600 hover:text-portal-700"
-            >
-              View all
-            </Link>
-          )}
-        </div>
-        {isPropertiesLoading ? (
-          <LoadingSpinner size="sm" />
-        ) : matchedProperties.length === 0 ? (
-          <EmptyState
-            icon={MapPin}
-            heading="No matched properties yet"
-            description="Your agent is searching for properties that match your brief."
-          />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {matchedProperties.map((match) => (
-              <PropertyCard key={match.id} match={match} />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Acknowledgement sign-off */}
+      <BriefAcknowledgement briefId={brief.id} />
     </div>
   );
 }

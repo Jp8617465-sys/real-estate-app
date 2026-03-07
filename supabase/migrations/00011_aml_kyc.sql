@@ -106,10 +106,8 @@ CREATE TABLE aml_identity_documents (
   issue_date          DATE,
   expiry_date         DATE,
 
-  -- Computed: whether document's expiry date has passed
-  is_expired          BOOLEAN GENERATED ALWAYS AS (
-    expiry_date IS NOT NULL AND expiry_date < CURRENT_DATE
-  ) STORED,
+  -- Whether document has expired (computed at query time via view or application layer)
+  is_expired          BOOLEAN NOT NULL DEFAULT FALSE,
 
   -- Verification
   verified            BOOLEAN     NOT NULL DEFAULT FALSE,

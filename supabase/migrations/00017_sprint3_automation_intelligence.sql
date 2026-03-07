@@ -37,7 +37,7 @@ CREATE TYPE enrollment_status AS ENUM ('active', 'paused', 'completed', 'cancell
 -- Stores Expo push tokens per user-device pair.
 
 CREATE TABLE push_device_tokens (
-  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   token         TEXT NOT NULL,
   platform      TEXT NOT NULL CHECK (platform IN ('ios', 'android')),
@@ -56,7 +56,7 @@ CREATE INDEX idx_push_tokens_active  ON push_device_tokens (is_active) WHERE is_
 -- Per-user notification settings: quiet hours, digest mode, category toggles.
 
 CREATE TABLE notification_preferences (
-  id                           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id                           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id                      UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
   quiet_hours_start            TIME NOT NULL DEFAULT '21:00',
   quiet_hours_end              TIME NOT NULL DEFAULT '07:00',
@@ -78,7 +78,7 @@ CREATE TABLE notification_preferences (
 -- All generated notifications (push, in-app, digest items).
 
 CREATE TABLE notifications (
-  id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id          UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   title            TEXT NOT NULL,
   body             TEXT NOT NULL,
@@ -116,7 +116,7 @@ CREATE INDEX idx_notifications_unread       ON notifications (user_id, status) W
 -- AI-generated prioritized action list per agent per day.
 
 CREATE TABLE daily_action_items (
-  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   date                DATE NOT NULL,
   rank                INTEGER NOT NULL,
@@ -147,7 +147,7 @@ CREATE INDEX idx_daily_actions_incomplete           ON daily_action_items (user_
 -- Sequence template definitions (5 pre-built + user-created).
 
 CREATE TABLE follow_up_sequences (
-  id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name           TEXT NOT NULL,
   description    TEXT,
   category       TEXT NOT NULL,
@@ -171,7 +171,7 @@ CREATE INDEX idx_sequences_active     ON follow_up_sequences (is_active) WHERE i
 -- Tracks which contacts are enrolled in a sequence and what step they are at.
 
 CREATE TABLE sequence_enrollments (
-  id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   sequence_id          UUID NOT NULL REFERENCES follow_up_sequences(id) ON DELETE RESTRICT,
   contact_id           UUID NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
   transaction_id       UUID REFERENCES transactions(id) ON DELETE SET NULL,

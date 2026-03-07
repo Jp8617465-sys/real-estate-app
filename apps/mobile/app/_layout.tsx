@@ -60,7 +60,9 @@ export default function RootLayout() {
       const entityId = data.entityId as string | undefined;
       const actionPrimary = data.actionPrimary as string | undefined;
 
-      if (actionPrimary === 'view_daily_actions' || data.type === 'digest') {
+      if (entityType === 'property_alert' || data.alertType !== undefined) {
+        router.push('/alerts');
+      } else if (actionPrimary === 'view_daily_actions' || data.type === 'digest') {
         router.push('/(tabs)/daily');
       } else if (entityType === 'contact' && entityId) {
         router.push(`/contact/${entityId}`);
@@ -124,6 +126,10 @@ export default function RootLayout() {
         <Stack.Screen
           name="notifications/index"
           options={{ title: 'Notifications' }}
+        />
+        <Stack.Screen
+          name="alerts/index"
+          options={{ title: 'Property Alerts' }}
         />
       </Stack>
     </QueryClientProvider>

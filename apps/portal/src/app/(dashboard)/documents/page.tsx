@@ -1,27 +1,59 @@
 'use client';
 
-import { useState } from 'react';
-import { FolderOpen } from 'lucide-react';
+import { useRef } from 'react';
+import {
+  FileText,
+  FileImage,
+  FileSpreadsheet,
+  File,
+  Upload,
+  Download,
+  Clock,
+  Loader2,
+  AlertCircle,
+  FolderOpen,
+} from 'lucide-react';
 import { useDocuments, useUploadDocument, useDownloadDocument } from '@/hooks/use-documents';
 import type { PortalDocument } from '@/hooks/use-documents';
-import { LoadingSpinner } from '@/components/loading-spinner';
-import { EmptyState } from '@/components/empty-state';
-import { DocumentCard } from '@/components/document-card';
-import { FileUpload } from '@/components/file-upload';
 
-const CATEGORY_LABELS: Record<string, string> = {
-  contracts: 'Contracts',
-  inspections: 'Inspection Reports',
-  legal: 'Legal',
-  finance: 'Finance',
-  property: 'Property',
-  environmental: 'Environmental',
-  council: 'Council',
-  identification: 'Identification',
-  other: 'Other',
+type FileType = 'pdf' | 'image' | 'spreadsheet' | 'other';
+
+const FILE_ICONS: Record<FileType, React.ComponentType<{ className?: string }>> = {
+  pdf: FileText,
+  image: FileImage,
+  spreadsheet: FileSpreadsheet,
+  other: File,
 };
 
-function groupByCategory(docs: PortalDocument[]): Record<string, PortalDocument[]> {
+function getFileType(mimeType: string): FileType {
+  if (mimeType.includes('pdf')) return 'pdf';
+  if (mimeType.startsWith('image/')) return 'image';
+  if (
+    mimeType.includes('spreadsheet') ||
+    mimeType.includes('excel') ||
+    mimeType.includes('csv')
+  )
+    return 'spreadsheet';
+  return 'other';
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-AU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function groupByCategory(
+  docs: PortalDocument[],
+): Record<string, PortalDocument[]> {
   const grouped: Record<string, PortalDocument[]> = {};
   for (const doc of docs) {
     const cat = doc.category ?? 'other';
@@ -33,17 +65,38 @@ function groupByCategory(docs: PortalDocument[]): Record<string, PortalDocument[
   return grouped;
 }
 
+function formatCategory(category: string): string {
+  return category.charAt(0).toUpperCase() + category.slice(1);
+}
+
 export default function DocumentsPage() {
   const { data: documents, isLoading, error } = useDocuments();
   const uploadMutation = useUploadDocument();
   const downloadMutation = useDownloadDocument();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (file: File) => {
-    uploadMutation.mutate({ file, category: 'other' });
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
-  const handleDownload = (doc: PortalDocument) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    uploadMutation.mutate(
+      { file, category: 'other' },
+      {
+        onSuccess: () => {
+          // Reset the input
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        },
+      },
+    );
+  };
+
+  const handleDownload = async (doc: PortalDocument) => {
     downloadMutation.mutate(doc.file_path, {
       onSuccess: (url) => {
         window.open(url, '_blank');
@@ -52,101 +105,72 @@ export default function DocumentsPage() {
   };
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading documents..." />;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-portal-500" />
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <EmptyState
-        icon={FolderOpen}
-        heading="Unable to load documents"
-        description="Please try again later."
-      />
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="h-10 w-10 text-gray-300" />
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">Unable to load documents</h2>
+        <p className="mt-1 text-sm text-gray-500">Please try again later.</p>
+      </div>
     );
   }
 
   const docs = documents ?? [];
   const grouped = groupByCategory(docs);
-  const allCategories = Object.keys(grouped).sort();
-
-  const filteredCategories =
-    selectedCategory === 'all'
-      ? allCategories
-      : allCategories.filter((c) => c === selectedCategory);
+  const sortedCategories = Object.keys(grouped).sort();
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          {docs.length} file{docs.length !== 1 ? 's' : ''} across{' '}
-          {allCategories.length} categor{allCategories.length !== 1 ? 'ies' : 'y'}
-        </p>
-      </div>
-
-      {/* Upload area */}
-      <FileUpload
-        onFileSelect={handleFileSelect}
-        isUploading={uploadMutation.isPending}
-      />
-
-      {uploadMutation.isError && (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-          Upload failed. Please try again.
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {docs.length} files across {sortedCategories.length} categories
+          </p>
         </div>
-      )}
-
-      {uploadMutation.isSuccess && (
-        <div className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700" role="status">
-          File uploaded successfully.
-        </div>
-      )}
-
-      {/* Category filter */}
-      {allCategories.length > 1 && (
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter documents by category">
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={handleFileChange}
+          />
           <button
             type="button"
-            role="tab"
-            aria-selected={selectedCategory === 'all'}
-            onClick={() => setSelectedCategory('all')}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              selectedCategory === 'all'
-                ? 'bg-portal-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+            onClick={handleUploadClick}
+            disabled={uploadMutation.isPending}
+            className="inline-flex w-fit items-center gap-2 rounded-lg bg-portal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-portal-700 disabled:opacity-50"
           >
-            All ({docs.length})
+            {uploadMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
+            {uploadMutation.isPending ? 'Uploading...' : 'Upload Document'}
           </button>
-          {allCategories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              role="tab"
-              aria-selected={selectedCategory === cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-portal-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {CATEGORY_LABELS[cat] ?? cat} ({grouped[cat].length})
-            </button>
-          ))}
         </div>
-      )}
+      </div>
 
       {docs.length === 0 ? (
-        <EmptyState
-          icon={FolderOpen}
-          heading="No documents yet"
-          description="Documents shared by your agent will appear here. You can also upload your own."
-        />
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <FolderOpen className="h-10 w-10 text-gray-300" />
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">No documents yet</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Documents shared by your agent will appear here. You can also upload your own.
+          </p>
+        </div>
       ) : (
-        <div className="space-y-4" role="tabpanel">
-          {filteredCategories.map((category) => {
+        /* Document categories */
+        <div className="space-y-4">
+          {sortedCategories.map((category) => {
             const categoryDocs = grouped[category];
             return (
               <div
@@ -155,21 +179,48 @@ export default function DocumentsPage() {
               >
                 <div className="border-b border-gray-100 px-5 py-3">
                   <h2 className="text-sm font-semibold text-gray-700">
-                    {CATEGORY_LABELS[category] ?? category}{' '}
+                    {formatCategory(category)}{' '}
                     <span className="font-normal text-gray-400">
                       ({categoryDocs.length})
                     </span>
                   </h2>
                 </div>
                 <div className="divide-y divide-gray-50">
-                  {categoryDocs.map((doc) => (
-                    <DocumentCard
-                      key={doc.id}
-                      document={doc}
-                      onDownload={handleDownload}
-                      isDownloading={downloadMutation.isPending}
-                    />
-                  ))}
+                  {categoryDocs.map((doc) => {
+                    const fileType = getFileType(doc.mime_type);
+                    const Icon = FILE_ICONS[fileType];
+                    return (
+                      <div
+                        key={doc.id}
+                        className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-gray-50"
+                      >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                          <Icon className="h-5 w-5 text-gray-500" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-gray-900">
+                            {doc.name}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <span>{formatFileSize(doc.size_bytes)}</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDate(doc.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDownload(doc)}
+                          disabled={downloadMutation.isPending}
+                          className="shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                          title="Download"
+                        >
+                          <Download className="h-4 w-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );

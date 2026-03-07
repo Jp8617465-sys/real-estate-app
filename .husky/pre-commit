@@ -1,0 +1,31 @@
+#!/bin/sh
+
+echo "Running pre-commit quality gates..."
+
+npm run lint
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Pre-commit FAILED: ESLint errors found. Fix them before committing."
+  echo "Escape hatch (feature branches only, never on main merge): git commit --no-verify"
+  exit 1
+fi
+
+npm run type-check
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Pre-commit FAILED: TypeScript errors found. Fix them before committing."
+  exit 1
+fi
+
+npm run test
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Pre-commit FAILED: Tests failing. Fix them before committing."
+  echo "Known pre-existing failures (do not count as regressions):"
+  echo "  - 7 tests: packages/business-logic/src/pipeline-migration.test.ts"
+  echo "  - 2 tests: packages/integrations/src/integration-registry.test.ts"
+  echo "  - 1 test:  apps/api/src/routes/social-posts.test.ts"
+  exit 1
+fi
+
+echo "All pre-commit gates passed."

@@ -1,16 +1,14 @@
 {
   "mcpServers": {
     "supabase": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@supabase/mcp-server-postgrest"
-      ],
-      "env": {
-        "SUPABASE_URL": "https://your-project-ref.supabase.co",
-        "SUPABASE_ANON_KEY": "your-anon-key-here",
-        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key-here"
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=hfwgymqjnwlewmbskuim"
+    },
+    "render": {
+      "type": "http",
+      "url": "https://mcp.render.com/v1",
+      "headers": {
+        "Authorization": "Bearer rnd_T01ybfe8IsMLwyFjmWHyNX8zkGYB"
       }
     }
   }
