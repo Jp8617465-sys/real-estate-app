@@ -18,7 +18,7 @@
     "db:migrate": "cd supabase && supabase db push",
     "db:reset": "cd supabase && supabase db reset",
     "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > packages/shared/src/database.types.ts",
-    "prepare": "husky"
+    "prepare": "is-ci || husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -28,6 +28,7 @@
     "@typescript-eslint/parser": "^8.55.0",
     "eslint": "^9.0.0",
     "husky": "^9.1.7",
+    "is-ci": "^4.1.0",
     "lint-staged": "^15.5.2",
     "prettier": "^3.3.0",
     "turbo": "^2.3.0",
