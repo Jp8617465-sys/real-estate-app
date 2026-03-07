@@ -101,7 +101,7 @@ export class SocialLeadEngine {
     // Parse sender name into first/last
     const nameParts = (lead.senderName ?? '').split(' ');
     const firstName = overrides?.firstName ?? nameParts[0] ?? 'Unknown';
-    const lastName = overrides?.lastName ?? nameParts.slice(1).join(' ') || null;
+    const lastName = overrides?.lastName ?? (nameParts.slice(1).join(' ') || null);
 
     // Create contact
     const { data: contact, error: contactErr } = await this.db

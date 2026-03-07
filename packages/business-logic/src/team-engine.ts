@@ -340,7 +340,7 @@ export class TeamEngine {
       }
 
       // For other types, return the first assignee
-      return rule.assigneeIds[0];
+      return rule.assigneeIds[0] ?? null;
     }
 
     return null; // No rule matched
@@ -424,7 +424,7 @@ export class TeamEngine {
 
   private async assignRoundRobin(rule: LeadAssignmentRule): Promise<string> {
     const currentIdx = rule.roundRobinIdx;
-    const assigneeId = rule.assigneeIds[currentIdx % rule.assigneeIds.length];
+    const assigneeId = rule.assigneeIds[currentIdx % rule.assigneeIds.length] ?? rule.assigneeIds[0] ?? '';
     const nextIdx = (currentIdx + 1) % rule.assigneeIds.length;
 
     // Atomically increment the index
