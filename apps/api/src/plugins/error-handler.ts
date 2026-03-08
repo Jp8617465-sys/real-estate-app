@@ -35,6 +35,11 @@ function isZodError(err: unknown): err is ZodError {
   );
 }
 
+function isJwtError(err: Error): boolean {
+  // Supabase / jose throw these for malformed or invalid tokens
+  return /JWT|invalid token|not authenticated/i.test(err.message);
+}
+
 function getStatusCode(err: FastifyError | Error): number {
   // Fastify errors carry statusCode
   if ('statusCode' in err && typeof err.statusCode === 'number') {
@@ -44,6 +49,11 @@ function getStatusCode(err: FastifyError | Error): number {
   // Zod validation errors
   if (isZodError(err)) {
     return 400;
+  }
+
+  // Malformed / invalid JWT — surface as 401 not 500
+  if (isJwtError(err)) {
+    return 401;
   }
 
   // Default to 500 for unexpected errors
