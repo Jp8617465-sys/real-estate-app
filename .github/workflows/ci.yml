@@ -96,6 +96,9 @@ jobs:
 
       - name: Build all packages and apps
         run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://hfwgymqjnwlewmbskuim.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_7rgYDcKtit33VXspK0wVpQ_wC0oRlFg
 
       - name: Upload web build artifact
         uses: actions/upload-artifact@v7

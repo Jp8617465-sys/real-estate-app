@@ -1,35 +1,41 @@
+import crypto from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { SocialDmWebhookSchema } from '@realflow/shared';
 import { SocialLeadEngine } from '@realflow/business-logic';
-import { createSupabaseClient } from '../middleware/supabase';
+import { createSupabaseClient, createSupabaseServiceClient } from '../middleware/supabase';
+import { env } from '../config/env';
 
 export async function socialLeadRoutes(fastify: FastifyInstance) {
   // ─── POST /social/dms/ingest ──────────────────────────────────────────────
   // Ingest an inbound DM from Meta or LinkedIn webhook.
+  // This is a server-to-server webhook — no user JWT required.
   fastify.post('/social/dms/ingest', async (request, reply) => {
-    const supabase = createSupabaseClient(request);
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+    // Verify Meta/LinkedIn HMAC-SHA256 signature when secret is configured
+    if (env.META_APP_SECRET) {
+      const signature = (request.headers['x-hub-signature-256'] as string | undefined) ?? '';
+      const bodyBuf = Buffer.from(JSON.stringify(request.body));
+      const expected = `sha256=${crypto.createHmac('sha256', env.META_APP_SECRET).update(bodyBuf).digest('hex')}`;
+      const sigBuf = Buffer.from(signature);
+      const expBuf = Buffer.from(expected);
+      if (
+        sigBuf.length !== expBuf.length ||
+        !crypto.timingSafeEqual(sigBuf, expBuf)
+      ) {
+        return reply.status(401).send({ error: 'Invalid webhook signature' });
+      }
+    } else {
+      fastify.log.warn('META_APP_SECRET not configured — skipping webhook signature verification');
+    }
 
     const parsed = SocialDmWebhookSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten() });
     }
 
-    // Get agent's office_id
-    const { data: agent, error: agentErr } = await supabase
-      .from('users')
-      .select('office_id')
-      .eq('id', user.id)
-      .single();
-    if (agentErr || !agent) return reply.status(400).send({ error: 'Agent office not found' });
-
+    const supabase = createSupabaseServiceClient();
     const engine = new SocialLeadEngine(supabase);
     try {
-      const lead = await engine.ingestDm(parsed.data, user.id, agent.office_id as string);
+      const lead = await engine.ingestDm(parsed.data, parsed.data.agentId, parsed.data.officeId);
       return reply.status(201).send({ data: lead });
     } catch (err) {
       return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
@@ -119,7 +125,7 @@ export async function socialLeadRoutes(fastify: FastifyInstance) {
 
     const engine = new SocialLeadEngine(supabase);
     try {
-      await engine.dismissLead(request.params.id);
+      await engine.dismissLead(request.params.id, user.id);
       return reply.status(204).send();
     } catch (err) {
       return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });

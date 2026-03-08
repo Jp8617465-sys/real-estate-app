@@ -121,25 +121,34 @@ export class SocialLeadEngine {
 
     if (contactErr) throw new Error(`Failed to create contact: ${contactErr.message}`);
 
-    // Mark lead as converted
+    // Mark lead as converted — compensate by soft-deleting the contact if this fails
     const { error: updateErr } = await this.db
       .from('social_dm_leads')
       .update({ status: 'converted', contact_id: contact.id })
-      .eq('id', leadId);
+      .eq('id', leadId)
+      .is('deleted_at', null);
 
-    if (updateErr) throw new Error(`Failed to update lead status: ${updateErr.message}`);
+    if (updateErr) {
+      await this.db
+        .from('contacts')
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
+        .eq('id', contact.id);
+      throw new Error(`Failed to update lead status: ${updateErr.message}`);
+    }
 
     return contact.id as string;
   }
 
   /**
    * Dismiss a pending DM lead (mark as not worth following up).
+   * Scoped to agentId to prevent cross-agent dismissals.
    */
-  async dismissLead(leadId: string): Promise<void> {
+  async dismissLead(leadId: string, agentId: string): Promise<void> {
     const { error } = await this.db
       .from('social_dm_leads')
       .update({ status: 'dismissed' })
       .eq('id', leadId)
+      .eq('agent_id', agentId)
       .is('deleted_at', null);
 
     if (error) throw new Error(`Failed to dismiss lead: ${error.message}`);
@@ -194,7 +203,6 @@ export class SocialLeadEngine {
       .eq('agent_id', agentId)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
-      .limit(options?.limit ?? 50)
       .range(options?.offset ?? 0, (options?.offset ?? 0) + (options?.limit ?? 50) - 1);
 
     if (options?.status) {

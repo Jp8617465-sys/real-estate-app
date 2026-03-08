@@ -38,6 +38,8 @@ export const SocialDmWebhookSchema = z.object({
   senderHandle: z.string().optional(),
   messageText: z.string().min(1),
   rawPayload: z.record(z.unknown()).optional(),
+  agentId: z.string().uuid(),
+  officeId: z.string().uuid(),
 });
 export type SocialDmWebhook = z.infer<typeof SocialDmWebhookSchema>;
 

@@ -24,6 +24,7 @@ const mockEngine = {
 
 vi.mock('../middleware/supabase', () => ({
   createSupabaseClient: vi.fn(),
+  createSupabaseServiceClient: vi.fn(),
 }));
 
 vi.mock('@realflow/business-logic', () => {
@@ -31,7 +32,7 @@ vi.mock('@realflow/business-logic', () => {
   return { SocialLeadEngine };
 });
 
-import { createSupabaseClient } from '../middleware/supabase';
+import { createSupabaseClient, createSupabaseServiceClient } from '../middleware/supabase';
 
 // ─── Supabase mock helpers ─────────────────────────────────────────────────────
 
@@ -99,13 +100,19 @@ describe('POST /social/dms/ingest', () => {
   });
 
   it('returns 201 with the created lead', async () => {
-    vi.mocked(createSupabaseClient).mockReturnValue(makeSupabase() as never);
+    vi.mocked(createSupabaseServiceClient).mockReturnValue(makeSupabase() as never);
 
     const app = await buildApp();
     const res = await app.inject({
       method: 'POST',
       url: '/social/dms/ingest',
-      payload: { channel: 'facebook_dm', externalId: 'msg_abc', messageText: 'Hello' },
+      payload: {
+        channel: 'facebook_dm',
+        externalId: 'msg_abc',
+        messageText: 'Hello',
+        agentId: AGENT_ID,
+        officeId: OFFICE_ID,
+      },
     });
 
     expect(res.statusCode).toBe(201);
@@ -114,17 +121,17 @@ describe('POST /social/dms/ingest', () => {
     expect(body.data.channel).toBe('facebook_dm');
   });
 
-  it('returns 401 when not authenticated', async () => {
-    vi.mocked(createSupabaseClient).mockReturnValue(makeSupabase(null) as never);
-
+  it('returns 400 when agentId is missing', async () => {
+    // POST /social/dms/ingest is a server-to-server webhook (no user JWT);
+    // agentId is now a required field in the webhook payload.
     const app = await buildApp();
     const res = await app.inject({
       method: 'POST',
       url: '/social/dms/ingest',
-      payload: { channel: 'facebook_dm', externalId: 'msg_abc', messageText: 'Hello' },
+      payload: { channel: 'facebook_dm', externalId: 'msg_abc', messageText: 'Hello', officeId: OFFICE_ID },
     });
 
-    expect(res.statusCode).toBe(401);
+    expect(res.statusCode).toBe(400);
   });
 
   it('returns 400 for invalid payload (missing messageText)', async () => {

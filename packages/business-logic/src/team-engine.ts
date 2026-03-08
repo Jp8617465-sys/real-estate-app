@@ -199,6 +199,7 @@ export class TeamEngine {
       // Deals closed this month
       const monthStart = new Date();
       monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
       const { count: dealsClosed } = await this.db
         .from('transactions')
         .select('id', { count: 'exact', head: true })
@@ -206,7 +207,24 @@ export class TeamEngine {
         .eq('current_stage', 'settlement')
         .gte('updated_at', monthStart.toISOString());
 
-      await this.db.from('team_performance_snapshots').upsert(
+      // Social DM leads received this month
+      const { count: leadsReceived } = await this.db
+        .from('social_dm_leads')
+        .select('id', { count: 'exact', head: true })
+        .eq('agent_id', member.id)
+        .gte('created_at', monthStart.toISOString())
+        .is('deleted_at', null);
+
+      // Social DM leads converted this month
+      const { count: leadsConverted } = await this.db
+        .from('social_dm_leads')
+        .select('id', { count: 'exact', head: true })
+        .eq('agent_id', member.id)
+        .eq('status', 'converted')
+        .gte('created_at', monthStart.toISOString())
+        .is('deleted_at', null);
+
+      const { error: upsertErr } = await this.db.from('team_performance_snapshots').upsert(
         {
           office_id: officeId,
           agent_id: member.id,
@@ -214,11 +232,15 @@ export class TeamEngine {
           active_contacts: activeContacts ?? 0,
           active_deals: activeDeals ?? 0,
           deals_closed: dealsClosed ?? 0,
-          leads_received: 0, // populated from contacts table in next iteration
-          leads_converted: 0,
+          leads_received: leadsReceived ?? 0,
+          leads_converted: leadsConverted ?? 0,
         },
         { onConflict: 'office_id,agent_id,snapshot_date' },
       );
+
+      if (upsertErr) {
+        throw new Error(`Failed to snapshot agent ${member.id}: ${upsertErr.message}`);
+      }
     }
   }
 
