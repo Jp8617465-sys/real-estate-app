@@ -234,7 +234,7 @@ export class ResearchConsolidationEngine {
   private static assessRisks(data: ConsolidationDataInput): ReportRiskItem[] {
     const risks: ReportRiskItem[] = [];
 
-    // Budget risk: any property over absolute max
+    // Budget risk: properties priced above the absolute max
     const overBudgetCount = data.propertyMatches.filter(
       (m) => m.scoreBreakdown.priceMatch === 0,
     ).length;
