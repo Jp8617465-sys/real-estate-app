@@ -18,7 +18,8 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@realflow/shared": "*"
+    "@realflow/shared": "*",
+    "@realflow/integrations": "*"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
