@@ -53,6 +53,12 @@ const RollbackMigrationSchema = z.object({
   reason: z.string(),
 });
 
+// ─── Join Types (Supabase query result shapes) ───────────────────────
+
+type ContactJoin = { buyer_profile: unknown };
+type UserJoin = { full_name: string | null };
+type RpcMigrationResult = { success: boolean; error?: string };
+
 // ─── Response Types ─────────────────────────────────────────────────
 
 interface MigrationPreview {
@@ -153,7 +159,7 @@ async function fetchMigrationContext(
   const context: MigrationContext = {
     transactionId: transaction.id,
     contactId: transaction.contact_id,
-    currentStage: transaction.current_stage as any,
+    currentStage: transaction.current_stage as unknown as MigrationContext['currentStage'],
 
     // Client brief
     hasClientBrief: !!clientBrief,
@@ -166,7 +172,7 @@ async function fetchMigrationContext(
 
     // Offer
     hasOffer: !!latestOffer,
-    offerStatus: latestOffer?.status as any,
+    offerStatus: latestOffer?.status as unknown as MigrationContext['offerStatus'],
 
     // Contract
     hasContract: !!latestContract,
@@ -179,8 +185,8 @@ async function fetchMigrationContext(
     hasRetainerPaid: !!feeStructure?.retainer_paid_date,
     retainerPaidDate: feeStructure?.retainer_paid_date,
 
-    // Buyer profile from contact JSONB
-    buyerProfile: (transaction.contacts as any)?.buyer_profile as BuyerProfile | undefined,
+    // Buyer profile from contact JSONB (Supabase returns join as array for !inner)
+    buyerProfile: (transaction.contacts as unknown as ContactJoin | null)?.buyer_profile as BuyerProfile | undefined,
   };
 
   return context;
@@ -375,7 +381,7 @@ export async function pipelineMigrationRoutes(fastify: FastifyInstance) {
           }
 
           // Check if migration was successful
-          const result = migrationResult as any;
+          const result = migrationResult as RpcMigrationResult;
           if (result.success) {
             results.push({
               transactionId: txId,
@@ -466,7 +472,7 @@ export async function pipelineMigrationRoutes(fastify: FastifyInstance) {
         client_brief_id: record.client_brief_id,
         migration_batch_id: record.migration_batch_id,
         migration_reason: record.migration_reason,
-        migrated_by_user: (record.users as any)?.full_name || 'Unknown',
+        migrated_by_user: (record.users as unknown as UserJoin | null)?.full_name ?? 'Unknown',
         migrated_at: record.migrated_at,
       }));
 

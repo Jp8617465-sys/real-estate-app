@@ -41,6 +41,9 @@ import { cache } from './lib/cache';
 import { CachedQueryService } from './services/cached-queries';
 import { createSupabaseServiceClient } from './middleware/supabase';
 import { alertsRoutes } from './routes/alerts';
+import { socialLeadRoutes } from './routes/social-leads';
+import { offMarketRoutes } from './routes/off-market';
+import { teamRoutes } from './routes/team';
 
 // ─── Initialize Observability ───────────────────────────────────────
 
@@ -114,6 +117,9 @@ async function start() {
   await fastify.register(complianceRoutes, { prefix: '/api/v1/compliance' });
   await fastify.register(consolidationReportRoutes, { prefix: '/api/v1/consolidation-reports' });
   await fastify.register(alertsRoutes, { prefix: '/api/v1' });
+  await fastify.register(socialLeadRoutes, { prefix: '/api/v1' });
+  await fastify.register(offMarketRoutes, { prefix: '/api/v1' });
+  await fastify.register(teamRoutes, { prefix: '/api/v1' });
 
   // Scheduler tick — manual trigger for dev/test environments
   fastify.post('/api/v1/scheduler/tick', async () => {

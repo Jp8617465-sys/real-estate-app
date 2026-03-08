@@ -61,6 +61,9 @@ export { AnalyticsEngine } from './analytics-engine';
 export { AmlEngine } from './aml-engine';
 export { PropertyAlertEngine } from './property-alert-engine';
 export { PortalEngine } from './portal-engine';
+export { SocialLeadEngine } from './social-lead-engine';
+export { OffMarketEngine } from './off-market-engine';
+export { TeamEngine } from './team-engine';
 export { generateDailyActions, scoreCandidate } from './daily-action-engine';
 export type {
   DAESupabaseClient,

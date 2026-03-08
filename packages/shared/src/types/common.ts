@@ -49,6 +49,9 @@ export const LeadSourceSchema = z.enum([
   'signboard',
   'print',
   'google_ads',
+  'facebook_dm',
+  'instagram_dm',
+  'linkedin_dm',
   'other',
 ]);
 export type LeadSource = z.infer<typeof LeadSourceSchema>;

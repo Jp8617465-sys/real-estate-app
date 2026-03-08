@@ -12,7 +12,18 @@
  *   </Suspense>
  */
 
-import { lazy, type ComponentType } from 'react';
+import { lazy, type ComponentType, type ExoticComponent } from 'react';
+
+// ─── Local type alias: constraint-free lazy component result ────────────────────
+
+/**
+ * Structurally equivalent to React.LazyExoticComponent<T> but without the
+ * built-in component constraint, so that ComponentType<never> (the
+ * contravariant supertype) is accepted by the type-checker.
+ */
+type LazyComponent<T extends ComponentType<never>> = ExoticComponent<
+  T extends ComponentType<infer P> ? P : never
+> & { readonly _result: T };
 
 // ─── Helper: Retry dynamic import on chunk load failure ─────────────────────────
 
@@ -21,13 +32,18 @@ async function retryImport<T>(
   retries: number,
   delay: number,
 ): Promise<T> {
-  try {
-    return await importFn();
-  } catch (error) {
-    if (retries <= 0) throw error;
-    await new Promise((resolve) => setTimeout(resolve, delay));
-    return retryImport(importFn, retries - 1, delay);
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (attempt > 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, delay));
+    }
+    try {
+      return await importFn();
+    } catch (error) {
+      lastError = error;
+    }
   }
+  throw lastError;
 }
 
 /**
@@ -35,14 +51,24 @@ async function retryImport<T>(
  * chunk load failure. Network issues can cause chunk loads to fail —
  * retrying once after a short delay resolves most transient failures.
  */
-function lazyNamed(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  factory: () => Promise<{ default: ComponentType<any> }>,
+/**
+ * Create a lazy component from a named export, with automatic retry on
+ * chunk load failure. Typed via the component type T directly to avoid
+ * inference issues with ComponentType<P> in contravariant positions.
+ */
+// ComponentType<never> is the contravariant supertype of all specific ComponentType<P>.
+// By function parameter contravariance: never extends P for any P, so every specific
+// component type is assignable to ComponentType<never>.
+function lazyNamed<T extends ComponentType<never>>(
+  factory: () => Promise<{ default: T }>,
   retries = 2,
   delay = 1000,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): React.LazyExoticComponent<ComponentType<any>> {
-  return lazy(() => retryImport(factory, retries, delay));
+): LazyComponent<T> {
+  // Cast React.lazy via unknown to bypass the built-in component constraint —
+  // ComponentType<never> is the correct contravariant supertype but the cast is needed.
+  return (lazy as unknown as (f: () => Promise<unknown>) => LazyComponent<T>)(
+    () => retryImport(factory, retries, delay),
+  );
 }
 
 // ─── Lazy Components: Analytics (heavy — recharts dependency) ───────────────────

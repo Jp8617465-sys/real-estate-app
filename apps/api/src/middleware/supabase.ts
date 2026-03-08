@@ -15,6 +15,12 @@ export function createSupabaseClient(request: FastifyRequest) {
   }
 
   const token = authHeader.slice(7);
+  // A JWT must have exactly 3 dot-separated parts; reject early to avoid
+  // passing a malformed token to Supabase (which would surface as 500).
+  if (token.split('.').length !== 3) {
+    throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
+  }
+
   return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
     global: {
       headers: { Authorization: `Bearer ${token}` },

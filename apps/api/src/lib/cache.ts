@@ -15,7 +15,7 @@ import { createClient, type RedisClientType } from 'redis';
 
 // ─── Configuration ──────────────────────────────────────────────────────────────
 
-const REDIS_URL = process.env['REDIS_URL'] ?? 'redis://localhost:6379';
+const REDIS_URL = process.env['REDIS_URL'];
 const KEY_PREFIX = 'realflow';
 
 /** Default TTLs (in seconds) per entity type */
@@ -76,6 +76,11 @@ class CacheClient {
   async connect(): Promise<boolean> {
     if (this.connected) return true;
     if (this.connecting) return false;
+
+    if (!REDIS_URL) {
+      console.info('[Cache] REDIS_URL not configured — running without cache');
+      return false;
+    }
 
     this.connecting = true;
 
