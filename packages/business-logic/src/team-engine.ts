@@ -423,16 +423,9 @@ export class TeamEngine {
   }
 
   private async assignRoundRobin(rule: LeadAssignmentRule): Promise<string> {
-    const currentIdx = rule.roundRobinIdx;
-    const assigneeId = rule.assigneeIds[currentIdx % rule.assigneeIds.length] ?? rule.assigneeIds[0] ?? '';
-    const nextIdx = (currentIdx + 1) % rule.assigneeIds.length;
-
-    // Atomically increment the index
-    await this.db
-      .from('lead_assignment_rules')
-      .update({ round_robin_idx: nextIdx, updated_at: new Date().toISOString() })
-      .eq('id', rule.id);
-
-    return assigneeId;
+    // Use DB function to atomically claim the next assignee (avoids read-modify-write race).
+    const { data, error } = await this.db.rpc('claim_round_robin_assignee', { rule_id: rule.id });
+    if (error) throw new Error(`Failed to assign round-robin: ${error.message}`);
+    return (data as { assignee_id: string } | null)?.assignee_id ?? rule.assigneeIds[0] ?? '';
   }
 }

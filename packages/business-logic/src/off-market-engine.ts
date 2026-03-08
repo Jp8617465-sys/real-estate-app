@@ -262,12 +262,13 @@ export class OffMarketEngine {
     if (propErr) throw new Error(`Property not found: ${propErr.message}`);
     const property = mapProperty(propRow as OffMarketPropertyRow);
 
-    // Fetch active briefs for this agent
+    // Fetch active briefs for this agent (join via contacts.assigned_agent_id)
     const { data: briefs, error: briefErr } = await this.db
       .from('client_briefs')
-      .select('id, requirements')
+      .select('id, requirements, contacts!inner(assigned_agent_id)')
       .eq('is_deleted', false)
-      .not('requirements', 'is', null);
+      .not('requirements', 'is', null)
+      .eq('contacts.assigned_agent_id', agentId);
 
     if (briefErr) throw new Error(`Failed to fetch briefs: ${briefErr.message}`);
 
@@ -314,10 +315,12 @@ export class OffMarketEngine {
     if (error) throw new Error(`Failed to send to client: ${error.message}`);
 
     // Also update property visibility
-    await this.db
+    const { error: visErr } = await this.db
       .from('off_market_properties')
       .update({ visibility: 'sent_to_client' })
       .eq('id', offMarketId);
+
+    if (visErr) throw new Error(`Failed to update property visibility: ${visErr.message}`);
 
     return mapMatch(data as OffMarketMatchRow);
   }
@@ -344,10 +347,12 @@ export class OffMarketEngine {
       .eq('status', 'sent_to_client');
 
     if (!remaining || remaining.length === 0) {
-      await this.db
+      const { error: visErr } = await this.db
         .from('off_market_properties')
         .update({ visibility: 'agent_only' })
         .eq('id', offMarketId);
+
+      if (visErr) throw new Error(`Failed to revert property visibility: ${visErr.message}`);
     }
 
     return mapMatch(data as OffMarketMatchRow);

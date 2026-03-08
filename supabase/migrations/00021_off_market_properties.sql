@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS off_market_matches (
   status                TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'sent_to_client', 'rejected')),
   sent_to_client_at     TIMESTAMPTZ,
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at            TIMESTAMPTZ,
   UNIQUE(off_market_id, client_brief_id)
 );
 
@@ -45,7 +46,8 @@ CREATE INDEX IF NOT EXISTS off_market_properties_suburb_idx
   WHERE deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS off_market_matches_brief_status_idx
-  ON off_market_matches(client_brief_id, status);
+  ON off_market_matches(client_brief_id, status)
+  WHERE deleted_at IS NULL;
 
 -- RLS
 ALTER TABLE off_market_properties ENABLE ROW LEVEL SECURITY;

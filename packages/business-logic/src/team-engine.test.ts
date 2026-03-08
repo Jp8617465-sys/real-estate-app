@@ -258,9 +258,10 @@ describe('TeamEngine.assignLead', () => {
 
     const supabase = {
       from: vi.fn()
-        .mockReturnValueOnce(makeChain(contact))    // fetch contact
-        .mockReturnValueOnce(makeChain(rules))       // list rules
-        .mockReturnValueOnce(makeChain(null)),        // atomic update idx
+        .mockReturnValueOnce(makeChain(contact))   // fetch contact
+        .mockReturnValueOnce(makeChain(rules)),     // list rules
+      // rpc returns the assignee atomically
+      rpc: vi.fn().mockResolvedValue({ data: { assignee_id: AGENT_A, next_idx: 1 }, error: null }),
     };
 
     const engine = new TeamEngine(supabase as never);
@@ -268,6 +269,7 @@ describe('TeamEngine.assignLead', () => {
 
     // idx 0 → returns AGENT_A (first in list)
     expect(assigneeId).toBe(AGENT_A);
+    expect(supabase.rpc).toHaveBeenCalledWith('claim_round_robin_assignee', { rule_id: RULE_ID });
   });
 
   it('rotates to next agent on second call', async () => {
@@ -278,8 +280,9 @@ describe('TeamEngine.assignLead', () => {
     const supabase = {
       from: vi.fn()
         .mockReturnValueOnce(makeChain(contact))
-        .mockReturnValueOnce(makeChain(rulesAtIdx1))
-        .mockReturnValueOnce(makeChain(null)),
+        .mockReturnValueOnce(makeChain(rulesAtIdx1)),
+      // rpc returns AGENT_B atomically (idx 1 → second agent)
+      rpc: vi.fn().mockResolvedValue({ data: { assignee_id: AGENT_B, next_idx: 0 }, error: null }),
     };
 
     const engine = new TeamEngine(supabase as never);
