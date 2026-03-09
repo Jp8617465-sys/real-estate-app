@@ -5,8 +5,10 @@ import { createElement, type ReactNode } from 'react';
 
 // ─── Mock dependencies ─────────────────────────────────────────────
 
-const mockFrom = vi.fn();
-const mockGetUser = vi.fn();
+const { mockFrom, mockGetUser } = vi.hoisted(() => ({
+  mockFrom: vi.fn(),
+  mockGetUser: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => ({

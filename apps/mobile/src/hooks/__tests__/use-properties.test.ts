@@ -15,7 +15,7 @@ function createChainedQuery(finalResult: { data: unknown; error: unknown }) {
   return chain;
 }
 
-const mockFrom = vi.fn();
+const { mockFrom } = vi.hoisted(() => ({ mockFrom: vi.fn() }));
 
 vi.mock('../../lib/supabase', () => ({
   supabase: { from: mockFrom },

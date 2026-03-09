@@ -1,5 +1,12 @@
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, Pressable } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
 interface QuickActionButtonProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -14,39 +21,49 @@ export function QuickActionButton({
   onPress,
   color = '#2563eb',
 }: QuickActionButtonProps) {
+  const scale = useSharedValue(1);
+  const reduced = useReducedMotion();
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    if (!reduced) {
+      scale.value = withSpring(0.93, { damping: 14, stiffness: 300 });
+    }
+  };
+
+  const handlePressOut = () => {
+    if (!reduced) {
+      scale.value = withSpring(1, { damping: 14, stiffness: 300 });
+    }
+  };
+
+  const handlePress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-    >
-      <Ionicons name={icon} size={22} color={color} />
-      <Text style={[styles.label, { color }]} numberOfLines={1}>
-        {label}
-      </Text>
-    </TouchableOpacity>
+    <Animated.View style={[animatedStyle, { flex: 1, minWidth: 76 }]}>
+      <Pressable
+        className="flex-1 items-center justify-center bg-white rounded-xl py-3.5 px-2 border border-gray-200"
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
+        <Ionicons name={icon} size={22} color={color} />
+        <Text
+          className="text-[11px] font-semibold mt-1.5 text-center"
+          style={{ color }}
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    minWidth: 76,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 6,
-    textAlign: 'center',
-  },
-});

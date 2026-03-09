@@ -7,6 +7,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Portal brand — sky blue palette
         portal: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -20,9 +21,38 @@ const config: Config = {
           900: '#0c4a6e',
           950: '#082f49',
         },
+        // Shadcn-compatible semantic aliases
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'slide-in-right': {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        'slide-out-right': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.2s ease-out',
+        'slide-in-right': 'slide-in-right 0.25s ease-out',
+        'slide-out-right': 'slide-out-right 0.2s ease-in',
       },
     },
   },

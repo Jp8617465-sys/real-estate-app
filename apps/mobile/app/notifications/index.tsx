@@ -76,12 +76,12 @@ export default function NotificationsScreen() {
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <FlatList<Notification>
         data={notifications}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Notification) => item.id}
         contentContainerStyle={styles.list}
         ListEmptyComponent={<Text style={styles.emptyText}>No notifications</Text>}
-        renderItem={({ item }) => {
+        renderItem={({ item }: { item: Notification }) => {
           const isUnread = item.status === 'sent';
           const badgeStyle = getPriorityBadgeStyle(item.priority);
 

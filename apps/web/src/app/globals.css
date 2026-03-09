@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * ──────────────────────────────────────────────────────────────────────────
+ * RealFlow CSS variable system
+ * Canonical list — apps/portal/src/app/globals.css must mirror these names.
+ *
+ * Light-mode (default):        Dark-mode (.dark on <html>):
+ *   --background 0 0% 100%       --background 222 47% 6%
+ *   --foreground 222.2 84% 4.9%  --foreground 210 40% 98%
+ *   --card 0 0% 100%             --card 222 47% 9%
+ *   --muted 210 40% 96.1%        --muted 217 33% 17%
+ *   --muted-foreground 215 16%   --muted-foreground 215 20% 65%
+ *   --border 214 32% 91%         --border 217 33% 17%
+ *   --ring 221 83% 53%           --ring 221 83% 60%
+ * ──────────────────────────────────────────────────────────────────────────
+ */
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -24,6 +40,38 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+
+    /* Skeleton shimmer — light mode */
+    --skeleton-from: hsl(210 40% 94%);
+    --skeleton-via: hsl(210 40% 98%);
+    --skeleton-to: hsl(210 40% 94%);
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221.2 83.2% 60%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 221.2 83.2% 60%;
+
+    /* Skeleton shimmer — dark mode */
+    --skeleton-from: hsl(217 33% 15%);
+    --skeleton-via: hsl(217 33% 20%);
+    --skeleton-to: hsl(217 33% 15%);
   }
 }
 
@@ -33,6 +81,13 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Global focus ring — WCAG 2.1 AA */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: var(--radius);
   }
 }
 
@@ -46,4 +101,25 @@
   .text-foreground {
     color: hsl(var(--foreground));
   }
+}
+
+/* ─── Skeleton shimmer animation ──────────────────────────────────────── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-from) 0%,
+    var(--skeleton-via) 50%,
+    var(--skeleton-to) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }

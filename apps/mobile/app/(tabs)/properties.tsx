@@ -48,9 +48,9 @@ export default function PropertiesScreen() {
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <FlatList<Property>
         data={properties ?? []}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Property) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} />
