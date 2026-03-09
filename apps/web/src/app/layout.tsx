@@ -11,8 +11,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-50 font-sans antialiased">
+    <html lang="en" suppressHydrationWarning>
+      {/* FOUC prevention: apply dark class synchronously before first paint */}
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var d=localStorage.getItem('realflow-dark');if(d==='dark'||(d==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-background font-sans antialiased transition-colors duration-200">
         <Providers>
           <ErrorBoundary>{children}</ErrorBoundary>
         </Providers>

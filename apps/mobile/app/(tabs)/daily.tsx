@@ -32,6 +32,8 @@ function getCategoryEmoji(category: string): string {
   return map[category] ?? '✅';
 }
 
+type DailySection = { title: string; color: string; data: DailyActionItem[] };
+
 export default function DailyActionsScreen() {
   const router = useRouter();
   const { data: response, isLoading, refetch } = useDailyActions();
@@ -73,18 +75,18 @@ export default function DailyActionsScreen() {
         </Text>
       </View>
 
-      <FlatList
+      <FlatList<DailySection>
         data={sections}
-        keyExtractor={(s) => s.title}
+        keyExtractor={(s: DailySection) => s.title}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No actions for today 🎉</Text>
         }
-        renderItem={({ item: section }) => (
+        renderItem={({ item: section }: { item: DailySection }) => (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
-            {section.data.map((item) => (
+            {section.data.map((item: DailyActionItem) => (
               <ActionCard
                 key={item.id}
                 item={item}

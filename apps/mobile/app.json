@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.realflow.app"
+      "bundleIdentifier": "com.realflow.app",
+      "infoPlist": {
+        "NSHapticFeedbackUsageDescription": "RealFlow uses haptic feedback to confirm quick actions."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +27,9 @@
       "package": "com.realflow.app"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-haptics",
+      "react-native-reanimated"
     ]
   }
 }

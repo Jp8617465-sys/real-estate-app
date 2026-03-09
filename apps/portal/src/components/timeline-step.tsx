@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import {
   CheckCircle2,
   Circle,
@@ -7,6 +8,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import type { KeyDateStatus } from '@realflow/shared';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
 const STATUS_CONFIG: Record<
   KeyDateStatus,
@@ -76,6 +78,8 @@ interface TimelineStepProps {
   isCritical: boolean;
   notes: string | null;
   isLast: boolean;
+  /** Stagger delay index for entrance animation */
+  index?: number;
 }
 
 export function TimelineStep({
@@ -85,12 +89,14 @@ export function TimelineStep({
   isCritical,
   notes,
   isLast,
+  index = 0,
 }: TimelineStepProps) {
   const config = STATUS_CONFIG[status];
   const StatusIcon = config.icon;
   const days = daysUntil(date);
+  const reduced = useReducedMotion();
 
-  return (
+  const content = (
     <div className="relative flex gap-4 pb-8 last:pb-0">
       {/* Timeline line */}
       {!isLast && (
@@ -144,5 +150,17 @@ export function TimelineStep({
         </div>
       </div>
     </div>
+  );
+
+  if (reduced) return content;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.28, ease: 'easeOut', delay: index * 0.07 }}
+    >
+      {content}
+    </motion.div>
   );
 }

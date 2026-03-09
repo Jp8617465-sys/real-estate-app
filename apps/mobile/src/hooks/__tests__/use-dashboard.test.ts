@@ -5,7 +5,7 @@ import React from 'react';
 
 // ─── Mock Supabase ─────────────────────────────────────────────────
 
-const mockFrom = vi.fn();
+const { mockFrom } = vi.hoisted(() => ({ mockFrom: vi.fn() }));
 
 vi.mock('../../lib/supabase', () => ({
   supabase: { from: mockFrom },

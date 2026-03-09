@@ -194,8 +194,8 @@ export default function AlertsScreen() {
       ) : (
         <FlatList<PropertyAlertEvent>
           data={events}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <AlertEventCard item={item} />}
+          keyExtractor={(item: PropertyAlertEvent) => item.id}
+          renderItem={({ item }: { item: PropertyAlertEvent }) => <AlertEventCard item={item} />}
           scrollEnabled={false}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
@@ -217,8 +217,8 @@ export default function AlertsScreen() {
       ) : (
         <FlatList<PropertyAlertSubscription>
           data={subscriptions}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <SubscriptionCard item={item} />}
+          keyExtractor={(item: PropertyAlertSubscription) => item.id}
+          renderItem={({ item }: { item: PropertyAlertSubscription }) => <SubscriptionCard item={item} />}
           scrollEnabled={false}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />

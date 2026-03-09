@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { usePropertyMatches, useUpdatePropertyMatchStatus } from '../../src/hooks/use-property-matches';
-import type { PropertyMatchStatus } from '@realflow/shared';
+import type { PropertyMatch, PropertyMatchStatus } from '@realflow/shared';
 
 function getScoreColor(score: number): string {
   if (score >= 75) return '#16a34a';
@@ -47,6 +47,19 @@ function getStatusColor(status: PropertyMatchStatus): string {
   };
   return colors[status];
 }
+
+type MatchWithProperty = PropertyMatch & {
+  property: {
+    id: string;
+    address: Record<string, string>;
+    bedrooms: number;
+    bathrooms: number;
+    car_spaces: number;
+    list_price: number | null;
+    price_guide: string | null;
+    listing_status: string;
+  } | null;
+};
 
 function MatchQuickActions({ matchId, status }: { matchId: string; status: PropertyMatchStatus }) {
   const updateStatus = useUpdatePropertyMatchStatus(matchId);
@@ -104,9 +117,9 @@ export default function MatchesListScreen() {
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <FlatList<MatchWithProperty>
         data={matches ?? []}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: MatchWithProperty) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} />
@@ -114,7 +127,7 @@ export default function MatchesListScreen() {
         ListEmptyComponent={
           <Text style={styles.emptyText}>No property matches found</Text>
         }
-        renderItem={({ item }) => {
+        renderItem={({ item }: { item: MatchWithProperty }) => {
           const scoreColor = getScoreColor(item.overallScore);
           const scoreBgColor = getScoreBgColor(item.overallScore);
           const statusColor = getStatusColor(item.status);

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { Contact } from '@realflow/shared';
 
@@ -32,75 +32,36 @@ export function ContactCard({ contact, onPress }: ContactCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      className="flex-row items-center rounded-xl border border-gray-200 bg-white p-3.5 mb-2"
       onPress={onPress}
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`View contact ${fullName}`}
     >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{initials}</Text>
+      {/* Avatar */}
+      <View className="h-[42px] w-[42px] rounded-full bg-blue-100 items-center justify-center mr-3">
+        <Text className="text-sm font-bold text-blue-700">{initials}</Text>
       </View>
-      <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>{fullName}</Text>
-        <View style={styles.metaRow}>
+
+      {/* Info */}
+      <View className="flex-1">
+        <Text className="text-[15px] font-semibold text-gray-900" numberOfLines={1}>
+          {fullName}
+        </Text>
+        <View className="flex-row items-center mt-0.5">
           <Ionicons name={icon} size={12} color={badgeColor} />
-          <Text style={[styles.typeLabel, { color: badgeColor }]}>{typeLabel}</Text>
+          <Text className="text-xs font-medium ml-1" style={{ color: badgeColor }}>
+            {typeLabel}
+          </Text>
           {contact.phone ? (
-            <Text style={styles.phone} numberOfLines={1}> · {contact.phone}</Text>
+            <Text className="text-xs text-gray-500" numberOfLines={1}>
+              {' · '}{contact.phone}
+            </Text>
           ) : null}
         </View>
       </View>
+
       <Ionicons name="chevron-forward" size={18} color="#d1d5db" />
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#dbeafe',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  avatarText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1d4ed8',
-  },
-  info: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 3,
-  },
-  typeLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  phone: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-});

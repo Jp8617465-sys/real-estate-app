@@ -203,14 +203,14 @@ export default function TasksScreen() {
       </View>
 
       {/* Task Sections */}
-      <SectionList
+      <SectionList<Task, TaskSection>
         sections={sections}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Task) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#2563eb" />
         }
-        renderSectionHeader={({ section }) => (
+        renderSectionHeader={({ section }: { section: TaskSection }) => (
           <View style={[styles.sectionHeader, section.isOverdue && styles.overdueSectionHeader]}>
             {section.isOverdue ? (
               <Ionicons name="alert-circle" size={14} color="#ef4444" style={styles.sectionIcon} />
@@ -221,7 +221,7 @@ export default function TasksScreen() {
             <Text style={styles.sectionCount}>{section.data.length}</Text>
           </View>
         )}
-        renderItem={({ item }) => <CompletableTaskItem task={item} />}
+        renderItem={({ item }: { item: Task }) => <CompletableTaskItem task={item} />}
         ListEmptyComponent={
           <EmptyState
             icon="checkmark-done-circle-outline"
