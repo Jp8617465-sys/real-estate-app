@@ -13,5 +13,6 @@
     "codeStyle": "TypeScript strict, Zod schemas, no any types",
     "testFramework": "vitest",
     "commitStyle": "conventional"
-  }
+  },
+  "enableAllProjectMcpServers": true
 }

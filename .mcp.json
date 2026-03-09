@@ -1,8 +1,25 @@
 {
   "mcpServers": {
     "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp?project_ref=hfwgymqjnwlewmbskuim"
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=hfwgymqjnwlewmbskuim"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_34f4264ef331d0ed7af8e8cb535943274f588ca1"
+      }
+    },
+    "supabase-all-projects": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_34f4264ef331d0ed7af8e8cb535943274f588ca1"
+      }
     },
     "render": {
       "type": "http",
