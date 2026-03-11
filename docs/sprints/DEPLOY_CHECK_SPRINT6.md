@@ -9,15 +9,15 @@
 
 ## Summary Table
 
-| Check | Status | Notes |
-|-------|--------|-------|
-| 1. No console.log | PASS | No console.log in Sprint 6 new code. 3 pre-existing scheduler files flagged (see detail). |
-| 2. Migration sequencing | WARN | Gaps at 00012 and 00013. No duplicates. Sprint 6 files (00020–00023) are sequential. |
-| 3. Env vars documented | FAIL | 11 env vars used in source are absent from apps/api/.env.example (see detail). |
-| 4. Render staging | WARN | Render MCP returned 401 — API key not configured in MCP tool. Status unverified. |
-| 5. Harden findings | PASS | All CRITICAL findings documented and tracked. No new untracked findings. |
-| 6. Build | WARN | Could not run — Bash tool permission denied in this session. Verify manually. |
-| 7. Tests | PASS | 1,782 tests passing (vs 1,391 baseline — +391 new tests). |
+| Check                   | Status | Notes                                                                                     |
+| ----------------------- | ------ | ----------------------------------------------------------------------------------------- |
+| 1. No console.log       | PASS   | No console.log in Sprint 6 new code. 3 pre-existing scheduler files flagged (see detail). |
+| 2. Migration sequencing | WARN   | Gaps at 00012 and 00013. No duplicates. Sprint 6 files (00020–00023) are sequential.      |
+| 3. Env vars documented  | FAIL   | 11 env vars used in source are absent from apps/api/.env.example (see detail).            |
+| 4. Render staging       | WARN   | Render MCP returned 401 — API key not configured in MCP tool. Status unverified.          |
+| 5. Harden findings      | PASS   | All CRITICAL findings documented and tracked. No new untracked findings.                  |
+| 6. Build                | WARN   | Could not run — Bash tool permission denied in this session. Verify manually.             |
+| 7. Tests                | PASS   | 1,782 tests passing (vs 1,391 baseline — +391 new tests).                                 |
 
 ---
 
@@ -54,11 +54,11 @@ No `console.log` statements found in any Sprint 6 new files:
 
 The following pre-Sprint-6 service files contain `console.log` and should be migrated to Fastify Pino logger in a future hardening pass:
 
-| File | Count | Example |
-|------|-------|---------|
-| `apps/api/src/services/social-scheduler.ts` | 3 | `console.log('[SocialScheduler] tick complete', result)` |
-| `apps/api/src/services/workflow-scheduler.ts` | 3 | `console.log('[WorkflowScheduler] tick complete', result)` |
-| `apps/api/src/services/market-data-scheduler.ts` | 6 | `console.log('[MarketDataScheduler] no active suburbs...')` |
+| File                                             | Count | Example                                                     |
+| ------------------------------------------------ | ----- | ----------------------------------------------------------- |
+| `apps/api/src/services/social-scheduler.ts`      | 3     | `console.log('[SocialScheduler] tick complete', result)`    |
+| `apps/api/src/services/workflow-scheduler.ts`    | 3     | `console.log('[WorkflowScheduler] tick complete', result)`  |
+| `apps/api/src/services/market-data-scheduler.ts` | 6     | `console.log('[MarketDataScheduler] no active suburbs...')` |
 
 These are not blocking this sprint's deploy as they were not introduced by Sprint 6. Log ticket for Sprint 7.
 
@@ -134,19 +134,19 @@ PORTAL_URL
 
 **Vars used in source code but absent from `.env.example`:**
 
-| Env Var | File | Purpose |
-|---------|------|---------|
-| `GOOGLE_CLIENT_ID` | `apps/api/src/services/integration-registry.ts`, `apps/api/src/routes/settings.ts` | Google OAuth2 client ID for Gmail/Calendar OAuth flows |
-| `GOOGLE_CLIENT_SECRET` | `apps/api/src/services/integration-registry.ts` | Google OAuth2 client secret |
-| `GOOGLE_REDIRECT_URI` | `apps/api/src/routes/settings.ts` | Google OAuth redirect URL |
-| `META_APP_ID` | `apps/api/src/routes/settings.ts` | Meta/Facebook App ID for OAuth flow |
-| `META_REDIRECT_URI` | `apps/api/src/routes/settings.ts` | Meta OAuth redirect URL |
-| `DOMAIN_REDIRECT_URI` | `apps/api/src/routes/settings.ts` | Domain.com.au OAuth redirect URL |
-| `TWILIO_TWIML_URL` | `apps/api/src/routes/inbox.ts` | Twilio TwiML webhook URL for voice calls |
-| `META_WEBHOOK_VERIFY_TOKEN` | `apps/api/src/routes/inbox-webhooks.ts` | Meta webhook verification token |
-| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | `apps/api/src/routes/inbox-webhooks.ts` | WhatsApp webhook verification token |
-| `SENDGRID_WEBHOOK_SECRET` | `apps/api/src/routes/inbox-email.ts` | SendGrid inbound email webhook secret |
-| `MAILGUN_WEBHOOK_SECRET` | `apps/api/src/routes/inbox-email.ts` | Mailgun inbound email webhook secret |
+| Env Var                         | File                                                                               | Purpose                                                |
+| ------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `GOOGLE_CLIENT_ID`              | `apps/api/src/services/integration-registry.ts`, `apps/api/src/routes/settings.ts` | Google OAuth2 client ID for Gmail/Calendar OAuth flows |
+| `GOOGLE_CLIENT_SECRET`          | `apps/api/src/services/integration-registry.ts`                                    | Google OAuth2 client secret                            |
+| `GOOGLE_REDIRECT_URI`           | `apps/api/src/routes/settings.ts`                                                  | Google OAuth redirect URL                              |
+| `META_APP_ID`                   | `apps/api/src/routes/settings.ts`                                                  | Meta/Facebook App ID for OAuth flow                    |
+| `META_REDIRECT_URI`             | `apps/api/src/routes/settings.ts`                                                  | Meta OAuth redirect URL                                |
+| `DOMAIN_REDIRECT_URI`           | `apps/api/src/routes/settings.ts`                                                  | Domain.com.au OAuth redirect URL                       |
+| `TWILIO_TWIML_URL`              | `apps/api/src/routes/inbox.ts`                                                     | Twilio TwiML webhook URL for voice calls               |
+| `META_WEBHOOK_VERIFY_TOKEN`     | `apps/api/src/routes/inbox-webhooks.ts`                                            | Meta webhook verification token                        |
+| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | `apps/api/src/routes/inbox-webhooks.ts`                                            | WhatsApp webhook verification token                    |
+| `SENDGRID_WEBHOOK_SECRET`       | `apps/api/src/routes/inbox-email.ts`                                               | SendGrid inbound email webhook secret                  |
+| `MAILGUN_WEBHOOK_SECRET`        | `apps/api/src/routes/inbox-email.ts`                                               | Mailgun inbound email webhook secret                   |
 
 **Remediation required before production deploy:**
 
@@ -204,6 +204,7 @@ This indicates the Render API key is not configured in the MCP tool for this ses
 **Pre-deploy note:** Per MEMORY.md, Sprint 5 staging deploy was completed and migrations 00014 + 00015 were applied. Sprint 6 migrations 00020–00023 must be applied via `supabase db push` BEFORE triggering the Render deploy.
 
 **Migration deploy order (mandatory):**
+
 ```bash
 # 1. Apply migrations first
 supabase db push --project-id hfwgymqjnwlewmbskuim
@@ -226,29 +227,29 @@ All three harden reports exist in `docs/harden/`:
 
 **Security Report CRITICAL findings (C-1, C-2, C-3) — Tracked:**
 
-| ID | File | Issue | Tracked |
-|----|------|-------|---------|
+| ID  | File             | Issue                                                     | Tracked                  |
+| --- | ---------------- | --------------------------------------------------------- | ------------------------ |
 | C-1 | `push-tokens.ts` | `userId` accepted from request body, no auth verification | Yes — security-report.md |
-| C-2 | `inbox.ts` | No `supabase.auth.getUser()` call on any of 9 handlers | Yes — security-report.md |
-| C-3 | `workflows.ts` | No auth guard; `createdBy` from request body | Yes — security-report.md |
+| C-2 | `inbox.ts`       | No `supabase.auth.getUser()` call on any of 9 handlers    | Yes — security-report.md |
+| C-3 | `workflows.ts`   | No auth guard; `createdBy` from request body              | Yes — security-report.md |
 
 **Error Boundaries CRITICAL findings (ERR-001 through ERR-005) — Tracked:**
 
-| ID | Issue | Tracked |
-|----|-------|---------|
+| ID      | Issue                                                   | Tracked                          |
+| ------- | ------------------------------------------------------- | -------------------------------- |
 | ERR-001 | No `request.log.error` in Sprint 5/6 route catch blocks | Yes — error-boundaries-report.md |
-| ERR-002 | `GET /:id` handlers swallow all errors as 404 | Yes — error-boundaries-report.md |
-| ERR-003 | Portal app has zero `error.tsx` boundaries | Yes — error-boundaries-report.md |
+| ERR-002 | `GET /:id` handlers swallow all errors as 404           | Yes — error-boundaries-report.md |
+| ERR-003 | Portal app has zero `error.tsx` boundaries              | Yes — error-boundaries-report.md |
 | ERR-004 | Sprint 6 web segments missing segment-level `error.tsx` | Yes — error-boundaries-report.md |
 | ERR-005 | No PGRST116 differentiation in engine `getById` methods | Yes — error-boundaries-report.md |
 
 **Performance Report CRITICAL findings — Tracked:**
 
-| ID | File | Issue | Tracked |
-|----|------|-------|---------|
-| CRIT-1 | `workflows.ts` | N+1 contact fetch inside workflow dispatch loop | Yes — perf-report.md |
+| ID     | File                       | Issue                                                  | Tracked              |
+| ------ | -------------------------- | ------------------------------------------------------ | -------------------- |
+| CRIT-1 | `workflows.ts`             | N+1 contact fetch inside workflow dispatch loop        | Yes — perf-report.md |
 | CRIT-2 | `property-alert-engine.ts` | N+1 subscription fetch inside `handlePriceChange` loop | Yes — perf-report.md |
-| CRIT-3 | `team-engine.ts` | N+1 snapshot writes in `snapshotTeamPerformance` | Yes — perf-report.md |
+| CRIT-3 | `team-engine.ts`           | N+1 snapshot writes in `snapshotTeamPerformance`       | Yes — perf-report.md |
 
 All findings are documented, prioritised, and assigned to Sprint 7 remediation. No untracked CRITICAL findings exist.
 
@@ -274,6 +275,7 @@ packages/* build → apps/* build → lint → type-check → test
 ```
 
 Known pre-existing build issues (not introduced by Sprint 6, per MEMORY.md):
+
 - `workflow-scheduler.ts` — `isDigestItem` type error (pre-existing)
 - `PostgrestQueryBuilder` type issue (pre-existing)
 - `workflow-engine.ts` rootDir issue (pre-existing)
@@ -286,21 +288,23 @@ These do not fail the build in CI due to `skipLibCheck` or are in test-only path
 
 **Status: PASS — 1,782 tests passing**
 
-| Metric | Value |
-|--------|-------|
-| Sprint 6 test count | 1,782 passing |
-| Sprint 5 baseline | 1,305 passing |
-| Delta | +477 new tests |
-| Sprint 6 declared baseline | 1,391 passing |
+| Metric                     | Value                     |
+| -------------------------- | ------------------------- |
+| Sprint 6 test count        | 1,782 passing             |
+| Sprint 5 baseline          | 1,305 passing             |
+| Delta                      | +477 new tests            |
+| Sprint 6 declared baseline | 1,391 passing             |
 | Delta vs Sprint 6 baseline | +391 tests above baseline |
 
 Sprint 6 added test coverage for:
+
 - `SocialLeadEngine` (Team A)
 - `OffMarketEngine` (Team B)
 - `TeamEngine` (Team C)
 - New API routes: social-leads, off-market, team
 
 Known pre-existing failures (not blocking, per MEMORY.md):
+
 - All mobile hook tests (9 files) — fail at file level due to missing `jsdom` dependency
 - All portal hook tests (6 files) — same `jsdom` issue
 - `use-social-leads` and `use-off-market` mobile tests — 11 failures, same `jsdom` cause
@@ -329,15 +333,15 @@ Before executing a Render deploy, complete all of the following:
 
 Per MEMORY.md, migrations 00020–00023 are the Sprint 6 additions:
 
-| Migration | Description | Status |
-|-----------|-------------|--------|
-| `00020_social_dm_leads.sql` | `social_dm_leads` table + indexes | Pending staging apply |
+| Migration                         | Description                                                     | Status                |
+| --------------------------------- | --------------------------------------------------------------- | --------------------- |
+| `00020_social_dm_leads.sql`       | `social_dm_leads` table + indexes                               | Pending staging apply |
 | `00021_off_market_properties.sql` | `off_market_properties`, `off_market_matches` with `deleted_at` | Pending staging apply |
-| `00022_team_agency_features.sql` | `lead_assignment_rules`, `team_performance_snapshots` | Pending staging apply |
-| `00023_round_robin_function.sql` | Atomic round-robin assignment DB function | Pending staging apply |
+| `00022_team_agency_features.sql`  | `lead_assignment_rules`, `team_performance_snapshots`           | Pending staging apply |
+| `00023_round_robin_function.sql`  | Atomic round-robin assignment DB function                       | Pending staging apply |
 
 Note: Migrations 00014 and 00015 (Sprint 5) were confirmed applied to staging per MEMORY.md.
 
 ---
 
-*Report generated by DevOps Engineer Agent — RealFlow Sprint 6 Deploy Check — 2026-03-09*
+_Report generated by DevOps Engineer Agent — RealFlow Sprint 6 Deploy Check — 2026-03-09_

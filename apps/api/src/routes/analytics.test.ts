@@ -128,7 +128,10 @@ beforeEach(() => {
 
 describe('Auth guard', () => {
   it('returns 401 when auth.getUser returns no user', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null }, error: { message: 'Not authenticated' } });
+    mockGetUser.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'Not authenticated' },
+    });
 
     const app = await buildApp();
     const response = await app.inject({
@@ -174,7 +177,14 @@ describe('GET /api/v1/analytics/pipeline-velocity', () => {
   it('filters by pipelineType when provided', async () => {
     mockGetPipelineVelocity.mockResolvedValue([
       { ...MOCK_PIPELINE_VELOCITY[0], pipelineType: 'buyers_agent' },
-      { stage: 'brief', pipelineType: 'seller', activeCount: 5, avgDaysInStage: 2, conversionRate: 80, new30d: 1 },
+      {
+        stage: 'brief',
+        pipelineType: 'seller',
+        activeCount: 5,
+        avgDaysInStage: 2,
+        conversionRate: 80,
+        new30d: 1,
+      },
     ]);
 
     const app = await buildApp();
@@ -185,7 +195,9 @@ describe('GET /api/v1/analytics/pipeline-velocity', () => {
 
     expect(response.statusCode).toBe(200);
     const body = JSON.parse(response.payload);
-    expect(body.data.every((v: { pipelineType: string }) => v.pipelineType === 'buyers_agent')).toBe(true);
+    expect(
+      body.data.every((v: { pipelineType: string }) => v.pipelineType === 'buyers_agent'),
+    ).toBe(true);
   });
 
   it('returns 400 for invalid pipelineType', async () => {
@@ -285,18 +297,23 @@ describe('GET /api/v1/analytics/market-insights', () => {
       url: '/api/v1/analytics/market-insights?suburbs=Bondi,Manly,Newtown',
     });
 
-    expect(mockGetMarketInsights).toHaveBeenCalledWith(
-      ['Bondi', 'Manly', 'Newtown'],
-      mockSupabase,
-    );
+    expect(mockGetMarketInsights).toHaveBeenCalledWith(['Bondi', 'Manly', 'Newtown'], mockSupabase);
   });
 
   it('filters by propertyType when provided', async () => {
     mockGetMarketInsights.mockResolvedValue([
       { ...MOCK_MARKET_INSIGHTS[0], propertyType: 'house' },
-      { suburb: 'Bondi', postcode: '2026', state: 'NSW', propertyType: 'unit',
-        medianSalePrice: 900000, medianDaysOnMarket: 30, clearanceRate: 70,
-        priceChange1yPercent: 2, snapshotDate: '2026-02-01' },
+      {
+        suburb: 'Bondi',
+        postcode: '2026',
+        state: 'NSW',
+        propertyType: 'unit',
+        medianSalePrice: 900000,
+        medianDaysOnMarket: 30,
+        clearanceRate: 70,
+        priceChange1yPercent: 2,
+        snapshotDate: '2026-02-01',
+      },
     ]);
 
     const app = await buildApp();

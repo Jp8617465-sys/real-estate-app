@@ -33,6 +33,7 @@ export function usePortalProperties() {
 
   return useQuery({
     queryKey: ['portal-properties', portalClient?.contact_id],
+    staleTime: 30_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('property_matches')

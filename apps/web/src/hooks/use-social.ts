@@ -85,6 +85,9 @@ export function useCreatePost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -103,6 +106,9 @@ export function useUpdatePost(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -120,6 +126,9 @@ export function usePublishPost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -136,6 +145,9 @@ export function useDeletePost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -163,7 +175,11 @@ export function useConnectAccount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: { platform: SocialPlatform; authCode: string; redirectUri: string }) => {
+    mutationFn: async (params: {
+      platform: SocialPlatform;
+      authCode: string;
+      redirectUri: string;
+    }) => {
       return apiRequest<{ data: Record<string, unknown> }>('/accounts/connect', {
         method: 'POST',
         body: JSON.stringify(params),
@@ -171,6 +187,9 @@ export function useConnectAccount() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -189,7 +208,9 @@ export function useSocialAnalytics(postId?: string) {
       // Get aggregate analytics across all published posts
       const { data, error } = await supabase
         .from('social_posts')
-        .select('id, platforms, analytics, platform_results, published_at, content, media_urls, status')
+        .select(
+          'id, platforms, analytics, platform_results, published_at, content, media_urls, status',
+        )
         .eq('status', 'published')
         .eq('is_deleted', false)
         .order('published_at', { ascending: false })
@@ -209,19 +230,19 @@ export function useAutoGeneratePost() {
 
   return useMutation({
     mutationFn: async (params: AutoGeneratePost) => {
-      return apiRequest<{ data: Record<string, unknown> }>(
-        `/from-property/${params.propertyId}`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            platforms: params.platforms,
-            tone: params.tone,
-          }),
-        },
-      );
+      return apiRequest<{ data: Record<string, unknown> }>(`/from-property/${params.propertyId}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          platforms: params.platforms,
+          tone: params.tone,
+        }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

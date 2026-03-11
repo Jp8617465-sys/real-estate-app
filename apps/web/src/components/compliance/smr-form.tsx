@@ -46,22 +46,17 @@ export function SmrForm({ onSubmit, onCancel, isSubmitting = false }: SmrFormPro
   return (
     <div className="rounded-lg border border-red-200 bg-white">
       <div className="border-b border-red-200 bg-red-50 px-4 py-3">
-        <h3 className="text-sm font-semibold text-red-900">
-          Suspicious Matter Report (SMR)
-        </h3>
+        <h3 className="text-sm font-semibold text-red-900">Suspicious Matter Report (SMR)</h3>
         <p className="mt-0.5 text-xs text-red-700">
-          Under s.41 of the AML/CTF Act 2006, you must report suspicious matters to AUSTRAC
-          within 24 hours (or 3 business days for non-urgent matters).
+          Under s.41 of the AML/CTF Act 2006, you must report suspicious matters to AUSTRAC within
+          24 hours (or 3 business days for non-urgent matters).
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 p-4">
         {/* Contact ID (optional) */}
         <div>
-          <label
-            htmlFor="smr-contact-id"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="smr-contact-id" className="block text-sm font-medium text-gray-700">
             Related Contact ID (optional)
           </label>
           <input
@@ -76,12 +71,11 @@ export function SmrForm({ onSubmit, onCancel, isSubmitting = false }: SmrFormPro
 
         {/* Description */}
         <div>
-          <label
-            htmlFor="smr-description"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="smr-description" className="block text-sm font-medium text-gray-700">
             Description of Suspicious Activity{' '}
-            <span className="text-red-500" aria-hidden="true">*</span>
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
           </label>
           <textarea
             id="smr-description"
@@ -109,12 +103,11 @@ export function SmrForm({ onSubmit, onCancel, isSubmitting = false }: SmrFormPro
 
         {/* Suspicion Basis */}
         <div>
-          <label
-            htmlFor="smr-suspicion-basis"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="smr-suspicion-basis" className="block text-sm font-medium text-gray-700">
             Basis for Suspicion{' '}
-            <span className="text-red-500" aria-hidden="true">*</span>
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
           </label>
           <textarea
             id="smr-suspicion-basis"
@@ -142,10 +135,7 @@ export function SmrForm({ onSubmit, onCancel, isSubmitting = false }: SmrFormPro
 
         {/* Amount */}
         <div>
-          <label
-            htmlFor="smr-amount"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="smr-amount" className="block text-sm font-medium text-gray-700">
             Amount (AUD) (optional)
           </label>
           <div className="relative mt-1">

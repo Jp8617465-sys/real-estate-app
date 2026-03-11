@@ -38,16 +38,11 @@ beforeEach(() => {
 
 describe('usePipeline', () => {
   it('fetches transactions for buying pipeline', async () => {
-    const transactions = [
-      { id: '1', pipeline_type: 'buying', current_stage: 'enquiry' },
-    ];
+    const transactions = [{ id: '1', pipeline_type: 'buying', current_stage: 'enquiry' }];
     const chain = createChainedQuery({ data: transactions, error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => usePipeline('buying'),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => usePipeline('buying'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -61,10 +56,7 @@ describe('usePipeline', () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => usePipeline('selling'),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => usePipeline('selling'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -84,10 +76,7 @@ describe('useUpdateTransactionStage', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-    const { result } = renderHook(
-      () => useUpdateTransactionStage('1'),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useUpdateTransactionStage('1'), { wrapper });
 
     result.current.mutate({ stage: 'under-contract' });
 

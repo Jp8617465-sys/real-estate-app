@@ -31,10 +31,12 @@ export function useClientBriefs(contactId?: string) {
     queryFn: async () => {
       let query = supabase
         .from('client_briefs')
-        .select(`
+        .select(
+          `
           *,
           contact:contacts(id, first_name, last_name, email, phone)
-        `)
+        `,
+        )
         .eq('is_deleted', false)
         .order('updated_at', { ascending: false });
 
@@ -58,10 +60,12 @@ export function useClientBrief(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_briefs')
-        .select(`
+        .select(
+          `
           *,
           contact:contacts(id, first_name, last_name, email, phone)
-        `)
+        `,
+        )
         .eq('id', id)
         .single();
       if (error) throw error;
@@ -164,6 +168,9 @@ export function useCreateClientBrief() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client-briefs'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -214,6 +221,9 @@ export function useUpdateClientBrief(id: string) {
       queryClient.invalidateQueries({ queryKey: ['client-briefs'] });
       queryClient.invalidateQueries({ queryKey: ['client-briefs', id] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -237,6 +247,9 @@ export function useSignOffBrief(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client-briefs'] });
       queryClient.invalidateQueries({ queryKey: ['client-briefs', id] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

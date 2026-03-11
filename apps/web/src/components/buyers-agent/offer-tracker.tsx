@@ -1,12 +1,7 @@
 'use client';
 
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
-import type {
-  SaleMethod,
-  OfferStatus,
-  OfferResponse,
-  AuctionResult,
-} from '@realflow/shared';
+import type { SaleMethod, OfferStatus, OfferResponse, AuctionResult } from '@realflow/shared';
 
 interface OfferRound {
   id: string;
@@ -105,13 +100,13 @@ export function OfferTracker({
               {SALE_METHOD_LABELS[saleMethod]}
             </span>
           </div>
-          <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', STATUS_COLORS[status])}>
+          <span
+            className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', STATUS_COLORS[status])}
+          >
             {STATUS_LABELS[status]}
           </span>
         </div>
-        {strategyNotes && (
-          <p className="mt-2 text-xs text-gray-500">{strategyNotes}</p>
-        )}
+        {strategyNotes && <p className="mt-2 text-xs text-gray-500">{strategyNotes}</p>}
       </div>
 
       {/* Rounds */}
@@ -136,7 +131,10 @@ export function OfferTracker({
                   {round.conditions.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {round.conditions.map((condition) => (
-                        <span key={condition} className="rounded bg-white px-1.5 py-0.5 text-[10px] text-gray-500 border border-gray-200">
+                        <span
+                          key={condition}
+                          className="rounded bg-white px-1.5 py-0.5 text-[10px] text-gray-500 border border-gray-200"
+                        >
                           {condition}
                         </span>
                       ))}
@@ -147,17 +145,13 @@ export function OfferTracker({
                       Counter: {formatCurrency(round.counterAmount)}
                     </p>
                   )}
-                  {round.notes && (
-                    <p className="mt-1 text-xs text-gray-400">{round.notes}</p>
-                  )}
+                  {round.notes && <p className="mt-1 text-xs text-gray-400">{round.notes}</p>}
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className={cn('text-xs font-medium', RESPONSE_COLORS[round.response])}>
                     {RESPONSE_LABELS[round.response]}
                   </span>
-                  <span className="text-[10px] text-gray-400">
-                    {formatDate(round.createdAt)}
-                  </span>
+                  <span className="text-[10px] text-gray-400">{formatDate(round.createdAt)}</span>
                 </div>
               </div>
             ))}
@@ -174,9 +168,7 @@ export function OfferTracker({
           <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-900">
-                  {formatDate(auctionEvent.auctionDate)}
-                </p>
+                <p className="text-sm text-gray-900">{formatDate(auctionEvent.auctionDate)}</p>
                 {auctionEvent.registrationNumber && (
                   <p className="mt-0.5 text-xs text-gray-500">
                     Registration: {auctionEvent.registrationNumber}
@@ -189,7 +181,8 @@ export function OfferTracker({
                 )}
                 {auctionEvent.numberOfBidders != null && (
                   <p className="mt-0.5 text-xs text-gray-400">
-                    {auctionEvent.numberOfBidders} bidder{auctionEvent.numberOfBidders !== 1 ? 's' : ''}
+                    {auctionEvent.numberOfBidders} bidder
+                    {auctionEvent.numberOfBidders !== 1 ? 's' : ''}
                   </p>
                 )}
               </div>

@@ -53,10 +53,7 @@ export function OfflineBanner({ showPendingCount = true }: OfflineBannerProps) {
   // Always render (for animation), but position offscreen when online
   return (
     <Animated.View
-      style={[
-        styles.container,
-        { transform: [{ translateY: slideAnim }] },
-      ]}
+      style={[styles.container, { transform: [{ translateY: slideAnim }] }]}
       accessibilityRole="alert"
       accessibilityLabel={`You are offline.${pendingCount > 0 ? ` ${pendingCount} changes waiting to sync.` : ''}`}
     >
@@ -65,9 +62,7 @@ export function OfflineBanner({ showPendingCount = true }: OfflineBannerProps) {
         <Text style={styles.text}>You are offline</Text>
         {showPendingCount && pendingCount > 0 ? (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>
-              {pendingCount} pending
-            </Text>
+            <Text style={styles.badgeText}>{pendingCount} pending</Text>
           </View>
         ) : null}
       </View>

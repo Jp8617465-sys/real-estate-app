@@ -143,7 +143,14 @@ describe('useDismissSocialLead', () => {
 
 describe('useSocialLeadStats', () => {
   it('fetches stats from the stats endpoint', async () => {
-    const stats = { total: 17, pending: 5, converted: 10, dismissed: 2, conversionRate: 66.7, byChannel: {} };
+    const stats = {
+      total: 17,
+      pending: 5,
+      converted: 10,
+      dismissed: 2,
+      conversionRate: 66.7,
+      byChannel: {},
+    };
     mockFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: stats }),

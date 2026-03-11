@@ -40,10 +40,7 @@ export function SidebarNav({ isOpen, onClose }: SidebarNavProps) {
   const navContent = (
     <nav aria-label="Main navigation" className="flex flex-col gap-1 px-3 py-4">
       {NAV_ITEMS.map((item) => {
-        const isActive =
-          item.href === '/'
-            ? pathname === '/'
-            : pathname.startsWith(item.href);
+        const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
         const Icon = item.icon;
 
         return (

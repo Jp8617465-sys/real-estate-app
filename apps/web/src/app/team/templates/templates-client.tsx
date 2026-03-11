@@ -23,12 +23,17 @@ export default function TeamTemplatesClient() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['team-templates'],
-    queryFn: () => apiRequest('/api/v1/team/workflow-templates').then(r => r.data as TeamTemplate[]),
+    queryFn: () =>
+      apiRequest('/api/v1/team/workflow-templates').then((r) => r.data as TeamTemplate[]),
   });
 
   const unshareMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/v1/team/workflow-templates/${id}/share`, { method: 'DELETE' }),
+    mutationFn: (id: string) =>
+      apiRequest(`/api/v1/team/workflow-templates/${id}/share`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['team-templates'] }),
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 
   if (isLoading) return <div className="p-6 text-sm text-gray-400">Loading templates...</div>;
@@ -42,7 +47,8 @@ export default function TeamTemplatesClient() {
       </div>
 
       <p className="text-sm text-gray-500 mb-6">
-        Templates shared here are visible to all agents in your office. You can share your own workflows from the Workflows section.
+        Templates shared here are visible to all agents in your office. You can share your own
+        workflows from the Workflows section.
       </p>
 
       {templates.length === 0 && (
@@ -53,7 +59,10 @@ export default function TeamTemplatesClient() {
 
       <div className="space-y-3">
         {templates.map((template: TeamTemplate) => (
-          <div key={template.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between gap-4">
+          <div
+            key={template.id}
+            className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between gap-4"
+          >
             <div>
               <h3 className="text-sm font-medium text-gray-900">{template.name}</h3>
               <p className="text-xs text-gray-500 mt-0.5">

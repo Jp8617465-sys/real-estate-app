@@ -147,10 +147,12 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       updated_at: new Date().toISOString(),
     };
 
-    if (updates.verificationMethod !== undefined) payload.verification_method = updates.verificationMethod;
+    if (updates.verificationMethod !== undefined)
+      payload.verification_method = updates.verificationMethod;
     if (updates.fullLegalName !== undefined) payload.full_legal_name = updates.fullLegalName;
     if (updates.dateOfBirth !== undefined) payload.date_of_birth = updates.dateOfBirth;
-    if (updates.residentialAddress !== undefined) payload.residential_address = updates.residentialAddress;
+    if (updates.residentialAddress !== undefined)
+      payload.residential_address = updates.residentialAddress;
     if (updates.addressVerified !== undefined) payload.address_verified = updates.addressVerified;
     if (updates.notes !== undefined) payload.notes = updates.notes;
 
@@ -321,7 +323,9 @@ export async function complianceRoutes(fastify: FastifyInstance) {
 
     // Reject 'failed' without a reason — AUSTRAC expects documented grounds for rejection
     if (outcome === 'failed' && !rejectionReason) {
-      return reply.status(422).send({ error: 'rejectionReason is required when outcome is failed' });
+      return reply
+        .status(422)
+        .send({ error: 'rejectionReason is required when outcome is failed' });
     }
 
     // Verify check exists and fetch current point total
@@ -337,7 +341,11 @@ export async function complianceRoutes(fastify: FastifyInstance) {
 
     // Enforce 100-point requirement before allowing a manual 'passed' outcome
     if (outcome === 'passed') {
-      const { total_points } = existingCheck as { id: string; status: string; total_points: number };
+      const { total_points } = existingCheck as {
+        id: string;
+        status: string;
+        total_points: number;
+      };
       if (total_points < 100) {
         return reply.status(422).send({
           error: 'Cannot mark as passed: insufficient points',
@@ -408,12 +416,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       return reply.status(401).send({ error: 'Unauthorised' });
     }
 
-    const report = await AmlEngine.generateComplianceReport(
-      user.id,
-      fromDate,
-      toDate,
-      supabase,
-    );
+    const report = await AmlEngine.generateComplianceReport(user.id, fromDate, toDate, supabase);
 
     return { data: report };
   });
@@ -472,8 +475,8 @@ export async function complianceRoutes(fastify: FastifyInstance) {
 
     const totalClients = new Set(checks.map((c: Record<string, unknown>) => c.contact_id)).size;
     const verified = checks.filter((c: Record<string, unknown>) => c.status === 'passed').length;
-    const pending = checks.filter((c: Record<string, unknown>) =>
-      c.status === 'pending' || c.status === 'in_progress'
+    const pending = checks.filter(
+      (c: Record<string, unknown>) => c.status === 'pending' || c.status === 'in_progress',
     ).length;
     const expired = checks.filter((c: Record<string, unknown>) => c.status === 'expired').length;
     const failed = checks.filter((c: Record<string, unknown>) => c.status === 'failed').length;
@@ -621,10 +624,12 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       updated_at: new Date().toISOString(),
     };
 
-    if (updates.verificationMethod !== undefined) payload.verification_method = updates.verificationMethod;
+    if (updates.verificationMethod !== undefined)
+      payload.verification_method = updates.verificationMethod;
     if (updates.fullLegalName !== undefined) payload.full_legal_name = updates.fullLegalName;
     if (updates.dateOfBirth !== undefined) payload.date_of_birth = updates.dateOfBirth;
-    if (updates.residentialAddress !== undefined) payload.residential_address = updates.residentialAddress;
+    if (updates.residentialAddress !== undefined)
+      payload.residential_address = updates.residentialAddress;
     if (updates.addressVerified !== undefined) payload.address_verified = updates.addressVerified;
     if (updates.notes !== undefined) payload.notes = updates.notes;
 

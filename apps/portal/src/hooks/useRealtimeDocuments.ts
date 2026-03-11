@@ -37,9 +37,7 @@ interface RealtimeDocumentsResult {
  * When the agent uploads a new document or changes a document status,
  * the portal document list updates instantly.
  */
-export function useRealtimeDocuments(
-  options?: RealtimeDocumentsOptions,
-): RealtimeDocumentsResult {
+export function useRealtimeDocuments(options?: RealtimeDocumentsOptions): RealtimeDocumentsResult {
   const { user } = useAuth();
   const { data: portalClient } = usePortalClient();
   const queryClient = useQueryClient();
@@ -114,10 +112,7 @@ export function useRealtimeDocuments(
         if (subscriptionStatus === 'SUBSCRIBED') {
           setStatus('connected');
           retryCountRef.current = 0;
-        } else if (
-          subscriptionStatus === 'CHANNEL_ERROR' ||
-          subscriptionStatus === 'TIMED_OUT'
-        ) {
+        } else if (subscriptionStatus === 'CHANNEL_ERROR' || subscriptionStatus === 'TIMED_OUT') {
           setStatus('disconnected');
           const delay = getRetryDelay();
           retryCountRef.current += 1;

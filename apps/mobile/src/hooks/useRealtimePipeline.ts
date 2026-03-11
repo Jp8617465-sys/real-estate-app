@@ -109,8 +109,9 @@ export function useRealtimePipeline({
 
             // Soft-delete handling
             if (newRow.is_deleted) {
-              queryClient.setQueryData<Record<string, unknown>[]>(queryKey, (old) =>
-                old?.filter((t) => t.id !== newRow.id) ?? [],
+              queryClient.setQueryData<Record<string, unknown>[]>(
+                queryKey,
+                (old) => old?.filter((t) => t.id !== newRow.id) ?? [],
               );
               return;
             }
@@ -146,8 +147,9 @@ export function useRealtimePipeline({
 
           if (eventType === 'DELETE') {
             const deletedId = (payload.old as Partial<TransactionRow>).id;
-            queryClient.setQueryData<Record<string, unknown>[]>(queryKey, (old) =>
-              old?.filter((t) => t.id !== deletedId) ?? [],
+            queryClient.setQueryData<Record<string, unknown>[]>(
+              queryKey,
+              (old) => old?.filter((t) => t.id !== deletedId) ?? [],
             );
           }
         },
@@ -157,10 +159,7 @@ export function useRealtimePipeline({
         if (subscriptionStatus === 'SUBSCRIBED') {
           setStatus('connected');
           retryCountRef.current = 0;
-        } else if (
-          subscriptionStatus === 'CHANNEL_ERROR' ||
-          subscriptionStatus === 'TIMED_OUT'
-        ) {
+        } else if (subscriptionStatus === 'CHANNEL_ERROR' || subscriptionStatus === 'TIMED_OUT') {
           setStatus('disconnected');
           const delay = getRetryDelay();
           retryCountRef.current += 1;

@@ -75,10 +75,7 @@ export function useSendMessage() {
   return useMutation({
     mutationFn: async (msg: SendMessageRequest) => {
       // Get current user
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .single();
+      const { data: userData } = await supabase.from('users').select('id').single();
 
       if (!userData) throw new Error('User not found');
 
@@ -107,6 +104,9 @@ export function useSendMessage() {
       queryClient.invalidateQueries({ queryKey: ['inbox-threads'] });
       queryClient.invalidateQueries({ queryKey: ['inbox-unread'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -129,6 +129,9 @@ export function useMarkAsRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inbox-threads'] });
       queryClient.invalidateQueries({ queryKey: ['inbox-unread'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -180,9 +183,7 @@ export function useSearchMessages(query: string) {
         .from('conversation_messages')
         .select('*, contacts!inner(first_name, last_name)')
         .eq('is_deleted', false)
-        .or(
-          `content->>text.ilike.%${query}%,content->>subject.ilike.%${query}%`,
-        )
+        .or(`content->>text.ilike.%${query}%,content->>subject.ilike.%${query}%`)
         .order('created_at', { ascending: false })
         .limit(20);
 

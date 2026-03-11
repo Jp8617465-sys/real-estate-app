@@ -12,7 +12,12 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { processDueEnrollments, type FSESupabaseClient, generateDailyActions, type DAESupabaseClient } from '@realflow/business-logic';
+import {
+  processDueEnrollments,
+  type FSESupabaseClient,
+  generateDailyActions,
+  type DAESupabaseClient,
+} from '@realflow/business-logic';
 import { getNotificationDispatcher } from './notification-dispatcher';
 import { env } from '../config/env';
 
@@ -78,7 +83,9 @@ export class WorkflowScheduler {
       result.enrollmentsFailed = enrollmentResult.failed;
       result.errors.push(...enrollmentResult.errors);
     } catch (err) {
-      result.errors.push(`enrollment processing: ${err instanceof Error ? err.message : 'unknown'}`);
+      result.errors.push(
+        `enrollment processing: ${err instanceof Error ? err.message : 'unknown'}`,
+      );
     }
 
     // ─── 2. Daily action list generation (at configured time window) ────────
@@ -97,7 +104,11 @@ export class WorkflowScheduler {
       result.errors.push(`digest notifications: ${err instanceof Error ? err.message : 'unknown'}`);
     }
 
-    if (result.enrollmentsProcessed > 0 || result.dailyListsGenerated > 0 || result.digestsSent > 0) {
+    if (
+      result.enrollmentsProcessed > 0 ||
+      result.dailyListsGenerated > 0 ||
+      result.digestsSent > 0
+    ) {
       console.log('[WorkflowScheduler] tick complete', result);
     }
 
@@ -132,7 +143,7 @@ export class WorkflowScheduler {
       const prefMinute = m ?? 0;
 
       // Within a 5-minute window of the configured time
-      const diffMinutes = (currentHour * 60 + currentMinute) - (prefHour * 60 + prefMinute);
+      const diffMinutes = currentHour * 60 + currentMinute - (prefHour * 60 + prefMinute);
       if (diffMinutes >= 0 && diffMinutes < 5) {
         dueUsers.push(pref.user_id as string);
       }
@@ -204,7 +215,7 @@ export class WorkflowScheduler {
       const [h, m] = (pref.digest_send_time as string).split(':').map(Number);
       const prefHour = h ?? 7;
       const prefMinute = m ?? 0;
-      const diffMinutes = (currentHour * 60 + currentMinute) - (prefHour * 60 + prefMinute);
+      const diffMinutes = currentHour * 60 + currentMinute - (prefHour * 60 + prefMinute);
 
       if (diffMinutes >= 0 && diffMinutes < 5) {
         try {

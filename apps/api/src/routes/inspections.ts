@@ -106,16 +106,23 @@ export async function inspectionRoutes(fastify: FastifyInstance) {
     if (updates.propertyId !== undefined) updatePayload.property_id = updates.propertyId;
     if (updates.clientId !== undefined) updatePayload.client_id = updates.clientId;
     if (updates.transactionId !== undefined) updatePayload.transaction_id = updates.transactionId;
-    if (updates.sellingAgentId !== undefined) updatePayload.selling_agent_id = updates.sellingAgentId;
-    if (updates.inspectionDate !== undefined) updatePayload.inspection_date = updates.inspectionDate;
-    if (updates.timeSpentMinutes !== undefined) updatePayload.time_spent_minutes = updates.timeSpentMinutes;
-    if (updates.overallImpression !== undefined) updatePayload.overall_impression = updates.overallImpression;
-    if (updates.conditionNotes !== undefined) updatePayload.condition_notes = updates.conditionNotes;
+    if (updates.sellingAgentId !== undefined)
+      updatePayload.selling_agent_id = updates.sellingAgentId;
+    if (updates.inspectionDate !== undefined)
+      updatePayload.inspection_date = updates.inspectionDate;
+    if (updates.timeSpentMinutes !== undefined)
+      updatePayload.time_spent_minutes = updates.timeSpentMinutes;
+    if (updates.overallImpression !== undefined)
+      updatePayload.overall_impression = updates.overallImpression;
+    if (updates.conditionNotes !== undefined)
+      updatePayload.condition_notes = updates.conditionNotes;
     if (updates.areaFeelNotes !== undefined) updatePayload.area_feel_notes = updates.areaFeelNotes;
-    if (updates.clientSuitability !== undefined) updatePayload.client_suitability = updates.clientSuitability;
+    if (updates.clientSuitability !== undefined)
+      updatePayload.client_suitability = updates.clientSuitability;
     if (updates.photos !== undefined) updatePayload.photos = updates.photos;
     if (updates.voiceNoteUrl !== undefined) updatePayload.voice_note_url = updates.voiceNoteUrl;
-    if (updates.voiceNoteTranscript !== undefined) updatePayload.voice_note_transcript = updates.voiceNoteTranscript;
+    if (updates.voiceNoteTranscript !== undefined)
+      updatePayload.voice_note_transcript = updates.voiceNoteTranscript;
     if (updates.agentNotes !== undefined) updatePayload.agent_notes = updates.agentNotes;
     if (updates.createdBy !== undefined) updatePayload.created_by = updates.createdBy;
 

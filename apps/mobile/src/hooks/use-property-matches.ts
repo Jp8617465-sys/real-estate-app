@@ -8,7 +8,9 @@ export function usePropertyMatches(briefId?: string) {
     queryFn: async () => {
       let query = supabase
         .from('property_matches')
-        .select('*, property:properties(id, address, bedrooms, bathrooms, car_spaces, list_price, price_guide, listing_status)')
+        .select(
+          '*, property:properties(id, address, bedrooms, bathrooms, car_spaces, list_price, price_guide, listing_status)',
+        )
         .eq('is_deleted', false)
         .order('overall_score', { ascending: false });
 
@@ -40,7 +42,9 @@ export function usePropertyMatch(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('property_matches')
-        .select('*, property:properties(*), client_brief:client_briefs(*, contact:contacts(id, first_name, last_name))')
+        .select(
+          '*, property:properties(*), client_brief:client_briefs(*, contact:contacts(id, first_name, last_name))',
+        )
         .eq('id', id)
         .single();
       if (error) throw error;
@@ -85,12 +89,8 @@ export function useUpdatePropertyMatchStatus(id: string) {
       await queryClient.cancelQueries({ queryKey: ['property-matches'] });
       const previousMatches = queryClient.getQueryData(['property-matches']);
 
-      queryClient.setQueriesData<PropertyMatch[]>(
-        { queryKey: ['property-matches'] },
-        (old) =>
-          old?.map((match) =>
-            match.id === id ? { ...match, status } : match,
-          ),
+      queryClient.setQueriesData<PropertyMatch[]>({ queryKey: ['property-matches'] }, (old) =>
+        old?.map((match) => (match.id === id ? { ...match, status } : match)),
       );
 
       return { previousMatches };

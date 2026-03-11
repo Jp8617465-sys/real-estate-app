@@ -55,10 +55,9 @@ export function useSequenceEnrollments(sequenceId: string, filter?: { status?: s
       const params = new URLSearchParams();
       if (filter?.status) params.set('status', filter.status);
 
-      const res = await fetch(
-        `/api/v1/follow-up-sequences/${sequenceId}/enrollments?${params}`,
-        { headers },
-      );
+      const res = await fetch(`/api/v1/follow-up-sequences/${sequenceId}/enrollments?${params}`, {
+        headers,
+      });
       if (!res.ok) throw new Error('Failed to fetch enrollments');
       const json = (await res.json()) as { data: SequenceEnrollment[] };
       return json.data;
@@ -99,6 +98,9 @@ export function useEnrollContact() {
         queryKey: ['follow-up-sequences', sequenceId, 'enrollments'],
       });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -108,15 +110,18 @@ export function usePauseEnrollment() {
   return useMutation({
     mutationFn: async (enrollmentId: string) => {
       const headers = await getAuthHeaders();
-      const res = await fetch(
-        `/api/v1/follow-up-sequences/enrollments/${enrollmentId}/pause`,
-        { method: 'POST', headers },
-      );
+      const res = await fetch(`/api/v1/follow-up-sequences/enrollments/${enrollmentId}/pause`, {
+        method: 'POST',
+        headers,
+      });
       if (!res.ok) throw new Error('Failed to pause enrollment');
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['follow-up-sequences'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -127,15 +132,18 @@ export function useResumeEnrollment() {
   return useMutation({
     mutationFn: async (enrollmentId: string) => {
       const headers = await getAuthHeaders();
-      const res = await fetch(
-        `/api/v1/follow-up-sequences/enrollments/${enrollmentId}/resume`,
-        { method: 'POST', headers },
-      );
+      const res = await fetch(`/api/v1/follow-up-sequences/enrollments/${enrollmentId}/resume`, {
+        method: 'POST',
+        headers,
+      });
       if (!res.ok) throw new Error('Failed to resume enrollment');
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['follow-up-sequences'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -146,15 +154,18 @@ export function useCancelEnrollment() {
   return useMutation({
     mutationFn: async (enrollmentId: string) => {
       const headers = await getAuthHeaders();
-      const res = await fetch(
-        `/api/v1/follow-up-sequences/enrollments/${enrollmentId}`,
-        { method: 'DELETE', headers },
-      );
+      const res = await fetch(`/api/v1/follow-up-sequences/enrollments/${enrollmentId}`, {
+        method: 'DELETE',
+        headers,
+      });
       if (!res.ok) throw new Error('Failed to cancel enrollment');
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['follow-up-sequences'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

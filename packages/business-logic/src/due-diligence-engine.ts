@@ -59,7 +59,7 @@ export class DueDiligenceEngine {
   static calculateCompletion(itemStatuses: string[]): number {
     if (itemStatuses.length === 0) return 0;
     const completed = itemStatuses.filter(
-      (s: string) => s === 'completed' || s === 'not_applicable'
+      (s: string) => s === 'completed' || s === 'not_applicable',
     ).length;
     return Math.round((completed / itemStatuses.length) * 100);
   }
@@ -68,7 +68,7 @@ export class DueDiligenceEngine {
    * Check if any blocking items have issues.
    */
   static hasBlockingIssues(items: Array<{ isBlocking: boolean; status: string }>): boolean {
-    return items.some(item => item.isBlocking && item.status === 'issue_found');
+    return items.some((item) => item.isBlocking && item.status === 'issue_found');
   }
 
   /**

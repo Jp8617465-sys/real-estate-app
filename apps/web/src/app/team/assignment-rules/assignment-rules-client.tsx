@@ -34,7 +34,8 @@ export default function AssignmentRulesClient() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['assignment-rules'],
-    queryFn: () => apiRequest('/api/v1/team/assignment-rules').then(r => r.data as LeadAssignmentRule[]),
+    queryFn: () =>
+      apiRequest('/api/v1/team/assignment-rules').then((r) => r.data as LeadAssignmentRule[]),
   });
 
   const toggleMutation = useMutation({
@@ -45,16 +46,25 @@ export default function AssignmentRulesClient() {
         body: JSON.stringify({ isActive }),
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['assignment-rules'] }),
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/v1/team/assignment-rules/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: string) =>
+      apiRequest(`/api/v1/team/assignment-rules/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['assignment-rules'] }),
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 
   if (isLoading) return <div className="p-6 text-sm text-gray-400">Loading rules...</div>;
 
-  const rules = (data ?? []).sort((a: LeadAssignmentRule, b: LeadAssignmentRule) => b.priority - a.priority);
+  const rules = (data ?? []).sort(
+    (a: LeadAssignmentRule, b: LeadAssignmentRule) => b.priority - a.priority,
+  );
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -63,7 +73,8 @@ export default function AssignmentRulesClient() {
       </div>
 
       <p className="text-sm text-gray-500 mb-6">
-        Rules are evaluated in priority order. The first matching rule wins. Use round-robin to distribute leads evenly across your team.
+        Rules are evaluated in priority order. The first matching rule wins. Use round-robin to
+        distribute leads evenly across your team.
       </p>
 
       {rules.length === 0 && (
@@ -74,7 +85,10 @@ export default function AssignmentRulesClient() {
 
       <div className="space-y-3">
         {rules.map((rule: LeadAssignmentRule) => (
-          <div key={rule.id} className={`bg-white rounded-lg border p-4 ${rule.isActive ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}>
+          <div
+            key={rule.id}
+            className={`bg-white rounded-lg border p-4 ${rule.isActive ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}
+          >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -87,8 +101,12 @@ export default function AssignmentRulesClient() {
                 <h3 className="text-sm font-medium text-gray-900">{rule.name}</h3>
                 <p className="text-xs text-gray-500 mt-1">
                   {rule.assigneeIds.length} assignee{rule.assigneeIds.length !== 1 ? 's' : ''}
-                  {rule.conditions.leadSources?.length ? ` · Sources: ${rule.conditions.leadSources.join(', ')}` : ''}
-                  {rule.conditions.suburbs?.length ? ` · Suburbs: ${rule.conditions.suburbs.join(', ')}` : ''}
+                  {rule.conditions.leadSources?.length
+                    ? ` · Sources: ${rule.conditions.leadSources.join(', ')}`
+                    : ''}
+                  {rule.conditions.suburbs?.length
+                    ? ` · Suburbs: ${rule.conditions.suburbs.join(', ')}`
+                    : ''}
                 </p>
               </div>
 

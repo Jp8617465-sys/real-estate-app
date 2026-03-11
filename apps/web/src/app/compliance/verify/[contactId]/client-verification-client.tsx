@@ -44,7 +44,8 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
   const [fullLegalName, setFullLegalName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [residentialAddress, setResidentialAddress] = useState('');
-  const [verificationMethod, setVerificationMethod] = useState<AmlVerificationMethod>('face_to_face');
+  const [verificationMethod, setVerificationMethod] =
+    useState<AmlVerificationMethod>('face_to_face');
 
   const isLoading = contactLoading || verificationsLoading;
 
@@ -62,9 +63,7 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Client Not Found</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            The requested contact could not be found.
-          </p>
+          <p className="mt-1 text-sm text-gray-500">The requested contact could not be found.</p>
         </div>
         <button
           onClick={() => router.push('/compliance')}
@@ -120,22 +119,29 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500"
             aria-label="Back to compliance dashboard"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
             </svg>
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Verify: {contactName}
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">Verify: {contactName}</h1>
             <p className="mt-1 text-sm text-gray-500">
               AML/KYC identity verification under AML/CTF Act 2006
             </p>
           </div>
         </div>
-        {activeCheck && (
-          <VerificationStatusBadge status={activeCheck.status as string} />
-        )}
+        {activeCheck && <VerificationStatusBadge status={activeCheck.status as string} />}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -175,17 +181,13 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
               )}
               {!!contactRecord.email && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                    Email
-                  </p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Email</p>
                   <p className="mt-1 text-sm text-gray-900">{String(contactRecord.email)}</p>
                 </div>
               )}
               {!!contactRecord.phone && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                    Phone
-                  </p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Phone</p>
                   <p className="mt-1 text-sm text-gray-900">{String(contactRecord.phone)}</p>
                 </div>
               )}
@@ -206,13 +208,11 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
           {activeCheck && (
             <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="border-b border-gray-200 px-4 py-3">
-                <h2 className="text-sm font-semibold text-gray-900">
-                  Verification Notes
-                </h2>
+                <h2 className="text-sm font-semibold text-gray-900">Verification Notes</h2>
               </div>
               <div className="p-4">
                 <textarea
-                  value={notes || (activeCheck.notes as string ?? '')}
+                  value={notes || ((activeCheck.notes as string) ?? '')}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={4}
                   placeholder="Add verification notes, observations, or audit comments..."
@@ -233,80 +233,78 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
           {/* Approval/Rejection Actions */}
           {activeCheck &&
             (activeCheck.status === 'in_progress' || activeCheck.status === 'pending') && (
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-              <div className="border-b border-gray-200 px-4 py-3">
-                <h2 className="text-sm font-semibold text-gray-900">
-                  Verification Decision
-                </h2>
-              </div>
-              <div className="space-y-3 p-4">
-                {!showCompleteDialog ? (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setShowCompleteDialog(true);
-                      }}
-                      className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowCompleteDialog(true);
-                      }}
-                      className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div>
-                      <label
-                        htmlFor="rejection-reason"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Reason (required for rejection)
-                      </label>
-                      <textarea
-                        id="rejection-reason"
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
-                        rows={2}
-                        placeholder="Provide reason for this decision..."
-                        className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                      />
-                    </div>
+              <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div className="border-b border-gray-200 px-4 py-3">
+                  <h2 className="text-sm font-semibold text-gray-900">Verification Decision</h2>
+                </div>
+                <div className="space-y-3 p-4">
+                  {!showCompleteDialog ? (
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleComplete('passed')}
-                        disabled={completeVerification.isPending}
-                        className="flex-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                        onClick={() => {
+                          setShowCompleteDialog(true);
+                        }}
+                        className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                       >
-                        Confirm Approve
+                        Approve
                       </button>
                       <button
-                        onClick={() => handleComplete('failed')}
-                        disabled={completeVerification.isPending || !rejectionReason}
-                        className="flex-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                        onClick={() => {
+                          setShowCompleteDialog(true);
+                        }}
+                        className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                       >
-                        Confirm Reject
+                        Reject
                       </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        setShowCompleteDialog(false);
-                        setRejectionReason('');
-                      }}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <label
+                          htmlFor="rejection-reason"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Reason (required for rejection)
+                        </label>
+                        <textarea
+                          id="rejection-reason"
+                          value={rejectionReason}
+                          onChange={(e) => setRejectionReason(e.target.value)}
+                          rows={2}
+                          placeholder="Provide reason for this decision..."
+                          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleComplete('passed')}
+                          disabled={completeVerification.isPending}
+                          className="flex-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                        >
+                          Confirm Approve
+                        </button>
+                        <button
+                          onClick={() => handleComplete('failed')}
+                          disabled={completeVerification.isPending || !rejectionReason}
+                          className="flex-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                        >
+                          Confirm Reject
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowCompleteDialog(false);
+                          setRejectionReason('');
+                        }}
+                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Right Column - Checklist and Documents */}
@@ -322,11 +320,13 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+                />
               </svg>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
-                No Verification Started
-              </h3>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">No Verification Started</h3>
               <p className="mt-1 text-sm text-gray-500">
                 Start an AML/KYC identity verification check for this client
               </p>
@@ -349,9 +349,7 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
           {!activeCheck && showStartForm && (
             <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="border-b border-gray-200 px-4 py-3">
-                <h2 className="text-sm font-semibold text-gray-900">
-                  Start AML/KYC Verification
-                </h2>
+                <h2 className="text-sm font-semibold text-gray-900">Start AML/KYC Verification</h2>
                 <p className="mt-0.5 text-xs text-gray-500">
                   Begin the 100-point identity check process
                 </p>
@@ -359,7 +357,10 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
               <form onSubmit={handleStartVerification} className="space-y-4 p-4">
                 <div>
                   <label htmlFor="legal-name" className="block text-sm font-medium text-gray-700">
-                    Full Legal Name <span className="text-red-500" aria-hidden="true">*</span>
+                    Full Legal Name{' '}
+                    <span className="text-red-500" aria-hidden="true">
+                      *
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -373,7 +374,10 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                 </div>
                 <div>
                   <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
-                    Date of Birth <span className="text-red-500" aria-hidden="true">*</span>
+                    Date of Birth{' '}
+                    <span className="text-red-500" aria-hidden="true">
+                      *
+                    </span>
                   </label>
                   <input
                     type="date"
@@ -386,7 +390,10 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                 </div>
                 <div>
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                    Residential Address <span className="text-red-500" aria-hidden="true">*</span>
+                    Residential Address{' '}
+                    <span className="text-red-500" aria-hidden="true">
+                      *
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -401,7 +408,10 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                 </div>
                 <div>
                   <label htmlFor="method" className="block text-sm font-medium text-gray-700">
-                    Verification Method <span className="text-red-500" aria-hidden="true">*</span>
+                    Verification Method{' '}
+                    <span className="text-red-500" aria-hidden="true">
+                      *
+                    </span>
                   </label>
                   <select
                     id="method"
@@ -439,7 +449,13 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
           {activeCheck && (
             <>
               <VerificationChecklist
-                documents={(activeCheck as Record<string, unknown> & { documents?: Array<Record<string, unknown>> }).documents ?? []}
+                documents={
+                  (
+                    activeCheck as Record<string, unknown> & {
+                      documents?: Array<Record<string, unknown>>;
+                    }
+                  ).documents ?? []
+                }
                 totalPoints={(activeCheck.total_points as number) ?? 0}
                 pointsRequired={(activeCheck.points_required as number) ?? 100}
                 addressVerified={(activeCheck.address_verified as boolean) ?? false}
@@ -474,12 +490,10 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                 <div className="rounded-lg border border-green-200 bg-green-50 p-4">
                   <h3 className="text-sm font-semibold text-green-800">Verification Complete</h3>
                   <p className="mt-1 text-sm text-green-700">
-                    This client's identity has been verified with{' '}
-                    {Number(activeCheck.total_points)} points.
+                    This client's identity has been verified with {Number(activeCheck.total_points)}{' '}
+                    points.
                     {!!activeCheck.expiry_date && (
-                      <>
-                        {' '}Verification expires on {formatDate(String(activeCheck.expiry_date))}.
-                      </>
+                      <> Verification expires on {formatDate(String(activeCheck.expiry_date))}.</>
                     )}
                   </p>
                 </div>
@@ -491,9 +505,7 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
           {verifications && (verifications as Array<Record<string, unknown>>).length > 1 && (
             <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="border-b border-gray-200 px-4 py-3">
-                <h2 className="text-sm font-semibold text-gray-900">
-                  Verification History
-                </h2>
+                <h2 className="text-sm font-semibold text-gray-900">Verification History</h2>
               </div>
               <div className="divide-y divide-gray-100">
                 {(verifications as Array<Record<string, unknown>>).slice(1).map((check) => (
@@ -507,7 +519,8 @@ export function ClientVerificationClient({ contactId }: ClientVerificationClient
                       </p>
                       <p className="text-xs text-gray-500">
                         Started {formatDate(String(check.created_at))}
-                        {!!check.completed_at && ` -- Completed ${formatDate(String(check.completed_at))}`}
+                        {!!check.completed_at &&
+                          ` -- Completed ${formatDate(String(check.completed_at))}`}
                       </p>
                     </div>
                     <VerificationStatusBadge status={check.status as string} size="sm" />

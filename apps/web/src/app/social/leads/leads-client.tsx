@@ -36,19 +36,32 @@ export default function SocialLeadsClient() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['social-leads', statusFilter],
-    queryFn: () => apiRequest(`/api/v1/social/leads?status=${statusFilter}`).then(r => r.data as SocialDmLead[]),
+    queryFn: () =>
+      apiRequest(`/api/v1/social/leads?status=${statusFilter}`).then(
+        (r) => r.data as SocialDmLead[],
+      ),
   });
 
   const convertMutation = useMutation({
     mutationFn: (leadId: string) =>
-      apiRequest(`/api/v1/social/leads/${leadId}/convert`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+      apiRequest(`/api/v1/social/leads/${leadId}/convert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['social-leads'] }),
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 
   const dismissMutation = useMutation({
     mutationFn: (leadId: string) =>
       apiRequest(`/api/v1/social/leads/${leadId}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['social-leads'] }),
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 
   if (isLoading) return <div className="p-6 text-sm text-gray-500">Loading leads...</div>;
@@ -62,7 +75,7 @@ export default function SocialLeadsClient() {
         <h1 className="text-2xl font-semibold text-gray-900">Social DM Leads</h1>
         <select
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
+          onChange={(e) => setStatusFilter(e.target.value)}
           className="border border-gray-300 rounded-md px-3 py-1.5 text-sm"
         >
           <option value="pending">Pending</option>
@@ -78,8 +91,11 @@ export default function SocialLeadsClient() {
       )}
 
       <div className="space-y-3">
-        {leads.map(lead => (
-          <div key={lead.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-start justify-between gap-4">
+        {leads.map((lead) => (
+          <div
+            key={lead.id}
+            className="bg-white rounded-lg border border-gray-200 p-4 flex items-start justify-between gap-4"
+          >
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
@@ -92,7 +108,9 @@ export default function SocialLeadsClient() {
                   <span className="text-xs text-gray-500">@{lead.senderHandle}</span>
                 )}
               </div>
-              <p className="text-sm text-gray-700 truncate">{lead.messageText ?? '(no message text)'}</p>
+              <p className="text-sm text-gray-700 truncate">
+                {lead.messageText ?? '(no message text)'}
+              </p>
               <p className="text-xs text-gray-400 mt-1">
                 {new Date(lead.createdAt).toLocaleString('en-AU')}
               </p>

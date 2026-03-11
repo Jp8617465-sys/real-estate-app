@@ -104,7 +104,12 @@ function mapEventRow(row: PropertyAlertEventRow): PropertyAlertEvent {
 export class PropertyAlertEngine {
   constructor(
     private supabase: SupabaseClient,
-    private notifyPush: (token: string, title: string, body: string, data?: Record<string, string>) => Promise<void>,
+    private notifyPush: (
+      token: string,
+      title: string,
+      body: string,
+      data?: Record<string, string>,
+    ) => Promise<void>,
     private notifyEmail: (to: string, subject: string, body: string) => Promise<void>,
     private notifySms: (to: string, body: string) => Promise<void>,
   ) {}
@@ -173,7 +178,9 @@ export class PropertyAlertEngine {
       .lte('score_threshold', match.overall_score);
 
     if (subsError) {
-      console.error(`[PropertyAlertEngine] handleNewMatch: error fetching subscriptions: ${subsError.message}`);
+      console.error(
+        `[PropertyAlertEngine] handleNewMatch: error fetching subscriptions: ${subsError.message}`,
+      );
       return;
     }
 
@@ -236,7 +243,9 @@ export class PropertyAlertEngine {
       .single();
 
     if (pcError || !pcRow) {
-      console.error(`[PropertyAlertEngine] handlePriceChange: price change not found: ${priceChangeId}`);
+      console.error(
+        `[PropertyAlertEngine] handlePriceChange: price change not found: ${priceChangeId}`,
+      );
       return;
     }
 
@@ -256,18 +265,31 @@ export class PropertyAlertEngine {
     const matches = matchesData as PropertyMatchRow[];
     const now = new Date();
 
+    // PERF: Batch-fetch all subscriptions for all matched briefs in a single query
+    // instead of querying per-match inside the loop (N+1 fix).
+    const allBriefIds = [...new Set(matches.map((m) => m.brief_id))];
+    const { data: allSubsData, error: allSubsError } = await this.supabase
+      .from('property_alert_subscriptions')
+      .select('*')
+      .in('brief_id', allBriefIds)
+      .eq('is_active', true)
+      .is('deleted_at', null);
+
+    if (allSubsError || !allSubsData) return;
+
+    // Group subscriptions by brief_id for fast lookup
+    const subsByBrief = new Map<string, PropertyAlertSubscriptionRow[]>();
+    for (const row of allSubsData as PropertyAlertSubscriptionRow[]) {
+      const existing = subsByBrief.get(row.brief_id);
+      if (existing) {
+        existing.push(row);
+      } else {
+        subsByBrief.set(row.brief_id, [row]);
+      }
+    }
+
     for (const match of matches) {
-      // Find active subscriptions for this match's brief
-      const { data: subsData, error: subsError } = await this.supabase
-        .from('property_alert_subscriptions')
-        .select('*')
-        .eq('brief_id', match.brief_id)
-        .eq('is_active', true)
-        .is('deleted_at', null);
-
-      if (subsError || !subsData) continue;
-
-      const subs = subsData as PropertyAlertSubscriptionRow[];
+      const subs = subsByBrief.get(match.brief_id) ?? [];
 
       for (const subRow of subs) {
         const sub = mapSubscriptionRow(subRow);

@@ -27,11 +27,7 @@ export function useProperty(id: string) {
   return useQuery({
     queryKey: ['properties', id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await supabase.from('properties').select('*').eq('id', id).single();
       if (error) throw error;
       return data as Property;
     },

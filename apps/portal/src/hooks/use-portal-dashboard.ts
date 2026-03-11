@@ -24,6 +24,7 @@ export function usePortalDashboard() {
 
   return useQuery({
     queryKey: ['portal-dashboard', portalClient?.contact_id],
+    staleTime: 30_000,
     queryFn: async (): Promise<DashboardData> => {
       const contactId = portalClient?.contact_id ?? '';
 

@@ -2,7 +2,12 @@
 
 import { useParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useWorkflow, useWorkflowRuns, useToggleWorkflow, useDeleteWorkflow } from '@/hooks/use-workflows';
+import {
+  useWorkflow,
+  useWorkflowRuns,
+  useToggleWorkflow,
+  useDeleteWorkflow,
+} from '@/hooks/use-workflows';
 import Link from 'next/link';
 
 const triggerLabels: Record<string, string> = {
@@ -65,7 +70,11 @@ export default function WorkflowDetailPage() {
   }
 
   const trigger = workflow.trigger as Record<string, unknown>;
-  const conditions = (workflow.conditions ?? []) as Array<{ field: string; operator: string; value?: unknown }>;
+  const conditions = (workflow.conditions ?? []) as Array<{
+    field: string;
+    operator: string;
+    value?: unknown;
+  }>;
   const actions = (workflow.actions ?? []) as Array<Record<string, unknown>>;
 
   return (
@@ -139,11 +148,16 @@ export default function WorkflowDetailPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-gray-900">Conditions</h2>
           {conditions.length === 0 ? (
-            <p className="mt-3 text-xs text-gray-400">No conditions - runs every time trigger fires.</p>
+            <p className="mt-3 text-xs text-gray-400">
+              No conditions - runs every time trigger fires.
+            </p>
           ) : (
             <div className="mt-3 space-y-2">
               {conditions.map((condition, i) => (
-                <div key={i} className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-xs">
+                <div
+                  key={i}
+                  className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-xs"
+                >
                   <span className="font-medium text-gray-700">{condition.field}</span>
                   <span className="text-gray-500">{condition.operator}</span>
                   {condition.value !== undefined && (
@@ -161,7 +175,10 @@ export default function WorkflowDetailPage() {
         <h2 className="text-sm font-semibold text-gray-900">Actions ({actions.length})</h2>
         <div className="mt-3 space-y-3">
           {actions.map((action, i) => (
-            <div key={i} className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
+            <div
+              key={i}
+              className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3"
+            >
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">
                 {i + 1}
               </span>
@@ -195,11 +212,21 @@ export default function WorkflowDetailPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Started</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Completed</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Actions Run</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Error</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Status
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Started
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Completed
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Actions Run
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Error
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -216,10 +243,14 @@ export default function WorkflowDetailPage() {
                       </span>
                     </td>
                     <td className="px-4 py-2 text-xs text-gray-600">
-                      {run.started_at ? new Date(run.started_at as string).toLocaleString('en-AU') : '-'}
+                      {run.started_at
+                        ? new Date(run.started_at as string).toLocaleString('en-AU')
+                        : '-'}
                     </td>
                     <td className="px-4 py-2 text-xs text-gray-600">
-                      {run.completed_at ? new Date(run.completed_at as string).toLocaleString('en-AU') : '-'}
+                      {run.completed_at
+                        ? new Date(run.completed_at as string).toLocaleString('en-AU')
+                        : '-'}
                     </td>
                     <td className="px-4 py-2 text-xs text-gray-600">
                       {(run.current_action_index as number) ?? 0}

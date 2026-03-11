@@ -28,7 +28,7 @@ vi.mock('../middleware/webhook-validation', () => ({
 // ─── Mock EmailLeadProcessor ──────────────────────────────────────
 
 vi.mock('../services/email-lead-processor', () => ({
-  EmailLeadProcessor: vi.fn().mockImplementation(function() {
+  EmailLeadProcessor: vi.fn().mockImplementation(function () {
     return { process: mockProcess };
   }),
 }));
@@ -252,5 +252,109 @@ describe('POST /api/v1/inbox/email/mailgun', () => {
     });
 
     expect(response.statusCode).toBe(500);
+  });
+
+  it('processes Mailgun payload without Message-Id (uses random UUID)', async () => {
+    const payloadNoMessageId = {
+      sender: 'buyer@example.com',
+      recipient: 'enquiries@agency.com',
+      from: 'Buyer <buyer@example.com>',
+      subject: 'No Message-Id',
+      'body-plain': 'Testing.',
+      // No 'Message-Id' field — normaliseMailgun falls back to crypto.randomUUID()
+    };
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/inbox/email/mailgun',
+      payload: payloadNoMessageId,
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.payload);
+    expect(body.received).toBe(true);
+  });
+
+  it('processes Mailgun payload with timestamp field', async () => {
+    const payloadWithTimestamp = {
+      ...validPayload,
+      'Message-Id': '<mailgun-ts-001@mg.example.com>',
+      timestamp: '1704067200', // Unix timestamp
+    };
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/inbox/email/mailgun',
+      payload: payloadWithTimestamp,
+    });
+
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+// ─── Rate limiting and signature validation branches ───────────────
+
+describe('Inbox email rate limiting', () => {
+  it('POST /email/sendgrid returns 401 when signature validation fails', async () => {
+    const { validateWebhookSignature } = await import('../middleware/webhook-validation');
+    vi.mocked(validateWebhookSignature).mockReturnValueOnce(false);
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/inbox/email/sendgrid',
+      payload: {
+        from: 'buyer@example.com',
+        to: 'enquiries@agency.com',
+        text: 'Test',
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it('POST /email/mailgun returns 401 when signature validation fails', async () => {
+    const { validateWebhookSignature } = await import('../middleware/webhook-validation');
+    vi.mocked(validateWebhookSignature).mockReturnValueOnce(false);
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/inbox/email/mailgun',
+      payload: {
+        sender: 'buyer@example.com',
+        recipient: 'enquiries@agency.com',
+        from: 'Buyer <buyer@example.com>',
+        'body-plain': 'Test',
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+});
+
+// ─── SendGrid with Message-Id in headers ──────────────────────────
+
+describe('POST /api/v1/inbox/email/sendgrid - headers branch', () => {
+  it('processes SendGrid payload without headers (uses random UUID)', async () => {
+    // When headers field is absent, normaliseSendGrid calls crypto.randomUUID()
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/inbox/email/sendgrid',
+      payload: {
+        from: 'buyer@example.com',
+        to: 'enquiries@agency.com',
+        subject: 'No Headers',
+        text: 'Testing without headers field.',
+        // no 'headers' key
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.payload);
+    expect(body.received).toBe(true);
   });
 });

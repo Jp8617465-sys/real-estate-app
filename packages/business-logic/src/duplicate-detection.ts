@@ -46,15 +46,14 @@ export class DuplicateDetector {
    */
   static findDuplicates(
     newContact: { phone?: string; email?: string; firstName?: string; lastName?: string },
-    existingContacts: Pick<Contact, 'id' | 'phone' | 'email' | 'firstName' | 'lastName' | 'secondaryPhone'>[],
+    existingContacts: Pick<
+      Contact,
+      'id' | 'phone' | 'email' | 'firstName' | 'lastName' | 'secondaryPhone'
+    >[],
   ): DuplicateMatch[] {
     const matches: DuplicateMatch[] = [];
-    const normalizedPhone = newContact.phone
-      ? this.normalizePhone(newContact.phone)
-      : undefined;
-    const normalizedEmail = newContact.email
-      ? this.normalizeEmail(newContact.email)
-      : undefined;
+    const normalizedPhone = newContact.phone ? this.normalizePhone(newContact.phone) : undefined;
+    const normalizedEmail = newContact.email ? this.normalizeEmail(newContact.email) : undefined;
 
     for (const existing of existingContacts) {
       let score = 0;

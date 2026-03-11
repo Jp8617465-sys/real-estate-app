@@ -85,9 +85,12 @@ export async function sellingAgentRoutes(fastify: FastifyInstance) {
     if (updates.contactId !== undefined) updatePayload.contact_id = updates.contactId;
     if (updates.agency !== undefined) updatePayload.agency = updates.agency;
     if (updates.suburbs !== undefined) updatePayload.suburbs = updates.suburbs;
-    if (updates.relationshipScore !== undefined) updatePayload.relationship_score = updates.relationshipScore;
-    if (updates.lastContactDate !== undefined) updatePayload.last_contact_date = updates.lastContactDate;
-    if (updates.averageResponseTime !== undefined) updatePayload.average_response_time = updates.averageResponseTime;
+    if (updates.relationshipScore !== undefined)
+      updatePayload.relationship_score = updates.relationshipScore;
+    if (updates.lastContactDate !== undefined)
+      updatePayload.last_contact_date = updates.lastContactDate;
+    if (updates.averageResponseTime !== undefined)
+      updatePayload.average_response_time = updates.averageResponseTime;
     if (updates.tags !== undefined) updatePayload.tags = updates.tags;
 
     const { data, error } = await supabase

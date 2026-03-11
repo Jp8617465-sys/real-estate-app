@@ -71,7 +71,10 @@ export default function PropertyMatchesClient() {
       {isLoading && (
         <div className="flex gap-4 overflow-x-auto pb-4">
           {STATUS_COLUMNS.map((col) => (
-            <div key={col.key} className="w-72 shrink-0 animate-pulse rounded-xl border border-gray-200 bg-gray-50 p-4">
+            <div
+              key={col.key}
+              className="w-72 shrink-0 animate-pulse rounded-xl border border-gray-200 bg-gray-50 p-4"
+            >
               <div className="h-4 w-24 rounded bg-gray-200" />
               <div className="mt-4 space-y-3">
                 <div className="h-32 rounded bg-gray-200" />

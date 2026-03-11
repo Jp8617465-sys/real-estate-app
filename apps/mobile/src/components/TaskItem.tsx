@@ -97,18 +97,13 @@ export function TaskItem({ task, onComplete, onPress }: TaskItemProps) {
         accessibilityState={{ checked: isCompleted }}
         accessibilityLabel={`Mark ${task.title} as complete`}
       >
-        {isCompleted ? (
-          <Ionicons name="checkmark" size={14} color="#ffffff" />
-        ) : null}
+        {isCompleted ? <Ionicons name="checkmark" size={14} color="#ffffff" /> : null}
       </TouchableOpacity>
 
       <View style={styles.content}>
         <View style={styles.titleRow}>
           <Ionicons name={typeIcon} size={14} color="#6b7280" style={styles.typeIcon} />
-          <Text
-            style={[styles.title, isCompleted && styles.titleCompleted]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.title, isCompleted && styles.titleCompleted]} numberOfLines={1}>
             {task.title}
           </Text>
         </View>

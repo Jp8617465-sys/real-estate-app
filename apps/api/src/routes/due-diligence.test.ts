@@ -18,7 +18,8 @@ const mockGetSupportedStates = vi.fn();
 
 vi.mock('@realflow/business-logic', () => ({
   DueDiligenceEngine: {
-    generateChecklist: (state: string, propertyType: string) => mockGenerateChecklist(state, propertyType),
+    generateChecklist: (state: string, propertyType: string) =>
+      mockGenerateChecklist(state, propertyType),
     calculateCompletion: (statuses: string[]) => mockCalculateCompletion(statuses),
     hasBlockingIssues: (items: unknown[]) => mockHasBlockingIssues(items),
     getSupportedStates: () => mockGetSupportedStates(),
@@ -51,9 +52,7 @@ describe('GET /api/v1/due-diligence/transaction/:transactionId', () => {
 
   it('returns checklist with items', async () => {
     const checklist = { id: '00000000-0000-0000-0000-000000000010', transaction_id: transactionId };
-    const items = [
-      { id: '00000000-0000-0000-0000-000000000020', status: 'not_started' },
-    ];
+    const items = [{ id: '00000000-0000-0000-0000-000000000020', status: 'not_started' }];
 
     let callCount = 0;
     mockFrom.mockImplementation(() => {
@@ -211,9 +210,7 @@ describe('PUT /api/v1/due-diligence/items/:itemId', () => {
       status: 'completed',
       is_blocking: false,
     };
-    const allItems = [
-      { status: 'completed', is_blocking: false },
-    ];
+    const allItems = [{ status: 'completed', is_blocking: false }];
 
     mockCalculateCompletion.mockReturnValue(100);
     mockHasBlockingIssues.mockReturnValue(false);

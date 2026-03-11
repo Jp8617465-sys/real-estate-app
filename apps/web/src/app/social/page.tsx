@@ -1,7 +1,12 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useSocialPosts, useSocialAccounts, usePublishPost, useDeletePost } from '@/hooks/use-social';
+import {
+  useSocialPosts,
+  useSocialAccounts,
+  usePublishPost,
+  useDeletePost,
+} from '@/hooks/use-social';
 import { PostCalendar } from '@/components/social/post-calendar';
 import { PostComposer } from '@/components/social/post-composer';
 import { SocialAccountCard } from '@/components/social/social-account-card';
@@ -58,12 +63,15 @@ export default function SocialPage() {
   const publishPost = usePublishPost();
   const deletePost = useDeletePost();
 
-  const dateRange = useMemo(() => ({
-    dateFrom: currentWeekStart.toISOString(),
-    dateTo: getWeekEnd(currentWeekStart).toISOString(),
-    platform: platformFilter === 'all' ? undefined : platformFilter,
-    status: statusFilter === 'all' ? undefined : statusFilter,
-  }), [currentWeekStart, platformFilter, statusFilter]);
+  const dateRange = useMemo(
+    () => ({
+      dateFrom: currentWeekStart.toISOString(),
+      dateTo: getWeekEnd(currentWeekStart).toISOString(),
+      platform: platformFilter === 'all' ? undefined : platformFilter,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+    }),
+    [currentWeekStart, platformFilter, statusFilter],
+  );
 
   const { data: posts, isLoading } = useSocialPosts(dateRange);
   const { data: accounts } = useSocialAccounts();
@@ -149,10 +157,7 @@ export default function SocialPage() {
           {accounts && accounts.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {accounts.map((account) => (
-                <SocialAccountCard
-                  key={account.id as string}
-                  account={account}
-                />
+                <SocialAccountCard key={account.id as string} account={account} />
               ))}
             </div>
           ) : (
@@ -284,10 +289,7 @@ export default function SocialPage() {
           </div>
         </div>
       ) : viewMode === 'calendar' ? (
-        <PostCalendar
-          posts={posts ?? []}
-          currentWeekStart={currentWeekStart}
-        />
+        <PostCalendar posts={posts ?? []} currentWeekStart={currentWeekStart} />
       ) : (
         /* List View */
         <div className="space-y-3">
@@ -317,27 +319,33 @@ export default function SocialPage() {
                         <span
                           key={p}
                           className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
-                            p === 'facebook' ? 'bg-blue-100 text-blue-700'
-                              : p === 'instagram' ? 'bg-pink-100 text-pink-700'
+                            p === 'facebook'
+                              ? 'bg-blue-100 text-blue-700'
+                              : p === 'instagram'
+                                ? 'bg-pink-100 text-pink-700'
                                 : 'bg-sky-100 text-sky-700'
                           }`}
                         >
                           {p === 'facebook' ? 'FB' : p === 'instagram' ? 'IG' : 'LI'}
                         </span>
                       ))}
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
-                        status === 'draft' ? 'bg-gray-100 text-gray-600'
-                          : status === 'scheduled' ? 'bg-yellow-100 text-yellow-700'
-                            : status === 'published' ? 'bg-green-100 text-green-700'
-                              : status === 'failed' ? 'bg-red-100 text-red-700'
-                                : 'bg-blue-100 text-blue-700'
-                      }`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
+                          status === 'draft'
+                            ? 'bg-gray-100 text-gray-600'
+                            : status === 'scheduled'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : status === 'published'
+                                ? 'bg-green-100 text-green-700'
+                                : status === 'failed'
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-blue-100 text-blue-700'
+                        }`}
+                      >
                         {status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-800 truncate">
-                      {post.content as string}
-                    </p>
+                    <p className="text-sm text-gray-800 truncate">{post.content as string}</p>
                     {post.scheduled_at ? (
                       <p className="mt-1 text-xs text-gray-500">
                         {new Date(post.scheduled_at as string).toLocaleString('en-AU', {
@@ -375,9 +383,7 @@ export default function SocialPage() {
       )}
 
       {/* Composer Modal */}
-      {showComposer && (
-        <PostComposer onClose={() => setShowComposer(false)} />
-      )}
+      {showComposer && <PostComposer onClose={() => setShowComposer(false)} />}
     </div>
   );
 }

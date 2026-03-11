@@ -110,9 +110,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Welcome section */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-          Welcome back, {clientName}
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Welcome back, {clientName}</h1>
         <p className="mt-1 text-sm text-gray-500">
           Here is an overview of your property search progress.
         </p>
@@ -255,9 +253,7 @@ export default function DashboardPage() {
               </div>
               <h3 className="mt-3 font-semibold text-gray-900">{link.label}</h3>
               <p className="mt-1 text-sm text-gray-500">{link.description}</p>
-              {link.stat && (
-                <p className="mt-3 text-xs font-medium text-portal-600">{link.stat}</p>
-              )}
+              {link.stat && <p className="mt-3 text-xs font-medium text-portal-600">{link.stat}</p>}
             </Link>
           );
         })}

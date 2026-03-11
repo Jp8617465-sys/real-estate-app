@@ -40,7 +40,7 @@ export default function TeamPerformanceClient() {
         <h1 className="text-2xl font-semibold text-gray-900">Team Performance</h1>
         <select
           value={days}
-          onChange={e => setDays(Number(e.target.value))}
+          onChange={(e) => setDays(Number(e.target.value))}
           className="border border-gray-300 rounded-md px-3 py-1.5 text-sm"
         >
           <option value={7}>Last 7 days</option>
@@ -55,14 +55,30 @@ export default function TeamPerformanceClient() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Contacts</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Active Deals</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Closed</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Leads In</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Converted</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Conv. %</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Response</th>
+              <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Agent
+              </th>
+              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Contacts
+              </th>
+              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Active Deals
+              </th>
+              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Closed
+              </th>
+              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Leads In
+              </th>
+              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Converted
+              </th>
+              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Conv. %
+              </th>
+              <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Avg Response
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -74,10 +90,14 @@ export default function TeamPerformanceClient() {
                 </td>
                 <td className="px-5 py-3 text-sm text-right text-gray-700">{p.activeContacts}</td>
                 <td className="px-5 py-3 text-sm text-right text-gray-700">{p.activeDeals}</td>
-                <td className="px-5 py-3 text-sm text-right font-semibold text-gray-900">{p.dealsClosed}</td>
+                <td className="px-5 py-3 text-sm text-right font-semibold text-gray-900">
+                  {p.dealsClosed}
+                </td>
                 <td className="px-5 py-3 text-sm text-right text-gray-700">{p.leadsReceived}</td>
                 <td className="px-5 py-3 text-sm text-right text-gray-700">{p.leadsConverted}</td>
-                <td className="px-5 py-3 text-sm text-right font-medium text-gray-900">{p.conversionRate}%</td>
+                <td className="px-5 py-3 text-sm text-right font-medium text-gray-900">
+                  {p.conversionRate}%
+                </td>
                 <td className="px-5 py-3 text-sm text-right text-gray-500">
                   {p.avgResponseHours != null ? `${p.avgResponseHours.toFixed(1)}h` : '—'}
                 </td>

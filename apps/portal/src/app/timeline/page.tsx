@@ -138,7 +138,8 @@ export default function TimelinePage() {
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
             <h2 className="font-semibold text-amber-800">
-              {criticalUpcoming.length} Critical Date{criticalUpcoming.length !== 1 ? 's' : ''} Approaching
+              {criticalUpcoming.length} Critical Date{criticalUpcoming.length !== 1 ? 's' : ''}{' '}
+              Approaching
             </h2>
           </div>
           <div className="mt-2 space-y-1">
@@ -189,9 +190,7 @@ export default function TimelinePage() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900">
-                          {keyDate.label}
-                        </h3>
+                        <h3 className="font-semibold text-gray-900">{keyDate.label}</h3>
                         {keyDate.is_critical && (
                           <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-red-600">
                             Critical
@@ -219,9 +218,7 @@ export default function TimelinePage() {
                       </span>
                     </div>
                   </div>
-                  {keyDate.notes && (
-                    <p className="mt-2 text-sm text-gray-600">{keyDate.notes}</p>
-                  )}
+                  {keyDate.notes && <p className="mt-2 text-sm text-gray-600">{keyDate.notes}</p>}
                 </div>
               </div>
             </div>

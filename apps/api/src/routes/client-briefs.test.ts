@@ -40,8 +40,14 @@ beforeEach(() => {
 describe('GET /api/v1/client-briefs', () => {
   it('returns list of client briefs', async () => {
     const briefs = [
-      { id: '00000000-0000-0000-0000-000000000001', contact_id: '00000000-0000-0000-0000-000000000010' },
-      { id: '00000000-0000-0000-0000-000000000002', contact_id: '00000000-0000-0000-0000-000000000011' },
+      {
+        id: '00000000-0000-0000-0000-000000000001',
+        contact_id: '00000000-0000-0000-0000-000000000010',
+      },
+      {
+        id: '00000000-0000-0000-0000-000000000002',
+        contact_id: '00000000-0000-0000-0000-000000000011',
+      },
     ];
 
     mockFrom.mockReturnValue({
@@ -69,7 +75,12 @@ describe('GET /api/v1/client-briefs', () => {
     const briefs = [{ id: '00000000-0000-0000-0000-000000000001', contact_id: contactId }];
 
     const mockEq2 = vi.fn().mockResolvedValue({ data: briefs, error: null });
-    const mockEq1 = vi.fn().mockReturnValue({ order: vi.fn().mockReturnValue({ eq: mockEq2, then: (r: Function) => r({ data: briefs, error: null }) }) });
+    const mockEq1 = vi.fn().mockReturnValue({
+      order: vi.fn().mockReturnValue({
+        eq: mockEq2,
+        then: (r: Function) => r({ data: briefs, error: null }),
+      }),
+    });
     const mockOrderFn = vi.fn().mockReturnValue({
       eq: vi.fn().mockResolvedValue({ data: briefs, error: null }),
       then: (r: Function) => r({ data: briefs, error: null }),
@@ -267,7 +278,16 @@ describe('PUT /api/v1/client-briefs/:id', () => {
       brief_version: 1,
       budget_min: 500000,
       budget_max: 800000,
-      requirements: { suburbs: [], propertyTypes: [], bedrooms: { min: 3 }, bathrooms: { min: 2 }, carSpaces: { min: 1 }, mustHaves: [], niceToHaves: [], dealBreakers: [] },
+      requirements: {
+        suburbs: [],
+        propertyTypes: [],
+        bedrooms: { min: 3 },
+        bathrooms: { min: 2 },
+        carSpaces: { min: 1 },
+        mustHaves: [],
+        niceToHaves: [],
+        dealBreakers: [],
+      },
       budget: { min: 500000, max: 800000, stampDutyBudgeted: true },
       finance: { preApproved: true, firstHomeBuyer: false },
       timeline: { urgency: '3_6_months' },

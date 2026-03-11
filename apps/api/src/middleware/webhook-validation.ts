@@ -70,9 +70,7 @@ export function validateWebhookSignature(
   if (!secret) return true;
 
   const headers = request.headers as Record<string, string | undefined>;
-  const rawBody = typeof request.body === 'string'
-    ? request.body
-    : JSON.stringify(request.body);
+  const rawBody = typeof request.body === 'string' ? request.body : JSON.stringify(request.body);
 
   switch (provider) {
     case 'sendgrid': {
@@ -216,10 +214,13 @@ export function createWebhookGuards() {
   const idempotencyGuard = new IdempotencyGuard(24 * 60 * 60 * 1000);
 
   // Prune expired entries every 5 minutes
-  const pruneInterval = setInterval(() => {
-    rateLimiter.prune();
-    idempotencyGuard.prune();
-  }, 5 * 60 * 1000);
+  const pruneInterval = setInterval(
+    () => {
+      rateLimiter.prune();
+      idempotencyGuard.prune();
+    },
+    5 * 60 * 1000,
+  );
 
   // Ensure interval does not prevent Node from exiting
   if (pruneInterval.unref) {

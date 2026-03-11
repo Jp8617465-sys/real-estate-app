@@ -76,7 +76,12 @@ export function VerificationChecklist({
     {
       label: 'Identity Verification',
       description: `${totalPoints}/${pointsRequired} points collected`,
-      status: totalPoints >= pointsRequired ? 'passed' : documents.length > 0 ? 'in_progress' : 'not_started',
+      status:
+        totalPoints >= pointsRequired
+          ? 'passed'
+          : documents.length > 0
+            ? 'in_progress'
+            : 'not_started',
     },
     {
       label: 'Primary or Secondary A Document',
@@ -110,9 +115,7 @@ export function VerificationChecklist({
       {/* Points progress */}
       <div className="rounded-lg border border-gray-200 bg-white p-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Identity Points Progress
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-900">Identity Points Progress</h3>
           <span className="text-sm font-medium text-gray-600">
             {totalPoints} / {pointsRequired} pts
           </span>
@@ -135,7 +138,8 @@ export function VerificationChecklist({
         </div>
         {totalPoints < pointsRequired && (
           <p className="mt-2 text-xs text-gray-500">
-            {pointsRequired - totalPoints} more points needed to meet the 100-point identification requirement
+            {pointsRequired - totalPoints} more points needed to meet the 100-point identification
+            requirement
           </p>
         )}
       </div>
@@ -143,12 +147,8 @@ export function VerificationChecklist({
       {/* Checklist */}
       <div className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-4 py-3">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Verification Checklist
-          </h3>
-          <p className="mt-0.5 text-xs text-gray-500">
-            AML/CTF Act 2006 compliance requirements
-          </p>
+          <h3 className="text-sm font-semibold text-gray-900">Verification Checklist</h3>
+          <p className="mt-0.5 text-xs text-gray-500">AML/CTF Act 2006 compliance requirements</p>
         </div>
         <ul className="divide-y divide-gray-100" role="list">
           {checklist.map((item, index) => (
@@ -194,7 +194,10 @@ export function VerificationChecklist({
                     />
                   </svg>
                 ) : (
-                  <div className="h-5 w-5 rounded-full border-2 border-gray-300" aria-hidden="true" />
+                  <div
+                    className="h-5 w-5 rounded-full border-2 border-gray-300"
+                    aria-hidden="true"
+                  />
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -211,9 +214,7 @@ export function VerificationChecklist({
       {documents.length > 0 && (
         <div className="rounded-lg border border-gray-200 bg-white">
           <div className="border-b border-gray-200 px-4 py-3">
-            <h3 className="text-sm font-semibold text-gray-900">
-              Submitted Documents
-            </h3>
+            <h3 className="text-sm font-semibold text-gray-900">Submitted Documents</h3>
           </div>
           <div className="divide-y divide-gray-100">
             {(['primary', 'secondary_a', 'secondary_b', 'supporting'] as const).map((category) => {
@@ -246,7 +247,8 @@ export function VerificationChecklist({
                             />
                           </svg>
                           <span className="text-sm text-gray-900">
-                            {DOCUMENT_TYPE_LABELS[doc.document_type as AmlDocumentType] ?? doc.document_type}
+                            {DOCUMENT_TYPE_LABELS[doc.document_type as AmlDocumentType] ??
+                              doc.document_type}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">

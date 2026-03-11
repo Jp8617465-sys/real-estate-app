@@ -20,7 +20,7 @@ const VALID_BUYER_TRANSITIONS: Record<BuyerStage, BuyerStage[]> = {
   'due-diligence': ['offer-made', 'property-shortlisted', 'active-search'],
   'offer-made': ['under-contract', 'active-search', 'property-shortlisted'],
   'under-contract': ['settled', 'offer-made'],
-  'settled': [],
+  settled: [],
 };
 
 const VALID_SELLER_TRANSITIONS: Record<SellerStage, SellerStage[]> = {
@@ -29,18 +29,18 @@ const VALID_SELLER_TRANSITIONS: Record<SellerStage, SellerStage[]> = {
   'on-market': ['offers-negotiation', 'listing-preparation'],
   'offers-negotiation': ['under-contract', 'on-market'],
   'under-contract': ['settled', 'offers-negotiation'],
-  'settled': [],
+  settled: [],
 };
 
 const VALID_BUYERS_AGENT_TRANSITIONS: Record<BuyersAgentStage, BuyersAgentStage[]> = {
-  'enquiry': ['consult-qualify'],
-  'consult-qualify': ['engaged', 'enquiry'],  // can go back to enquiry
-  'engaged': ['strategy-brief', 'consult-qualify'],  // can go back
+  enquiry: ['consult-qualify'],
+  'consult-qualify': ['engaged', 'enquiry'], // can go back to enquiry
+  engaged: ['strategy-brief', 'consult-qualify'], // can go back
   'strategy-brief': ['active-search', 'engaged'],
-  'active-search': ['offer-negotiate', 'strategy-brief'],  // can refine brief
-  'offer-negotiate': ['under-contract', 'active-search'],  // back to search if offer fails
-  'under-contract': ['settled-nurture', 'offer-negotiate'],  // back if contract falls through
-  'settled-nurture': [],  // terminal
+  'active-search': ['offer-negotiate', 'strategy-brief'], // can refine brief
+  'offer-negotiate': ['under-contract', 'active-search'], // back to search if offer fails
+  'under-contract': ['settled-nurture', 'offer-negotiate'], // back if contract falls through
+  'settled-nurture': [], // terminal
 };
 
 // ─── Stage Requirements ─────────────────────────────────────────────
@@ -69,12 +69,8 @@ const BUYER_STAGE_REQUIREMENTS: Partial<Record<BuyerStage, StageRequirement[]>> 
 };
 
 const SELLER_STAGE_REQUIREMENTS: Partial<Record<SellerStage, StageRequirement[]>> = {
-  'listing-preparation': [
-    { field: 'propertyId', label: 'Property linked', required: true },
-  ],
-  'on-market': [
-    { field: 'listPrice', label: 'List price or guide set', required: true },
-  ],
+  'listing-preparation': [{ field: 'propertyId', label: 'Property linked', required: true }],
+  'on-market': [{ field: 'listPrice', label: 'List price or guide set', required: true }],
   'under-contract': [
     { field: 'contractPrice', label: 'Contract price recorded', required: true },
     { field: 'exchangeDate', label: 'Exchange date set', required: true },
@@ -83,10 +79,8 @@ const SELLER_STAGE_REQUIREMENTS: Partial<Record<SellerStage, StageRequirement[]>
 };
 
 const BUYERS_AGENT_STAGE_REQUIREMENTS: Partial<Record<BuyersAgentStage, StageRequirement[]>> = {
-  'consult-qualify': [
-    { field: 'contactId', label: 'Client contact exists', required: true },
-  ],
-  'engaged': [
+  'consult-qualify': [{ field: 'contactId', label: 'Client contact exists', required: true }],
+  engaged: [
     { field: 'agreementSigned', label: 'Engagement agreement signed', required: true },
     { field: 'retainerPaid', label: 'Retainer fee paid', required: true },
   ],
@@ -146,10 +140,7 @@ export class PipelineEngine {
   /**
    * Get requirements for entering a stage.
    */
-  static getStageRequirements(
-    pipelineType: PipelineType,
-    stage: string,
-  ): StageRequirement[] {
+  static getStageRequirements(pipelineType: PipelineType, stage: string): StageRequirement[] {
     if (pipelineType === 'buying') {
       return BUYER_STAGE_REQUIREMENTS[stage as BuyerStage] ?? [];
     }

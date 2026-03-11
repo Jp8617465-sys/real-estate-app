@@ -73,7 +73,9 @@ export async function dueDiligenceRoutes(fastify: FastifyInstance) {
       .single();
 
     if (checklistError || !checklist) {
-      return reply.status(500).send({ error: checklistError?.message ?? 'Failed to create checklist' });
+      return reply
+        .status(500)
+        .send({ error: checklistError?.message ?? 'Failed to create checklist' });
     }
 
     // Insert all generated items
@@ -154,7 +156,10 @@ export async function dueDiligenceRoutes(fastify: FastifyInstance) {
         const statuses = allItems.map((i) => i.status as string);
         const completionPercentage = DueDiligenceEngine.calculateCompletion(statuses);
         const hasBlocking = DueDiligenceEngine.hasBlockingIssues(
-          allItems.map((i) => ({ isBlocking: i.is_blocking as boolean, status: i.status as string })),
+          allItems.map((i) => ({
+            isBlocking: i.is_blocking as boolean,
+            status: i.status as string,
+          })),
         );
 
         let checklistStatus: string = 'in_progress';

@@ -29,7 +29,8 @@ const statusColors: Record<string, string> = {
 
 export function PostCard({ post }: PostCardProps) {
   // Support both multi-platform (platforms array) and legacy single-platform
-  const platforms = (post.platforms as SocialPlatform[]) ?? (post.platform ? [post.platform as string] : []);
+  const platforms =
+    (post.platforms as SocialPlatform[]) ?? (post.platform ? [post.platform as string] : []);
   const content = post.content as string;
   const status = post.status as string;
   const scheduledAt = post.scheduled_at as string | null;
@@ -42,9 +43,7 @@ export function PostCard({ post }: PostCardProps) {
   const commentsCount = analytics?.comments ?? (post.comments_count as number) ?? 0;
   const sharesCount = analytics?.shares ?? (post.shares_count as number) ?? 0;
 
-  const truncatedContent = content && content.length > 60
-    ? content.slice(0, 60) + '...'
-    : content;
+  const truncatedContent = content && content.length > 60 ? content.slice(0, 60) + '...' : content;
 
   const timeLabel = scheduledAt
     ? new Date(scheduledAt).toLocaleTimeString('en-AU', {
@@ -97,14 +96,14 @@ export function PostCard({ post }: PostCardProps) {
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <span>{mediaUrls.length} image{mediaUrls.length !== 1 ? 's' : ''}</span>
+          <span>
+            {mediaUrls.length} image{mediaUrls.length !== 1 ? 's' : ''}
+          </span>
         </div>
       )}
 
       {/* Time */}
-      {timeLabel && (
-        <p className="mt-1 text-[10px] text-gray-400">{timeLabel}</p>
-      )}
+      {timeLabel && <p className="mt-1 text-[10px] text-gray-400">{timeLabel}</p>}
 
       {/* Per-platform failure warnings */}
       {failedPlatforms.length > 0 && failedPlatforms.length < platforms.length && (

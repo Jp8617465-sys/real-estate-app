@@ -5,10 +5,7 @@ import { BaPipelineBoard } from '@/components/buyers-agent/ba-pipeline-board';
 import { usePipelineTransactions } from '@/hooks/use-pipeline';
 import { usePropertyMatches } from '@/hooks/use-property-matches';
 import { formatRelativeTime } from '@/lib/utils';
-import {
-  BUYERS_AGENT_STAGE_LABELS,
-  type BuyersAgentStage,
-} from '@realflow/shared';
+import { BUYERS_AGENT_STAGE_LABELS, type BuyersAgentStage } from '@realflow/shared';
 
 export default function BuyersAgentDashboardClient() {
   const { data: transactions } = usePipelineTransactions('buyers-agent');
@@ -30,7 +27,8 @@ export default function BuyersAgentDashboardClient() {
   }
 
   const activeClients = transactions?.length ?? 0;
-  const engagedClients = (stageCounts['engaged'] ?? 0) +
+  const engagedClients =
+    (stageCounts['engaged'] ?? 0) +
     (stageCounts['strategy-brief'] ?? 0) +
     (stageCounts['active-search'] ?? 0) +
     (stageCounts['offer-negotiate'] ?? 0);

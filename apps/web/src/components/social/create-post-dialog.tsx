@@ -31,15 +31,14 @@ export function CreatePostDialog({ onClose }: CreatePostDialogProps) {
 
   const togglePlatform = (platform: SocialPlatform) => {
     setSelectedPlatforms((prev) =>
-      prev.includes(platform)
-        ? prev.filter((p) => p !== platform)
-        : [...prev, platform],
+      prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform],
     );
   };
 
-  const minCharLimit = selectedPlatforms.length > 0
-    ? Math.min(...selectedPlatforms.map((p) => MAX_CHAR_COUNTS[p] ?? 3000))
-    : 3000;
+  const minCharLimit =
+    selectedPlatforms.length > 0
+      ? Math.min(...selectedPlatforms.map((p) => MAX_CHAR_COUNTS[p] ?? 3000))
+      : 3000;
 
   const handleSubmit = async () => {
     if (selectedPlatforms.length === 0 || !content.trim()) return;
@@ -50,7 +49,7 @@ export function CreatePostDialog({ onClose }: CreatePostDialogProps) {
         platform,
         content: content.trim(),
         imageUrl: imageUrl.trim() || undefined,
-        scheduledAt: publishNow ? undefined : (scheduledAt || undefined),
+        scheduledAt: publishNow ? undefined : scheduledAt || undefined,
       });
     }
 
@@ -68,7 +67,12 @@ export function CreatePostDialog({ onClose }: CreatePostDialogProps) {
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -80,10 +84,7 @@ export function CreatePostDialog({ onClose }: CreatePostDialogProps) {
             <label className="block text-sm font-medium text-gray-700">Platforms</label>
             <div className="mt-2 flex gap-3">
               {PLATFORMS.map((platform) => (
-                <label
-                  key={platform.value}
-                  className="flex cursor-pointer items-center gap-2"
-                >
+                <label key={platform.value} className="flex cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
                     checked={selectedPlatforms.includes(platform.value)}
@@ -143,7 +144,9 @@ export function CreatePostDialog({ onClose }: CreatePostDialogProps) {
                 <input
                   type="datetime-local"
                   value={scheduledAt}
-                  onChange={(e) => setScheduledAt(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                  onChange={(e) =>
+                    setScheduledAt(e.target.value ? new Date(e.target.value).toISOString() : '')
+                  }
                   className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                 />
               </div>

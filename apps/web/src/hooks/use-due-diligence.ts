@@ -10,10 +10,12 @@ export function useDueDiligenceChecklist(transactionId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('due_diligence_checklists')
-        .select(`
+        .select(
+          `
           *,
           items:due_diligence_items(*)
-        `)
+        `,
+        )
         .eq('transaction_id', transactionId)
         .single();
       if (error) throw error;
@@ -50,6 +52,9 @@ export function useUpdateDDItem(itemId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['due-diligence'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -74,6 +79,9 @@ export function useGenerateChecklist() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['due-diligence'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

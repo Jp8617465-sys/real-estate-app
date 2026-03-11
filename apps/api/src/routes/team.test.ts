@@ -4,11 +4,11 @@ import { teamRoutes } from './team';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const AGENT_ID    = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const AGENT_B     = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
-const OFFICE_ID   = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
-const RULE_ID     = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
-const CONTACT_ID  = 'e1b2c3d4-e5f6-7890-abcd-ef1234567894';
+const AGENT_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const AGENT_B = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
+const OFFICE_ID = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
+const RULE_ID = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
+const CONTACT_ID = 'e1b2c3d4-e5f6-7890-abcd-ef1234567894';
 const WORKFLOW_ID = 'f1b2c3d4-e5f6-7890-abcd-ef1234567895';
 
 const NOW = new Date().toISOString();
@@ -34,7 +34,9 @@ vi.mock('../middleware/supabase', () => ({
 }));
 
 vi.mock('@realflow/business-logic', () => {
-  function TeamEngine() { return mockEngine; }
+  function TeamEngine() {
+    return mockEngine;
+  }
   return { TeamEngine };
 });
 
@@ -90,7 +92,15 @@ function makeRule(overrides: Partial<Record<string, unknown>> = {}): Record<stri
 }
 
 function makeMember(id: string): Record<string, unknown> {
-  return { id, firstName: 'Agent', lastName: 'Smith', email: `agent@test.com`, role: 'agent', avatarUrl: null, isActive: true };
+  return {
+    id,
+    firstName: 'Agent',
+    lastName: 'Smith',
+    email: `agent@test.com`,
+    role: 'agent',
+    avatarUrl: null,
+    isActive: true,
+  };
 }
 
 async function buildApp() {
@@ -134,7 +144,17 @@ describe('GET /team/performance', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockEngine.getTeamPerformance.mockResolvedValue([
-      { agentId: AGENT_ID, agentName: 'Alice Chen', activeContacts: 10, activeDeals: 3, dealsClosed: 2, avgResponseHours: 1.5, leadsReceived: 8, leadsConverted: 4, conversionRate: 50 },
+      {
+        agentId: AGENT_ID,
+        agentName: 'Alice Chen',
+        activeContacts: 10,
+        activeDeals: 3,
+        dealsClosed: 2,
+        avgResponseHours: 1.5,
+        leadsReceived: 8,
+        leadsConverted: 4,
+        conversionRate: 50,
+      },
     ]);
   });
 
@@ -244,7 +264,9 @@ describe('POST /team/assignment-rules', () => {
 describe('PATCH /team/assignment-rules/:id', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockEngine.updateAssignmentRule.mockResolvedValue(makeRule({ is_active: false, isActive: false }));
+    mockEngine.updateAssignmentRule.mockResolvedValue(
+      makeRule({ is_active: false, isActive: false }),
+    );
   });
 
   it('returns 200 with updated rule', async () => {
@@ -350,7 +372,10 @@ describe('POST /team/workflow-templates/:id/share', () => {
     vi.mocked(createSupabaseClient).mockReturnValue(makeSupabase() as never);
 
     const app = await buildApp();
-    const res = await app.inject({ method: 'POST', url: `/team/workflow-templates/${WORKFLOW_ID}/share` });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/team/workflow-templates/${WORKFLOW_ID}/share`,
+    });
 
     expect(res.statusCode).toBe(204);
     expect(mockEngine.shareWorkflowTemplate).toHaveBeenCalledWith(WORKFLOW_ID, AGENT_ID);
@@ -369,7 +394,10 @@ describe('DELETE /team/workflow-templates/:id/share', () => {
     vi.mocked(createSupabaseClient).mockReturnValue(makeSupabase() as never);
 
     const app = await buildApp();
-    const res = await app.inject({ method: 'DELETE', url: `/team/workflow-templates/${WORKFLOW_ID}/share` });
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/team/workflow-templates/${WORKFLOW_ID}/share`,
+    });
 
     expect(res.statusCode).toBe(204);
   });

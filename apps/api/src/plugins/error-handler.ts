@@ -109,13 +109,12 @@ export async function errorHandlerPlugin(
   fastify.setErrorHandler((err: Error | FastifyError, request, reply) => {
     const statusCode = getStatusCode(err);
     const errorCode = getErrorCode(statusCode, err);
-    const requestId =
-      (request.headers['x-request-id'] as string | undefined) ?? request.id;
+    const requestId = (request.headers['x-request-id'] as string | undefined) ?? request.id;
 
     // Build structured log context
     const logContext = {
       requestId,
-      userId: (request.headers['x-user-id'] as string | undefined),
+      userId: request.headers['x-user-id'] as string | undefined,
       method: request.method,
       url: request.url,
       statusCode,
@@ -132,9 +131,7 @@ export async function errorHandlerPlugin(
 
     // Build error response
     const response: ErrorResponse = {
-      error: statusCode >= 500 && isProduction
-        ? 'Internal server error'
-        : err.message,
+      error: statusCode >= 500 && isProduction ? 'Internal server error' : err.message,
       code: errorCode,
       requestId,
     };

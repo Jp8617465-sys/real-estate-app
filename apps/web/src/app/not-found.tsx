@@ -29,13 +29,11 @@ export default function NotFound() {
 
         <h1 className="mb-2 text-4xl font-bold text-gray-900">404</h1>
 
-        <h2 className="mb-2 text-xl font-semibold text-gray-700">
-          Page not found
-        </h2>
+        <h2 className="mb-2 text-xl font-semibold text-gray-700">Page not found</h2>
 
         <p className="mb-8 text-gray-600">
-          The page you are looking for does not exist or may have been moved.
-          Check the URL or head back to the dashboard.
+          The page you are looking for does not exist or may have been moved. Check the URL or head
+          back to the dashboard.
         </p>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">

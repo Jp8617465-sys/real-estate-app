@@ -5,10 +5,7 @@ import type {
   PortalPropertyFeedback,
   PortalInspectionFeedback,
 } from '@realflow/shared';
-import {
-  PortalPropertyFeedbackSchema,
-  PortalInspectionFeedbackSchema,
-} from '@realflow/shared';
+import { PortalPropertyFeedbackSchema, PortalInspectionFeedbackSchema } from '@realflow/shared';
 
 // ─── Internal DB Row Types ────────────────────────────────────────────────────
 
@@ -76,9 +73,10 @@ export class PortalEngine {
 
   /**
    * Fetch the active portal_clients row for the given Supabase auth user ID.
-   * Throws if the portal client does not exist or is inactive.
+   * Returns null if the portal client does not exist (PGRST116).
+   * Throws on other database errors.
    */
-  async getPortalClient(authId: string): Promise<PortalClient> {
+  async getPortalClient(authId: string): Promise<PortalClient | null> {
     try {
       const { data, error } = await this.supabase
         .from('portal_clients')
@@ -87,9 +85,11 @@ export class PortalEngine {
         .eq('is_active', true)
         .single();
 
-      if (error || !data) {
-        throw new Error(`Portal client not found for auth_id: ${authId}`);
+      if (error) {
+        if (error.code === 'PGRST116') return null;
+        throw new Error(`Failed to fetch portal client: ${error.message}`);
       }
+      if (!data) return null;
 
       return mapPortalClientRow(data as PortalClientRow);
     } catch (err) {
@@ -106,6 +106,7 @@ export class PortalEngine {
     try {
       // Verify ownership: fetch portal client and the brief's contact_id
       const portalClient = await this.getPortalClient(authId);
+      if (!portalClient) throw new Error('Not found: portal client');
 
       const { data: brief, error: briefError } = await this.supabase
         .from('client_briefs')
@@ -197,6 +198,7 @@ export class PortalEngine {
 
       // Verify the brief belongs to this portal client
       const portalClient = await this.getPortalClient(authId);
+      if (!portalClient) throw new Error('Not found: portal client');
 
       const { data: brief, error: briefError } = await this.supabase
         .from('client_briefs')
@@ -261,6 +263,7 @@ export class PortalEngine {
 
       // Verify portal client owns this inspection's contact
       const portalClient = await this.getPortalClient(authId);
+      if (!portalClient) throw new Error('Not found: portal client');
 
       if (inspectionRow.contact_id !== portalClient.contactId) {
         throw new Error('Forbidden: inspection does not belong to this portal client');

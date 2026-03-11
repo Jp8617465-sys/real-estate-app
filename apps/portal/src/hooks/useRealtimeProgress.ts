@@ -40,9 +40,7 @@ interface RealtimeProgressResult {
  * Also invalidates timeline and dashboard queries so key dates and
  * milestones update live.
  */
-export function useRealtimeProgress(
-  options?: RealtimeProgressOptions,
-): RealtimeProgressResult {
+export function useRealtimeProgress(options?: RealtimeProgressOptions): RealtimeProgressResult {
   const { user } = useAuth();
   const { data: portalClient } = usePortalClient();
   const queryClient = useQueryClient();
@@ -122,10 +120,7 @@ export function useRealtimeProgress(
         if (subscriptionStatus === 'SUBSCRIBED') {
           setStatus('connected');
           retryCountRef.current = 0;
-        } else if (
-          subscriptionStatus === 'CHANNEL_ERROR' ||
-          subscriptionStatus === 'TIMED_OUT'
-        ) {
+        } else if (subscriptionStatus === 'CHANNEL_ERROR' || subscriptionStatus === 'TIMED_OUT') {
           setStatus('disconnected');
           const delay = getRetryDelay();
           retryCountRef.current += 1;

@@ -27,9 +27,11 @@ function TaskCheckbox({ taskId, isCompleted }: { taskId: string; isCompleted: bo
 
 export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
-  const { data: tasks, isLoading, error } = useTasks(
-    statusFilter ? { status: statusFilter } : undefined,
-  );
+  const {
+    data: tasks,
+    isLoading,
+    error,
+  } = useTasks(statusFilter ? { status: statusFilter } : undefined);
 
   return (
     <div className="space-y-6">
@@ -85,7 +87,9 @@ export default function TasksPage() {
         <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-12">
           <p className="text-sm font-medium text-gray-900">No tasks found</p>
           <p className="mt-1 text-sm text-gray-500">
-            {statusFilter ? 'Try changing the filter or create a new task.' : 'Create your first task to get started.'}
+            {statusFilter
+              ? 'Try changing the filter or create a new task.'
+              : 'Create your first task to get started.'}
           </p>
         </div>
       )}
@@ -97,20 +101,41 @@ export default function TasksPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="w-8 px-6 py-3" />
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Task</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Priority</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Due</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  Task
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  Priority
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  Due
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {tasks.map((task: Record<string, string>) => (
-                <tr key={task.id} className={cn('transition-colors', task.status === 'completed' ? 'bg-gray-50 opacity-60' : 'hover:bg-gray-50')}>
+                <tr
+                  key={task.id}
+                  className={cn(
+                    'transition-colors',
+                    task.status === 'completed' ? 'bg-gray-50 opacity-60' : 'hover:bg-gray-50',
+                  )}
+                >
                   <td className="px-6 py-4">
                     <TaskCheckbox taskId={task.id} isCompleted={task.status === 'completed'} />
                   </td>
                   <td className="px-6 py-4">
-                    <p className={cn('text-sm font-medium', task.status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-900')}>
+                    <p
+                      className={cn(
+                        'text-sm font-medium',
+                        task.status === 'completed'
+                          ? 'text-gray-400 line-through'
+                          : 'text-gray-900',
+                      )}
+                    >
                       {task.title}
                     </p>
                     <p className="text-xs capitalize text-gray-500">{task.type}</p>

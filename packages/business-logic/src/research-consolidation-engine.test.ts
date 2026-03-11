@@ -128,7 +128,8 @@ function createInspection(overrides?: Partial<Inspection>): Inspection {
     inspectionDate: '2026-01-12T10:00:00.000Z',
     timeSpentMinutes: 45,
     overallImpression: 'positive',
-    conditionNotes: 'Property is in excellent condition with recent renovations to the kitchen and bathrooms.',
+    conditionNotes:
+      'Property is in excellent condition with recent renovations to the kitchen and bathrooms.',
     clientSuitability: 'match',
     photos: [],
     agentNotes: 'Client loved the outdoor entertaining area and proximity to the beach.',
@@ -244,7 +245,9 @@ function createMarketSnapshot(overrides?: Partial<MarketSnapshot>): MarketSnapsh
   };
 }
 
-function createDefaultDataInput(overrides?: Partial<ConsolidationDataInput>): ConsolidationDataInput {
+function createDefaultDataInput(
+  overrides?: Partial<ConsolidationDataInput>,
+): ConsolidationDataInput {
   return {
     clientBrief: createClientBrief(),
     propertyMatches: [createPropertyMatch()],
@@ -450,7 +453,9 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ propertyMatches: [match] });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      expect(result.propertyRankings![0]!.address).toBe('15/28 Campbell Street, Surry Hills NSW 2010');
+      expect(result.propertyRankings![0]!.address).toBe(
+        '15/28 Campbell Street, Surry Hills NSW 2010',
+      );
     });
 
     it('includes inspection summary when inspection exists for property', () => {
@@ -640,7 +645,9 @@ describe('ResearchConsolidationEngine', () => {
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
       const financialRisks = result.risks!.filter((r) => r.category === 'financial');
-      expect(financialRisks.some((r) => r.description.includes('exceed the maximum budget'))).toBe(true);
+      expect(financialRisks.some((r) => r.description.includes('exceed the maximum budget'))).toBe(
+        true,
+      );
       expect(financialRisks[0]!.severity).toBe('high');
     });
 
@@ -667,7 +674,9 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const expiryRisks = result.risks!.filter((r) => r.description.includes('Pre-approval expires'));
+      const expiryRisks = result.risks!.filter((r) =>
+        r.description.includes('Pre-approval expires'),
+      );
       expect(expiryRisks).toHaveLength(1);
       expect(expiryRisks[0]!.severity).toBe('high');
     });
@@ -682,7 +691,9 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const expiryRisks = result.risks!.filter((r) => r.description.includes('Pre-approval expires'));
+      const expiryRisks = result.risks!.filter((r) =>
+        r.description.includes('Pre-approval expires'),
+      );
       expect(expiryRisks).toHaveLength(1);
       expect(expiryRisks[0]!.severity).toBe('medium');
     });
@@ -774,8 +785,8 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ propertyMatches: [match] });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const reviewActions = result.recommendedActions!.filter(
-        (a) => a.action.includes('high-scoring'),
+      const reviewActions = result.recommendedActions!.filter((a) =>
+        a.action.includes('high-scoring'),
       );
       expect(reviewActions).toHaveLength(1);
       expect(reviewActions[0]!.priority).toBe('high');
@@ -787,8 +798,8 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ propertyMatches: [match] });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const reviewActions = result.recommendedActions!.filter(
-        (a) => a.action.includes('high-scoring'),
+      const reviewActions = result.recommendedActions!.filter((a) =>
+        a.action.includes('high-scoring'),
       );
       expect(reviewActions).toHaveLength(0);
     });
@@ -798,8 +809,8 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ propertyMatches: [match] });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const inspectionActions = result.recommendedActions!.filter(
-        (a) => a.action.includes('inspections to attend'),
+      const inspectionActions = result.recommendedActions!.filter((a) =>
+        a.action.includes('inspections to attend'),
       );
       expect(inspectionActions).toHaveLength(1);
     });
@@ -809,8 +820,8 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ propertyMatches: [match] });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const offerActions = result.recommendedActions!.filter(
-        (a) => a.action.includes('offer strategy'),
+      const offerActions = result.recommendedActions!.filter((a) =>
+        a.action.includes('offer strategy'),
       );
       expect(offerActions).toHaveLength(1);
     });
@@ -824,8 +835,8 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ offers: [submittedOffer, counteredOffer] });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const followUpActions = result.recommendedActions!.filter(
-        (a) => a.action.includes('active offers'),
+      const followUpActions = result.recommendedActions!.filter((a) =>
+        a.action.includes('active offers'),
       );
       expect(followUpActions).toHaveLength(1);
       expect(followUpActions[0]!.action).toContain('2');
@@ -841,8 +852,8 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const renewalActions = result.recommendedActions!.filter(
-        (a) => a.action.includes('pre-approval renewal'),
+      const renewalActions = result.recommendedActions!.filter((a) =>
+        a.action.includes('pre-approval renewal'),
       );
       expect(renewalActions).toHaveLength(1);
       expect(renewalActions[0]!.assignee).toBe('client');
@@ -854,8 +865,8 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ clientBrief: brief });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const signOffActions = result.recommendedActions!.filter(
-        (a) => a.action.includes('sign-off'),
+      const signOffActions = result.recommendedActions!.filter((a) =>
+        a.action.includes('sign-off'),
       );
       expect(signOffActions).toHaveLength(1);
     });
@@ -864,8 +875,8 @@ describe('ResearchConsolidationEngine', () => {
       const data = createDefaultDataInput({ marketData: [] });
       const result = ResearchConsolidationEngine.consolidate(data, createDefaultOptions());
 
-      const marketActions = result.recommendedActions!.filter(
-        (a) => a.action.includes('market data'),
+      const marketActions = result.recommendedActions!.filter((a) =>
+        a.action.includes('market data'),
       );
       expect(marketActions).toHaveLength(1);
     });
@@ -1103,8 +1114,14 @@ describe('ResearchConsolidationEngine', () => {
     });
 
     it('consolidatePropertyComparison filters to specified property IDs', () => {
-      const match1 = createPropertyMatch({ propertyId: 'prop-a', property: createProperty({ id: 'prop-a' }) });
-      const match2 = createPropertyMatch({ propertyId: 'prop-b', property: createProperty({ id: 'prop-b' }) });
+      const match1 = createPropertyMatch({
+        propertyId: 'prop-a',
+        property: createProperty({ id: 'prop-a' }),
+      });
+      const match2 = createPropertyMatch({
+        propertyId: 'prop-b',
+        property: createProperty({ id: 'prop-b' }),
+      });
       const data = createDefaultDataInput({ propertyMatches: [match1, match2] });
       const result = ResearchConsolidationEngine.consolidatePropertyComparison(data, ['prop-a']);
 

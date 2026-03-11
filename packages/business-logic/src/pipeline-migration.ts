@@ -1,9 +1,4 @@
-import type {
-  BuyerStage,
-  BuyersAgentStage,
-  BuyerProfile,
-  PropertyType,
-} from '@realflow/shared';
+import type { BuyerStage, BuyersAgentStage, BuyerProfile, PropertyType } from '@realflow/shared';
 import type { ClientBriefDbRow } from './client-brief-transformer';
 
 // ─── Migration Context ──────────────────────────────────────────────
@@ -104,7 +99,9 @@ export class PipelineMigrationEngine {
     // ──────────────────────────────────────────────────────────────────
     if (context.currentStage === 'under-contract') {
       if (!context.hasContract) {
-        warnings.push('Stage is under-contract but no contract record found. Verify contract details.');
+        warnings.push(
+          'Stage is under-contract but no contract record found. Verify contract details.',
+        );
       }
       if (!context.exchangeDate) {
         warnings.push('Missing exchange date. Add contract details to track key dates.');
@@ -154,7 +151,10 @@ export class PipelineMigrationEngine {
       }
 
       // Active offer statuses
-      if (context.offerStatus && ['preparing', 'submitted', 'countered'].includes(context.offerStatus)) {
+      if (
+        context.offerStatus &&
+        ['preparing', 'submitted', 'countered'].includes(context.offerStatus)
+      ) {
         return {
           targetStage: 'offer-negotiate',
           requiresBriefCreation: !context.hasClientBrief,
@@ -183,7 +183,8 @@ export class PipelineMigrationEngine {
       context.hasProperty ||
       context.currentStage === 'property-shortlisted' ||
       context.currentStage === 'due-diligence' ||
-      (context.hasOffer && ['preparing', 'submitted', 'countered'].includes(context.offerStatus ?? ''))
+      (context.hasOffer &&
+        ['preparing', 'submitted', 'countered'].includes(context.offerStatus ?? ''))
     ) {
       // Check if brief exists - if not, flag for creation
       if (!context.hasClientBrief) {
@@ -258,7 +259,9 @@ export class PipelineMigrationEngine {
       // This is an edge case - they're searching without proper onboarding
       if (!context.hasClientBrief) {
         requiresBriefCreation = true;
-        warnings.push('In active search but no brief found. Brief will be auto-generated to formalize requirements.');
+        warnings.push(
+          'In active search but no brief found. Brief will be auto-generated to formalize requirements.',
+        );
       }
 
       return {
@@ -289,7 +292,9 @@ export class PipelineMigrationEngine {
     // ──────────────────────────────────────────────────────────────────
     // DEFAULT: Early stage enquiry
     // ──────────────────────────────────────────────────────────────────
-    warnings.push('Minimal data available. Defaulting to enquiry stage. Review and progress manually if needed.');
+    warnings.push(
+      'Minimal data available. Defaulting to enquiry stage. Review and progress manually if needed.',
+    );
 
     return {
       targetStage: 'enquiry',
@@ -470,13 +475,17 @@ export class PipelineMigrationEngine {
 
     // Check for missing critical data
     if (!buyerProfile.suburbs || buyerProfile.suburbs.length === 0) {
-      warnings.push('Suburb preferences are missing. Add specific suburbs with state and postcode.');
+      warnings.push(
+        'Suburb preferences are missing. Add specific suburbs with state and postcode.',
+      );
     } else {
       warnings.push('Suburb data needs state and postcode completion.');
     }
 
     if (!buyerProfile.propertyTypes || buyerProfile.propertyTypes.length === 0) {
-      warnings.push('Property type preferences are missing. Specify house/unit/townhouse preferences.');
+      warnings.push(
+        'Property type preferences are missing. Specify house/unit/townhouse preferences.',
+      );
     }
 
     if (!buyerProfile.preApproved) {

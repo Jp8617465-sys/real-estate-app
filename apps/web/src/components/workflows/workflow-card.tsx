@@ -92,12 +92,15 @@ export function WorkflowCard({ workflow, lastRun }: WorkflowCardProps) {
           <span
             className={cn(
               'inline-block h-1.5 w-1.5 rounded-full',
-              lastRun.status === 'completed' ? 'bg-green-500' : lastRun.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500',
+              lastRun.status === 'completed'
+                ? 'bg-green-500'
+                : lastRun.status === 'failed'
+                  ? 'bg-red-500'
+                  : 'bg-yellow-500',
             )}
           />
           <span>
-            Last run {new Date(lastRun.started_at).toLocaleDateString('en-AU')} -{' '}
-            {lastRun.status}
+            Last run {new Date(lastRun.started_at).toLocaleDateString('en-AU')} - {lastRun.status}
           </span>
         </div>
       )}

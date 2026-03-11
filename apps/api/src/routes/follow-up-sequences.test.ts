@@ -248,9 +248,7 @@ describe('GET /api/v1/sequences/:id/enrollments', () => {
   const sequenceId = '00000000-0000-0000-0000-000000000001';
 
   it('returns enrollments for a sequence', async () => {
-    const enrollments = [
-      { id: '00000000-0000-0000-0000-000000000050', status: 'active' },
-    ];
+    const enrollments = [{ id: '00000000-0000-0000-0000-000000000050', status: 'active' }];
 
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({

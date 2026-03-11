@@ -73,12 +73,8 @@ export default function SellingAgentsClient() {
               email: string | null;
               phone: string | null;
             } | null;
-            const name = contact
-              ? `${contact.first_name} ${contact.last_name}`
-              : 'Unknown';
-            const initials = contact
-              ? `${contact.first_name[0]}${contact.last_name[0]}`
-              : '??';
+            const name = contact ? `${contact.first_name} ${contact.last_name}` : 'Unknown';
+            const initials = contact ? `${contact.first_name[0]}${contact.last_name[0]}` : '??';
             const relationshipScore = agent.relationship_score as number | null;
             const suburbs = (agent.suburbs as string[]) ?? [];
             const tags = (agent.tags as string[]) ?? [];

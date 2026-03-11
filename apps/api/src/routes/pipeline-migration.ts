@@ -186,7 +186,9 @@ async function fetchMigrationContext(
     retainerPaidDate: feeStructure?.retainer_paid_date,
 
     // Buyer profile from contact JSONB (Supabase returns join as array for !inner)
-    buyerProfile: (transaction.contacts as unknown as ContactJoin | null)?.buyer_profile as BuyerProfile | undefined,
+    buyerProfile: (transaction.contacts as unknown as ContactJoin | null)?.buyer_profile as
+      | BuyerProfile
+      | undefined,
   };
 
   return context;
@@ -249,8 +251,7 @@ export async function pipelineMigrationRoutes(fastify: FastifyInstance) {
           continue;
         }
 
-        const decision: MigrationDecision =
-          PipelineMigrationEngine.determineTargetStage(context);
+        const decision: MigrationDecision = PipelineMigrationEngine.determineTargetStage(context);
 
         previews.push({
           transactionId: context.transactionId,
@@ -322,8 +323,7 @@ export async function pipelineMigrationRoutes(fastify: FastifyInstance) {
           }
 
           // Get migration decision
-          const decision: MigrationDecision =
-            PipelineMigrationEngine.determineTargetStage(context);
+          const decision: MigrationDecision = PipelineMigrationEngine.determineTargetStage(context);
 
           let clientBriefId: string | undefined = context.clientBriefId;
 

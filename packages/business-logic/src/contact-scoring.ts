@@ -44,9 +44,7 @@ export class ContactScoring {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const recentOnes = recentActivities.filter(
-      (a) => new Date(a.createdAt) >= thirtyDaysAgo,
-    );
+    const recentOnes = recentActivities.filter((a) => new Date(a.createdAt) >= thirtyDaysAgo);
 
     for (const activity of recentOnes) {
       switch (activity.type) {

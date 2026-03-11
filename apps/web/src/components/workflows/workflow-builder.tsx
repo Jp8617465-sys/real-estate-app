@@ -82,18 +82,20 @@ export function WorkflowBuilder({
   });
 
   const [conditions, setConditions] = useState<WorkflowCondition[]>(initialConditions ?? []);
-  const [actions, setActions] = useState<Array<{ type: string; config: Record<string, string> }>>(() => {
-    if (!initialActions?.length) return [];
-    return initialActions.map((action) => {
-      const config: Record<string, string> = {};
-      Object.entries(action).forEach(([key, val]) => {
-        if (key !== 'type' && val !== undefined) {
-          config[key] = typeof val === 'object' ? JSON.stringify(val) : String(val);
-        }
+  const [actions, setActions] = useState<Array<{ type: string; config: Record<string, string> }>>(
+    () => {
+      if (!initialActions?.length) return [];
+      return initialActions.map((action) => {
+        const config: Record<string, string> = {};
+        Object.entries(action).forEach(([key, val]) => {
+          if (key !== 'type' && val !== undefined) {
+            config[key] = typeof val === 'object' ? JSON.stringify(val) : String(val);
+          }
+        });
+        return { type: action.type, config };
       });
-      return { type: action.type, config };
-    });
-  });
+    },
+  );
 
   // ─── Trigger Builder ────────────────────────────────────────────
 
@@ -148,7 +150,11 @@ export function WorkflowBuilder({
         case 'assign_contact':
           return { type: 'assign_contact' as const, agentId: a.config.agentId ?? '' };
         case 'update_field':
-          return { type: 'update_field' as const, field: a.config.field ?? '', value: a.config.value ?? '' };
+          return {
+            type: 'update_field' as const,
+            field: a.config.field ?? '',
+            value: a.config.value ?? '',
+          };
         case 'add_tag':
           return { type: 'add_tag' as const, tag: a.config.tag ?? '' };
         case 'notify_agent':
@@ -203,7 +209,10 @@ export function WorkflowBuilder({
     setActions(actions.filter((_, i) => i !== index));
   }
 
-  function updateAction(index: number, updates: { type?: string; config?: Record<string, string> }) {
+  function updateAction(
+    index: number,
+    updates: { type?: string; config?: Record<string, string> },
+  ) {
     setActions(
       actions.map((a, i) => {
         if (i !== index) return a;
@@ -278,7 +287,9 @@ export function WorkflowBuilder({
           className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           {TRIGGER_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
           ))}
         </select>
 
@@ -422,7 +433,10 @@ export function WorkflowBuilder({
         )}
 
         {conditions.map((condition, index) => (
-          <div key={index} className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <div
+            key={index}
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
+          >
             <input
               type="text"
               value={condition.field}
@@ -432,11 +446,17 @@ export function WorkflowBuilder({
             />
             <select
               value={condition.operator}
-              onChange={(e) => updateCondition(index, { operator: e.target.value as WorkflowCondition['operator'] })}
+              onChange={(e) =>
+                updateCondition(index, {
+                  operator: e.target.value as WorkflowCondition['operator'],
+                })
+              }
               className="block rounded border border-gray-300 px-2 py-1.5 text-sm"
             >
               {CONDITION_OPERATORS.map((op) => (
-                <option key={op.value} value={op.value}>{op.label}</option>
+                <option key={op.value} value={op.value}>
+                  {op.label}
+                </option>
               ))}
             </select>
             {condition.operator !== 'is_empty' && condition.operator !== 'is_not_empty' && (
@@ -493,7 +513,9 @@ export function WorkflowBuilder({
                 className="block flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
               >
                 {ACTION_TYPES.map((at) => (
-                  <option key={at.value} value={at.value}>{at.label}</option>
+                  <option key={at.value} value={at.value}>
+                    {at.label}
+                  </option>
                 ))}
               </select>
               <div className="flex items-center gap-1">
@@ -529,7 +551,11 @@ export function WorkflowBuilder({
                 <input
                   type="text"
                   value={action.config.templateId ?? ''}
-                  onChange={(e) => updateAction(index, { config: { ...action.config, templateId: e.target.value } })}
+                  onChange={(e) =>
+                    updateAction(index, {
+                      config: { ...action.config, templateId: e.target.value },
+                    })
+                  }
                   className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                   placeholder="Template ID"
                 />
@@ -540,7 +566,11 @@ export function WorkflowBuilder({
                   <input
                     type="text"
                     value={action.config.taskTitle ?? ''}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, taskTitle: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, {
+                        config: { ...action.config, taskTitle: e.target.value },
+                      })
+                    }
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                     placeholder="Task title"
                   />
@@ -548,14 +578,22 @@ export function WorkflowBuilder({
                     <input
                       type="text"
                       value={action.config.taskType ?? 'general'}
-                      onChange={(e) => updateAction(index, { config: { ...action.config, taskType: e.target.value } })}
+                      onChange={(e) =>
+                        updateAction(index, {
+                          config: { ...action.config, taskType: e.target.value },
+                        })
+                      }
                       className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                       placeholder="Task type"
                     />
                     <input
                       type="number"
                       value={action.config.dueDaysFromNow ?? '0'}
-                      onChange={(e) => updateAction(index, { config: { ...action.config, dueDaysFromNow: e.target.value } })}
+                      onChange={(e) =>
+                        updateAction(index, {
+                          config: { ...action.config, dueDaysFromNow: e.target.value },
+                        })
+                      }
                       className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                       placeholder="Due in days"
                       min={0}
@@ -568,7 +606,9 @@ export function WorkflowBuilder({
                 <input
                   type="text"
                   value={action.config.message ?? ''}
-                  onChange={(e) => updateAction(index, { config: { ...action.config, message: e.target.value } })}
+                  onChange={(e) =>
+                    updateAction(index, { config: { ...action.config, message: e.target.value } })
+                  }
                   className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                   placeholder="Notification message"
                 />
@@ -578,7 +618,9 @@ export function WorkflowBuilder({
                 <input
                   type="text"
                   value={action.config.tag ?? ''}
-                  onChange={(e) => updateAction(index, { config: { ...action.config, tag: e.target.value } })}
+                  onChange={(e) =>
+                    updateAction(index, { config: { ...action.config, tag: e.target.value } })
+                  }
                   className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                   placeholder="Tag name"
                 />
@@ -588,7 +630,9 @@ export function WorkflowBuilder({
                 <input
                   type="text"
                   value={action.config.duration ?? '1d'}
-                  onChange={(e) => updateAction(index, { config: { ...action.config, duration: e.target.value } })}
+                  onChange={(e) =>
+                    updateAction(index, { config: { ...action.config, duration: e.target.value } })
+                  }
                   className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                   placeholder="Duration (e.g., 7d, 24h, 30m)"
                 />
@@ -599,7 +643,11 @@ export function WorkflowBuilder({
                   <input
                     type="number"
                     value={action.config.daysFromNow ?? '7'}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, daysFromNow: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, {
+                        config: { ...action.config, daysFromNow: e.target.value },
+                      })
+                    }
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                     placeholder="Days from now"
                     min={1}
@@ -607,7 +655,11 @@ export function WorkflowBuilder({
                   <input
                     type="text"
                     value={action.config.taskType ?? 'follow-up'}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, taskType: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, {
+                        config: { ...action.config, taskType: e.target.value },
+                      })
+                    }
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                     placeholder="Task type"
                   />
@@ -618,7 +670,9 @@ export function WorkflowBuilder({
                 <input
                   type="text"
                   value={action.config.agentId ?? ''}
-                  onChange={(e) => updateAction(index, { config: { ...action.config, agentId: e.target.value } })}
+                  onChange={(e) =>
+                    updateAction(index, { config: { ...action.config, agentId: e.target.value } })
+                  }
                   className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                   placeholder="Agent ID (UUID)"
                 />
@@ -629,14 +683,18 @@ export function WorkflowBuilder({
                   <input
                     type="text"
                     value={action.config.field ?? ''}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, field: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, { config: { ...action.config, field: e.target.value } })
+                    }
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                     placeholder="Field name"
                   />
                   <input
                     type="text"
                     value={action.config.value ?? ''}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, value: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, { config: { ...action.config, value: e.target.value } })
+                    }
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                     placeholder="New value"
                   />
@@ -648,13 +706,17 @@ export function WorkflowBuilder({
                   <input
                     type="url"
                     value={action.config.url ?? ''}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, url: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, { config: { ...action.config, url: e.target.value } })
+                    }
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                     placeholder="Webhook URL"
                   />
                   <textarea
                     value={action.config.payload ?? '{}'}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, payload: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, { config: { ...action.config, payload: e.target.value } })
+                    }
                     rows={2}
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm font-mono"
                     placeholder="JSON payload"
@@ -667,14 +729,22 @@ export function WorkflowBuilder({
                   <input
                     type="text"
                     value={action.config.platforms ?? 'facebook'}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, platforms: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, {
+                        config: { ...action.config, platforms: e.target.value },
+                      })
+                    }
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                     placeholder="Platforms (comma-separated)"
                   />
                   <input
                     type="text"
                     value={action.config.templateId ?? ''}
-                    onChange={(e) => updateAction(index, { config: { ...action.config, templateId: e.target.value } })}
+                    onChange={(e) =>
+                      updateAction(index, {
+                        config: { ...action.config, templateId: e.target.value },
+                      })
+                    }
                     className="block w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                     placeholder="Template ID"
                   />

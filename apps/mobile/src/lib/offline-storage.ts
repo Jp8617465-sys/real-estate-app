@@ -14,14 +14,11 @@ function globalKey(key: string): string {
 // ─── Storage Keys ──────────────────────────────────────────────────
 export const StorageKeys = {
   contacts: (userId: string) => userKey(userId, 'contacts'),
-  pipeline: (userId: string, pipelineType: string) =>
-    userKey(userId, `pipeline:${pipelineType}`),
+  pipeline: (userId: string, pipelineType: string) => userKey(userId, `pipeline:${pipelineType}`),
   syncQueue: (userId: string) => userKey(userId, 'sync-queue'),
   syncQueueDeadLetter: (userId: string) => userKey(userId, 'sync-queue:dead-letter'),
-  lastSyncTimestamp: (userId: string, entity: string) =>
-    userKey(userId, `last-sync:${entity}`),
-  cachedData: (userId: string, cacheKey: string) =>
-    userKey(userId, `cache:${cacheKey}`),
+  lastSyncTimestamp: (userId: string, entity: string) => userKey(userId, `last-sync:${entity}`),
+  cachedData: (userId: string, cacheKey: string) => userKey(userId, `cache:${cacheKey}`),
   currentUserId: () => globalKey('current-user-id'),
 } as const;
 
@@ -96,11 +93,7 @@ export async function storageGetWithMeta<T>(
 /**
  * Set a typed value in AsyncStorage with optional TTL (in milliseconds).
  */
-export async function storageSet<T>(
-  key: string,
-  data: T,
-  ttlMs?: number,
-): Promise<void> {
+export async function storageSet<T>(key: string, data: T, ttlMs?: number): Promise<void> {
   const now = new Date();
   const entry: StorageEntry<T> = {
     data,
@@ -133,9 +126,7 @@ export async function storageHas(key: string): Promise<boolean> {
 /**
  * Get multiple values at once.
  */
-export async function storageMultiGet<T>(
-  keys: string[],
-): Promise<Map<string, T>> {
+export async function storageMultiGet<T>(keys: string[]): Promise<Map<string, T>> {
   const pairs = await AsyncStorage.multiGet(keys);
   const result = new Map<string, T>();
 

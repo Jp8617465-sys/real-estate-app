@@ -33,9 +33,7 @@ export function ComplianceStatCard({
           >
             {value}
           </p>
-          {subtitle && (
-            <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
-          )}
+          {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
         </div>
         <div
           className={cn(

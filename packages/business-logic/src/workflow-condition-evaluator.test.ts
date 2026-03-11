@@ -364,7 +364,7 @@ describe('evaluateConditionNode — compound AND/OR/NOT', () => {
     const node: CompoundCondition = {
       logic: 'OR',
       conditions: [
-        makeCondition('leadScore', 'greater_than', 70),   // false
+        makeCondition('leadScore', 'greater_than', 70), // false
         makeCondition('stage', 'equals', 'offer_submitted'), // true
       ],
     };

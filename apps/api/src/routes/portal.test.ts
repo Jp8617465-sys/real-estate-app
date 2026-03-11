@@ -54,8 +54,8 @@ import { portalRoutes } from './portal';
 
 // ─── UUIDs ────────────────────────────────────────────────────────────────────
 
-const BRIEF_ID      = '00000000-0000-4000-a000-000000000005';
-const MATCH_ID      = '00000000-0000-4000-a000-000000000006';
+const BRIEF_ID = '00000000-0000-4000-a000-000000000005';
+const MATCH_ID = '00000000-0000-4000-a000-000000000006';
 const INSPECTION_ID = '00000000-0000-4000-a000-000000000007';
 
 const NOW = new Date().toISOString();
@@ -120,7 +120,13 @@ describe('GET /api/v1/portal/me', () => {
       contact_id: 'contact-1',
       agent_id: 'agent-1',
       is_active: true,
-      contact: { id: 'contact-1', first_name: 'Sarah', last_name: 'Johnson', email: 'sarah@test.com', phone: '0400000000' },
+      contact: {
+        id: 'contact-1',
+        first_name: 'Sarah',
+        last_name: 'Johnson',
+        email: 'sarah@test.com',
+        phone: '0400000000',
+      },
       agent: { id: 'agent-1', full_name: 'Alex Morgan', email: 'alex@test.com' },
     };
 
@@ -153,11 +159,14 @@ describe('GET /api/v1/portal/me', () => {
   });
 
   it('returns 404 when portal client not found', async () => {
+    // The portal route checks error.code === 'PGRST116' (Supabase "no rows" code) to return 404.
     hoisted.from.mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
+            single: vi
+              .fn()
+              .mockResolvedValue({ data: null, error: { code: 'PGRST116', message: 'Not found' } }),
           }),
         }),
       }),
@@ -435,9 +444,7 @@ describe('POST /api/v1/portal/properties/:id/feedback', () => {
   });
 
   it('returns 404 when engine throws a not-found error', async () => {
-    hoisted.recordMatchFeedback.mockRejectedValue(
-      new Error('Property match not found: some-id'),
-    );
+    hoisted.recordMatchFeedback.mockRejectedValue(new Error('Property match not found: some-id'));
 
     const app = await buildApp();
     const response = await app.inject({
@@ -581,9 +588,7 @@ describe('POST /api/v1/portal/inspections/:id/feedback', () => {
   });
 
   it('returns 404 when engine throws a not-found error', async () => {
-    hoisted.recordInspectionFeedback.mockRejectedValue(
-      new Error('Inspection not found: some-id'),
-    );
+    hoisted.recordInspectionFeedback.mockRejectedValue(new Error('Inspection not found: some-id'));
 
     const app = await buildApp();
     const response = await app.inject({
@@ -593,5 +598,366 @@ describe('POST /api/v1/portal/inspections/:id/feedback', () => {
     });
 
     expect(response.statusCode).toBe(404);
+  });
+
+  it('returns 403 when engine throws a Forbidden error', async () => {
+    hoisted.recordInspectionFeedback.mockRejectedValue(new Error('Forbidden: inspection does not belong to this portal client'));
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/v1/portal/inspections/${INSPECTION_ID}/feedback`,
+      payload: { rating: 3 },
+    });
+
+    expect(response.statusCode).toBe(403);
+  });
+
+  it('returns 500 on generic engine error', async () => {
+    hoisted.recordInspectionFeedback.mockRejectedValue(new Error('DB connection lost'));
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/v1/portal/inspections/${INSPECTION_ID}/feedback`,
+      payload: { rating: 3 },
+    });
+
+    expect(response.statusCode).toBe(500);
+  });
+});
+
+// ─── GET /me - additional branches ────────────────────────────────────────────
+
+describe('GET /api/v1/portal/me - additional branches', () => {
+  it('returns 500 on non-PGRST116 database error', async () => {
+    hoisted.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: null,
+              error: { code: 'OTHER_ERROR', message: 'Connection failed' },
+            }),
+          }),
+        }),
+      }),
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/portal/me' });
+
+    expect(response.statusCode).toBe(500);
+  });
+});
+
+// ─── GET /transaction - additional branches ────────────────────────────────────
+
+describe('GET /api/v1/portal/transaction - additional branches', () => {
+  it('returns 404 when portal client not found', async () => {
+    hoisted.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
+          }),
+        }),
+      }),
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/portal/transaction' });
+
+    expect(response.statusCode).toBe(404);
+  });
+
+  it('returns 404 when no active transaction (PGRST116)', async () => {
+    const portalClient = { contact_id: '00000000-0000-4000-a000-000000000003' };
+
+    let callCount = 0;
+    hoisted.from.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: portalClient, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: { code: 'PGRST116', message: 'No rows' },
+                }),
+              }),
+            }),
+          }),
+        }),
+      };
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/portal/transaction' });
+
+    expect(response.statusCode).toBe(404);
+    const body = JSON.parse(response.payload);
+    expect(body.error).toBe('No active transaction found');
+  });
+
+  it('returns 500 on non-PGRST116 transaction fetch error', async () => {
+    const portalClient = { contact_id: '00000000-0000-4000-a000-000000000003' };
+
+    let callCount = 0;
+    hoisted.from.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: portalClient, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: { code: 'OTHER_ERROR', message: 'DB failure' },
+                }),
+              }),
+            }),
+          }),
+        }),
+      };
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/portal/transaction' });
+
+    expect(response.statusCode).toBe(500);
+  });
+});
+
+// ─── GET /agent - additional branches ─────────────────────────────────────────
+
+describe('GET /api/v1/portal/agent - additional branches', () => {
+  it('returns 404 when portal client not found', async () => {
+    hoisted.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
+          }),
+        }),
+      }),
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/portal/agent' });
+
+    expect(response.statusCode).toBe(404);
+  });
+
+  it('returns 404 when agent not found (PGRST116)', async () => {
+    const portalClient = { agent_id: '00000000-0000-4000-a000-000000000009' };
+
+    let callCount = 0;
+    hoisted.from.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: portalClient, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: null,
+              error: { code: 'PGRST116', message: 'No rows' },
+            }),
+          }),
+        }),
+      };
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/portal/agent' });
+
+    expect(response.statusCode).toBe(404);
+    const body = JSON.parse(response.payload);
+    expect(body.error).toBe('Agent not found');
+  });
+
+  it('returns 500 on non-PGRST116 agent fetch error', async () => {
+    const portalClient = { agent_id: '00000000-0000-4000-a000-000000000009' };
+
+    let callCount = 0;
+    hoisted.from.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: portalClient, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: null,
+              error: { code: 'OTHER_ERROR', message: 'DB error' },
+            }),
+          }),
+        }),
+      };
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/portal/agent' });
+
+    expect(response.statusCode).toBe(500);
+  });
+});
+
+// ─── POST /brief/acknowledge - additional branches ────────────────────────────
+
+describe('POST /api/v1/portal/brief/acknowledge - additional branches', () => {
+  it('returns 403 when engine throws a Forbidden error', async () => {
+    hoisted.acknowledgeBrief.mockRejectedValue(
+      new Error('Forbidden: brief does not belong to this portal client'),
+    );
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/portal/brief/acknowledge',
+      payload: { clientBriefId: BRIEF_ID, acknowledgedAt: NOW },
+    });
+
+    expect(response.statusCode).toBe(403);
+  });
+
+  it('returns 500 on generic engine error', async () => {
+    hoisted.acknowledgeBrief.mockRejectedValue(new Error('DB connection lost'));
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/portal/brief/acknowledge',
+      payload: { clientBriefId: BRIEF_ID, acknowledgedAt: NOW },
+    });
+
+    expect(response.statusCode).toBe(500);
+  });
+});
+
+// ─── GET /properties - error branches ─────────────────────────────────────────
+
+describe('GET /api/v1/portal/properties - error branches', () => {
+  it('returns 500 when getSentMatches engine throws', async () => {
+    hoisted.getSentMatches.mockRejectedValue(new Error('DB failure'));
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/v1/portal/properties?briefId=${BRIEF_ID}`,
+    });
+
+    expect(response.statusCode).toBe(500);
+  });
+});
+
+// ─── POST /properties/:id/feedback - additional branches ──────────────────────
+
+describe('POST /api/v1/portal/properties/:id/feedback - additional branches', () => {
+  it('returns 403 when engine throws a Forbidden error', async () => {
+    hoisted.recordMatchFeedback.mockRejectedValue(
+      new Error('Forbidden: match does not belong to this portal client'),
+    );
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/v1/portal/properties/${MATCH_ID}/feedback`,
+      payload: { feedback: 'interested' },
+    });
+
+    expect(response.statusCode).toBe(403);
+  });
+
+  it('returns 500 on generic engine error', async () => {
+    hoisted.recordMatchFeedback.mockRejectedValue(new Error('DB connection lost'));
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/v1/portal/properties/${MATCH_ID}/feedback`,
+      payload: { feedback: 'interested' },
+    });
+
+    expect(response.statusCode).toBe(500);
+  });
+});
+
+// ─── GET /inspections - additional branches ───────────────────────────────────
+
+describe('GET /api/v1/portal/inspections - additional branches', () => {
+  it('returns 500 on inspections DB error', async () => {
+    hoisted.from.mockImplementation((table: string) => {
+      if (table === 'portal_clients') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: { contact_id: '00000000-0000-4000-a000-000000000003' },
+                  error: null,
+                }),
+              }),
+            }),
+          }),
+        };
+      }
+      // inspections table — return DB error
+      const chain: Record<string, unknown> = {};
+      const self = () => chain;
+      chain.select = vi.fn(self);
+      chain.eq = vi.fn(self);
+      chain.order = vi.fn(self);
+      chain.then = (resolve: (v: { data: unknown; error: unknown }) => void) =>
+        Promise.resolve({ data: null, error: { message: 'DB error' } }).then(resolve);
+      return chain;
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/portal/inspections' });
+
+    expect(response.statusCode).toBe(500);
   });
 });

@@ -289,7 +289,12 @@ describe('PATCH /api/v1/tasks/:id', () => {
 
 describe('POST /api/v1/tasks/:id/complete', () => {
   it('marks a task as complete', async () => {
-    const completed = { id: '1', title: 'Call client', status: 'completed', completed_at: '2026-02-10T12:00:00.000Z' };
+    const completed = {
+      id: '1',
+      title: 'Call client',
+      status: 'completed',
+      completed_at: '2026-02-10T12:00:00.000Z',
+    };
 
     mockFrom.mockReturnValue({
       update: vi.fn().mockReturnValue({

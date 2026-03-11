@@ -24,13 +24,15 @@ export async function propertyRoutes(fastify: FastifyInstance) {
 
     const { data, error } = await supabase
       .from('properties')
-      .select(`
+      .select(
+        `
         *,
         vendor:contacts(id, first_name, last_name, phone, email),
         interested_buyers:property_interested_buyers(
           contact:contacts(id, first_name, last_name, phone, buyer_profile)
         )
-      `)
+      `,
+      )
       .eq('id', id)
       .single();
 

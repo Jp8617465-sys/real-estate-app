@@ -1,6 +1,10 @@
 'use client';
 
-import { useDailyActions, useCompleteDailyAction, useRegenerateDailyActions } from '@/hooks/use-daily-actions';
+import {
+  useDailyActions,
+  useCompleteDailyAction,
+  useRegenerateDailyActions,
+} from '@/hooks/use-daily-actions';
 import type { DailyActionItem } from '@realflow/shared';
 
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -17,7 +21,8 @@ const CATEGORY_EMOJI: Record<string, string> = {
 
 function getPriorityLabel(score: number): { label: string; cls: string } {
   if (score >= 80) return { label: 'Urgent', cls: 'bg-red-100 text-red-700 border-red-200' };
-  if (score >= 40) return { label: 'Due Today', cls: 'bg-orange-100 text-orange-700 border-orange-200' };
+  if (score >= 40)
+    return { label: 'Due Today', cls: 'bg-orange-100 text-orange-700 border-orange-200' };
   return { label: 'Suggested', cls: 'bg-blue-100 text-blue-700 border-blue-200' };
 }
 
@@ -27,13 +32,7 @@ function getPriorityBarColor(score: number): string {
   return 'bg-blue-400';
 }
 
-function ActionCard({
-  item,
-  onComplete,
-}: {
-  item: DailyActionItem;
-  onComplete: () => void;
-}) {
+function ActionCard({ item, onComplete }: { item: DailyActionItem; onComplete: () => void }) {
   const isCompleted = item.isCompleted;
   const emoji = CATEGORY_EMOJI[item.category] ?? '✅';
   const priority = getPriorityLabel(item.compositeScore ?? 0);
@@ -92,11 +91,21 @@ function ActionCard({
         >
           {isCompleted ? (
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           ) : (
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           )}
         </button>

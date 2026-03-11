@@ -66,9 +66,7 @@ export default function PropertyDetailPage() {
   }
 
   // Find the matching property by either match ID or property ID
-  const match = properties.find(
-    (p) => p.property?.id === propertyId || p.id === propertyId,
-  );
+  const match = properties.find((p) => p.property?.id === propertyId || p.id === propertyId);
 
   if (!match) {
     return (
@@ -166,7 +164,9 @@ export default function PropertyDetailPage() {
         </div>
 
         {/* Match score */}
-        <div className={`flex items-center gap-2 rounded-xl px-4 py-3 ${getScoreBgColor(match.overall_score)}`}>
+        <div
+          className={`flex items-center gap-2 rounded-xl px-4 py-3 ${getScoreBgColor(match.overall_score)}`}
+        >
           <Star className={`h-5 w-5 ${getScoreColor(match.overall_score)}`} aria-hidden="true" />
           <div>
             <p className={`text-2xl font-bold ${getScoreColor(match.overall_score)}`}>

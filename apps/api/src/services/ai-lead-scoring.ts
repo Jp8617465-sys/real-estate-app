@@ -61,7 +61,8 @@ export class AILeadScoringService {
     // Step 3: Try AI enhancement, fall back on error
     try {
       const cacheKey = this.cache.generateKey('lead-scoring', contact.id, enquiryText);
-      const cached = this.cache.get<Omit<AILeadScoreEnhancement, 'baseScore' | 'finalScore'>>(cacheKey);
+      const cached =
+        this.cache.get<Omit<AILeadScoreEnhancement, 'baseScore' | 'finalScore'>>(cacheKey);
 
       if (cached) {
         const finalScore = Math.max(0, Math.min(100, baseScore + cached.aiAdjustment));

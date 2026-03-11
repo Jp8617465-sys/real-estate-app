@@ -142,12 +142,10 @@ export function ContactsTable() {
           {contacts.map((contact) => (
             <tr key={contact.id} className="hover:bg-gray-50 transition-colors">
               <td className="whitespace-nowrap px-6 py-4">
-                <Link
-                  href={`/contacts/${contact.id}`}
-                  className="group flex items-center"
-                >
+                <Link href={`/contacts/${contact.id}`} className="group flex items-center">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
-                    {contact.firstName[0]}{contact.lastName[0]}
+                    {contact.firstName[0]}
+                    {contact.lastName[0]}
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-900 group-hover:text-brand-600">
@@ -167,15 +165,11 @@ export function ContactsTable() {
               <td className="whitespace-nowrap px-6 py-4 text-sm capitalize text-gray-600">
                 {contact.source}
               </td>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
-                {contact.stage}
-              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">{contact.stage}</td>
               <td className="whitespace-nowrap px-6 py-4">
                 <ScoreBadge score={contact.score} />
               </td>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
-                {contact.agent}
-              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">{contact.agent}</td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                 {contact.lastContact}
               </td>

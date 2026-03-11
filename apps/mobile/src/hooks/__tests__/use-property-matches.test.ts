@@ -60,10 +60,9 @@ describe('usePropertyMatches', () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => usePropertyMatches('brief-1'),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => usePropertyMatches('brief-1'), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -107,10 +106,7 @@ describe('useUpdatePropertyMatchStatus', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-    const { result } = renderHook(
-      () => useUpdatePropertyMatchStatus('1'),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useUpdatePropertyMatchStatus('1'), { wrapper });
 
     result.current.mutate({ status: 'client_interested' });
 
@@ -132,10 +128,7 @@ describe('useUpdatePropertyMatchStatus', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-    const { result } = renderHook(
-      () => useUpdatePropertyMatchStatus('1'),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useUpdatePropertyMatchStatus('1'), { wrapper });
 
     result.current.mutate({
       status: 'rejected',

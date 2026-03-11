@@ -2,7 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─── Hoisted mocks ────────────────────────────────────────────────
 
-const { mockFrom, mockGetUser, mockGetLatestSnapshot, mockGetHistoricalSnapshots, mockBulkFetchAndUpsert, mockGetActiveSuburbs } = vi.hoisted(() => ({
+const {
+  mockFrom,
+  mockGetUser,
+  mockGetLatestSnapshot,
+  mockGetHistoricalSnapshots,
+  mockBulkFetchAndUpsert,
+  mockGetActiveSuburbs,
+} = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockGetUser: vi.fn(),
   mockGetLatestSnapshot: vi.fn(),
@@ -31,7 +38,7 @@ vi.mock('../services/market-data-service', async () => {
     propertyType: z.enum(['house', 'unit']).default('house'),
   });
   return {
-    MarketDataService: vi.fn().mockImplementation(function() {
+    MarketDataService: vi.fn().mockImplementation(function () {
       return {
         getLatestSnapshot: mockGetLatestSnapshot,
         getHistoricalSnapshots: mockGetHistoricalSnapshots,
@@ -146,9 +153,7 @@ describe('GET /api/v1/market-data/snapshot/:suburbId', () => {
 
 describe('POST /api/v1/market-data/refresh', () => {
   const validBody = {
-    suburbs: [
-      { suburb: 'Mosman', state: 'NSW', postcode: '2088', propertyType: 'house' },
-    ],
+    suburbs: [{ suburb: 'Mosman', state: 'NSW', postcode: '2088', propertyType: 'house' }],
   };
 
   it('refreshes market data for suburbs', async () => {
@@ -217,7 +222,9 @@ describe('POST /api/v1/market-data/bulk-refresh', () => {
   });
 
   it('refreshes all active suburbs', async () => {
-    const activeSuburbs = [{ suburb: 'Mosman', state: 'NSW', postcode: '2088', propertyType: 'house' as const }];
+    const activeSuburbs = [
+      { suburb: 'Mosman', state: 'NSW', postcode: '2088', propertyType: 'house' as const },
+    ];
     mockGetActiveSuburbs.mockResolvedValue(activeSuburbs);
 
     const result = { total: 2, succeeded: 2, failed: 0, results: [] };

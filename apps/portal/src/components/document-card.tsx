@@ -25,11 +25,7 @@ const FILE_ICONS: Record<FileType, React.ComponentType<{ className?: string }>> 
 function getFileType(mimeType: string): FileType {
   if (mimeType.includes('pdf')) return 'pdf';
   if (mimeType.startsWith('image/')) return 'image';
-  if (
-    mimeType.includes('spreadsheet') ||
-    mimeType.includes('excel') ||
-    mimeType.includes('csv')
-  )
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel') || mimeType.includes('csv'))
     return 'spreadsheet';
   return 'other';
 }
@@ -51,11 +47,14 @@ function formatFileSize(bytes: number): string {
 /** Status derived from document category / metadata in a real app */
 type DocumentStatus = 'pending_review' | 'approved' | 'requires_signature' | 'none';
 
-const STATUS_CONFIG: Record<DocumentStatus, {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  className: string;
-} | null> = {
+const STATUS_CONFIG: Record<
+  DocumentStatus,
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    className: string;
+  } | null
+> = {
   pending_review: {
     label: 'Pending Review',
     icon: Clock,

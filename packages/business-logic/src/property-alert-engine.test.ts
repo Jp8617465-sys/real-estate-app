@@ -15,7 +15,9 @@ const PORTAL_USER_ID = 'c9d0e1f2-a3b4-5678-cdef-789012345678';
 
 const NOW = '2026-03-03T10:00:00.000Z';
 
-const makeSubscriptionRow = (overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> => ({
+const makeSubscriptionRow = (
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> => ({
   id: SUB_ID,
   agent_id: AGENT_ID,
   brief_id: BRIEF_ID,
@@ -32,7 +34,9 @@ const makeSubscriptionRow = (overrides: Partial<Record<string, unknown>> = {}): 
   ...overrides,
 });
 
-const makeMatchRow = (overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> => ({
+const makeMatchRow = (
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> => ({
   id: MATCH_ID,
   brief_id: BRIEF_ID,
   overall_score: 85,
@@ -41,7 +45,9 @@ const makeMatchRow = (overrides: Partial<Record<string, unknown>> = {}): Record<
   ...overrides,
 });
 
-const makeEventRow = (overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> => ({
+const makeEventRow = (
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> => ({
   id: EVENT_ID,
   subscription_id: SUB_ID,
   property_match_id: MATCH_ID,
@@ -57,7 +63,9 @@ const makeEventRow = (overrides: Partial<Record<string, unknown>> = {}): Record<
   ...overrides,
 });
 
-const makePriceChangeRow = (overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> => ({
+const makePriceChangeRow = (
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> => ({
   id: PRICE_CHANGE_ID,
   property_id: PROPERTY_ID,
   domain_listing_id: 'listing-domain-123',
@@ -71,15 +79,26 @@ const makePriceChangeRow = (overrides: Partial<Record<string, unknown>> = {}): R
 
 function makeNotifiers() {
   return {
-    notifyPush: vi.fn<(token: string, title: string, body: string, data?: Record<string, string>) => Promise<void>>().mockResolvedValue(undefined),
-    notifyEmail: vi.fn<(to: string, subject: string, body: string) => Promise<void>>().mockResolvedValue(undefined),
+    notifyPush: vi
+      .fn<
+        (token: string, title: string, body: string, data?: Record<string, string>) => Promise<void>
+      >()
+      .mockResolvedValue(undefined),
+    notifyEmail: vi
+      .fn<(to: string, subject: string, body: string) => Promise<void>>()
+      .mockResolvedValue(undefined),
     notifySms: vi.fn<(to: string, body: string) => Promise<void>>().mockResolvedValue(undefined),
   };
 }
 
 // ─── Supabase chain builder ───────────────────────────────────────────────────
 
-function makeChain(singleData: unknown, singleError: unknown = null, listData: unknown = [], listError: unknown = null) {
+function makeChain(
+  singleData: unknown,
+  singleError: unknown = null,
+  listData: unknown = [],
+  listError: unknown = null,
+) {
   const chain: Record<string, unknown> = {};
   const self = () => chain;
   chain.select = vi.fn(self);
@@ -369,7 +388,9 @@ describe('PropertyAlertEngine.deleteSubscription', () => {
     const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
     const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
 
-    await expect(engine.deleteSubscription(SUB_ID, AGENT_ID)).rejects.toThrow('Subscription not found');
+    await expect(engine.deleteSubscription(SUB_ID, AGENT_ID)).rejects.toThrow(
+      'Subscription not found',
+    );
   });
 
   it('throws when agent does not own the subscription', async () => {
@@ -521,6 +542,172 @@ describe('PropertyAlertEngine.handleNewMatch', () => {
     await expect(engine.handleNewMatch(MATCH_ID)).resolves.toBeUndefined();
     expect(notifyPush).not.toHaveBeenCalled();
   });
+
+  it('returns early when subscriptions query returns error', async () => {
+    const matchRow = makeMatchRow({ overall_score: 85 });
+
+    let matchFetched = false;
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches' && !matchFetched) {
+          matchFetched = true;
+          return makeChain(matchRow, null);
+        }
+        if (table === 'property_alert_subscriptions') {
+          return makeChain(null, { message: 'Subs error' }, null, { message: 'Subs error' });
+        }
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+
+    await expect(engine.handleNewMatch(MATCH_ID)).resolves.toBeUndefined();
+    expect(notifyPush).not.toHaveBeenCalled();
+  });
+
+  it('dispatches via email channel on new match', async () => {
+    const matchRow = makeMatchRow({ overall_score: 85 });
+    const subRow = makeSubscriptionRow({
+      channels: ['email'],
+      digest_mode: false,
+    });
+    const userRow = { email: 'agent@example.com' };
+    const eventInsertChain = makeChain(null, null);
+
+    let matchFetched = false;
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches' && !matchFetched) {
+          matchFetched = true;
+          return makeChain(matchRow, null);
+        }
+        if (table === 'property_alert_subscriptions') {
+          return makeChain(null, null, [subRow], null);
+        }
+        if (table === 'users') return makeChain(userRow, null);
+        if (table === 'property_alert_events') return eventInsertChain;
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+    vi.spyOn(engine, 'isQuietHours').mockReturnValue(false);
+
+    await engine.handleNewMatch(MATCH_ID);
+    expect(notifyEmail).toHaveBeenCalledWith('agent@example.com', 'New Property Match', expect.any(String));
+  });
+
+  it('dispatches via sms channel on new match', async () => {
+    const matchRow = makeMatchRow({ overall_score: 85 });
+    const subRow = makeSubscriptionRow({
+      channels: ['sms'],
+      digest_mode: false,
+    });
+    const userRow = { phone: '+61412345678' };
+    const eventInsertChain = makeChain(null, null);
+
+    let matchFetched = false;
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches' && !matchFetched) {
+          matchFetched = true;
+          return makeChain(matchRow, null);
+        }
+        if (table === 'property_alert_subscriptions') {
+          return makeChain(null, null, [subRow], null);
+        }
+        if (table === 'users') return makeChain(userRow, null);
+        if (table === 'property_alert_events') return eventInsertChain;
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+    vi.spyOn(engine, 'isQuietHours').mockReturnValue(false);
+
+    await engine.handleNewMatch(MATCH_ID);
+    expect(notifySms).toHaveBeenCalledWith('+61412345678', expect.stringContaining('New Property Match'));
+  });
+
+  it('does not send SMS when user phone is null', async () => {
+    const matchRow = makeMatchRow({ overall_score: 85 });
+    const subRow = makeSubscriptionRow({ channels: ['sms'], digest_mode: false });
+    const userRow = { phone: null }; // null phone — hits the `if (phone)` false branch
+    const eventInsertChain = makeChain(null, null);
+
+    let matchFetched = false;
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches' && !matchFetched) {
+          matchFetched = true;
+          return makeChain(matchRow, null);
+        }
+        if (table === 'property_alert_subscriptions') {
+          return makeChain(null, null, [subRow], null);
+        }
+        if (table === 'users') return makeChain(userRow, null);
+        if (table === 'property_alert_events') return eventInsertChain;
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+    vi.spyOn(engine, 'isQuietHours').mockReturnValue(false);
+
+    await engine.handleNewMatch(MATCH_ID);
+    expect(notifySms).not.toHaveBeenCalled();
+  });
+
+  it('logs event with sent_at null when no channels delivered', async () => {
+    const matchRow = makeMatchRow({ overall_score: 85 });
+    const subRow = makeSubscriptionRow({
+      channels: ['push'],
+      digest_mode: false,
+    });
+    // No token returned — push delivery fails silently, delivered=[]
+    const eventInsertChain = makeChain(null, null);
+    let insertPayload: Record<string, unknown> | null = null;
+
+    let matchFetched = false;
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches' && !matchFetched) {
+          matchFetched = true;
+          return makeChain(matchRow, null);
+        }
+        if (table === 'property_alert_subscriptions') {
+          return makeChain(null, null, [subRow], null);
+        }
+        if (table === 'push_device_tokens') {
+          // no token found
+          return makeChain(null, null);
+        }
+        if (table === 'property_alert_events') {
+          const chain = { ...eventInsertChain };
+          chain.insert = vi.fn((payload: Record<string, unknown>) => {
+            insertPayload = payload;
+            return chain;
+          });
+          return chain;
+        }
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+    vi.spyOn(engine, 'isQuietHours').mockReturnValue(false);
+
+    await engine.handleNewMatch(MATCH_ID);
+    // sent_at should be null when no channels delivered
+    expect(insertPayload).not.toBeNull();
+    expect((insertPayload as Record<string, unknown>).sent_at).toBeNull();
+  });
 });
 
 // ─── handlePriceChange ────────────────────────────────────────────────────────
@@ -533,7 +720,11 @@ describe('PropertyAlertEngine.handlePriceChange', () => {
   it('dispatches push when price change found and match score is above threshold', async () => {
     const priceChangeRow = makePriceChangeRow();
     const matchRow = makeMatchRow({ overall_score: 85 });
-    const subRow = makeSubscriptionRow({ channels: ['push'], score_threshold: 70, digest_mode: false });
+    const subRow = makeSubscriptionRow({
+      channels: ['push'],
+      score_threshold: 70,
+      digest_mode: false,
+    });
     const tokenRow = { token: 'device-push-token-abc' };
     const eventInsertChain = makeChain(null, null);
 
@@ -571,6 +762,185 @@ describe('PropertyAlertEngine.handlePriceChange', () => {
     const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
 
     await expect(engine.handlePriceChange(PRICE_CHANGE_ID)).resolves.toBeUndefined();
+    expect(notifyPush).not.toHaveBeenCalled();
+  });
+
+  it('returns early when price change has no property_id', async () => {
+    // property_id is null — hits the `if (!priceChange.property_id) return;` branch
+    const priceChangeRow = makePriceChangeRow({ property_id: null });
+
+    const supabase = {
+      from: vi.fn(() => makeChain(priceChangeRow, null)),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+
+    await expect(engine.handlePriceChange(PRICE_CHANGE_ID)).resolves.toBeUndefined();
+    expect(notifyPush).not.toHaveBeenCalled();
+  });
+
+  it('returns early when property matches query returns error (N+1 fix branch)', async () => {
+    const priceChangeRow = makePriceChangeRow();
+
+    let callCount = 0;
+    const supabase = {
+      from: vi.fn((table: string) => {
+        callCount++;
+        if (table === 'property_price_changes') {
+          return makeChain(priceChangeRow, null);
+        }
+        if (table === 'property_matches') {
+          // matchesError — triggers early return
+          return makeChain(null, { message: 'DB error' }, null, { message: 'DB error' });
+        }
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+
+    await expect(engine.handlePriceChange(PRICE_CHANGE_ID)).resolves.toBeUndefined();
+    expect(notifyPush).not.toHaveBeenCalled();
+  });
+
+  it('returns early when property matches list is empty (no active matches)', async () => {
+    const priceChangeRow = makePriceChangeRow();
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_price_changes') {
+          return makeChain(priceChangeRow, null);
+        }
+        if (table === 'property_matches') {
+          // Empty list — matchesData.length === 0 triggers early return
+          return makeChain(null, null, [], null);
+        }
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+
+    await expect(engine.handlePriceChange(PRICE_CHANGE_ID)).resolves.toBeUndefined();
+    expect(notifyPush).not.toHaveBeenCalled();
+  });
+
+  it('returns early when batch subscriptions query returns error (allSubsError branch)', async () => {
+    const priceChangeRow = makePriceChangeRow();
+    const matchRow = makeMatchRow({ overall_score: 85 });
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_price_changes') {
+          return makeChain(priceChangeRow, null);
+        }
+        if (table === 'property_matches') {
+          // Return one match — passes the empty-list check
+          return makeChain(null, null, [matchRow], null);
+        }
+        if (table === 'property_alert_subscriptions') {
+          // allSubsError — triggers `if (allSubsError || !allSubsData) return;`
+          return makeChain(null, { message: 'Subs DB error' }, null, { message: 'Subs DB error' });
+        }
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+
+    await expect(engine.handlePriceChange(PRICE_CHANGE_ID)).resolves.toBeUndefined();
+    expect(notifyPush).not.toHaveBeenCalled();
+  });
+
+  it('skips dispatch when match brief has no subscriptions (empty subs in subsByBrief)', async () => {
+    const priceChangeRow = makePriceChangeRow();
+    const matchRow = makeMatchRow({ overall_score: 85 });
+    // allSubsData is empty — so subsByBrief.get(match.brief_id) returns undefined ?? []
+    // and the inner for loop body is never entered
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_price_changes') {
+          return makeChain(priceChangeRow, null);
+        }
+        if (table === 'property_matches') {
+          return makeChain(null, null, [matchRow], null);
+        }
+        if (table === 'property_alert_subscriptions') {
+          // No subs for the brief — empty allSubsData
+          return makeChain(null, null, [], null);
+        }
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+
+    await engine.handlePriceChange(PRICE_CHANGE_ID);
+    expect(notifyPush).not.toHaveBeenCalled();
+  });
+
+  it('dispatches via email channel on price change', async () => {
+    const priceChangeRow = makePriceChangeRow();
+    const matchRow = makeMatchRow({ overall_score: 85 });
+    const subRow = makeSubscriptionRow({
+      channels: ['email'],
+      digest_mode: false,
+      quiet_hours_start: '21:00:00',
+      quiet_hours_end: '07:00:00',
+    });
+    const userRow = { email: 'agent@example.com' };
+    const eventInsertChain = makeChain(null, null);
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_price_changes') return makeChain(priceChangeRow, null);
+        if (table === 'property_matches') return makeChain(null, null, [matchRow], null);
+        if (table === 'property_alert_subscriptions') return makeChain(null, null, [subRow], null);
+        if (table === 'users') return makeChain(userRow, null);
+        if (table === 'property_alert_events') return eventInsertChain;
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+    vi.spyOn(engine, 'isQuietHours').mockReturnValue(false);
+
+    await engine.handlePriceChange(PRICE_CHANGE_ID);
+    expect(notifyEmail).toHaveBeenCalledWith('agent@example.com', 'Price Drop Alert', expect.any(String));
+  });
+
+  it('dispatches digest insert when price change sub is in digest mode', async () => {
+    const priceChangeRow = makePriceChangeRow();
+    const matchRow = makeMatchRow({ overall_score: 85 });
+    const subRow = makeSubscriptionRow({
+      channels: ['push'],
+      digest_mode: true,
+    });
+    const eventInsertChain = makeChain(null, null);
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_price_changes') return makeChain(priceChangeRow, null);
+        if (table === 'property_matches') return makeChain(null, null, [matchRow], null);
+        if (table === 'property_alert_subscriptions') return makeChain(null, null, [subRow], null);
+        if (table === 'property_alert_events') return eventInsertChain;
+        return makeChain(null, null);
+      }),
+    };
+
+    const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
+    const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
+    vi.spyOn(engine, 'isQuietHours').mockReturnValue(false);
+
+    await engine.handlePriceChange(PRICE_CHANGE_ID);
+    // digest mode — no push notification
     expect(notifyPush).not.toHaveBeenCalled();
   });
 });
@@ -625,7 +995,9 @@ describe('PropertyAlertEngine.sendMatchToClient', () => {
     const { notifyPush, notifyEmail, notifySms } = makeNotifiers();
     const engine = new PropertyAlertEngine(supabase as never, notifyPush, notifyEmail, notifySms);
 
-    await expect(engine.sendMatchToClient(MATCH_ID, AGENT_ID)).rejects.toThrow('Property match not found');
+    await expect(engine.sendMatchToClient(MATCH_ID, AGENT_ID)).rejects.toThrow(
+      'Property match not found',
+    );
   });
 
   it('throws when agent does not own the brief', async () => {

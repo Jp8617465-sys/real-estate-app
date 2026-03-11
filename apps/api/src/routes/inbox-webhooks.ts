@@ -93,7 +93,7 @@ export async function inboxWebhookRoutes(fastify: FastifyInstance) {
       processing_status: 'processing',
     });
 
-    const channel = isInstagram ? 'instagram_dm' as const : 'facebook_messenger' as const;
+    const channel = isInstagram ? ('instagram_dm' as const) : ('facebook_messenger' as const);
 
     const normalisedMessages = MessageNormaliser.normaliseMetaMessage(
       payload as unknown as Parameters<typeof MessageNormaliser.normaliseMetaMessage>[0],
@@ -209,17 +209,16 @@ export async function inboxWebhookRoutes(fastify: FastifyInstance) {
     fastify.log.info({ from: payload.from, subject: payload.subject }, 'Inbound email received');
 
     // Process through email parser (detects portal enquiries)
-    const { classification, normalisedMessage, portalEnquiry } =
-      EmailParser.processInboundEmail({
-        from: payload.from,
-        to: payload.to,
-        subject: payload.subject,
-        textBody: payload.textBody,
-        htmlBody: payload.htmlBody,
-        messageId: payload.messageId,
-        threadId: payload.threadId,
-        receivedAt: payload.receivedAt ?? new Date().toISOString(),
-      });
+    const { classification, normalisedMessage, portalEnquiry } = EmailParser.processInboundEmail({
+      from: payload.from,
+      to: payload.to,
+      subject: payload.subject,
+      textBody: payload.textBody,
+      htmlBody: payload.htmlBody,
+      messageId: payload.messageId,
+      threadId: payload.threadId,
+      receivedAt: payload.receivedAt ?? new Date().toISOString(),
+    });
 
     fastify.log.info({ classification }, 'Email classified');
 
@@ -266,10 +265,7 @@ async function processInboundMessage(
 
   if (matched) {
     contactId = matched.contactId;
-    fastify.log.info(
-      { contactId, matchedBy: matched.matchedBy },
-      'Contact matched',
-    );
+    fastify.log.info({ contactId, matchedBy: matched.matchedBy }, 'Contact matched');
   } else {
     // Create new contact
     const name = normalised.senderName ?? 'Unknown';

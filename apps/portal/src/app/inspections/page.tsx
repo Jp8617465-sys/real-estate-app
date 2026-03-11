@@ -78,13 +78,7 @@ function ImpressionBadge({ impression }: { impression: string | null }) {
   );
 }
 
-function StarRating({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (rating: number) => void;
-}) {
+function StarRating({ value, onChange }: { value: number; onChange: (rating: number) => void }) {
   const [hovered, setHovered] = useState(0);
 
   return (
@@ -101,9 +95,7 @@ function StarRating({
         >
           <Star
             className={`h-6 w-6 transition-colors ${
-              star <= (hovered || value)
-                ? 'fill-amber-400 text-amber-400'
-                : 'text-gray-300'
+              star <= (hovered || value) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'
             }`}
           />
         </button>
@@ -135,12 +127,7 @@ function InspectionFeedbackForm({
     mutationFn: async () => {
       if (!sessionData?.access_token) throw new Error('Not authenticated');
       if (rating < 1) throw new Error('Please select a star rating');
-      await submitInspectionFeedback(
-        inspection.id,
-        rating,
-        feedback,
-        sessionData.access_token,
-      );
+      await submitInspectionFeedback(inspection.id, rating, feedback, sessionData.access_token);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portal-inspections'] });
@@ -157,9 +144,7 @@ function InspectionFeedbackForm({
           <StarRating value={rating} onChange={setRating} />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-gray-500">
-            Comments (optional)
-          </label>
+          <label className="mb-1 block text-xs text-gray-500">Comments (optional)</label>
           <textarea
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
@@ -171,9 +156,7 @@ function InspectionFeedbackForm({
         </div>
         {mutation.isError && (
           <p className="text-xs text-red-600">
-            {mutation.error instanceof Error
-              ? mutation.error.message
-              : 'Failed to submit feedback'}
+            {mutation.error instanceof Error ? mutation.error.message : 'Failed to submit feedback'}
           </p>
         )}
         <button
@@ -268,9 +251,7 @@ function InspectionCard({ inspection }: { inspection: PortalInspection }) {
                 }`}
               />
             ))}
-            <span className="ml-1.5 text-xs text-gray-500">
-              {inspection.client_rating}/5
-            </span>
+            <span className="ml-1.5 text-xs text-gray-500">{inspection.client_rating}/5</span>
           </div>
           {inspection.client_feedback && (
             <p className="mt-1 text-sm text-gray-600">{inspection.client_feedback}</p>
@@ -291,10 +272,7 @@ function InspectionCard({ inspection }: { inspection: PortalInspection }) {
         </div>
       )}
       {isCompleted && !hasFeedback && showForm && (
-        <InspectionFeedbackForm
-          inspection={inspection}
-          onSuccess={() => setShowForm(false)}
-        />
+        <InspectionFeedbackForm inspection={inspection} onSuccess={() => setShowForm(false)} />
       )}
     </div>
   );
@@ -306,7 +284,11 @@ export default function InspectionsPage() {
   const { user } = useAuth();
   const { data: portalClient } = usePortalClient();
 
-  const { data: inspections, isLoading, error } = useQuery({
+  const {
+    data: inspections,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['portal-inspections', portalClient?.contact_id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -347,28 +329,20 @@ export default function InspectionsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <AlertCircle className="h-10 w-10 text-gray-300" />
-        <h2 className="mt-4 text-lg font-semibold text-gray-900">
-          Unable to load inspections
-        </h2>
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">Unable to load inspections</h2>
         <p className="mt-1 text-sm text-gray-500">Please try again later.</p>
       </div>
     );
   }
 
-  const upcoming = inspections.filter(
-    (i) => new Date(i.inspection_date) >= new Date(),
-  );
-  const past = inspections.filter(
-    (i) => new Date(i.inspection_date) < new Date(),
-  );
+  const upcoming = inspections.filter((i) => new Date(i.inspection_date) >= new Date());
+  const past = inspections.filter((i) => new Date(i.inspection_date) < new Date());
 
   if (inspections.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <Calendar className="h-10 w-10 text-gray-300" />
-        <h2 className="mt-4 text-lg font-semibold text-gray-900">
-          No inspections scheduled
-        </h2>
+        <h2 className="mt-4 text-lg font-semibold text-gray-900">No inspections scheduled</h2>
         <p className="mt-1 text-sm text-gray-500">
           Your buyers agent will schedule inspections for shortlisted properties.
         </p>
@@ -392,9 +366,7 @@ export default function InspectionsPage() {
       {/* Upcoming */}
       {upcoming.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-            Upcoming
-          </h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Upcoming</h2>
           <div className="space-y-3">
             {upcoming.map((inspection) => (
               <InspectionCard key={inspection.id} inspection={inspection} />
@@ -406,9 +378,7 @@ export default function InspectionsPage() {
       {/* Past */}
       {past.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-            Completed
-          </h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Completed</h2>
           <div className="space-y-3">
             {past.map((inspection) => (
               <InspectionCard key={inspection.id} inspection={inspection} />

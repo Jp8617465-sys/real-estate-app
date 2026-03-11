@@ -10,16 +10,10 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import type {
-  DueDiligenceCategory,
-  DueDiligenceItemStatus,
-} from '@realflow/shared';
+import type { DueDiligenceCategory, DueDiligenceItemStatus } from '@realflow/shared';
 import { usePortalDueDiligence } from '@/hooks/use-due-diligence';
 
-const CATEGORY_CONFIG: Record<
-  DueDiligenceCategory,
-  { label: string; color: string }
-> = {
+const CATEGORY_CONFIG: Record<DueDiligenceCategory, { label: string; color: string }> = {
   legal: { label: 'Legal', color: 'text-blue-600 bg-blue-50' },
   physical: { label: 'Physical', color: 'text-orange-600 bg-orange-50' },
   financial: { label: 'Financial', color: 'text-green-600 bg-green-50' },
@@ -133,9 +127,7 @@ export default function DueDiligencePage() {
   }
 
   const grouped = groupByCategory(items);
-  const blockingItems = items.filter(
-    (item) => item.is_blocking && item.status !== 'completed',
-  );
+  const blockingItems = items.filter((item) => item.is_blocking && item.status !== 'completed');
 
   return (
     <div className="space-y-6">
@@ -147,12 +139,8 @@ export default function DueDiligencePage() {
       {/* Overall progress bar */}
       <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">
-            Overall Completion
-          </h2>
-          <span className="text-2xl font-bold text-portal-600">
-            {completion}%
-          </span>
+          <h2 className="text-sm font-semibold text-gray-700">Overall Completion</h2>
+          <span className="text-2xl font-bold text-portal-600">{completion}%</span>
         </div>
         <div className="mt-3 h-3 overflow-hidden rounded-full bg-gray-100">
           <div
@@ -161,18 +149,10 @@ export default function DueDiligencePage() {
           />
         </div>
         <div className="mt-3 flex gap-4 text-xs text-gray-500">
-          <span>
-            {items.filter((i) => i.status === 'completed').length} completed
-          </span>
-          <span>
-            {items.filter((i) => i.status === 'in_progress').length} in progress
-          </span>
-          <span>
-            {items.filter((i) => i.status === 'not_started').length} not started
-          </span>
-          <span>
-            {items.filter((i) => i.status === 'issue_found').length} issues
-          </span>
+          <span>{items.filter((i) => i.status === 'completed').length} completed</span>
+          <span>{items.filter((i) => i.status === 'in_progress').length} in progress</span>
+          <span>{items.filter((i) => i.status === 'not_started').length} not started</span>
+          <span>{items.filter((i) => i.status === 'issue_found').length} issues</span>
         </div>
       </div>
 
@@ -189,9 +169,7 @@ export default function DueDiligencePage() {
             {blockingItems.map((item) => (
               <div key={item.id} className="text-sm text-amber-700">
                 <span className="font-medium">{item.name}</span>
-                {item.notes && (
-                  <span className="text-amber-600"> — {item.notes}</span>
-                )}
+                {item.notes && <span className="text-amber-600"> — {item.notes}</span>}
               </div>
             ))}
           </div>
@@ -201,20 +179,16 @@ export default function DueDiligencePage() {
       {/* Category sections */}
       <div className="space-y-4">
         {Object.entries(grouped).map(([category, categoryItems]) => {
-          const config =
-            CATEGORY_CONFIG[category as DueDiligenceCategory] ?? {
-              label: category,
-              color: 'text-gray-600 bg-gray-50',
-            };
+          const config = CATEGORY_CONFIG[category as DueDiligenceCategory] ?? {
+            label: category,
+            color: 'text-gray-600 bg-gray-50',
+          };
           const completedCount = categoryItems.filter(
             (i) => i.status === 'completed' || i.status === 'not_applicable',
           ).length;
 
           return (
-            <div
-              key={category}
-              className="rounded-xl border border-gray-200 bg-white shadow-sm"
-            >
+            <div key={category} className="rounded-xl border border-gray-200 bg-white shadow-sm">
               {/* Category header */}
               <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
                 <div className="flex items-center gap-2">
@@ -233,21 +207,18 @@ export default function DueDiligencePage() {
               <div className="divide-y divide-gray-50">
                 {categoryItems.map((item) => {
                   const statusConfig =
-                    STATUS_CONFIG[item.status as DueDiligenceItemStatus] ?? STATUS_CONFIG.not_started;
+                    STATUS_CONFIG[item.status as DueDiligenceItemStatus] ??
+                    STATUS_CONFIG.not_started;
                   const StatusIcon = statusConfig.icon;
 
                   return (
                     <div
                       key={item.id}
                       className={`flex items-start gap-3 px-5 py-3 ${
-                        item.is_blocking && item.status !== 'completed'
-                          ? 'bg-amber-50/50'
-                          : ''
+                        item.is_blocking && item.status !== 'completed' ? 'bg-amber-50/50' : ''
                       }`}
                     >
-                      <StatusIcon
-                        className={`mt-0.5 h-4 w-4 shrink-0 ${statusConfig.className}`}
-                      />
+                      <StatusIcon className={`mt-0.5 h-4 w-4 shrink-0 ${statusConfig.className}`} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span
@@ -259,25 +230,18 @@ export default function DueDiligencePage() {
                           >
                             {item.name}
                           </span>
-                          {item.is_blocking &&
-                            item.status !== 'completed' && (
-                              <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-700">
-                                Blocking
-                              </span>
-                            )}
+                          {item.is_blocking && item.status !== 'completed' && (
+                            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-700">
+                              Blocking
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-gray-400">
                           {formatAssignedTo(item.assigned_to)}
                         </p>
-                        {item.notes && (
-                          <p className="mt-1 text-xs text-gray-500">
-                            {item.notes}
-                          </p>
-                        )}
+                        {item.notes && <p className="mt-1 text-xs text-gray-500">{item.notes}</p>}
                       </div>
-                      <span
-                        className={`shrink-0 text-xs font-medium ${statusConfig.className}`}
-                      >
+                      <span className={`shrink-0 text-xs font-medium ${statusConfig.className}`}>
                         {statusConfig.label}
                       </span>
                     </div>

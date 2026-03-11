@@ -59,7 +59,8 @@ export function InboxThreadList({
       {threads.map((thread) => {
         const isSelected = thread.contact_id === selectedContactId;
         const isUnread = thread.unread_count > 0;
-        const preview = thread.last_message_content?.subject ?? thread.last_message_content?.text ?? '';
+        const preview =
+          thread.last_message_content?.subject ?? thread.last_message_content?.text ?? '';
         const timeAgo = formatRelativeTime(thread.last_message_at);
 
         return (

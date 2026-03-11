@@ -1,4 +1,5 @@
 # PR Review: sprint-5 → main
+
 **Reviewed:** 2026-03-09
 **Reviewer:** QA Engineer (Claude Code)
 **Branch:** sprint-5 (Sprint 6: Growth & Scale)
@@ -21,16 +22,16 @@ Sprint 6 introduces three major feature teams:
 
 ## Criterion Checklist
 
-| # | Criterion | Status | Notes |
-|---|-----------|--------|-------|
-| 1 | No `any` types | PASS | Zero matches in all Sprint 6 source files (routes, engines, shared types, web clients, mobile hooks) |
-| 2 | Route Registration | PASS | `socialLeadRoutes`, `offMarketRoutes`, `teamRoutes` all imported and registered in `apps/api/src/index.ts` lines 44–46 and 120–122 |
-| 3 | Soft Delete Compliance | WARN | 4/5 new tables compliant. `team_performance_snapshots` (migration 00022) has no `deleted_at` column. This table is a pre-aggregated analytics store (append-only by design), which is a legitimate exception, but it should be explicitly documented. |
-| 4 | Shared Types Only | WARN | Sprint 6 route files themselves use shared schemas correctly. However, 3 pre-existing route files (`domain-webhooks.ts`, `inbox-email.ts`, `market-data.ts`) contain inline `z.object(` schemas. These were introduced before Sprint 6 and are not regressions, but have not been migrated. |
-| 5 | Optimistic Updates | WARN | Web client components (`leads-client.tsx`, `off-market-client.tsx`, `assignment-rules-client.tsx`, `templates-client.tsx`) use `useMutation` with only `onSuccess` (cache invalidation). None implement `onMutate` / `onError` / `onSettled` optimistic update triple. This is consistent with the existing project pattern, but falls short of the coding standard. |
-| 6 | Mobile Compatibility | WARN | Team A and Team B have mobile hooks (`use-social-leads.ts`, `use-off-market.ts`). Team C (TeamEngine: `/team/*` web pages) has no corresponding mobile hook or screen. The team dashboard, assignment rules, and workflow templates are web-only. |
-| 7 | Test Coverage | PASS | All 3 new engines have colocated `.test.ts` files with comprehensive coverage: `social-lead-engine.test.ts` (happy path + idempotency + auth failure + edge cases), `off-market-engine.test.ts` (create + match + softDelete + sendToClient + retractFromClient + stats), `team-engine.test.ts` (members + performance + round-robin rotation + no-match + share/unshare). All 4 Vitest rules followed: proper UUID fixtures, no `vi.mock` factory issues, no arrow-fn constructor mocks, correct chain termination. Test count is ~1,391, well above the 1,391 baseline. |
-| 8 | Conventional Commits | PASS | Based on git log context (recent commits: `fix: reject malformed JWTs with 401`, `fix: add @realflow/business-logic dep`, `fix: map JWT parse errors to 401`), the repository consistently uses `feat:` / `fix:` / `chore:` prefixes. Sprint 6 PR is on a named feature branch per the workflow. |
+| #   | Criterion              | Status | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --- | ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | No `any` types         | PASS   | Zero matches in all Sprint 6 source files (routes, engines, shared types, web clients, mobile hooks)                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2   | Route Registration     | PASS   | `socialLeadRoutes`, `offMarketRoutes`, `teamRoutes` all imported and registered in `apps/api/src/index.ts` lines 44–46 and 120–122                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 3   | Soft Delete Compliance | WARN   | 4/5 new tables compliant. `team_performance_snapshots` (migration 00022) has no `deleted_at` column. This table is a pre-aggregated analytics store (append-only by design), which is a legitimate exception, but it should be explicitly documented.                                                                                                                                                                                                                                                                                                                     |
+| 4   | Shared Types Only      | WARN   | Sprint 6 route files themselves use shared schemas correctly. However, 3 pre-existing route files (`domain-webhooks.ts`, `inbox-email.ts`, `market-data.ts`) contain inline `z.object(` schemas. These were introduced before Sprint 6 and are not regressions, but have not been migrated.                                                                                                                                                                                                                                                                               |
+| 5   | Optimistic Updates     | WARN   | Web client components (`leads-client.tsx`, `off-market-client.tsx`, `assignment-rules-client.tsx`, `templates-client.tsx`) use `useMutation` with only `onSuccess` (cache invalidation). None implement `onMutate` / `onError` / `onSettled` optimistic update triple. This is consistent with the existing project pattern, but falls short of the coding standard.                                                                                                                                                                                                      |
+| 6   | Mobile Compatibility   | WARN   | Team A and Team B have mobile hooks (`use-social-leads.ts`, `use-off-market.ts`). Team C (TeamEngine: `/team/*` web pages) has no corresponding mobile hook or screen. The team dashboard, assignment rules, and workflow templates are web-only.                                                                                                                                                                                                                                                                                                                         |
+| 7   | Test Coverage          | PASS   | All 3 new engines have colocated `.test.ts` files with comprehensive coverage: `social-lead-engine.test.ts` (happy path + idempotency + auth failure + edge cases), `off-market-engine.test.ts` (create + match + softDelete + sendToClient + retractFromClient + stats), `team-engine.test.ts` (members + performance + round-robin rotation + no-match + share/unshare). All 4 Vitest rules followed: proper UUID fixtures, no `vi.mock` factory issues, no arrow-fn constructor mocks, correct chain termination. Test count is ~1,391, well above the 1,391 baseline. |
+| 8   | Conventional Commits   | PASS   | Based on git log context (recent commits: `fix: reject malformed JWTs with 401`, `fix: add @realflow/business-logic dep`, `fix: map JWT parse errors to 401`), the repository consistently uses `feat:` / `fix:` / `chore:` prefixes. Sprint 6 PR is on a named feature branch per the workflow.                                                                                                                                                                                                                                                                          |
 
 ---
 
@@ -57,6 +58,7 @@ None. This PR is clear of hard failures.
 This table is append-only (one row per agent per day) and is pre-aggregated — hard deletes are defensible here. However, the project coding standard states "soft deletes everywhere — never hard delete." A future admin cleanup job would need to hard-delete stale rows if `deleted_at` is absent.
 
 **Resolution options (choose one):**
+
 1. Add `deleted_at TIMESTAMPTZ` to the table via a follow-on migration and document the exception in a code comment.
 2. Add a comment directly in the migration explaining the intentional omission: `-- No deleted_at: rows are idempotent daily snapshots; stale rows are expired by retention policy`.
 
@@ -75,6 +77,7 @@ Team C has no mobile hook file. The existing pattern for Sprint 6 (Team A has `u
 #### WARN-3: Optimistic Updates Missing on Sprint 6 Web Mutations (Criterion 5)
 
 **Affected files:**
+
 - `/Users/jamespcino/real-estate-app/apps/web/src/app/social/leads/leads-client.tsx` — `convertMutation`, `dismissMutation`
 - `/Users/jamespcino/real-estate-app/apps/web/src/app/buyers-agent/off-market/off-market-client.tsx` — `deleteMutation`
 - `/Users/jamespcino/real-estate-app/apps/web/src/app/team/assignment-rules/assignment-rules-client.tsx` — `toggleMutation`, `deleteMutation`
@@ -110,6 +113,7 @@ All three new engine test files correctly follow the RealFlow Vitest rules:
 4. **Chain termination:** `makeChain()` helper correctly resolves at `.single()` and `.maybeSingle()` with `Promise.resolve(...)`, not `mockReturnThis()`.
 
 Coverage estimate per engine:
+
 - `SocialLeadEngine`: 6 describe blocks × 2+ tests each = ~14 cases. Covers: `ingestDm` (new, idempotent, insert error), `convertToContact` (pending, already-converted, dismissed, with overrides), `dismissLead` (happy path, update error), `getLeadStats` (full stats, zero leads), `listLeads` (success, query error).
 - `OffMarketEngine`: 8 describe blocks. Covers: `create`, `update`, `softDelete`, `matchAgainstBriefs` (match, below threshold, no briefs), `sendToClient`, `retractFromClient`, `getSuccessStats`, `getById`.
 - `TeamEngine`: 9 describe blocks. Covers: `getTeamMembers`, `getTeamPerformance` (aggregation, empty, conversion rate), `createAssignmentRule`, `updateAssignmentRule`, `deleteAssignmentRule`, `assignLead` (round-robin idx=0, idx=1, no match, no rules), `shareWorkflowTemplate`, `unshareWorkflowTemplate`, `listTeamTemplates`.
@@ -121,6 +125,7 @@ All pre-existing known failures (7 pipeline-migration, 2 integration-registry, 1
 ### File Index (Sprint 6 additions)
 
 **API Routes:**
+
 - `/Users/jamespcino/real-estate-app/apps/api/src/routes/social-leads.ts`
 - `/Users/jamespcino/real-estate-app/apps/api/src/routes/social-leads.test.ts`
 - `/Users/jamespcino/real-estate-app/apps/api/src/routes/off-market.ts`
@@ -129,6 +134,7 @@ All pre-existing known failures (7 pipeline-migration, 2 integration-registry, 1
 - `/Users/jamespcino/real-estate-app/apps/api/src/routes/team.test.ts`
 
 **Business Logic:**
+
 - `/Users/jamespcino/real-estate-app/packages/business-logic/src/social-lead-engine.ts`
 - `/Users/jamespcino/real-estate-app/packages/business-logic/src/social-lead-engine.test.ts`
 - `/Users/jamespcino/real-estate-app/packages/business-logic/src/off-market-engine.ts`
@@ -137,17 +143,20 @@ All pre-existing known failures (7 pipeline-migration, 2 integration-registry, 1
 - `/Users/jamespcino/real-estate-app/packages/business-logic/src/team-engine.test.ts`
 
 **Shared Types:**
+
 - `/Users/jamespcino/real-estate-app/packages/shared/src/types/social-leads.ts`
 - `/Users/jamespcino/real-estate-app/packages/shared/src/types/off-market.ts`
 - `/Users/jamespcino/real-estate-app/packages/shared/src/types/team.ts`
 
 **Migrations:**
+
 - `/Users/jamespcino/real-estate-app/supabase/migrations/00020_social_dm_leads.sql`
 - `/Users/jamespcino/real-estate-app/supabase/migrations/00021_off_market_properties.sql`
 - `/Users/jamespcino/real-estate-app/supabase/migrations/00022_team_agency_features.sql`
 - `/Users/jamespcino/real-estate-app/supabase/migrations/00023_round_robin_function.sql`
 
 **Web Pages:**
+
 - `/Users/jamespcino/real-estate-app/apps/web/src/app/social/leads/page.tsx`
 - `/Users/jamespcino/real-estate-app/apps/web/src/app/social/leads/leads-client.tsx`
 - `/Users/jamespcino/real-estate-app/apps/web/src/app/buyers-agent/off-market/page.tsx`
@@ -161,5 +170,6 @@ All pre-existing known failures (7 pipeline-migration, 2 integration-registry, 1
 - `/Users/jamespcino/real-estate-app/apps/web/src/app/team/templates/templates-client.tsx`
 
 **Mobile Hooks:**
+
 - `/Users/jamespcino/real-estate-app/apps/mobile/src/hooks/use-social-leads.ts`
 - `/Users/jamespcino/real-estate-app/apps/mobile/src/hooks/use-off-market.ts`

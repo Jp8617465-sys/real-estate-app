@@ -121,9 +121,7 @@ export default function MessagesPage() {
       {/* Header */}
       <div className="shrink-0 pb-4">
         <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Chat with your buyers agent, {agentName}
-        </p>
+        <p className="mt-1 text-sm text-gray-500">Chat with your buyers agent, {agentName}</p>
       </div>
 
       {/* Messages area */}
@@ -162,11 +160,7 @@ export default function MessagesPage() {
                         key={msg.id}
                         className={`flex ${isClient ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div
-                          className={`max-w-[85%] sm:max-w-[70%] ${
-                            isClient ? 'order-1' : ''
-                          }`}
-                        >
+                        <div className={`max-w-[85%] sm:max-w-[70%] ${isClient ? 'order-1' : ''}`}>
                           <div
                             className={`rounded-2xl px-4 py-2.5 ${
                               isClient
@@ -174,9 +168,7 @@ export default function MessagesPage() {
                                 : 'bg-white text-gray-900 shadow-sm'
                             }`}
                           >
-                            <p className="text-sm leading-relaxed">
-                              {msg.content?.text ?? ''}
-                            </p>
+                            <p className="text-sm leading-relaxed">{msg.content?.text ?? ''}</p>
                           </div>
                           <div
                             className={`mt-1 flex items-center gap-1.5 text-[11px] text-gray-400 ${
@@ -201,12 +193,7 @@ export default function MessagesPage() {
       {/* Message input */}
       <div className="shrink-0 pt-4">
         <div className="flex items-end gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFileChange}
-          />
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
           <button
             type="button"
             onClick={handleAttachClick}

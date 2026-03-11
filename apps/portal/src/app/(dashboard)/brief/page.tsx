@@ -46,19 +46,11 @@ const FREQUENCY_LABELS: Record<UpdateFrequency, string> = {
   weekly: 'Weekly',
 };
 
-function SectionCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
       <div className="border-b border-gray-100 px-5 py-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-          {title}
-        </h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -175,12 +167,10 @@ function BriefAcknowledgement({ briefId }: { briefId: string }) {
       <div className="flex items-start gap-3">
         <PenLine className="mt-0.5 h-5 w-5 shrink-0 text-portal-600" />
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Acknowledge Your Brief
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-900">Acknowledge Your Brief</h3>
           <p className="mt-0.5 text-sm text-gray-500">
-            Confirm that the information in this brief is correct and up to date.
-            Your agent will use this to find the best properties for you.
+            Confirm that the information in this brief is correct and up to date. Your agent will
+            use this to find the best properties for you.
           </p>
           {mutation.isError && (
             <p className="mt-2 text-xs text-red-600">
@@ -195,8 +185,8 @@ function BriefAcknowledgement({ briefId }: { briefId: string }) {
             onClick={() => mutation.mutate()}
             className="mt-3 flex items-center gap-1.5 rounded-lg bg-portal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-portal-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {mutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            I acknowledge this brief is correct
+            {mutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}I acknowledge
+            this brief is correct
           </button>
         </div>
       </div>
@@ -270,10 +260,7 @@ export default function BriefPage() {
       {/* Purchase Type */}
       <SectionCard title="Purchase Type">
         <dl className="space-y-3">
-          <DetailRow
-            label="Type"
-            value={PURCHASE_TYPE_LABELS[purchaseType] ?? purchaseType}
-          />
+          <DetailRow label="Type" value={PURCHASE_TYPE_LABELS[purchaseType] ?? purchaseType} />
         </dl>
       </SectionCard>
 
@@ -285,10 +272,7 @@ export default function BriefPage() {
             value={`${formatCurrency(brief.budget?.min ?? 0)} - ${formatCurrency(brief.budget?.max ?? 0)}`}
           />
           {brief.budget?.absoluteMax && (
-            <DetailRow
-              label="Absolute Maximum"
-              value={formatCurrency(brief.budget.absoluteMax)}
-            />
+            <DetailRow label="Absolute Maximum" value={formatCurrency(brief.budget.absoluteMax)} />
           )}
           <DetailRow
             label="Stamp Duty Budgeted"
@@ -329,15 +313,10 @@ export default function BriefPage() {
 
           {suburbs.length > 0 && (
             <div className="border-t border-gray-100 pt-4">
-              <h3 className="mb-2 text-sm font-medium text-gray-700">
-                Preferred Suburbs
-              </h3>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">Preferred Suburbs</h3>
               <div className="space-y-1.5">
                 {suburbs.map((suburb) => (
-                  <div
-                    key={suburb.suburb}
-                    className="flex items-center gap-2 text-sm"
-                  >
+                  <div key={suburb.suburb} className="flex items-center gap-2 text-sm">
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-portal-100 text-[10px] font-semibold text-portal-700">
                       {suburb.rank ?? '-'}
                     </span>
@@ -359,18 +338,14 @@ export default function BriefPage() {
 
           {niceToHaves.length > 0 && (
             <div>
-              <h3 className="mb-2 text-sm font-medium text-gray-700">
-                Nice to Haves
-              </h3>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">Nice to Haves</h3>
               <TagList items={niceToHaves} />
             </div>
           )}
 
           {dealBreakers.length > 0 && (
             <div>
-              <h3 className="mb-2 text-sm font-medium text-gray-700">
-                Deal Breakers
-              </h3>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">Deal Breakers</h3>
               <div className="flex flex-wrap gap-1.5">
                 {dealBreakers.map((item: string) => (
                   <span
@@ -389,17 +364,9 @@ export default function BriefPage() {
       {/* Timeline */}
       <SectionCard title="Timeline">
         <dl className="space-y-3">
-          {urgency && (
-            <DetailRow
-              label="Urgency"
-              value={URGENCY_LABELS[urgency] ?? urgency}
-            />
-          )}
+          {urgency && <DetailRow label="Urgency" value={URGENCY_LABELS[urgency] ?? urgency} />}
           {brief.timeline?.idealSettlement && (
-            <DetailRow
-              label="Ideal Settlement"
-              value={brief.timeline.idealSettlement}
-            />
+            <DetailRow label="Ideal Settlement" value={brief.timeline.idealSettlement} />
           )}
         </dl>
       </SectionCard>
@@ -417,23 +384,13 @@ export default function BriefPage() {
           />
           <DetailRow
             label="Update Frequency"
-            value={
-              updateFrequency
-                ? FREQUENCY_LABELS[updateFrequency]
-                : 'Not specified'
-            }
+            value={updateFrequency ? FREQUENCY_LABELS[updateFrequency] : 'Not specified'}
           />
           {brief.communication?.bestTimeToCall && (
-            <DetailRow
-              label="Best Time to Call"
-              value={brief.communication.bestTimeToCall}
-            />
+            <DetailRow label="Best Time to Call" value={brief.communication.bestTimeToCall} />
           )}
           {brief.communication?.partnerName && (
-            <DetailRow
-              label="Partner"
-              value={brief.communication.partnerName}
-            />
+            <DetailRow label="Partner" value={brief.communication.partnerName} />
           )}
         </dl>
       </SectionCard>
@@ -448,12 +405,8 @@ export default function BriefPage() {
             {brief.solicitor.contactName && (
               <DetailRow label="Contact" value={brief.solicitor.contactName} />
             )}
-            {brief.solicitor.phone && (
-              <DetailRow label="Phone" value={brief.solicitor.phone} />
-            )}
-            {brief.solicitor.email && (
-              <DetailRow label="Email" value={brief.solicitor.email} />
-            )}
+            {brief.solicitor.phone && <DetailRow label="Phone" value={brief.solicitor.phone} />}
+            {brief.solicitor.email && <DetailRow label="Email" value={brief.solicitor.email} />}
           </dl>
         </SectionCard>
       )}

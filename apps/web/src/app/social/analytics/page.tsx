@@ -27,15 +27,18 @@ export default function SocialAnalyticsPage() {
 
   // Aggregate analytics into daily data points
   const chartData = useMemo(() => {
-    const dailyMap = new Map<string, {
-      date: string;
-      impressions: number;
-      reach: number;
-      engagement: number;
-      clicks: number;
-      shares: number;
-      comments: number;
-    }>();
+    const dailyMap = new Map<
+      string,
+      {
+        date: string;
+        impressions: number;
+        reach: number;
+        engagement: number;
+        clicks: number;
+        shares: number;
+        comments: number;
+      }
+    >();
 
     for (const post of filteredPosts) {
       const publishedAt = post.published_at as string | null;
@@ -111,13 +114,16 @@ export default function SocialAnalyticsPage() {
 
   // Platform breakdown
   const platformBreakdown = useMemo(() => {
-    const breakdown: Record<string, {
-      platform: string;
-      posts: number;
-      impressions: number;
-      engagement: number;
-      clicks: number;
-    }> = {};
+    const breakdown: Record<
+      string,
+      {
+        platform: string;
+        posts: number;
+        impressions: number;
+        engagement: number;
+        clicks: number;
+      }
+    > = {};
 
     for (const post of posts) {
       const platforms = (post.platforms as string[]) ?? [];
@@ -267,8 +273,10 @@ export default function SocialAnalyticsPage() {
                             key={p}
                             className={cn(
                               'rounded px-1 py-0.5 text-[9px] font-bold',
-                              p === 'facebook' ? 'bg-blue-100 text-blue-700'
-                                : p === 'instagram' ? 'bg-pink-100 text-pink-700'
+                              p === 'facebook'
+                                ? 'bg-blue-100 text-blue-700'
+                                : p === 'instagram'
+                                  ? 'bg-pink-100 text-pink-700'
                                   : 'bg-sky-100 text-sky-700',
                             )}
                           >
@@ -279,9 +287,13 @@ export default function SocialAnalyticsPage() {
                       <p className="text-xs text-gray-700 truncate">{content}</p>
                       {analytics && (
                         <div className="mt-1 flex gap-3 text-[10px] text-gray-500">
-                          <span>{(analytics.engagement ?? 0).toLocaleString('en-AU')} engagements</span>
+                          <span>
+                            {(analytics.engagement ?? 0).toLocaleString('en-AU')} engagements
+                          </span>
                           <span>{(analytics.clicks ?? 0).toLocaleString('en-AU')} clicks</span>
-                          <span>{(analytics.impressions ?? 0).toLocaleString('en-AU')} impressions</span>
+                          <span>
+                            {(analytics.impressions ?? 0).toLocaleString('en-AU')} impressions
+                          </span>
                         </div>
                       )}
                     </div>
@@ -300,10 +312,7 @@ export default function SocialAnalyticsPage() {
               <p className="text-sm text-gray-400">No data available</p>
             ) : (
               platformBreakdown.map((pb) => {
-                const maxImpressions = Math.max(
-                  ...platformBreakdown.map((p) => p.impressions),
-                  1,
-                );
+                const maxImpressions = Math.max(...platformBreakdown.map((p) => p.impressions), 1);
                 const barWidth = (pb.impressions / maxImpressions) * 100;
 
                 return (
@@ -313,13 +322,17 @@ export default function SocialAnalyticsPage() {
                         <span
                           className={cn(
                             'rounded px-1.5 py-0.5 text-[10px] font-bold',
-                            pb.platform === 'facebook' ? 'bg-blue-100 text-blue-700'
-                              : pb.platform === 'instagram' ? 'bg-pink-100 text-pink-700'
+                            pb.platform === 'facebook'
+                              ? 'bg-blue-100 text-blue-700'
+                              : pb.platform === 'instagram'
+                                ? 'bg-pink-100 text-pink-700'
                                 : 'bg-sky-100 text-sky-700',
                           )}
                         >
-                          {pb.platform === 'facebook' ? 'FB'
-                            : pb.platform === 'instagram' ? 'IG'
+                          {pb.platform === 'facebook'
+                            ? 'FB'
+                            : pb.platform === 'instagram'
+                              ? 'IG'
                               : 'LI'}
                         </span>
                         <span className="text-sm font-medium text-gray-700 capitalize">
@@ -336,8 +349,10 @@ export default function SocialAnalyticsPage() {
                       <div
                         className={cn(
                           'h-2 rounded-full',
-                          pb.platform === 'facebook' ? 'bg-blue-500'
-                            : pb.platform === 'instagram' ? 'bg-pink-500'
+                          pb.platform === 'facebook'
+                            ? 'bg-blue-500'
+                            : pb.platform === 'instagram'
+                              ? 'bg-pink-500'
                               : 'bg-sky-500',
                         )}
                         style={{ width: `${barWidth}%` }}
@@ -366,22 +381,20 @@ export default function SocialAnalyticsPage() {
             <p className="mt-1 text-xl font-bold text-gray-900">
               {totals.impressions > 0
                 ? ((totals.engagement / totals.impressions) * 100).toFixed(2)
-                : '0.00'}%
+                : '0.00'}
+              %
             </p>
-            <p className="mt-1 text-xs text-gray-400">
-              Engagement / impressions across all posts
-            </p>
+            <p className="mt-1 text-xs text-gray-400">Engagement / impressions across all posts</p>
           </div>
           <div className="rounded-lg bg-gray-50 p-4">
             <p className="text-xs font-medium text-gray-500">Click-Through Rate</p>
             <p className="mt-1 text-xl font-bold text-gray-900">
               {totals.impressions > 0
                 ? ((totals.clicks / totals.impressions) * 100).toFixed(2)
-                : '0.00'}%
+                : '0.00'}
+              %
             </p>
-            <p className="mt-1 text-xs text-gray-400">
-              Clicks / impressions across all posts
-            </p>
+            <p className="mt-1 text-xs text-gray-400">Clicks / impressions across all posts</p>
           </div>
           <div className="rounded-lg bg-gray-50 p-4">
             <p className="text-xs font-medium text-gray-500">Average Engagement</p>
@@ -390,9 +403,7 @@ export default function SocialAnalyticsPage() {
                 ? Math.round(totals.engagement / totals.totalPosts).toLocaleString('en-AU')
                 : '0'}
             </p>
-            <p className="mt-1 text-xs text-gray-400">
-              Average engagements per published post
-            </p>
+            <p className="mt-1 text-xs text-gray-400">Average engagements per published post</p>
           </div>
         </div>
       </div>

@@ -96,10 +96,7 @@ export async function socialPostRoutes(fastify: FastifyInstance) {
     }
 
     // Get current user
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .single();
+    const { data: userData } = await supabase.from('users').select('id').single();
 
     if (!userData) return reply.status(401).send({ error: 'User not found' });
 
@@ -209,144 +206,135 @@ export async function socialPostRoutes(fastify: FastifyInstance) {
   });
 
   // ─── Publish a Post Immediately ─────────────────────────────────
-  fastify.post<{ Params: { id: string } }>(
-    '/:id/publish',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      const { id } = request.params;
+  fastify.post<{ Params: { id: string } }>('/:id/publish', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { id } = request.params;
 
-      // Get the post
-      const { data: post, error: fetchError } = await supabase
-        .from('social_posts')
-        .select('*')
-        .eq('id', id)
-        .eq('is_deleted', false)
-        .single();
+    // Get the post
+    const { data: post, error: fetchError } = await supabase
+      .from('social_posts')
+      .select('*')
+      .eq('id', id)
+      .eq('is_deleted', false)
+      .single();
 
-      if (fetchError || !post) {
-        return reply.status(404).send({ error: 'Post not found' });
-      }
+    if (fetchError || !post) {
+      return reply.status(404).send({ error: 'Post not found' });
+    }
 
-      const postRecord = post as Record<string, unknown>;
-      const currentStatus = postRecord.status as string;
+    const postRecord = post as Record<string, unknown>;
+    const currentStatus = postRecord.status as string;
 
-      if (currentStatus === 'published') {
-        return reply.status(400).send({ error: 'Post is already published' });
-      }
+    if (currentStatus === 'published') {
+      return reply.status(400).send({ error: 'Post is already published' });
+    }
 
-      if (currentStatus === 'publishing') {
-        return reply.status(400).send({ error: 'Post is currently being published' });
-      }
+    if (currentStatus === 'publishing') {
+      return reply.status(400).send({ error: 'Post is currently being published' });
+    }
 
-      // Mark as publishing
+    // Mark as publishing
+    await supabase
+      .from('social_posts')
+      .update({ status: 'publishing', updated_at: new Date().toISOString() })
+      .eq('id', id);
+
+    // Get current user for integration lookup
+    const createdBy = postRecord.created_by as string;
+    const registry = new IntegrationRegistry(request, createdBy);
+    const meta = await registry.getMetaClient();
+    const linkedin = await registry.getLinkedInClient();
+
+    const platforms = (postRecord.platforms as SocialPlatform[]) ?? [];
+    const content = postRecord.content as string;
+    const mediaUrls = (postRecord.media_urls as string[]) ?? [];
+
+    // Verify required integrations are connected before publishing
+    const needsMeta = platforms.some((p) => p === 'facebook' || p === 'instagram');
+    const needsLinkedIn = platforms.some((p) => p === 'linkedin');
+
+    if (needsMeta && !meta) {
       await supabase
         .from('social_posts')
-        .update({ status: 'publishing', updated_at: new Date().toISOString() })
+        .update({ status: 'draft', updated_at: new Date().toISOString() })
         .eq('id', id);
+      return reply.status(400).send({ error: 'Meta integration not connected' });
+    }
 
-      // Get current user for integration lookup
-      const createdBy = postRecord.created_by as string;
-      const registry = new IntegrationRegistry(request, createdBy);
-      const meta = await registry.getMetaClient();
-      const linkedin = await registry.getLinkedInClient();
+    if (needsLinkedIn && !linkedin) {
+      await supabase
+        .from('social_posts')
+        .update({ status: 'draft', updated_at: new Date().toISOString() })
+        .eq('id', id);
+      return reply.status(400).send({ error: 'LinkedIn integration not connected' });
+    }
 
-      const platforms = (postRecord.platforms as SocialPlatform[]) ?? [];
-      const content = postRecord.content as string;
-      const mediaUrls = (postRecord.media_urls as string[]) ?? [];
+    const publishingService = new SocialPublishingService({
+      meta: meta ?? undefined,
+      linkedin: linkedin ?? undefined,
+    });
 
-      // Verify required integrations are connected before publishing
-      const needsMeta = platforms.some((p) => p === 'facebook' || p === 'instagram');
-      const needsLinkedIn = platforms.some((p) => p === 'linkedin');
-
-      if (needsMeta && !meta) {
-        await supabase
-          .from('social_posts')
-          .update({ status: 'draft', updated_at: new Date().toISOString() })
-          .eq('id', id);
-        return reply.status(400).send({ error: 'Meta integration not connected' });
-      }
-
-      if (needsLinkedIn && !linkedin) {
-        await supabase
-          .from('social_posts')
-          .update({ status: 'draft', updated_at: new Date().toISOString() })
-          .eq('id', id);
-        return reply.status(400).send({ error: 'LinkedIn integration not connected' });
-      }
-
-      const publishingService = new SocialPublishingService({
-        meta: meta ?? undefined,
-        linkedin: linkedin ?? undefined,
+    try {
+      const result = await publishingService.publishToMultiplePlatforms({
+        id,
+        content,
+        mediaUrls,
+        platforms,
       });
 
-      try {
-        const result = await publishingService.publishToMultiplePlatforms({
-          id,
-          content,
-          mediaUrls,
-          platforms,
-        });
-
-        const { data: updatedPost, error: updateError } = await supabase
-          .from('social_posts')
-          .update({
-            status: result.overallStatus,
-            published_at: result.publishedAt ?? null,
-            platform_results: result.platformResults,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', id)
-          .select()
-          .single();
-
-        if (updateError) return reply.status(500).send({ error: updateError.message });
-        return { data: updatedPost };
-      } catch (err) {
-        await supabase
-          .from('social_posts')
-          .update({
-            status: 'failed',
-            last_error: err instanceof Error ? err.message : 'Unknown publishing error',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', id);
-
-        const errorMessage = err instanceof Error ? err.message : 'Unknown publishing error';
-        return reply.status(500).send({ error: errorMessage });
-      }
-    },
-  );
-
-  // ─── Get Post Analytics ─────────────────────────────────────────
-  fastify.get<{ Params: { id: string } }>(
-    '/:id/analytics',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      const { id } = request.params;
-
-      const { data: post, error } = await supabase
+      const { data: updatedPost, error: updateError } = await supabase
         .from('social_posts')
-        .select('id, analytics, platform_results, status, platforms, published_at')
+        .update({
+          status: result.overallStatus,
+          published_at: result.publishedAt ?? null,
+          platform_results: result.platformResults,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', id)
-        .eq('is_deleted', false)
+        .select()
         .single();
 
-      if (error || !post) {
-        return reply.status(404).send({ error: 'Post not found' });
-      }
+      if (updateError) return reply.status(500).send({ error: updateError.message });
+      return { data: updatedPost };
+    } catch (err) {
+      await supabase
+        .from('social_posts')
+        .update({
+          status: 'failed',
+          last_error: err instanceof Error ? err.message : 'Unknown publishing error',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
 
-      return { data: post };
-    },
-  );
+      const errorMessage = err instanceof Error ? err.message : 'Unknown publishing error';
+      return reply.status(500).send({ error: errorMessage });
+    }
+  });
+
+  // ─── Get Post Analytics ─────────────────────────────────────────
+  fastify.get<{ Params: { id: string } }>('/:id/analytics', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { id } = request.params;
+
+    const { data: post, error } = await supabase
+      .from('social_posts')
+      .select('id, analytics, platform_results, status, platforms, published_at')
+      .eq('id', id)
+      .eq('is_deleted', false)
+      .single();
+
+    if (error || !post) {
+      return reply.status(404).send({ error: 'Post not found' });
+    }
+
+    return { data: post };
+  });
 
   // ─── List Connected Social Accounts ─────────────────────────────
   fastify.get('/accounts', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .single();
+    const { data: userData } = await supabase.from('users').select('id').single();
 
     if (!userData) return reply.status(401).send({ error: 'User not found' });
 
@@ -369,10 +357,7 @@ export async function socialPostRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: parsed.error.flatten() });
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .single();
+    const { data: userData } = await supabase.from('users').select('id').single();
 
     if (!userData) return reply.status(401).send({ error: 'User not found' });
 
@@ -433,7 +418,9 @@ export async function socialPostRoutes(fastify: FastifyInstance) {
 
       // Build a listing-style post
       const streetLine = [address.streetNumber, address.streetName].filter(Boolean).join(' ');
-      const locationLine = [address.suburb, address.state, address.postcode].filter(Boolean).join(', ');
+      const locationLine = [address.suburb, address.state, address.postcode]
+        .filter(Boolean)
+        .join(', ');
       const features = `${bedrooms} bed | ${bathrooms} bath | ${carSpaces} car`;
 
       const toneMap: Record<string, string> = {
@@ -460,7 +447,9 @@ export async function socialPostRoutes(fastify: FastifyInstance) {
         '#realestate #property #forsale #australia',
         address.suburb ? `#${address.suburb.replace(/\s+/g, '')}` : '',
         address.state ? `#${address.state}` : '',
-      ].filter(Boolean).join('\n');
+      ]
+        .filter(Boolean)
+        .join('\n');
 
       const mediaUrls = photos
         .filter((p) => p.url)
@@ -468,10 +457,7 @@ export async function socialPostRoutes(fastify: FastifyInstance) {
         .map((p) => p.url as string);
 
       // Get current user
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .single();
+      const { data: userData } = await supabase.from('users').select('id').single();
 
       if (!userData) return reply.status(401).send({ error: 'User not found' });
 
@@ -512,7 +498,12 @@ export async function socialPostRoutes(fastify: FastifyInstance) {
 
     if (fetchError) return reply.status(500).send({ error: fetchError.message });
 
-    const results: Array<{ id: string; status: string; platformResults?: PlatformPublishResult[]; error?: string }> = [];
+    const results: Array<{
+      id: string;
+      status: string;
+      platformResults?: PlatformPublishResult[];
+      error?: string;
+    }> = [];
 
     for (const post of duePosts ?? []) {
       const postRecord = post as Record<string, unknown>;

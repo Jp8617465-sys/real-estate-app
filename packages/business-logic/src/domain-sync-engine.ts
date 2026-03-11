@@ -109,10 +109,12 @@ export class DomainSyncEngine {
    *               When omitted, a client is created from environment variables.
    */
   constructor(domain?: DomainClient) {
-    this.domain = domain ?? new DomainClient({
-      clientId: process.env['DOMAIN_CLIENT_ID'] ?? '',
-      clientSecret: process.env['DOMAIN_CLIENT_SECRET'] ?? '',
-    });
+    this.domain =
+      domain ??
+      new DomainClient({
+        clientId: process.env['DOMAIN_CLIENT_ID'] ?? '',
+        clientSecret: process.env['DOMAIN_CLIENT_SECRET'] ?? '',
+      });
   }
 
   // ─── buildSearchParams ─────────────────────────────────────────────────────
@@ -162,10 +164,7 @@ export class DomainSyncEngine {
    *
    * Failures from the Domain API are caught and logged — they do not propagate.
    */
-  async syncListingsForAgent(
-    agentId: string,
-    supabase: SupabaseClient,
-  ): Promise<SyncResult> {
+  async syncListingsForAgent(agentId: string, supabase: SupabaseClient): Promise<SyncResult> {
     const result: SyncResult = {
       listingsFound: 0,
       listingsImported: 0,
@@ -194,8 +193,11 @@ export class DomainSyncEngine {
     const seenKeys = new Set<string>();
 
     for (const brief of briefs as ClientBriefRow[]) {
-      const suburbs: Array<{ suburb: string; state?: string; postcode?: string }> =
-        Array.isArray(brief.suburbs) ? brief.suburbs : [];
+      const suburbs: Array<{ suburb: string; state?: string; postcode?: string }> = Array.isArray(
+        brief.suburbs,
+      )
+        ? brief.suburbs
+        : [];
 
       const params = this.buildSearchParams({
         suburbs,
@@ -346,10 +348,7 @@ export class DomainSyncEngine {
    * re-fetch current price from Domain and persist any changes to
    * `property_price_changes`. Returns the newly inserted records.
    */
-  async detectPriceChanges(
-    agentId: string,
-    supabase: SupabaseClient,
-  ): Promise<PriceChange[]> {
+  async detectPriceChanges(agentId: string, supabase: SupabaseClient): Promise<PriceChange[]> {
     const { data: properties, error } = await supabase
       .from('properties')
       .select('id, domain_listing_id, list_price')
@@ -477,9 +476,7 @@ export class DomainSyncEngine {
             .from('auction_results')
             .upsert(
               {
-                domain_listing_id: sale.domainListingId
-                  ? String(sale.domainListingId)
-                  : null,
+                domain_listing_id: sale.domainListingId ? String(sale.domainListingId) : null,
                 suburb: sale.suburb ?? suburb,
                 postcode: sale.postcode ?? null,
                 state: sale.state ?? 'NSW',
@@ -529,9 +526,7 @@ export class DomainSyncEngine {
     return map[domainType ?? ''] ?? 'house';
   }
 
-  private mapAuctionResult(
-    raw?: string,
-  ): 'sold' | 'passed_in' | 'withdrawn' | 'sold_prior' {
+  private mapAuctionResult(raw?: string): 'sold' | 'passed_in' | 'withdrawn' | 'sold_prior' {
     const lower = (raw ?? '').toLowerCase();
     if (lower.includes('sold_prior') || lower.includes('sold prior')) return 'sold_prior';
     if (lower.includes('sold')) return 'sold';

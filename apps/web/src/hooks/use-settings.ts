@@ -21,10 +21,7 @@ export function useProfile() {
   return useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .single();
+      const { data, error } = await supabase.from('users').select('*').single();
       if (error) throw error;
       return data as UserProfile;
     },
@@ -43,10 +40,7 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: async (updates: UpdateProfileInput) => {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .single();
+      const { data: userData } = await supabase.from('users').select('id').single();
 
       if (!userData) throw new Error('User not found');
 
@@ -70,6 +64,9 @@ export function useUpdateProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -88,10 +85,7 @@ export function useIntegrations() {
   return useQuery({
     queryKey: ['integrations'],
     queryFn: async () => {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .single();
+      const { data: userData } = await supabase.from('users').select('id').single();
 
       if (!userData) throw new Error('User not found');
 
@@ -172,10 +166,7 @@ export function useDisconnectIntegration() {
 
   return useMutation({
     mutationFn: async (provider: string) => {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .single();
+      const { data: userData } = await supabase.from('users').select('id').single();
 
       if (!userData) throw new Error('User not found');
 
@@ -197,6 +188,9 @@ export function useDisconnectIntegration() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integrations'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

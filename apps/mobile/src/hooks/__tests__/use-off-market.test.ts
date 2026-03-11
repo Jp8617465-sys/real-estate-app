@@ -77,10 +77,9 @@ describe('useOffMarketProperties', () => {
       json: () => Promise.resolve({ data: [] }),
     });
 
-    const { result } = renderHook(
-      () => useOffMarketProperties('under_offer'),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useOffMarketProperties('under_offer'), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 

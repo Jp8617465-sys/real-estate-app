@@ -4,19 +4,21 @@ import { PortalEngine } from './portal-engine';
 // ─── UUIDs ────────────────────────────────────────────────────────────────────
 // Rule: ALL fixture IDs must be proper UUIDs — never 'brief-1' or 'test-id'
 
-const AUTH_ID       = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const PORTAL_ID     = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
-const CONTACT_ID    = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
-const AGENT_ID      = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
-const BRIEF_ID      = 'e1b2c3d4-e5f6-7890-abcd-ef1234567894';
-const MATCH_ID      = 'f1b2c3d4-e5f6-7890-abcd-ef1234567895';
+const AUTH_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const PORTAL_ID = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
+const CONTACT_ID = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
+const AGENT_ID = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
+const BRIEF_ID = 'e1b2c3d4-e5f6-7890-abcd-ef1234567894';
+const MATCH_ID = 'f1b2c3d4-e5f6-7890-abcd-ef1234567895';
 const INSPECTION_ID = '01b2c3d4-e5f6-7890-abcd-ef1234567896';
 
 const NOW = new Date().toISOString();
 
 // ─── Fixture factories ────────────────────────────────────────────────────────
 
-function makePortalClientRow(overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+function makePortalClientRow(
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> {
   return {
     id: PORTAL_ID,
     auth_id: AUTH_ID,
@@ -48,7 +50,13 @@ function makeMatchRow(overrides: Partial<Record<string, unknown>> = {}): Record<
     brief_id: BRIEF_ID,
     client_id: CONTACT_ID,
     overall_score: 85,
-    score_breakdown: { priceMatch: 90, locationMatch: 80, sizeMatch: 85, featureMatch: 85, investorMatch: 85 },
+    score_breakdown: {
+      priceMatch: 90,
+      locationMatch: 80,
+      sizeMatch: 85,
+      featureMatch: 85,
+      investorMatch: 85,
+    },
     status: 'sent_to_client',
     rejection_reason: null,
     agent_notes: null,
@@ -61,7 +69,9 @@ function makeMatchRow(overrides: Partial<Record<string, unknown>> = {}): Record<
   };
 }
 
-function makeInspectionRow(overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+function makeInspectionRow(
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> {
   return {
     id: INSPECTION_ID,
     contact_id: CONTACT_ID,
@@ -118,15 +128,36 @@ describe('PortalEngine.getPortalClient', () => {
     expect(result.isActive).toBe(true);
   });
 
-  it('throws when portal client is not found', async () => {
+  it('throws when portal client is not found (non-PGRST116 error)', async () => {
     const supabase = {
-      from: vi.fn(() => makeChain(null, { message: 'Row not found' })),
+      from: vi.fn(() => makeChain(null, { message: 'Row not found', code: 'PGRST999' })),
     };
     const engine = new PortalEngine(supabase as never);
 
     await expect(engine.getPortalClient(AUTH_ID)).rejects.toThrow(
-      'Portal client not found',
+      'Failed to fetch portal client: Row not found',
     );
+  });
+
+  it('returns null when portal client does not exist (PGRST116 — no rows)', async () => {
+    const supabase = {
+      from: vi.fn(() => makeChain(null, { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' })),
+    };
+    const engine = new PortalEngine(supabase as never);
+
+    const result = await engine.getPortalClient(AUTH_ID);
+    expect(result).toBeNull();
+  });
+
+  it('returns null when data is null and no error', async () => {
+    // Supabase may return { data: null, error: null } in some edge cases
+    const supabase = {
+      from: vi.fn(() => makeChain(null, null)),
+    };
+    const engine = new PortalEngine(supabase as never);
+
+    const result = await engine.getPortalClient(AUTH_ID);
+    expect(result).toBeNull();
   });
 });
 
@@ -186,6 +217,91 @@ describe('PortalEngine.acknowledgeBrief', () => {
     const engine = new PortalEngine(supabase as never);
     await expect(engine.acknowledgeBrief(BRIEF_ID, AUTH_ID)).rejects.toThrow('Forbidden');
   });
+
+  it('acknowledges brief without IP address (ip param omitted)', async () => {
+    const portalClientRow = makePortalClientRow();
+    const briefRow = makeBriefRow();
+    let updateCalled = false;
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'portal_clients') {
+          return makeChain(portalClientRow);
+        }
+        if (table === 'client_briefs') {
+          const chain = makeChain(briefRow);
+          chain.update = vi.fn(() => {
+            updateCalled = true;
+            return makeChain(null);
+          });
+          return chain;
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    // No ip argument — exercises the `if (ip)` false branch
+    await engine.acknowledgeBrief(BRIEF_ID, AUTH_ID);
+
+    expect(updateCalled).toBe(true);
+  });
+
+  it('throws when portal client is null (getPortalClient returns null)', async () => {
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'portal_clients') {
+          // PGRST116 → getPortalClient returns null
+          return makeChain(null, { code: 'PGRST116', message: 'no rows' });
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(engine.acknowledgeBrief(BRIEF_ID, AUTH_ID)).rejects.toThrow('Not found');
+  });
+
+  it('throws when brief is not found during acknowledgement', async () => {
+    const portalClientRow = makePortalClientRow();
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'portal_clients') {
+          return makeChain(portalClientRow);
+        }
+        if (table === 'client_briefs') {
+          return makeChain(null, { message: 'Not found' });
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(engine.acknowledgeBrief(BRIEF_ID, AUTH_ID)).rejects.toThrow('Brief not found');
+  });
+
+  it('throws when update call fails', async () => {
+    const portalClientRow = makePortalClientRow();
+    const briefRow = makeBriefRow();
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'portal_clients') {
+          return makeChain(portalClientRow);
+        }
+        if (table === 'client_briefs') {
+          const chain = makeChain(briefRow);
+          chain.update = vi.fn(() => makeChain(null, { message: 'Update failed' }));
+          return chain;
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(engine.acknowledgeBrief(BRIEF_ID, AUTH_ID)).rejects.toThrow('Failed to acknowledge brief');
+  });
 });
 
 // ─── getSentMatches ───────────────────────────────────────────────────────────
@@ -227,6 +343,17 @@ describe('PortalEngine.getSentMatches', () => {
     const result = await engine.getSentMatches(BRIEF_ID);
 
     expect(result).toEqual([]);
+  });
+
+  it('throws when supabase returns an error', async () => {
+    const chain = makeChain(null);
+    chain.then = (resolve: (v: { data: unknown; error: unknown }) => void) =>
+      Promise.resolve({ data: null, error: { message: 'DB connection lost' } }).then(resolve);
+
+    const supabase = { from: vi.fn(() => chain) };
+    const engine = new PortalEngine(supabase as never);
+
+    await expect(engine.getSentMatches(BRIEF_ID)).rejects.toThrow('Failed to fetch sent matches');
   });
 });
 
@@ -344,6 +471,95 @@ describe('PortalEngine.recordMatchFeedback', () => {
 
     expect(updateCalled).toBe(true);
   });
+
+  it('throws when property match is not found', async () => {
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches') {
+          return makeChain(null, { message: 'Not found' });
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(
+      engine.recordMatchFeedback(MATCH_ID, { propertyMatchId: MATCH_ID, feedback: 'interested' }, AUTH_ID),
+    ).rejects.toThrow('Property match not found');
+  });
+
+  it('throws when portal client is null for match feedback (PGRST116)', async () => {
+    const matchRow = makeMatchRow();
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches') {
+          return makeChain(matchRow);
+        }
+        if (table === 'portal_clients') {
+          return makeChain(null, { code: 'PGRST116', message: 'no rows' });
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(
+      engine.recordMatchFeedback(MATCH_ID, { propertyMatchId: MATCH_ID, feedback: 'interested' }, AUTH_ID),
+    ).rejects.toThrow('Not found');
+  });
+
+  it('throws when brief is not found for match feedback', async () => {
+    const matchRow = makeMatchRow();
+    const portalClientRow = makePortalClientRow();
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches') {
+          return makeChain(matchRow);
+        }
+        if (table === 'portal_clients') {
+          return makeChain(portalClientRow);
+        }
+        if (table === 'client_briefs') {
+          return makeChain(null, { message: 'Not found' });
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(
+      engine.recordMatchFeedback(MATCH_ID, { propertyMatchId: MATCH_ID, feedback: 'interested' }, AUTH_ID),
+    ).rejects.toThrow('Brief not found for match');
+  });
+
+  it('throws when match does not belong to this portal client', async () => {
+    const matchRow = makeMatchRow();
+    const portalClientRow = makePortalClientRow();
+    const differentContactId = '77b2c3d4-e5f6-7890-abcd-ef1234567802';
+    const briefRow = makeBriefRow({ contact_id: differentContactId });
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'property_matches') {
+          return makeChain(matchRow);
+        }
+        if (table === 'portal_clients') {
+          return makeChain(portalClientRow);
+        }
+        if (table === 'client_briefs') {
+          return makeChain(briefRow);
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(
+      engine.recordMatchFeedback(MATCH_ID, { propertyMatchId: MATCH_ID, feedback: 'interested' }, AUTH_ID),
+    ).rejects.toThrow('Forbidden');
+  });
 });
 
 // ─── recordInspectionFeedback ─────────────────────────────────────────────────
@@ -441,5 +657,78 @@ describe('PortalEngine.recordInspectionFeedback', () => {
         AUTH_ID,
       ),
     ).rejects.toThrow('Forbidden');
+  });
+
+  it('throws when inspection is not found', async () => {
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'inspections') {
+          return makeChain(null, { message: 'Inspection not found' });
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(
+      engine.recordInspectionFeedback(
+        INSPECTION_ID,
+        { inspectionId: INSPECTION_ID, rating: 3 },
+        AUTH_ID,
+      ),
+    ).rejects.toThrow(`Inspection not found: ${INSPECTION_ID}`);
+  });
+
+  it('throws when portal client is null for inspection feedback (PGRST116)', async () => {
+    const inspectionRow = makeInspectionRow();
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'inspections') {
+          return makeChain(inspectionRow);
+        }
+        if (table === 'portal_clients') {
+          return makeChain(null, { code: 'PGRST116', message: 'no rows' });
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(
+      engine.recordInspectionFeedback(
+        INSPECTION_ID,
+        { inspectionId: INSPECTION_ID, rating: 3 },
+        AUTH_ID,
+      ),
+    ).rejects.toThrow('Not found');
+  });
+
+  it('throws when inspection update fails', async () => {
+    const inspectionRow = makeInspectionRow();
+    const portalClientRow = makePortalClientRow();
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'inspections') {
+          const chain = makeChain(inspectionRow);
+          chain.update = vi.fn(() => makeChain(null, { message: 'Update error' }));
+          return chain;
+        }
+        if (table === 'portal_clients') {
+          return makeChain(portalClientRow);
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new PortalEngine(supabase as never);
+    await expect(
+      engine.recordInspectionFeedback(
+        INSPECTION_ID,
+        { inspectionId: INSPECTION_ID, rating: 4 },
+        AUTH_ID,
+      ),
+    ).rejects.toThrow('Failed to record inspection feedback');
   });
 });

@@ -63,7 +63,9 @@ function getAnthropicClient(): AnthropicClient | null {
       apiKey: env.ANTHROPIC_API_KEY,
       ...(env.ANTHROPIC_MODEL && { model: env.ANTHROPIC_MODEL }),
       ...(env.ANTHROPIC_MAX_TOKENS && { maxTokens: env.ANTHROPIC_MAX_TOKENS }),
-      ...(env.ANTHROPIC_RATE_LIMIT_PER_MINUTE && { rateLimitPerMinute: env.ANTHROPIC_RATE_LIMIT_PER_MINUTE }),
+      ...(env.ANTHROPIC_RATE_LIMIT_PER_MINUTE && {
+        rateLimitPerMinute: env.ANTHROPIC_RATE_LIMIT_PER_MINUTE,
+      }),
     });
   }
 

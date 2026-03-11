@@ -56,14 +56,7 @@ const accentStyles: Record<string, { border: string; bg: string; text: string }>
   },
 };
 
-export function MetricCard({
-  title,
-  value,
-  subtitle,
-  trend,
-  icon,
-  accentColor,
-}: MetricCardProps) {
+export function MetricCard({ title, value, subtitle, trend, icon, accentColor }: MetricCardProps) {
   const accent = accentColor ? accentStyles[accentColor] : null;
 
   return (
@@ -90,12 +83,7 @@ export function MetricCard({
         )}
       </div>
 
-      <p
-        className={cn(
-          'mt-2 text-3xl font-bold',
-          accent ? accent.text : 'text-gray-900',
-        )}
-      >
+      <p className={cn('mt-2 text-3xl font-bold', accent ? accent.text : 'text-gray-900')}>
         {value}
       </p>
 
@@ -115,12 +103,8 @@ export function MetricCard({
               {trend.value}%
             </span>
           )}
-          {subtitle && (
-            <span className="text-sm text-gray-500">{subtitle}</span>
-          )}
-          {trend && !subtitle && (
-            <span className="text-sm text-gray-500">{trend.label}</span>
-          )}
+          {subtitle && <span className="text-sm text-gray-500">{subtitle}</span>}
+          {trend && !subtitle && <span className="text-sm text-gray-500">{trend.label}</span>}
         </div>
       )}
     </div>

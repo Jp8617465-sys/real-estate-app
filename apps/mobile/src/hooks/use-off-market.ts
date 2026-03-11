@@ -15,12 +15,11 @@ export function useOffMarketProperties(status?: string) {
     queryKey: ['off-market', status],
     queryFn: async () => {
       const params = status ? `?status=${status}` : '';
-      const res = await fetch(
-        `${API_BASE}/api/v1/off-market${params}`,
-        { headers: { Authorization: `Bearer ${await getToken()}` } },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/off-market${params}`, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to fetch off-market properties');
-      const json = await res.json() as { data: OffMarketProperty[] };
+      const json = (await res.json()) as { data: OffMarketProperty[] };
       return json.data;
     },
     staleTime: 60_000,
@@ -33,12 +32,11 @@ export function useOffMarketStats() {
   return useQuery({
     queryKey: ['off-market-stats'],
     queryFn: async () => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/off-market/stats`,
-        { headers: { Authorization: `Bearer ${await getToken()}` } },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/off-market/stats`, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to fetch off-market stats');
-      const json = await res.json() as { data: OffMarketStats };
+      const json = (await res.json()) as { data: OffMarketStats };
       return json.data;
     },
     staleTime: 300_000,
@@ -52,19 +50,16 @@ export function useCreateOffMarketProperty() {
 
   return useMutation({
     mutationFn: async (data: CreateOffMarketProperty) => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/off-market`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${await getToken()}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
+      const res = await fetch(`${API_BASE}/api/v1/off-market`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify(data),
+      });
       if (!res.ok) throw new Error('Failed to create off-market property');
-      const json = await res.json() as { data: OffMarketProperty };
+      const json = (await res.json()) as { data: OffMarketProperty };
       return json.data;
     },
     onSuccess: () => {
@@ -80,13 +75,10 @@ export function useDeleteOffMarketProperty() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/off-market/${id}`,
-        {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${await getToken()}` },
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/off-market/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to delete off-market property');
     },
     onSuccess: () => {

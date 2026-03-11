@@ -6,9 +6,7 @@ import { ToastContext, ToastContextProvider, useToast } from '../toast-context';
 function ToastConsumer() {
   const { toast } = useToast();
   return (
-    <button onClick={() => toast({ message: 'Hello!', variant: 'success' })}>
-      Show Toast
-    </button>
+    <button onClick={() => toast({ message: 'Hello!', variant: 'success' })}>Show Toast</button>
   );
 }
 
@@ -47,10 +45,19 @@ describe('ToastContextProvider', () => {
       const ctx = useContext(ToastContext);
       return (
         <>
-          <button onClick={() => { const id = toast({ message: 'Bye', variant: 'info' }); dismiss(id); }}>
+          <button
+            onClick={() => {
+              const id = toast({ message: 'Bye', variant: 'info' });
+              dismiss(id);
+            }}
+          >
             Toast+Dismiss
           </button>
-          <div>{ctx?.toasts.map((t) => <span key={t.id}>{t.open ? 'open' : 'closed'}</span>)}</div>
+          <div>
+            {ctx?.toasts.map((t) => (
+              <span key={t.id}>{t.open ? 'open' : 'closed'}</span>
+            ))}
+          </div>
         </>
       );
     }

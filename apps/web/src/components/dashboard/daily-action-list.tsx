@@ -22,13 +22,7 @@ function getPriorityColor(score: number): string {
   return 'bg-blue-400';
 }
 
-function ActionRow({
-  item,
-  onComplete,
-}: {
-  item: DailyActionItem;
-  onComplete: () => void;
-}) {
+function ActionRow({ item, onComplete }: { item: DailyActionItem; onComplete: () => void }) {
   const isCompleted = item.isCompleted;
   const emoji = CATEGORY_EMOJI[item.category] ?? '✅';
 
@@ -102,7 +96,11 @@ export function DailyActionList() {
   const incompleteItems = items.filter((i) => !i.isCompleted).slice(0, 5);
   const displayItems = incompleteItems.length > 0 ? incompleteItems : items.slice(0, 5);
 
-  const today = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short' });
+  const today = new Date().toLocaleDateString('en-AU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+  });
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -129,7 +127,10 @@ export function DailyActionList() {
       {isLoading && (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg border border-gray-100 p-2.5">
+            <div
+              key={i}
+              className="flex items-center gap-3 rounded-lg border border-gray-100 p-2.5"
+            >
               <div className="h-6 w-1 animate-pulse rounded-full bg-gray-200" />
               <div className="h-4 w-4 animate-pulse rounded bg-gray-100" />
               <div className="flex-1 space-y-1">

@@ -94,8 +94,19 @@ function buildChainedMock(resolvedValue: { data: unknown; error: unknown }) {
   const maybeSingle = vi.fn().mockResolvedValue(resolvedValue);
   const limit = vi.fn().mockReturnValue({ single, maybeSingle });
   const order = vi.fn().mockReturnValue({ limit, maybeSingle, single });
-  const ilike = vi.fn().mockReturnValue({ ilike: vi.fn().mockReturnValue({ order, limit, maybeSingle }), order, limit, maybeSingle });
-  const eq = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ order, limit, maybeSingle }), order, limit, maybeSingle, ilike });
+  const ilike = vi.fn().mockReturnValue({
+    ilike: vi.fn().mockReturnValue({ order, limit, maybeSingle }),
+    order,
+    limit,
+    maybeSingle,
+  });
+  const eq = vi.fn().mockReturnValue({
+    eq: vi.fn().mockReturnValue({ order, limit, maybeSingle }),
+    order,
+    limit,
+    maybeSingle,
+    ilike,
+  });
   const or = vi.fn().mockReturnValue({ order, limit, maybeSingle });
   const select = vi.fn().mockReturnValue({ eq, ilike, or, order, limit, maybeSingle, single });
   const upsert = vi.fn().mockResolvedValue({ error: null });
@@ -198,7 +209,12 @@ describe('MarketDataService.fetchAndUpsert', () => {
       cacheTtlMs: 60_000,
     });
 
-    const query = { suburb: 'Mosman', state: 'NSW', postcode: '2088', propertyType: 'house' as const };
+    const query = {
+      suburb: 'Mosman',
+      state: 'NSW',
+      postcode: '2088',
+      propertyType: 'house' as const,
+    };
 
     await service.fetchAndUpsert(query);
     const result = await service.fetchAndUpsert(query);
@@ -418,9 +434,7 @@ describe('MarketDataService.getSnapshotsForSuburbs', () => {
     mockFrom.mockReturnValue({ select });
 
     const service = new MarketDataService(mockSupabase as unknown as SupabaseClient);
-    const result = await service.getSnapshotsForSuburbs([
-      { suburb: 'Mosman', state: 'NSW' },
-    ]);
+    const result = await service.getSnapshotsForSuburbs([{ suburb: 'Mosman', state: 'NSW' }]);
 
     // Should return only the most recent (first in ordered results)
     expect(result).toHaveLength(1);
@@ -439,7 +453,12 @@ describe('MarketDataService.clearCache', () => {
       cacheTtlMs: 60_000,
     });
 
-    const query = { suburb: 'Mosman', state: 'NSW', postcode: '2088', propertyType: 'house' as const };
+    const query = {
+      suburb: 'Mosman',
+      state: 'NSW',
+      postcode: '2088',
+      propertyType: 'house' as const,
+    };
 
     await service.fetchAndUpsert(query);
     expect(mockGetSuburbPerformance).toHaveBeenCalledTimes(1);

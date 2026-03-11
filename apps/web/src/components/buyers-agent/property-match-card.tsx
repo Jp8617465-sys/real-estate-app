@@ -83,7 +83,9 @@ export function PropertyMatchCard({
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-gray-900">{address}</h3>
           <div className="mt-1">
-            <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', STATUS_COLORS[status])}>
+            <span
+              className={cn('rounded-full px-2 py-0.5 text-xs font-medium', STATUS_COLORS[status])}
+            >
               {STATUS_LABELS[status]}
             </span>
           </div>
@@ -106,10 +108,7 @@ export function PropertyMatchCard({
       {flags && flags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1 border-t border-gray-100 pt-3">
           {flags.map((flag) => (
-            <span
-              key={flag}
-              className="rounded-md bg-amber-50 px-2 py-0.5 text-xs text-amber-700"
-            >
+            <span key={flag} className="rounded-md bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
               {flag}
             </span>
           ))}

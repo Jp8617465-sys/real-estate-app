@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import {
-  type AmlDocumentType,
-  type AddAmlDocument,
-} from '@realflow/shared';
+import { type AmlDocumentType, type AddAmlDocument } from '@realflow/shared';
 
 interface DocumentUploadSectionProps {
   onSubmit: (document: AddAmlDocument) => void;
@@ -21,7 +18,12 @@ const DOCUMENT_TYPE_OPTIONS: Array<{
 }> = [
   { value: 'passport', label: 'Australian Passport', points: 70, category: 'Primary' },
   { value: 'birth_certificate', label: 'Birth Certificate', points: 70, category: 'Primary' },
-  { value: 'citizenship_certificate', label: 'Citizenship Certificate', points: 70, category: 'Primary' },
+  {
+    value: 'citizenship_certificate',
+    label: 'Citizenship Certificate',
+    points: 70,
+    category: 'Primary',
+  },
   { value: 'drivers_licence', label: "Driver's Licence", points: 40, category: 'Secondary A' },
   { value: 'government_id_card', label: 'Government ID Card', points: 40, category: 'Secondary A' },
   { value: 'proof_of_age_card', label: 'Proof of Age Card', points: 40, category: 'Secondary A' },
@@ -78,9 +80,7 @@ export function DocumentUploadSection({
   return (
     <div className="rounded-lg border border-gray-200 bg-white">
       <div className="border-b border-gray-200 px-4 py-3">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Add Identity Document
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-900">Add Identity Document</h3>
         <p className="mt-0.5 text-xs text-gray-500">
           Record a client identity document for the 100-point check
         </p>
@@ -89,11 +89,11 @@ export function DocumentUploadSection({
       <form onSubmit={handleSubmit} className="space-y-4 p-4">
         {/* Document Type */}
         <div>
-          <label
-            htmlFor="document-type"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Document Type <span className="text-red-500" aria-hidden="true">*</span>
+          <label htmlFor="document-type" className="block text-sm font-medium text-gray-700">
+            Document Type{' '}
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
           </label>
           <select
             id="document-type"
@@ -135,10 +135,7 @@ export function DocumentUploadSection({
 
         {/* Document Number */}
         <div>
-          <label
-            htmlFor="document-number"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="document-number" className="block text-sm font-medium text-gray-700">
             Document Number
           </label>
           <input
@@ -153,10 +150,7 @@ export function DocumentUploadSection({
 
         {/* Issuing Authority */}
         <div>
-          <label
-            htmlFor="issuing-authority"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="issuing-authority" className="block text-sm font-medium text-gray-700">
             Issuing Authority
           </label>
           <input
@@ -172,10 +166,7 @@ export function DocumentUploadSection({
         {/* Date fields */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label
-              htmlFor="issue-date"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="issue-date" className="block text-sm font-medium text-gray-700">
               Issue Date
             </label>
             <input
@@ -187,10 +178,7 @@ export function DocumentUploadSection({
             />
           </div>
           <div>
-            <label
-              htmlFor="expiry-date"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="expiry-date" className="block text-sm font-medium text-gray-700">
               Expiry Date
             </label>
             <input
@@ -205,10 +193,7 @@ export function DocumentUploadSection({
 
         {/* Notes */}
         <div>
-          <label
-            htmlFor="document-notes"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="document-notes" className="block text-sm font-medium text-gray-700">
             Notes
           </label>
           <textarea

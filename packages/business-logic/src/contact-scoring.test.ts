@@ -91,18 +91,14 @@ describe('ContactScoring.calculateScore', () => {
 
   it('scores inspection activities at 15 points each', () => {
     const contact = makeContact();
-    const activities = [
-      makeActivity({ type: 'inspection', createdAt: daysAgo(5) }),
-    ];
+    const activities = [makeActivity({ type: 'inspection', createdAt: daysAgo(5) })];
     const score = ContactScoring.calculateScore(contact, activities);
     expect(score).toBe(PHONE_BASELINE + 15); // phone(5) + inspection(15)
   });
 
   it('scores open-home activities at 15 points', () => {
     const contact = makeContact();
-    const activities = [
-      makeActivity({ type: 'open-home', createdAt: daysAgo(2) }),
-    ];
+    const activities = [makeActivity({ type: 'open-home', createdAt: daysAgo(2) })];
     const score = ContactScoring.calculateScore(contact, activities);
     expect(score).toBe(PHONE_BASELINE + 15);
   });
@@ -119,36 +115,28 @@ describe('ContactScoring.calculateScore', () => {
 
   it('scores call activities at 5 points each', () => {
     const contact = makeContact();
-    const activities = [
-      makeActivity({ type: 'call', createdAt: daysAgo(3) }),
-    ];
+    const activities = [makeActivity({ type: 'call', createdAt: daysAgo(3) })];
     const score = ContactScoring.calculateScore(contact, activities);
     expect(score).toBe(PHONE_BASELINE + 5); // phone(5) + call(5)
   });
 
   it('scores generic activities at 10 points (recentActivity weight)', () => {
     const contact = makeContact();
-    const activities = [
-      makeActivity({ type: 'meeting', createdAt: daysAgo(5) }),
-    ];
+    const activities = [makeActivity({ type: 'meeting', createdAt: daysAgo(5) })];
     const score = ContactScoring.calculateScore(contact, activities);
     expect(score).toBe(PHONE_BASELINE + 10); // phone(5) + meeting(10)
   });
 
   it('ignores activities older than 30 days', () => {
     const contact = makeContact();
-    const activities = [
-      makeActivity({ type: 'inspection', createdAt: daysAgo(31) }),
-    ];
+    const activities = [makeActivity({ type: 'inspection', createdAt: daysAgo(31) })];
     const score = ContactScoring.calculateScore(contact, activities);
     expect(score).toBe(PHONE_BASELINE); // only phone baseline
   });
 
   it('includes activities exactly 30 days old', () => {
     const contact = makeContact();
-    const activities = [
-      makeActivity({ type: 'call', createdAt: daysAgo(30) }),
-    ];
+    const activities = [makeActivity({ type: 'call', createdAt: daysAgo(30) })];
     const score = ContactScoring.calculateScore(contact, activities);
     expect(score).toBe(PHONE_BASELINE + 5); // phone(5) + call(5)
   });

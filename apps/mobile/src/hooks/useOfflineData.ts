@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  storageSet,
-  storageGetWithMeta,
-} from '../lib/offline-storage';
+import { storageSet, storageGetWithMeta } from '../lib/offline-storage';
 import { useNetworkStatus } from './useNetworkStatus';
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -105,8 +102,7 @@ export function useOfflineData<T>(
     } catch (err: unknown) {
       if (!mountedRef.current) return;
 
-      const fetchError =
-        err instanceof Error ? err : new Error('Failed to fetch data');
+      const fetchError = err instanceof Error ? err : new Error('Failed to fetch data');
       setError(fetchError);
 
       // If we have cached data, keep showing it (stale)
@@ -127,11 +123,7 @@ export function useOfflineData<T>(
 
   // Background refresh interval
   useEffect(() => {
-    if (
-      enableBackgroundRefresh &&
-      refreshIntervalMs &&
-      isOnline
-    ) {
+    if (enableBackgroundRefresh && refreshIntervalMs && isOnline) {
       intervalRef.current = setInterval(() => {
         void fetchFromServer();
       }, refreshIntervalMs);

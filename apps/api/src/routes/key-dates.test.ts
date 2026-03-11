@@ -171,8 +171,18 @@ describe('POST /api/v1/key-dates/generate', () => {
 
   it('generates key dates from contract details', async () => {
     const generatedDates = [
-      { label: 'Settlement', date: new Date('2026-06-15'), isCritical: true, reminderDaysBefore: [7, 3] },
-      { label: 'Finance Approval', date: new Date('2026-04-15'), isCritical: true, reminderDaysBefore: [3] },
+      {
+        label: 'Settlement',
+        date: new Date('2026-06-15'),
+        isCritical: true,
+        reminderDaysBefore: [7, 3],
+      },
+      {
+        label: 'Finance Approval',
+        date: new Date('2026-04-15'),
+        isCritical: true,
+        reminderDaysBefore: [3],
+      },
     ];
 
     mockGenerateKeyDates.mockReturnValue(generatedDates);

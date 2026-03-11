@@ -15,15 +15,15 @@ export function useDailyActions() {
     queryKey: ['daily-actions', today],
     queryFn: async () => {
       const token = await getToken();
-      const res = await fetch(
-        `${API_BASE}/api/v1/daily-actions?date=${today}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/daily-actions?date=${today}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!res.ok) throw new Error('Failed to fetch daily actions');
-      return res.json() as Promise<{ data: DailyActionItem[]; meta: { urgentCount: number; completedCount: number; totalCount: number; cached?: boolean } }>;
+      return res.json() as Promise<{
+        data: DailyActionItem[];
+        meta: { urgentCount: number; completedCount: number; totalCount: number; cached?: boolean };
+      }>;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -54,7 +54,9 @@ export function useCompleteDailyAction() {
             ? {
                 ...old,
                 data: old.data.map((item) =>
-                  item.id === actionId ? { ...item, isCompleted: true, completedAt: new Date().toISOString() } : item,
+                  item.id === actionId
+                    ? { ...item, isCompleted: true, completedAt: new Date().toISOString() }
+                    : item,
                 ),
               }
             : old,

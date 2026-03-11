@@ -13,7 +13,7 @@ describe('DueDiligenceEngine.generateChecklist', () => {
     expect(checklist!.propertyType).toBe('house');
 
     // Should NOT include strata-only items
-    const names = checklist!.items.map(i => i.name);
+    const names = checklist!.items.map((i) => i.name);
     expect(names).not.toContain('Body corporate records obtained');
     expect(names).not.toContain('Strata inspection report');
 
@@ -28,7 +28,7 @@ describe('DueDiligenceEngine.generateChecklist', () => {
     // All 24 QLD items apply to units
     expect(checklist!.items).toHaveLength(24);
 
-    const names = checklist!.items.map(i => i.name);
+    const names = checklist!.items.map((i) => i.name);
     expect(names).toContain('Body corporate records obtained');
     expect(names).toContain('Strata inspection report');
   });
@@ -39,7 +39,7 @@ describe('DueDiligenceEngine.generateChecklist', () => {
     // 24 total minus 2 excludeFrom land (building, pest) minus 2 applicableTo strata-only
     expect(checklist!.items).toHaveLength(20);
 
-    const names = checklist!.items.map(i => i.name);
+    const names = checklist!.items.map((i) => i.name);
     expect(names).not.toContain('Building inspection completed');
     expect(names).not.toContain('Pest/termite inspection completed');
     expect(names).not.toContain('Body corporate records obtained');
@@ -52,8 +52,8 @@ describe('DueDiligenceEngine.generateChecklist', () => {
     expect(nswChecklist).not.toBeNull();
     expect(qldChecklist).not.toBeNull();
 
-    const nswNames = nswChecklist!.items.map(i => i.name);
-    const qldNames = qldChecklist!.items.map(i => i.name);
+    const nswNames = nswChecklist!.items.map((i) => i.name);
+    const qldNames = qldChecklist!.items.map((i) => i.name);
 
     // NSW has s66W certificate, QLD does not
     expect(nswNames).toContain('s66W certificate exchange');
@@ -68,7 +68,7 @@ describe('DueDiligenceEngine.generateChecklist', () => {
     const checklist = DueDiligenceEngine.generateChecklist('VIC', 'house');
     expect(checklist).not.toBeNull();
 
-    const names = checklist!.items.map(i => i.name);
+    const names = checklist!.items.map((i) => i.name);
     expect(names).toContain('Section 32 vendor statement reviewed');
   });
 
@@ -104,29 +104,34 @@ describe('DueDiligenceEngine.generateChecklist', () => {
 
 describe('DueDiligenceEngine.calculateCompletion', () => {
   it('all not_started returns 0%', () => {
-    expect(DueDiligenceEngine.calculateCompletion([
-      'not_started', 'not_started', 'not_started',
-    ])).toBe(0);
+    expect(
+      DueDiligenceEngine.calculateCompletion(['not_started', 'not_started', 'not_started']),
+    ).toBe(0);
   });
 
   it('all completed returns 100%', () => {
-    expect(DueDiligenceEngine.calculateCompletion([
-      'completed', 'completed', 'completed',
-    ])).toBe(100);
+    expect(DueDiligenceEngine.calculateCompletion(['completed', 'completed', 'completed'])).toBe(
+      100,
+    );
   });
 
   it('mix of statuses calculates correctly', () => {
     // 2 out of 4 completed = 50%
-    expect(DueDiligenceEngine.calculateCompletion([
-      'completed', 'completed', 'not_started', 'in_progress',
-    ])).toBe(50);
+    expect(
+      DueDiligenceEngine.calculateCompletion([
+        'completed',
+        'completed',
+        'not_started',
+        'in_progress',
+      ]),
+    ).toBe(50);
   });
 
   it('not_applicable counts as complete', () => {
     // 1 completed + 1 not_applicable = 2/3 = 67%
-    expect(DueDiligenceEngine.calculateCompletion([
-      'completed', 'not_applicable', 'not_started',
-    ])).toBe(67);
+    expect(
+      DueDiligenceEngine.calculateCompletion(['completed', 'not_applicable', 'not_started']),
+    ).toBe(67);
   });
 
   it('empty array returns 0%', () => {
@@ -138,25 +143,31 @@ describe('DueDiligenceEngine.calculateCompletion', () => {
 
 describe('DueDiligenceEngine.hasBlockingIssues', () => {
   it('returns true when blocking item has issue_found', () => {
-    expect(DueDiligenceEngine.hasBlockingIssues([
-      { isBlocking: true, status: 'issue_found' },
-      { isBlocking: false, status: 'completed' },
-    ])).toBe(true);
+    expect(
+      DueDiligenceEngine.hasBlockingIssues([
+        { isBlocking: true, status: 'issue_found' },
+        { isBlocking: false, status: 'completed' },
+      ]),
+    ).toBe(true);
   });
 
   it('returns false when non-blocking item has issue_found', () => {
-    expect(DueDiligenceEngine.hasBlockingIssues([
-      { isBlocking: false, status: 'issue_found' },
-      { isBlocking: true, status: 'completed' },
-    ])).toBe(false);
+    expect(
+      DueDiligenceEngine.hasBlockingIssues([
+        { isBlocking: false, status: 'issue_found' },
+        { isBlocking: true, status: 'completed' },
+      ]),
+    ).toBe(false);
   });
 
   it('returns false when all items are completed', () => {
-    expect(DueDiligenceEngine.hasBlockingIssues([
-      { isBlocking: true, status: 'completed' },
-      { isBlocking: true, status: 'completed' },
-      { isBlocking: false, status: 'completed' },
-    ])).toBe(false);
+    expect(
+      DueDiligenceEngine.hasBlockingIssues([
+        { isBlocking: true, status: 'completed' },
+        { isBlocking: true, status: 'completed' },
+        { isBlocking: false, status: 'completed' },
+      ]),
+    ).toBe(false);
   });
 });
 

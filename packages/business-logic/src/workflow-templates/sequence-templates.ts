@@ -5,10 +5,14 @@
 
 import type { FollowUpSequence } from '@realflow/shared';
 
-export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'isDeleted' | 'createdAt' | 'updatedAt'>[] = [
+export const SEQUENCE_TEMPLATES: Omit<
+  FollowUpSequence,
+  'id' | 'createdBy' | 'isDeleted' | 'createdAt' | 'updatedAt'
+>[] = [
   {
     name: 'New Enquiry Nurture',
-    description: 'Multi-touch sequence for new buyer enquiries — immediate response, follow-up call, check-in email, and re-engagement SMS.',
+    description:
+      'Multi-touch sequence for new buyer enquiries — immediate response, follow-up call, check-in email, and re-engagement SMS.',
     category: 'lead_nurture',
     triggerType: 'new_lead',
     triggerConfig: {},
@@ -32,7 +36,12 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
       {
         index: 2,
         dayOffset: 2,
-        action: { type: 'create_task', taskTitle: 'Call new enquiry', taskType: 'call', priority: 'high' },
+        action: {
+          type: 'create_task',
+          taskTitle: 'Call new enquiry',
+          taskType: 'call',
+          priority: 'high',
+        },
         skipIfResponded: false,
         label: 'Day 2: Follow-up call task',
       },
@@ -55,7 +64,8 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
 
   {
     name: 'Post-Engagement Welcome',
-    description: 'Onboarding sequence after a client signs the engagement agreement — welcome, brief collection, and check-in.',
+    description:
+      'Onboarding sequence after a client signs the engagement agreement — welcome, brief collection, and check-in.',
     category: 'onboarding',
     triggerType: 'stage_change',
     triggerConfig: { to: 'engaged' },
@@ -72,7 +82,12 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
       {
         index: 1,
         dayOffset: 3,
-        action: { type: 'create_task', taskTitle: 'Collect property brief', taskType: 'brief-review', priority: 'high' },
+        action: {
+          type: 'create_task',
+          taskTitle: 'Collect property brief',
+          taskType: 'brief-review',
+          priority: 'high',
+        },
         skipIfResponded: false,
         label: 'Day 3: Brief collection task',
       },
@@ -88,7 +103,8 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
 
   {
     name: 'Property Match Alert',
-    description: 'Immediate notification when a high-scoring property match is found — push notification, email, then follow-up call task if no response.',
+    description:
+      'Immediate notification when a high-scoring property match is found — push notification, email, then follow-up call task if no response.',
     category: 'property_match',
     triggerType: 'manual',
     triggerConfig: { minMatchScore: 75 },
@@ -98,7 +114,10 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
       {
         index: 0,
         dayOffset: 0,
-        action: { type: 'notify_agent', message: 'New high-scoring property match found — review and notify client.' },
+        action: {
+          type: 'notify_agent',
+          message: 'New high-scoring property match found — review and notify client.',
+        },
         skipIfResponded: false,
         label: 'Immediate: Notify agent',
       },
@@ -112,7 +131,12 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
       {
         index: 2,
         dayOffset: 2,
-        action: { type: 'create_task', taskTitle: 'Call client about property match', taskType: 'call', priority: 'high' },
+        action: {
+          type: 'create_task',
+          taskTitle: 'Call client about property match',
+          taskType: 'call',
+          priority: 'high',
+        },
         skipIfResponded: true,
         label: 'Day 2: Call task if no response',
       },
@@ -121,7 +145,8 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
 
   {
     name: 'Pre-Settlement Countdown',
-    description: 'Settlement preparation sequence — DD checklist, email reminders, urgent push notification, and final call task.',
+    description:
+      'Settlement preparation sequence — DD checklist, email reminders, urgent push notification, and final call task.',
     category: 'settlement',
     triggerType: 'date_approaching',
     triggerConfig: { dateType: 'settlement', daysBeforeCount: 14 },
@@ -131,7 +156,12 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
       {
         index: 0,
         dayOffset: 0,
-        action: { type: 'create_task', taskTitle: 'Review DD checklist — settlement in 14 days', taskType: 'due-diligence-check', priority: 'urgent' },
+        action: {
+          type: 'create_task',
+          taskTitle: 'Review DD checklist — settlement in 14 days',
+          taskType: 'due-diligence-check',
+          priority: 'urgent',
+        },
         skipIfResponded: false,
         label: 'D-14: DD checklist task',
       },
@@ -145,14 +175,22 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
       {
         index: 2,
         dayOffset: 11,
-        action: { type: 'notify_agent', message: 'URGENT: Settlement in 3 days — confirm all checks complete.' },
+        action: {
+          type: 'notify_agent',
+          message: 'URGENT: Settlement in 3 days — confirm all checks complete.',
+        },
         skipIfResponded: false,
         label: 'D-3: Urgent agent notification',
       },
       {
         index: 3,
         dayOffset: 13,
-        action: { type: 'create_task', taskTitle: 'Final call before settlement', taskType: 'call', priority: 'urgent' },
+        action: {
+          type: 'create_task',
+          taskTitle: 'Final call before settlement',
+          taskType: 'call',
+          priority: 'urgent',
+        },
         skipIfResponded: false,
         label: 'D-1: Final call task',
       },
@@ -161,7 +199,8 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
 
   {
     name: 'Stale Lead Re-engagement',
-    description: 'Re-engage leads with no activity in 30+ days — friendly email, SMS nudge, call task, and stale tag if still no response.',
+    description:
+      'Re-engage leads with no activity in 30+ days — friendly email, SMS nudge, call task, and stale tag if still no response.',
     category: 'reengagement',
     triggerType: 'no_activity',
     triggerConfig: { daysInactive: 30 },
@@ -185,7 +224,12 @@ export const SEQUENCE_TEMPLATES: Omit<FollowUpSequence, 'id' | 'createdBy' | 'is
       {
         index: 2,
         dayOffset: 14,
-        action: { type: 'create_task', taskTitle: 'Call stale lead', taskType: 'call', priority: 'medium' },
+        action: {
+          type: 'create_task',
+          taskTitle: 'Call stale lead',
+          taskType: 'call',
+          priority: 'medium',
+        },
         skipIfResponded: true,
         label: 'Day 14: Call task',
       },

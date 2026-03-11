@@ -5,27 +5,26 @@ import { createElement, type ReactNode } from 'react';
 
 // ─── Mock dependencies ─────────────────────────────────────────────
 
-const { mockChannel, mockRemoveChannel, mockCreateClient, mockSubscribeCb } =
-  vi.hoisted(() => {
-    const mockSubscribeCb = vi.fn();
+const { mockChannel, mockRemoveChannel, mockCreateClient, mockSubscribeCb } = vi.hoisted(() => {
+  const mockSubscribeCb = vi.fn();
 
-    const mockChannel = {
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn((cb: (status: string) => void) => {
-        mockSubscribeCb.mockImplementation(cb);
-        return mockChannel;
-      }),
-    };
+  const mockChannel = {
+    on: vi.fn().mockReturnThis(),
+    subscribe: vi.fn((cb: (status: string) => void) => {
+      mockSubscribeCb.mockImplementation(cb);
+      return mockChannel;
+    }),
+  };
 
-    const mockRemoveChannel = vi.fn();
+  const mockRemoveChannel = vi.fn();
 
-    const mockCreateClient = vi.fn(() => ({
-      channel: vi.fn(() => mockChannel),
-      removeChannel: mockRemoveChannel,
-    }));
+  const mockCreateClient = vi.fn(() => ({
+    channel: vi.fn(() => mockChannel),
+    removeChannel: mockRemoveChannel,
+  }));
 
-    return { mockChannel, mockRemoveChannel, mockCreateClient, mockSubscribeCb };
-  });
+  return { mockChannel, mockRemoveChannel, mockCreateClient, mockSubscribeCb };
+});
 
 vi.mock('@/lib/supabase/client', () => ({
   createClient: mockCreateClient,
@@ -115,7 +114,6 @@ describe('useRealtimeDocuments', () => {
     await waitFor(() => {
       expect(result.current.status).toBe('disconnected');
     });
-
   });
 
   it('calls onNewDocument callback when an INSERT payload arrives', async () => {

@@ -18,17 +18,14 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message, senderName, isClient }: MessageBubbleProps) {
-  const hasAttachments =
-    message.content?.attachments && message.content.attachments.length > 0;
+  const hasAttachments = message.content?.attachments && message.content.attachments.length > 0;
 
   return (
     <div className={`flex ${isClient ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[85%] sm:max-w-[70%] ${isClient ? 'order-1' : ''}`}>
         <div
           className={`rounded-2xl px-4 py-2.5 ${
-            isClient
-              ? 'bg-portal-600 text-white'
-              : 'bg-white text-gray-900 shadow-sm'
+            isClient ? 'bg-portal-600 text-white' : 'bg-white text-gray-900 shadow-sm'
           }`}
         >
           <p className="text-sm leading-relaxed whitespace-pre-wrap">

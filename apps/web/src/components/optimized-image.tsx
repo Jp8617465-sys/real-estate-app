@@ -115,10 +115,7 @@ function transformSupabaseUrl(src: string, width: number): string {
   // Use Supabase image transformation endpoint
   // https://supabase.com/docs/guides/storage/serving/image-transformations
   if (url.pathname.includes('/object/public/')) {
-    const transformedPath = url.pathname.replace(
-      '/object/public/',
-      '/render/image/public/',
-    );
+    const transformedPath = url.pathname.replace('/object/public/', '/render/image/public/');
     url.pathname = transformedPath;
   }
 
@@ -131,19 +128,12 @@ function transformSupabaseUrl(src: string, width: number): string {
 /**
  * Transform a Cloudinary URL to use optimised delivery parameters.
  */
-function transformCloudinaryUrl(
-  src: string,
-  cloudName: string,
-  width: number,
-): string {
+function transformCloudinaryUrl(src: string, cloudName: string, width: number): string {
   if (!src.includes('res.cloudinary.com')) return src;
 
   // Insert transformation parameters into Cloudinary URL
   const transformParams = `w_${width},q_auto,f_auto`;
-  return src.replace(
-    `/image/upload/`,
-    `/image/upload/${transformParams}/`,
-  );
+  return src.replace(`/image/upload/`, `/image/upload/${transformParams}/`);
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────────
@@ -247,10 +237,7 @@ export default function OptimizedImage({
   return (
     <div className={clsx('relative overflow-hidden', containerClassName)}>
       {isLoading && showPlaceholder && (
-        <div
-          className="absolute inset-0 animate-pulse bg-gray-200"
-          aria-hidden="true"
-        />
+        <div className="absolute inset-0 animate-pulse bg-gray-200" aria-hidden="true" />
       )}
       <Image
         src={resolvedSrc}

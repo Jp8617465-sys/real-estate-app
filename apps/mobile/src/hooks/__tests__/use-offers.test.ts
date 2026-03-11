@@ -48,7 +48,9 @@ describe('useOffer', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockFrom).toHaveBeenCalledWith('offers');
-    expect(chain.select).toHaveBeenCalledWith('*, rounds:offer_rounds(*), auction_event:auction_events(*)');
+    expect(chain.select).toHaveBeenCalledWith(
+      '*, rounds:offer_rounds(*), auction_event:auction_events(*)',
+    );
     expect(chain.eq).toHaveBeenCalledWith('id', '1');
     expect(result.current.data).toEqual(offer);
   });
@@ -80,10 +82,7 @@ describe('useOffers', () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useOffers('client-1'),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useOffers('client-1'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 

@@ -33,8 +33,16 @@ beforeEach(() => {
 describe('GET /api/v1/selling-agents', () => {
   it('returns list of selling agent profiles', async () => {
     const profiles = [
-      { id: '00000000-0000-0000-0000-000000000001', contact_id: '00000000-0000-0000-0000-000000000010', relationship_score: 5 },
-      { id: '00000000-0000-0000-0000-000000000002', contact_id: '00000000-0000-0000-0000-000000000011', relationship_score: 4 },
+      {
+        id: '00000000-0000-0000-0000-000000000001',
+        contact_id: '00000000-0000-0000-0000-000000000010',
+        relationship_score: 5,
+      },
+      {
+        id: '00000000-0000-0000-0000-000000000002',
+        contact_id: '00000000-0000-0000-0000-000000000011',
+        relationship_score: 4,
+      },
     ];
 
     mockFrom.mockReturnValue({
@@ -56,9 +64,7 @@ describe('GET /api/v1/selling-agents', () => {
   });
 
   it('filters by suburb when provided', async () => {
-    const profiles = [
-      { id: '00000000-0000-0000-0000-000000000001', suburbs: ['Mosman'] },
-    ];
+    const profiles = [{ id: '00000000-0000-0000-0000-000000000001', suburbs: ['Mosman'] }];
 
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({

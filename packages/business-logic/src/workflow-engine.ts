@@ -23,11 +23,17 @@ export interface SupabaseClient {
   from: (table: string) => {
     insert: (data: Record<string, unknown>) => {
       select: () => {
-        single: () => Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }>;
+        single: () => Promise<{
+          data: Record<string, unknown> | null;
+          error: { message: string } | null;
+        }>;
       };
     };
     update: (data: Record<string, unknown>) => {
-      eq: (field: string, value: unknown) => Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }>;
+      eq: (
+        field: string,
+        value: unknown,
+      ) => Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }>;
     };
   };
 }
@@ -85,7 +91,9 @@ export interface RunWorkflowOptions {
 export function parseDuration(duration: string): number {
   const match = duration.match(/^(\d+)(m|h|d)$/);
   if (!match) {
-    throw new Error(`Invalid duration format: ${duration}. Expected format like "7d", "24h", "30m".`);
+    throw new Error(
+      `Invalid duration format: ${duration}. Expected format like "7d", "24h", "30m".`,
+    );
   }
 
   const value = parseInt(match[1]!, 10);
@@ -178,7 +186,10 @@ export function evaluateCondition(condition: WorkflowCondition, context: Workflo
   }
 }
 
-export function evaluateConditions(conditions: WorkflowCondition[], context: WorkflowContext): boolean {
+export function evaluateConditions(
+  conditions: WorkflowCondition[],
+  context: WorkflowContext,
+): boolean {
   // No conditions means always pass (AND of empty set is true)
   if (conditions.length === 0) return true;
   return conditions.every((condition) => evaluateCondition(condition, context));
@@ -186,7 +197,10 @@ export function evaluateConditions(conditions: WorkflowCondition[], context: Wor
 
 // ─── Action Execution ─────────────────────────────────────────────
 
-export async function executeAction(action: WorkflowAction, context: WorkflowContext): Promise<ActionResult> {
+export async function executeAction(
+  action: WorkflowAction,
+  context: WorkflowContext,
+): Promise<ActionResult> {
   try {
     switch (action.type) {
       case 'create_task': {
@@ -214,7 +228,11 @@ export async function executeAction(action: WorkflowAction, context: WorkflowCon
 
       case 'assign_contact': {
         if (!context.contactId) {
-          return { success: false, actionType: 'assign_contact', error: 'No contact ID in context' };
+          return {
+            success: false,
+            actionType: 'assign_contact',
+            error: 'No contact ID in context',
+          };
         }
         const { error } = await context.supabase
           .from('contacts')
@@ -512,10 +530,7 @@ export async function runWorkflow(
     // If action failed, attempt recovery if enabled
     if (!result.success) {
       if (options?.enableRetry) {
-        const policy = getErrorPolicy(
-          action.type,
-          options.actionErrorPolicies?.[action.type],
-        );
+        const policy = getErrorPolicy(action.type, options.actionErrorPolicies?.[action.type]);
 
         const recoveryResult: RecoveryResult = await recoverFromError(
           action,
@@ -539,11 +554,17 @@ export async function runWorkflow(
 
         if (recoveryResult.success) {
           // Recovery succeeded — log and continue
-          const recoveredLog = createStepLog(i, action.type, recoveryResult.warning ? 'warning' : 'completed', stepStartedAt, {
-            retryAttempt: recoveryResult.retryAttempts,
-            warning: recoveryResult.warning,
-            result: recoveryResult.actionResult.result,
-          });
+          const recoveredLog = createStepLog(
+            i,
+            action.type,
+            recoveryResult.warning ? 'warning' : 'completed',
+            stepStartedAt,
+            {
+              retryAttempt: recoveryResult.retryAttempts,
+              warning: recoveryResult.warning,
+              result: recoveryResult.actionResult.result,
+            },
+          );
           executionLog[executionLog.length - 1] = recoveredLog;
           options?.onStepLog?.(recoveredLog);
 

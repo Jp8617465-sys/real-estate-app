@@ -39,20 +39,20 @@ The handoff to staging surfaced five significant infrastructure issues. All five
 
 ## Sprint Goals vs. Outcomes
 
-| Goal (from Roadmap) | Outcome |
-|---|---|
-| Secure client login via Supabase Auth magic link | Delivered — portal uses magic-link flow |
-| Brief review and sign-off | Delivered — `acknowledgeBrief` with IP audit field |
-| Property shortlist with agent notes and match scores | Delivered — `getSentMatches` + match feedback |
-| Inspection calendar and feedback forms | Delivered — `recordInspectionFeedback` |
-| Document sharing (portal-visible toggle) | Delivered — `portal_visible` column + RLS policies |
-| Progress tracker (pipeline stage with timeline) | Delivered — `/transaction` and `/key-dates` portal routes |
-| Property alert subscriptions per brief | Delivered — `PropertyAlertEngine.createSubscription` |
-| Real-time new-match notifications | Delivered — `handleNewMatch` wired to `DomainSyncEngine` |
-| Price-drop alerts | Delivered — `handlePriceChange` wired to Domain sync |
-| Mobile alerts screen | Delivered — `apps/mobile/app/alerts/index.tsx` |
-| Offer tracker web parity | Partially delivered — offer routes exist; dedicated offer management UI deferred to Sprint 6 |
-| Inspection logger enhancement (photo/AI summary) | Deferred — out of scope for Sprint 5 |
+| Goal (from Roadmap)                                  | Outcome                                                                                      |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Secure client login via Supabase Auth magic link     | Delivered — portal uses magic-link flow                                                      |
+| Brief review and sign-off                            | Delivered — `acknowledgeBrief` with IP audit field                                           |
+| Property shortlist with agent notes and match scores | Delivered — `getSentMatches` + match feedback                                                |
+| Inspection calendar and feedback forms               | Delivered — `recordInspectionFeedback`                                                       |
+| Document sharing (portal-visible toggle)             | Delivered — `portal_visible` column + RLS policies                                           |
+| Progress tracker (pipeline stage with timeline)      | Delivered — `/transaction` and `/key-dates` portal routes                                    |
+| Property alert subscriptions per brief               | Delivered — `PropertyAlertEngine.createSubscription`                                         |
+| Real-time new-match notifications                    | Delivered — `handleNewMatch` wired to `DomainSyncEngine`                                     |
+| Price-drop alerts                                    | Delivered — `handlePriceChange` wired to Domain sync                                         |
+| Mobile alerts screen                                 | Delivered — `apps/mobile/app/alerts/index.tsx`                                               |
+| Offer tracker web parity                             | Partially delivered — offer routes exist; dedicated offer management UI deferred to Sprint 6 |
+| Inspection logger enhancement (photo/AI summary)     | Deferred — out of scope for Sprint 5                                                         |
 
 ---
 
@@ -66,13 +66,13 @@ The `PortalEngine` class provides all server-side logic for client portal intera
 
 Key methods:
 
-| Method | What It Does |
-|---|---|
-| `getPortalClient(authId)` | Fetches the active `portal_clients` row for the current Supabase auth user. Throws if the client does not exist or is inactive. |
-| `acknowledgeBrief(briefId, authId, ip?)` | Validates ownership, then writes `acknowledged_at` and `acknowledged_ip` to `client_briefs`. Provides an audit trail for digital sign-off. |
-| `getSentMatches(briefId)` | Returns all `property_matches` with `status = 'sent_to_client'`, ordered newest first. This is the client's property shortlist. |
-| `recordMatchFeedback(matchId, feedback, authId)` | Validates the feedback value (interested / not_interested / ask_agent) via Zod, confirms ownership, and writes `client_feedback`, `client_feedback_at`, and `client_feedback_note`. |
-| `recordInspectionFeedback(inspectionId, feedback, authId)` | Validates a 1-5 star rating plus free-text note, confirms ownership, and writes `client_rating` and `client_feedback` to `inspections`. |
+| Method                                                     | What It Does                                                                                                                                                                        |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getPortalClient(authId)`                                  | Fetches the active `portal_clients` row for the current Supabase auth user. Throws if the client does not exist or is inactive.                                                     |
+| `acknowledgeBrief(briefId, authId, ip?)`                   | Validates ownership, then writes `acknowledged_at` and `acknowledged_ip` to `client_briefs`. Provides an audit trail for digital sign-off.                                          |
+| `getSentMatches(briefId)`                                  | Returns all `property_matches` with `status = 'sent_to_client'`, ordered newest first. This is the client's property shortlist.                                                     |
+| `recordMatchFeedback(matchId, feedback, authId)`           | Validates the feedback value (interested / not_interested / ask_agent) via Zod, confirms ownership, and writes `client_feedback`, `client_feedback_at`, and `client_feedback_note`. |
+| `recordInspectionFeedback(inspectionId, feedback, authId)` | Validates a 1-5 star rating plus free-text note, confirms ownership, and writes `client_rating` and `client_feedback` to `inspections`.                                             |
 
 All ownership checks follow the same pattern: resolve the portal client from the JWT `auth_id`, then traverse the FK chain to confirm the requested record belongs to that contact. This prevents one portal client from reading or mutating another client's data even if they obtain a valid ID.
 
@@ -116,17 +116,17 @@ The `PropertyAlertEngine` class handles all alert subscription lifecycle operati
 
 Key methods:
 
-| Method | What It Does |
-|---|---|
-| `isQuietHours(start, end, nowUtc)` | Converts UTC to AEST (UTC+10) and checks whether the current time falls within the configured quiet window. Handles midnight wrap-around (e.g. 21:00–07:00). |
-| `handleNewMatch(propertyMatchId)` | Triggered by `DomainSyncEngine` after a new property match is created. Finds active subscriptions for the brief where `overall_score >= score_threshold`. Respects digest mode and quiet hours. Dispatches alerts and writes audit events. |
-| `handlePriceChange(priceChangeId)` | Triggered after a `property_price_changes` row is detected. Finds active matches for the affected property, then dispatches `price_drop` alerts to subscribed agents. |
+| Method                                    | What It Does                                                                                                                                                                                                                                                              |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isQuietHours(start, end, nowUtc)`        | Converts UTC to AEST (UTC+10) and checks whether the current time falls within the configured quiet window. Handles midnight wrap-around (e.g. 21:00–07:00).                                                                                                              |
+| `handleNewMatch(propertyMatchId)`         | Triggered by `DomainSyncEngine` after a new property match is created. Finds active subscriptions for the brief where `overall_score >= score_threshold`. Respects digest mode and quiet hours. Dispatches alerts and writes audit events.                                |
+| `handlePriceChange(priceChangeId)`        | Triggered after a `property_price_changes` row is detected. Finds active matches for the affected property, then dispatches `price_drop` alerts to subscribed agents.                                                                                                     |
 | `dispatch(sub, score, title, body, data)` | Private method. Iterates the subscription's channel list (push/email/SMS). Looks up the agent's push token, email, or phone as needed. Per-channel errors are caught so one failed channel never blocks others. Returns the list of channels that successfully delivered. |
-| `createSubscription(agentId, data)` | Validates input with `CreateAlertSubscriptionSchema`, inserts a new `property_alert_subscriptions` row, and returns the mapped domain object. |
-| `updateSubscription(id, agentId, data)` | Verifies agent ownership before applying partial updates. |
-| `deleteSubscription(id, agentId)` | Soft-deletes by writing `deleted_at` rather than removing the row. |
-| `getAlertEvents(agentId, limit)` | Returns the recent alert event log, joined through subscriptions to enforce agent ownership. |
-| `sendMatchToClient(matchId, agentId)` | Sets `property_matches.status = 'sent_to_client'` and inserts a notification row for the portal client user. |
+| `createSubscription(agentId, data)`       | Validates input with `CreateAlertSubscriptionSchema`, inserts a new `property_alert_subscriptions` row, and returns the mapped domain object.                                                                                                                             |
+| `updateSubscription(id, agentId, data)`   | Verifies agent ownership before applying partial updates.                                                                                                                                                                                                                 |
+| `deleteSubscription(id, agentId)`         | Soft-deletes by writing `deleted_at` rather than removing the row.                                                                                                                                                                                                        |
+| `getAlertEvents(agentId, limit)`          | Returns the recent alert event log, joined through subscriptions to enforce agent ownership.                                                                                                                                                                              |
+| `sendMatchToClient(matchId, agentId)`     | Sets `property_matches.status = 'sent_to_client'` and inserts a notification row for the portal client user.                                                                                                                                                              |
 
 #### Integration with DomainSyncEngine
 
@@ -136,15 +136,15 @@ Key methods:
 
 Seven endpoints under the `/alerts` prefix:
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/alerts/subscriptions` | List all subscriptions for the authenticated agent |
-| POST | `/alerts/subscriptions` | Create a new subscription |
-| PATCH | `/alerts/subscriptions/:id` | Update threshold, channels, digest mode, or quiet hours |
-| DELETE | `/alerts/subscriptions/:id` | Soft-delete a subscription |
-| POST | `/alerts/matches/:matchId/send-to-client` | Mark a match as sent to the portal client |
-| DELETE | `/alerts/matches/:matchId/send-to-client` | Retract a match (sets status back to `reviewed`) |
-| GET | `/alerts/events` | List recent alert events (default limit 50, max 100) |
+| Method | Path                                      | Description                                             |
+| ------ | ----------------------------------------- | ------------------------------------------------------- |
+| GET    | `/alerts/subscriptions`                   | List all subscriptions for the authenticated agent      |
+| POST   | `/alerts/subscriptions`                   | Create a new subscription                               |
+| PATCH  | `/alerts/subscriptions/:id`               | Update threshold, channels, digest mode, or quiet hours |
+| DELETE | `/alerts/subscriptions/:id`               | Soft-delete a subscription                              |
+| POST   | `/alerts/matches/:matchId/send-to-client` | Mark a match as sent to the portal client               |
+| DELETE | `/alerts/matches/:matchId/send-to-client` | Retract a match (sets status back to `reviewed`)        |
+| GET    | `/alerts/events`                          | List recent alert events (default limit 50, max 100)    |
 
 All endpoints verify the JWT caller owns the resource before performing any mutation. 403 is returned for unauthorised access; 404 for not found; 400 for schema validation failures.
 
@@ -192,6 +192,7 @@ property_matches
 ```
 
 RLS policies added (9 total):
+
 - `portal_client_read_brief` — clients read own briefs via `portal_clients.contact_id`
 - `portal_client_acknowledge_brief` — clients update own brief's acknowledgement fields
 - `portal_client_read_sent_matches` — clients read `status = 'sent_to_client'` matches only
@@ -246,6 +247,7 @@ created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 Indexes: partial indexes on `agent_id` and `brief_id` where `deleted_at IS NULL` (subscriptions); composite index on `(subscription_id, created_at DESC)` and `property_match_id` (events).
 
 RLS policies:
+
 - `agents_own_subscriptions` — full access for the owning agent
 - `agents_read_own_events` — agents read events via subscription ownership join
 
@@ -261,31 +263,31 @@ Sprint 5 added the following net-new endpoints to the RealFlow API:
 
 **Portal routes** (`/api/v1/portal/...`)
 
-| Method | Path |
-|---|---|
-| GET | `/portal/me` |
-| GET | `/portal/transaction` |
-| GET | `/portal/brief` |
-| POST | `/portal/brief/acknowledge` |
-| GET | `/portal/matches` |
-| POST | `/portal/matches/:matchId/feedback` |
-| GET | `/portal/inspections` |
-| POST | `/portal/inspections/:id/feedback` |
-| GET | `/portal/documents` |
-| GET | `/portal/key-dates` |
-| POST | `/portal/invite` |
+| Method | Path                                |
+| ------ | ----------------------------------- |
+| GET    | `/portal/me`                        |
+| GET    | `/portal/transaction`               |
+| GET    | `/portal/brief`                     |
+| POST   | `/portal/brief/acknowledge`         |
+| GET    | `/portal/matches`                   |
+| POST   | `/portal/matches/:matchId/feedback` |
+| GET    | `/portal/inspections`               |
+| POST   | `/portal/inspections/:id/feedback`  |
+| GET    | `/portal/documents`                 |
+| GET    | `/portal/key-dates`                 |
+| POST   | `/portal/invite`                    |
 
 **Alert routes** (`/api/v1/alerts/...`)
 
-| Method | Path |
-|---|---|
-| GET | `/alerts/subscriptions` |
-| POST | `/alerts/subscriptions` |
-| PATCH | `/alerts/subscriptions/:id` |
-| DELETE | `/alerts/subscriptions/:id` |
-| POST | `/alerts/matches/:matchId/send-to-client` |
+| Method | Path                                      |
+| ------ | ----------------------------------------- |
+| GET    | `/alerts/subscriptions`                   |
+| POST   | `/alerts/subscriptions`                   |
+| PATCH  | `/alerts/subscriptions/:id`               |
+| DELETE | `/alerts/subscriptions/:id`               |
+| POST   | `/alerts/matches/:matchId/send-to-client` |
 | DELETE | `/alerts/matches/:matchId/send-to-client` |
-| GET | `/alerts/events` |
+| GET    | `/alerts/events`                          |
 
 The API route count grew from 33 to 36 files total.
 
@@ -295,13 +297,13 @@ The API route count grew from 33 to 36 files total.
 
 ### Test Count Delta
 
-| Package | Sprint 4 Baseline | Sprint 5 Final | Delta |
-|---|---|---|---|
-| `@realflow/shared` | ~150 | 168 | +18 |
-| `@realflow/integrations` | ~100 | 122 | +22 |
-| `@realflow/business-logic` | ~580 | 730 | +150 |
-| `apps/api` | ~185 | 285 | +100 |
-| **Total** | **~1,215** | **1,305** | **+90** |
+| Package                    | Sprint 4 Baseline | Sprint 5 Final | Delta   |
+| -------------------------- | ----------------- | -------------- | ------- |
+| `@realflow/shared`         | ~150              | 168            | +18     |
+| `@realflow/integrations`   | ~100              | 122            | +22     |
+| `@realflow/business-logic` | ~580              | 730            | +150    |
+| `apps/api`                 | ~185              | 285            | +100    |
+| **Total**                  | **~1,215**        | **1,305**      | **+90** |
 
 ### New Test Files
 
@@ -314,11 +316,11 @@ The API route count grew from 33 to 36 files total.
 
 The following failures existed before Sprint 5 and were not introduced by this sprint. They remain tracked as known debt:
 
-| Test File | Count | Root Cause |
-|---|---|---|
-| `apps/api/src/routes/pipeline-migration.test.ts` | 7 | Supabase mock not intercepting route-level calls correctly |
-| `apps/api/src/services/integration-registry.test.ts` | 2 | Arrow-function class constructor mocks in Vitest |
-| `apps/api/src/routes/social-posts.test.ts` | 1 | Same arrow-function mock issue as above |
+| Test File                                            | Count | Root Cause                                                 |
+| ---------------------------------------------------- | ----- | ---------------------------------------------------------- |
+| `apps/api/src/routes/pipeline-migration.test.ts`     | 7     | Supabase mock not intercepting route-level calls correctly |
+| `apps/api/src/services/integration-registry.test.ts` | 2     | Arrow-function class constructor mocks in Vitest           |
+| `apps/api/src/routes/social-posts.test.ts`           | 1     | Same arrow-function mock issue as above                    |
 
 Total pre-existing failures: 10. These were inherited from Sprint 4 and have no impact on Sprint 5 deliverables.
 
@@ -422,9 +424,9 @@ This means all malformed or expired tokens now return 401 before any Supabase ca
 
 Two SQL patterns that work on PG14/15 fail silently or error on PG17 (Supabase staging is PG17):
 
-| Pattern | PG17 Behaviour | Fix |
-|---|---|---|
-| `uuid_generate_v4()` | Function does not exist — the `uuid-ossp` extension is not loaded by default | Use `gen_random_uuid()` (built-in, no extension required) |
+| Pattern                                 | PG17 Behaviour                                                                                   | Fix                                                                        |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `uuid_generate_v4()`                    | Function does not exist — the `uuid-ossp` extension is not loaded by default                     | Use `gen_random_uuid()` (built-in, no extension required)                  |
 | `CURRENT_DATE` in `GENERATED ALWAYS AS` | Fails — generated columns require immutable expressions; `CURRENT_DATE` is stable, not immutable | Use a plain `TIMESTAMPTZ` column and compute the value in application code |
 
 All new migrations from Sprint 5 onward use `gen_random_uuid()` exclusively.
@@ -473,15 +475,15 @@ A factory function `makeAlertEngine(supabase)` was extracted to `apps/api/src/li
 
 The following items were deferred or left intentionally imperfect in Sprint 5. Each has a suggested resolution.
 
-| ID | Description | Impact | Suggested Fix |
-|---|---|---|---|
-| TD-S5-01 | AEST static offset ignores AEDT (daylight saving) — quiet hours are one hour off for ~6 months/year | Low — one-hour drift on notifications | Store `timezone` on `users`, use `date-fns-tz` or `Intl` for conversion |
-| TD-S5-02 | `auction_date` and `status_change` alert types exist in the DB schema but have no dispatch implementation | Low — alerts simply never fire for these types | Implement auction-date cron job in Sprint 6 or 7 |
-| TD-S5-03 | Alert retry logic is absent — events with `sent_at = null` are not automatically retried | Medium — missed alerts require manual intervention | Add a Supabase cron or Edge Function that retries null `sent_at` events after 15 minutes |
-| TD-S5-04 | Portal invite uses GmailClient directly in the route handler rather than through the communication hub | Low — inconsistent with other email dispatch | Route invite email through the unified messaging layer |
-| TD-S5-05 | Mobile hook tests (`use-tasks`, `use-property-matches`) fail with "document is not defined" — jsdom is not installed in the mobile test environment | Medium — mobile test coverage understated | Install `jsdom` as a dev dependency in the mobile package and configure `vitest.config.ts` `environment: 'jsdom'` |
-| TD-S5-06 | No E2E tests for the client portal flow (login → brief acknowledge → match feedback) | High — critical user journey untested outside unit scope | Add Playwright tests targeting the staging portal URL |
-| TD-S5-07 | `portal_visible` toggle on the web documents page does not confirm before toggling — accidental toggling could expose sensitive documents | Medium — UX risk | Add a confirmation dialog for toggling `portal_visible = true` |
+| ID       | Description                                                                                                                                         | Impact                                                   | Suggested Fix                                                                                                     |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| TD-S5-01 | AEST static offset ignores AEDT (daylight saving) — quiet hours are one hour off for ~6 months/year                                                 | Low — one-hour drift on notifications                    | Store `timezone` on `users`, use `date-fns-tz` or `Intl` for conversion                                           |
+| TD-S5-02 | `auction_date` and `status_change` alert types exist in the DB schema but have no dispatch implementation                                           | Low — alerts simply never fire for these types           | Implement auction-date cron job in Sprint 6 or 7                                                                  |
+| TD-S5-03 | Alert retry logic is absent — events with `sent_at = null` are not automatically retried                                                            | Medium — missed alerts require manual intervention       | Add a Supabase cron or Edge Function that retries null `sent_at` events after 15 minutes                          |
+| TD-S5-04 | Portal invite uses GmailClient directly in the route handler rather than through the communication hub                                              | Low — inconsistent with other email dispatch             | Route invite email through the unified messaging layer                                                            |
+| TD-S5-05 | Mobile hook tests (`use-tasks`, `use-property-matches`) fail with "document is not defined" — jsdom is not installed in the mobile test environment | Medium — mobile test coverage understated                | Install `jsdom` as a dev dependency in the mobile package and configure `vitest.config.ts` `environment: 'jsdom'` |
+| TD-S5-06 | No E2E tests for the client portal flow (login → brief acknowledge → match feedback)                                                                | High — critical user journey untested outside unit scope | Add Playwright tests targeting the staging portal URL                                                             |
+| TD-S5-07 | `portal_visible` toggle on the web documents page does not confirm before toggling — accidental toggling could expose sensitive documents           | Medium — UX risk                                         | Add a confirmation dialog for toggling `portal_visible = true`                                                    |
 
 ---
 
@@ -519,24 +521,24 @@ The Sprint 5 post-review commit (`e944bdb`) added `handlePriceChange` tests and 
 
 The following commits comprise Sprint 5 work on the `sprint-5` branch, in reverse chronological order:
 
-| Hash | Description |
-|---|---|
-| `e944bdb` | fix: Sprint 5 post-review quality and correctness fixes |
-| `ee9b81f` | fix: skip husky in CI environments (is-ci guard for Render build) |
-| `b6ce610` | feat: Sprint 5 complete — Client Portal + Property Alerts + staging deployment |
+| Hash      | Description                                                                         |
+| --------- | ----------------------------------------------------------------------------------- |
+| `e944bdb` | fix: Sprint 5 post-review quality and correctness fixes                             |
+| `ee9b81f` | fix: skip husky in CI environments (is-ci guard for Render build)                   |
+| `b6ce610` | feat: Sprint 5 complete — Client Portal + Property Alerts + staging deployment      |
 | `76b4cdc` | feat: complete Sprint 5 — wire alert engine + agent alert UI + mobile portal invite |
 
 Infrastructure fixes applied during staging handoff (resolved within the sprint session):
 
-| Hash | Description |
-|---|---|
-| `d0e5c4d` | fix: reject malformed JWTs with 401 before calling Supabase |
-| `d80efc1` | fix: add @realflow/business-logic dep to portal so turbo builds it first |
-| `d890731` | fix: map JWT parse errors to 401 in global error handler |
-| `6d6a144` | fix: skip Redis connection when REDIS_URL is not set |
-| `e150a49` | fix: resolve PR #35 CI build + code quality issues |
-| `021c7c2` | fix: add @realflow/integrations as explicit dep of business-logic |
-| `61ac86d` | fix: compile workspace packages as CommonJS and resolve main to dist/ |
+| Hash      | Description                                                                       |
+| --------- | --------------------------------------------------------------------------------- |
+| `d0e5c4d` | fix: reject malformed JWTs with 401 before calling Supabase                       |
+| `d80efc1` | fix: add @realflow/business-logic dep to portal so turbo builds it first          |
+| `d890731` | fix: map JWT parse errors to 401 in global error handler                          |
+| `6d6a144` | fix: skip Redis connection when REDIS_URL is not set                              |
+| `e150a49` | fix: resolve PR #35 CI build + code quality issues                                |
+| `021c7c2` | fix: add @realflow/integrations as explicit dep of business-logic                 |
+| `61ac86d` | fix: compile workspace packages as CommonJS and resolve main to dist/             |
 | `337e144` | fix: switch API tsconfig to CommonJS to fix Node ESM module resolution at startup |
 
 ---

@@ -1,41 +1,35 @@
 import type { FastifyInstance } from 'fastify';
-import {
-  GenerateReportRequestSchema,
-  ConsolidationReportStatusSchema,
-} from '@realflow/shared';
+import { GenerateReportRequestSchema, ConsolidationReportStatusSchema } from '@realflow/shared';
 import { ResearchConsolidationEngine } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
 import { MarketDataService } from '../services/market-data-service';
 
 export async function consolidationReportRoutes(fastify: FastifyInstance) {
   // List reports for a client
-  fastify.get<{ Querystring: { clientId: string; type?: string } }>(
-    '/',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      const { clientId, type } = request.query;
+  fastify.get<{ Querystring: { clientId: string; type?: string } }>('/', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { clientId, type } = request.query;
 
-      if (!clientId) {
-        return reply.status(400).send({ error: 'clientId is required' });
-      }
+    if (!clientId) {
+      return reply.status(400).send({ error: 'clientId is required' });
+    }
 
-      let query = supabase
-        .from('consolidation_reports')
-        .select('*')
-        .eq('client_id', clientId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+    let query = supabase
+      .from('consolidation_reports')
+      .select('*')
+      .eq('client_id', clientId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
 
-      if (type) {
-        query = query.eq('type', type);
-      }
+    if (type) {
+      query = query.eq('type', type);
+    }
 
-      const { data, error } = await query;
-      if (error) return reply.status(500).send({ error: error.message });
+    const { data, error } = await query;
+    if (error) return reply.status(500).send({ error: error.message });
 
-      return { data };
-    },
-  );
+    return { data };
+  });
 
   // Get single report
   fastify.get<{ Params: { id: string } }>('/:id', async (request, reply) => {
@@ -67,7 +61,14 @@ export async function consolidationReportRoutes(fastify: FastifyInstance) {
     // Fetch client brief
     const briefQuery = req.clientBriefId
       ? supabase.from('client_briefs').select('*').eq('id', req.clientBriefId).single()
-      : supabase.from('client_briefs').select('*').eq('contact_id', req.clientId).is('is_deleted', false).order('created_at', { ascending: false }).limit(1).single();
+      : supabase
+          .from('client_briefs')
+          .select('*')
+          .eq('contact_id', req.clientId)
+          .is('is_deleted', false)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
 
     const { data: brief, error: briefError } = await briefQuery;
     if (briefError || !brief) {
@@ -102,10 +103,7 @@ export async function consolidationReportRoutes(fastify: FastifyInstance) {
 
     // Fetch key dates
     const { data: keyDates } = req.transactionId
-      ? await supabase
-          .from('key_dates')
-          .select('*')
-          .eq('transaction_id', req.transactionId)
+      ? await supabase.from('key_dates').select('*').eq('transaction_id', req.transactionId)
       : { data: [] };
 
     // Fetch offers
@@ -154,9 +152,13 @@ export async function consolidationReportRoutes(fastify: FastifyInstance) {
     const content = ResearchConsolidationEngine.consolidate(
       {
         clientBrief: brief,
-        propertyMatches: (matches ?? []) as Parameters<typeof ResearchConsolidationEngine.consolidate>[0]['propertyMatches'],
+        propertyMatches: (matches ?? []) as Parameters<
+          typeof ResearchConsolidationEngine.consolidate
+        >[0]['propertyMatches'],
         inspections: inspections ?? [],
-        dueDiligenceChecklists: (ddChecklists ?? []) as Parameters<typeof ResearchConsolidationEngine.consolidate>[0]['dueDiligenceChecklists'],
+        dueDiligenceChecklists: (ddChecklists ?? []) as Parameters<
+          typeof ResearchConsolidationEngine.consolidate
+        >[0]['dueDiligenceChecklists'],
         keyDates: keyDates ?? [],
         offers: offers ?? [],
         marketData,
@@ -171,7 +173,9 @@ export async function consolidationReportRoutes(fastify: FastifyInstance) {
     );
 
     // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const userId = user?.id ?? '00000000-0000-0000-0000-000000000000';
 
     // Save report

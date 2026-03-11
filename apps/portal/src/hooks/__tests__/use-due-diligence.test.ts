@@ -62,8 +62,24 @@ describe('usePortalDueDiligence', () => {
     const transaction = { id: 'tx-1' };
     const checklist = { id: 'cl-1', completion_percentage: 72 };
     const items = [
-      { id: '1', name: 'Title search', category: 'legal', status: 'completed', assigned_to: 'solicitor', is_blocking: false, notes: null },
-      { id: '2', name: 'Contract review', category: 'legal', status: 'in_progress', assigned_to: 'solicitor', is_blocking: true, notes: 'Awaiting response' },
+      {
+        id: '1',
+        name: 'Title search',
+        category: 'legal',
+        status: 'completed',
+        assigned_to: 'solicitor',
+        is_blocking: false,
+        notes: null,
+      },
+      {
+        id: '2',
+        name: 'Contract review',
+        category: 'legal',
+        status: 'in_progress',
+        assigned_to: 'solicitor',
+        is_blocking: true,
+        notes: 'Awaiting response',
+      },
     ];
 
     let callCount = 0;

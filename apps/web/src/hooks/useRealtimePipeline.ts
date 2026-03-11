@@ -96,8 +96,9 @@ export function useRealtimePipeline({
 
           // If soft-deleted, remove from cache
           if (updatedRow.is_deleted) {
-            queryClient.setQueryData<TransactionWithRelations[]>(queryKey, (old) =>
-              old?.filter((t) => t.id !== updatedRow.id) ?? [],
+            queryClient.setQueryData<TransactionWithRelations[]>(
+              queryKey,
+              (old) => old?.filter((t) => t.id !== updatedRow.id) ?? [],
             );
             return;
           }
@@ -109,10 +110,7 @@ export function useRealtimePipeline({
             previousRow.current_stage !== updatedRow.current_stage
           ) {
             // Check if another agent made this change
-            if (
-              updatedRow.assigned_agent_id &&
-              updatedRow.assigned_agent_id !== currentUserId
-            ) {
+            if (updatedRow.assigned_agent_id && updatedRow.assigned_agent_id !== currentUserId) {
               onOtherAgentChangeRef.current?.({
                 transactionId: updatedRow.id as string,
                 fromStage: previousRow.current_stage as string,
@@ -142,8 +140,9 @@ export function useRealtimePipeline({
         case 'DELETE': {
           // Hard delete (should not happen per project conventions, but handle defensively)
           const deletedId = payload.old.id;
-          queryClient.setQueryData<TransactionWithRelations[]>(queryKey, (old) =>
-            old?.filter((t) => t.id !== deletedId) ?? [],
+          queryClient.setQueryData<TransactionWithRelations[]>(
+            queryKey,
+            (old) => old?.filter((t) => t.id !== deletedId) ?? [],
           );
           break;
         }

@@ -66,8 +66,8 @@ function lazyNamed<T extends ComponentType<never>>(
 ): LazyComponent<T> {
   // Cast React.lazy via unknown to bypass the built-in component constraint —
   // ComponentType<never> is the correct contravariant supertype but the cast is needed.
-  return (lazy as unknown as (f: () => Promise<unknown>) => LazyComponent<T>)(
-    () => retryImport(factory, retries, delay),
+  return (lazy as unknown as (f: () => Promise<unknown>) => LazyComponent<T>)(() =>
+    retryImport(factory, retries, delay),
   );
 }
 

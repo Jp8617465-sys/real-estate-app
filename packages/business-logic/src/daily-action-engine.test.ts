@@ -199,7 +199,9 @@ describe('generateDailyActions', () => {
     });
 
     for (let i = 1; i < result.items.length; i++) {
-      expect(result.items[i - 1]!.compositeScore).toBeGreaterThanOrEqual(result.items[i]!.compositeScore);
+      expect(result.items[i - 1]!.compositeScore).toBeGreaterThanOrEqual(
+        result.items[i]!.compositeScore,
+      );
     }
   });
 
@@ -207,9 +209,9 @@ describe('generateDailyActions', () => {
     const { supabase } = makeMockSupabase(1, 0, 0);
 
     const aiClient = {
-      generateDailyActionInsights: vi.fn().mockResolvedValue([
-        { index: 1, subtitle: 'Call now — pre-approval expires in 2 days' },
-      ]),
+      generateDailyActionInsights: vi
+        .fn()
+        .mockResolvedValue([{ index: 1, subtitle: 'Call now — pre-approval expires in 2 days' }]),
     };
 
     const result = await generateDailyActions({

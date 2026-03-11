@@ -3,17 +3,19 @@ import { OffMarketEngine } from './off-market-engine';
 
 // ─── UUIDs ───────────────────────────────────────────────────────────────────
 
-const AGENT_ID    = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const OFFICE_ID   = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
+const AGENT_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const OFFICE_ID = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
 const PROPERTY_ID = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
-const BRIEF_ID    = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
-const MATCH_ID    = 'e1b2c3d4-e5f6-7890-abcd-ef1234567894';
+const BRIEF_ID = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
+const MATCH_ID = 'e1b2c3d4-e5f6-7890-abcd-ef1234567894';
 
 const NOW = new Date().toISOString();
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-function makePropertyRow(overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+function makePropertyRow(
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> {
   return {
     id: PROPERTY_ID,
     agent_id: AGENT_ID,
@@ -102,11 +104,12 @@ describe('OffMarketEngine.create', () => {
     const matchRow = makeMatchRow();
 
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(propertyRow))            // insert property
-        .mockReturnValueOnce(makeChain(propertyRow))            // fetch property in matchAgainstBriefs
-        .mockReturnValueOnce(makeChain([brief]))                // fetch briefs
-        .mockReturnValueOnce(makeChain([matchRow])),            // upsert matches
+      from: vi
+        .fn()
+        .mockReturnValueOnce(makeChain(propertyRow)) // insert property
+        .mockReturnValueOnce(makeChain(propertyRow)) // fetch property in matchAgainstBriefs
+        .mockReturnValueOnce(makeChain([brief])) // fetch briefs
+        .mockReturnValueOnce(makeChain([matchRow])), // upsert matches
     };
 
     const engine = new OffMarketEngine(supabase as never);
@@ -185,10 +188,11 @@ describe('OffMarketEngine.matchAgainstBriefs', () => {
     const matchRows = [makeMatchRow()];
 
     const supabase = {
-      from: vi.fn()
+      from: vi
+        .fn()
         .mockReturnValueOnce(makeChain(propertyRow)) // fetch property
-        .mockReturnValueOnce(makeChain([brief]))     // fetch briefs
-        .mockReturnValueOnce(makeChain(matchRows)),  // upsert
+        .mockReturnValueOnce(makeChain([brief])) // fetch briefs
+        .mockReturnValueOnce(makeChain(matchRows)), // upsert
     };
 
     const engine = new OffMarketEngine(supabase as never);
@@ -205,7 +209,8 @@ describe('OffMarketEngine.matchAgainstBriefs', () => {
     const brief = makeBriefRow();
 
     const supabase = {
-      from: vi.fn()
+      from: vi
+        .fn()
         .mockReturnValueOnce(makeChain(propertyRow))
         .mockReturnValueOnce(makeChain([brief])),
     };
@@ -222,9 +227,7 @@ describe('OffMarketEngine.matchAgainstBriefs', () => {
     const propertyRow = makePropertyRow();
 
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(propertyRow))
-        .mockReturnValueOnce(makeChain([])),  // no briefs
+      from: vi.fn().mockReturnValueOnce(makeChain(propertyRow)).mockReturnValueOnce(makeChain([])), // no briefs
     };
 
     const engine = new OffMarketEngine(supabase as never);
@@ -242,9 +245,10 @@ describe('OffMarketEngine.sendToClient', () => {
   it('updates match status and property visibility', async () => {
     const sentMatch = makeMatchRow({ status: 'sent_to_client', sent_to_client_at: NOW });
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(sentMatch))    // update match
-        .mockReturnValueOnce(makeChain(null)),         // update property visibility
+      from: vi
+        .fn()
+        .mockReturnValueOnce(makeChain(sentMatch)) // update match
+        .mockReturnValueOnce(makeChain(null)), // update property visibility
     };
 
     const engine = new OffMarketEngine(supabase as never);
@@ -263,10 +267,11 @@ describe('OffMarketEngine.retractFromClient', () => {
   it('retracts match and resets property visibility when no other sent matches', async () => {
     const retractedMatch = makeMatchRow({ status: 'new', sent_to_client_at: null });
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(retractedMatch))  // update match
-        .mockReturnValueOnce(makeChain([]))               // check remaining sent matches → none
-        .mockReturnValueOnce(makeChain(null)),            // update property visibility
+      from: vi
+        .fn()
+        .mockReturnValueOnce(makeChain(retractedMatch)) // update match
+        .mockReturnValueOnce(makeChain([])) // check remaining sent matches → none
+        .mockReturnValueOnce(makeChain(null)), // update property visibility
     };
 
     const engine = new OffMarketEngine(supabase as never);
@@ -283,11 +288,7 @@ describe('OffMarketEngine.getSuccessStats', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('calculates correct success rates', async () => {
-    const offMarketRows = [
-      { status: 'sold' },
-      { status: 'active' },
-      { status: 'sold' },
-    ];
+    const offMarketRows = [{ status: 'sold' }, { status: 'active' }, { status: 'sold' }];
     const txRows = [
       { current_stage: 'settlement' },
       { current_stage: 'offer' },
@@ -297,7 +298,8 @@ describe('OffMarketEngine.getSuccessStats', () => {
     ];
 
     const supabase = {
-      from: vi.fn()
+      from: vi
+        .fn()
         .mockReturnValueOnce(makeChain(offMarketRows))
         .mockReturnValueOnce(makeChain(txRows)),
     };
@@ -314,9 +316,7 @@ describe('OffMarketEngine.getSuccessStats', () => {
 
   it('returns 0% rates when no properties exist', async () => {
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain([]))
-        .mockReturnValueOnce(makeChain([])),
+      from: vi.fn().mockReturnValueOnce(makeChain([])).mockReturnValueOnce(makeChain([])),
     };
 
     const engine = new OffMarketEngine(supabase as never);
@@ -343,10 +343,26 @@ describe('OffMarketEngine.getById', () => {
     expect(result.suburb).toBe('Paddington');
   });
 
-  it('throws when property not found', async () => {
-    const supabase = { from: vi.fn(() => makeChain(null, { message: 'Not found' })) };
+  it('throws when property not found (non-PGRST116 error)', async () => {
+    const supabase = {
+      from: vi.fn(() => makeChain(null, { message: 'Not found', code: 'PGRST999' })),
+    };
 
     const engine = new OffMarketEngine(supabase as never);
-    await expect(engine.getById(PROPERTY_ID)).rejects.toThrow('Off-market property not found');
+    await expect(engine.getById(PROPERTY_ID)).rejects.toThrow(
+      'Failed to fetch off-market property: Not found',
+    );
+  });
+
+  it('returns null when property does not exist (PGRST116 — no rows)', async () => {
+    const supabase = {
+      from: vi.fn(() =>
+        makeChain(null, { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' }),
+      ),
+    };
+
+    const engine = new OffMarketEngine(supabase as never);
+    const result = await engine.getById(PROPERTY_ID);
+    expect(result).toBeNull();
   });
 });

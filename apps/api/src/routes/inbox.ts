@@ -1,9 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import {
-  InboxFilterSchema,
-  SendMessageRequestSchema,
-  type MessageChannel,
-} from '@realflow/shared';
+import { InboxFilterSchema, SendMessageRequestSchema, type MessageChannel } from '@realflow/shared';
 import { createSupabaseClient } from '../middleware/supabase';
 import { IntegrationRegistry } from '../services/integration-registry';
 
@@ -22,18 +18,28 @@ export async function inboxRoutes(fastify: FastifyInstance) {
   // Returns conversations grouped by contact, with last message and unread count.
   fastify.get('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const filters = InboxFilterSchema.parse(request.query);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const parsed = InboxFilterSchema.safeParse(request.query);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() });
+    }
+    const filters = parsed.data;
 
     // Use the inbox_thread_summaries view for efficient grouped queries
     let query = supabase
       .from('inbox_thread_summaries')
       .select('*')
+      .eq('agent_id', user.id)
       .order('last_message_at', { ascending: false })
       .limit(50);
-
-    if (filters.agentId) {
-      query = query.eq('agent_id', filters.agentId);
-    }
 
     if (filters.channels?.length) {
       query = query.in('last_message_channel', filters.channels);
@@ -51,64 +57,87 @@ export async function inboxRoutes(fastify: FastifyInstance) {
 
   // ─── Get Conversation Thread ────────────────────────────────────────
   // Returns all messages for a specific contact, ordered chronologically.
-  fastify.get<{ Params: { contactId: string } }>(
-    '/contacts/:contactId',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      const { contactId } = request.params;
-      const queryParams = request.query as Record<string, string>;
-      const limit = parseInt(queryParams.limit ?? '50', 10);
-      const offset = parseInt(queryParams.offset ?? '0', 10);
+  fastify.get<{ Params: { contactId: string } }>('/contacts/:contactId', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
 
-      let query = supabase
-        .from('conversation_messages')
-        .select('*', { count: 'exact' })
-        .eq('contact_id', contactId)
-        .eq('is_deleted', false)
-        .order('created_at', { ascending: true })
-        .range(offset, offset + limit - 1);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
 
-      // Optional channel filter
-      if (queryParams.channel) {
-        query = query.eq('channel', queryParams.channel);
-      }
+    const { contactId } = request.params;
+    const queryParams = request.query as Record<string, string>;
+    const limit = parseInt(queryParams.limit ?? '50', 10);
+    const offset = parseInt(queryParams.offset ?? '0', 10);
 
-      const { data, error, count } = await query;
-      if (error) return reply.status(500).send({ error: error.message });
+    let query = supabase
+      .from('conversation_messages')
+      .select('*', { count: 'exact' })
+      .eq('contact_id', contactId)
+      .eq('agent_id', user.id)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: true })
+      .range(offset, offset + limit - 1);
 
-      return {
-        data: {
-          contactId,
-          messages: data,
-          totalMessages: count ?? 0,
-        },
-      };
-    },
-  );
+    // Optional channel filter
+    if (queryParams.channel) {
+      query = query.eq('channel', queryParams.channel);
+    }
+
+    const { data, error, count } = await query;
+    if (error) return reply.status(500).send({ error: error.message });
+
+    return {
+      data: {
+        contactId,
+        messages: data,
+        totalMessages: count ?? 0,
+      },
+    };
+  });
 
   // ─── Get Single Message ─────────────────────────────────────────────
-  fastify.get<{ Params: { id: string } }>(
-    '/messages/:id',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      const { id } = request.params;
+  fastify.get<{ Params: { id: string } }>('/messages/:id', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
 
-      const { data, error } = await supabase
-        .from('conversation_messages')
-        .select('*')
-        .eq('id', id)
-        .eq('is_deleted', false)
-        .single();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
 
-      if (error) return reply.status(404).send({ error: 'Message not found' });
-      return { data };
-    },
-  );
+    const { id } = request.params;
+
+    const { data, error } = await supabase
+      .from('conversation_messages')
+      .select('*')
+      .eq('id', id)
+      .eq('agent_id', user.id)
+      .eq('is_deleted', false)
+      .single();
+
+    if (error) return reply.status(404).send({ error: 'Message not found' });
+    return { data };
+  });
 
   // ─── Send Message ──────────────────────────────────────────────────
   // Sends a message on the specified channel and records it in the inbox.
   fastify.post('/send', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const parsed = SendMessageRequestSchema.safeParse(request.body);
 
     if (!parsed.success) {
@@ -116,16 +145,7 @@ export async function inboxRoutes(fastify: FastifyInstance) {
     }
 
     const msg = parsed.data;
-
-    // Get the current user as the agent
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .single();
-
-    if (!userData) {
-      return reply.status(401).send({ error: 'User not found' });
-    }
+    const userData = { id: user.id };
 
     // Dispatch to the appropriate channel sender
     const sendResult = await dispatchOutboundMessage(msg.channel, msg, fastify, request);
@@ -169,12 +189,22 @@ export async function inboxRoutes(fastify: FastifyInstance) {
     '/contacts/:contactId/read',
     async (request, reply) => {
       const supabase = createSupabaseClient(request);
+
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) {
+        return reply.status(401).send({ error: 'Unauthorized' });
+      }
+
       const { contactId } = request.params;
 
       const { error } = await supabase
         .from('conversation_messages')
         .update({ is_read: true })
         .eq('contact_id', contactId)
+        .eq('agent_id', user.id)
         .eq('direction', 'inbound')
         .eq('is_read', false);
 
@@ -184,25 +214,41 @@ export async function inboxRoutes(fastify: FastifyInstance) {
   );
 
   // ─── Mark Single Message as Read ───────────────────────────────────
-  fastify.post<{ Params: { id: string } }>(
-    '/messages/:id/read',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      const { id } = request.params;
+  fastify.post<{ Params: { id: string } }>('/messages/:id/read', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
 
-      const { error } = await supabase
-        .from('conversation_messages')
-        .update({ is_read: true })
-        .eq('id', id);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
 
-      if (error) return reply.status(500).send({ error: error.message });
-      return { success: true };
-    },
-  );
+    const { id } = request.params;
+
+    const { error } = await supabase
+      .from('conversation_messages')
+      .update({ is_read: true })
+      .eq('id', id)
+      .eq('agent_id', user.id);
+
+    if (error) return reply.status(500).send({ error: error.message });
+    return { success: true };
+  });
 
   // ─── Search Messages ───────────────────────────────────────────────
   fastify.get('/search', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const queryParams = request.query as Record<string, string>;
     const searchQuery = queryParams.q ?? '';
     const limit = parseInt(queryParams.limit ?? '20', 10);
@@ -215,10 +261,9 @@ export async function inboxRoutes(fastify: FastifyInstance) {
     const { data, error } = await supabase
       .from('conversation_messages')
       .select('*, contacts!inner(first_name, last_name)')
+      .eq('agent_id', user.id)
       .eq('is_deleted', false)
-      .or(
-        `content->>text.ilike.%${searchQuery}%,content->>subject.ilike.%${searchQuery}%`,
-      )
+      .or(`content->>text.ilike.%${searchQuery}%,content->>subject.ilike.%${searchQuery}%`)
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -229,18 +274,22 @@ export async function inboxRoutes(fastify: FastifyInstance) {
   // ─── Get Unread Counts per Channel ─────────────────────────────────
   fastify.get('/unread-counts', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const queryParams = request.query as Record<string, string>;
 
-    let query = supabase
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const query = supabase
       .from('conversation_messages')
       .select('channel', { count: 'exact' })
+      .eq('agent_id', user.id)
       .eq('direction', 'inbound')
       .eq('is_read', false)
       .eq('is_deleted', false);
-
-    if (queryParams.agentId) {
-      query = query.eq('agent_id', queryParams.agentId);
-    }
 
     const { data, error } = await query;
     if (error) return reply.status(500).send({ error: error.message });
@@ -261,28 +310,54 @@ export async function inboxRoutes(fastify: FastifyInstance) {
   });
 
   // ─── Soft Delete Message ───────────────────────────────────────────
-  fastify.delete<{ Params: { id: string } }>(
-    '/messages/:id',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      const { id } = request.params;
+  fastify.delete<{ Params: { id: string } }>('/messages/:id', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
 
-      const { error } = await supabase
-        .from('conversation_messages')
-        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
-        .eq('id', id);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
 
-      if (error) return reply.status(500).send({ error: error.message });
-      return { success: true };
-    },
-  );
+    const { id } = request.params;
+
+    const { error } = await supabase
+      .from('conversation_messages')
+      .update({ is_deleted: true, deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('agent_id', user.id);
+
+    if (error) return reply.status(500).send({ error: error.message });
+    return { success: true };
+  });
 
   // ─── Get Contact Channels ─────────────────────────────────────────
   fastify.get<{ Params: { contactId: string } }>(
     '/contacts/:contactId/channels',
     async (request, reply) => {
       const supabase = createSupabaseClient(request);
+
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) {
+        return reply.status(401).send({ error: 'Unauthorized' });
+      }
+
       const { contactId } = request.params;
+
+      // Verify this contact belongs to the authenticated agent (prevent IDOR)
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('id', contactId)
+        .eq('assigned_agent_id', user.id)
+        .single();
+
+      if (!contact) return reply.status(404).send({ error: 'Contact not found' });
 
       const { data, error } = await supabase
         .from('contact_channels')
@@ -331,10 +406,12 @@ async function dispatchOutboundMessage(
 
   // Get the authenticated user's ID for token lookup
   const supabase = createSupabaseClient(request);
-  const { data: userData } = await supabase.from('users').select('id').single();
-  if (!userData) return { success: false };
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+  if (!authUser) return { success: false };
 
-  const registry = new IntegrationRegistry(request, userData.id);
+  const registry = new IntegrationRegistry(request, authUser.id);
   const contact = await getContactDetails(request, msg.contactId);
 
   switch (channel) {
@@ -392,9 +469,10 @@ async function dispatchOutboundMessage(
         .eq('contact_id', msg.contactId)
         .single();
 
-      const conversationId = channel === 'instagram_dm'
-        ? (channels?.instagram_id as string | undefined)
-        : (channels?.facebook_id as string | undefined);
+      const conversationId =
+        channel === 'instagram_dm'
+          ? (channels?.instagram_id as string | undefined)
+          : (channels?.facebook_id as string | undefined);
 
       if (!conversationId) return { success: false };
 
@@ -425,10 +503,7 @@ async function dispatchOutboundMessage(
   }
 }
 
-function getActivityType(
-  channel: MessageChannel,
-  direction: 'inbound' | 'outbound',
-): string {
+function getActivityType(channel: MessageChannel, direction: 'inbound' | 'outbound'): string {
   const map: Record<string, Record<string, string>> = {
     email: { inbound: 'email-received', outbound: 'email-sent' },
     sms: { inbound: 'sms-received', outbound: 'sms-sent' },

@@ -12,7 +12,11 @@ import { VerificationStatusBadge } from '@/components/compliance/verification-st
 import { ReportGeneratorForm } from '@/components/compliance/report-generator-form';
 import { SmrForm } from '@/components/compliance/smr-form';
 import { formatDate } from '@/lib/utils';
-import { AUSTRAC_REPORT_TYPE_LABELS, type GenerateAUSTRACReport, type CreateAmlSmr } from '@realflow/shared';
+import {
+  AUSTRAC_REPORT_TYPE_LABELS,
+  type GenerateAUSTRACReport,
+  type CreateAmlSmr,
+} from '@realflow/shared';
 
 type ActiveTab = 'reports' | 'smr';
 
@@ -47,8 +51,19 @@ export function AustracReportsClient() {
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500"
             aria-label="Back to compliance dashboard"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
             </svg>
           </button>
           <div>
@@ -152,7 +167,11 @@ export function AustracReportsClient() {
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                />
               </svg>
               <h3 className="mt-4 text-lg font-medium text-gray-900">No Reports Generated</h3>
               <p className="mt-1 text-sm text-gray-500">
@@ -170,19 +189,34 @@ export function AustracReportsClient() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                    >
                       Report Type
                     </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                    >
                       Period
                     </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                    >
                       Generated
                     </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                    >
                       Status
                     </th>
-                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500"
+                    >
                       Actions
                     </th>
                   </tr>
@@ -192,12 +226,15 @@ export function AustracReportsClient() {
                     <tr key={report.id as string} className="hover:bg-gray-50">
                       <td className="whitespace-nowrap px-4 py-3">
                         <span className="text-sm font-medium text-gray-900">
-                          {AUSTRAC_REPORT_TYPE_LABELS[(report.type as string) as keyof typeof AUSTRAC_REPORT_TYPE_LABELS] ?? report.type}
+                          {AUSTRAC_REPORT_TYPE_LABELS[
+                            report.type as string as keyof typeof AUSTRAC_REPORT_TYPE_LABELS
+                          ] ?? report.type}
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         <span className="text-sm text-gray-600">
-                          {formatDate(report.period_start as string)} -- {formatDate(report.period_end as string)}
+                          {formatDate(report.period_start as string)} --{' '}
+                          {formatDate(report.period_end as string)}
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
@@ -252,7 +289,11 @@ export function AustracReportsClient() {
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
               </svg>
               <h3 className="mt-4 text-lg font-medium text-gray-900">
                 No Suspicious Matter Reports
@@ -284,7 +325,8 @@ export function AustracReportsClient() {
                         </div>
                         <p className="mt-1 text-xs text-gray-500">
                           Contact: {contactName}
-                          {!!smr.amount_aud && ` | Amount: $${Number(smr.amount_aud).toLocaleString('en-AU')} AUD`}
+                          {!!smr.amount_aud &&
+                            ` | Amount: $${Number(smr.amount_aud).toLocaleString('en-AU')} AUD`}
                           {!!smr.austrac_ref && ` | Ref: ${String(smr.austrac_ref)}`}
                         </p>
                       </div>
@@ -294,9 +336,7 @@ export function AustracReportsClient() {
                         <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                           Description
                         </p>
-                        <p className="mt-0.5 text-sm text-gray-700">
-                          {smr.description as string}
-                        </p>
+                        <p className="mt-0.5 text-sm text-gray-700">{smr.description as string}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -320,7 +360,8 @@ export function AustracReportsClient() {
                 Threshold Transaction Report (TTR) Summary
               </h2>
               <p className="mt-0.5 text-xs text-gray-500">
-                Cash transactions of $10,000 AUD or more must be reported under s.43 of the AML/CTF Act 2006
+                Cash transactions of $10,000 AUD or more must be reported under s.43 of the AML/CTF
+                Act 2006
               </p>
             </div>
             <div className="p-4">
@@ -339,13 +380,11 @@ export function AustracReportsClient() {
                     />
                   </svg>
                   <div>
-                    <p className="text-sm font-medium text-blue-800">
-                      Automatic TTR Detection
-                    </p>
+                    <p className="text-sm font-medium text-blue-800">Automatic TTR Detection</p>
                     <p className="mt-1 text-xs text-blue-700">
                       RealFlow automatically flags transactions at or above the $10,000 AUD
-                      threshold. Use the "Generate Report" button to create a TTR for a
-                      specific date range covering all flagged transactions.
+                      threshold. Use the "Generate Report" button to create a TTR for a specific
+                      date range covering all flagged transactions.
                     </p>
                   </div>
                 </div>

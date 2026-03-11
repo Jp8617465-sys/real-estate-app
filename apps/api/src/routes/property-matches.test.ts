@@ -68,7 +68,9 @@ describe('GET /api/v1/property-matches', () => {
 
   it('filters by clientBriefId', async () => {
     const clientBriefId = '00000000-0000-0000-0000-000000000010';
-    const matches = [{ id: '00000000-0000-0000-0000-000000000001', client_brief_id: clientBriefId }];
+    const matches = [
+      { id: '00000000-0000-0000-0000-000000000001', client_brief_id: clientBriefId },
+    ];
 
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({

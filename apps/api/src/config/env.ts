@@ -49,9 +49,7 @@ const testDefaults = {
 };
 
 // Parse and validate environment variables at startup
-export const env = envSchema.parse(
-  isTest ? { ...testDefaults, ...process.env } : process.env
-);
+export const env = envSchema.parse(isTest ? { ...testDefaults, ...process.env } : process.env);
 
 // Export type for use throughout the application
 export type Env = z.infer<typeof envSchema>;

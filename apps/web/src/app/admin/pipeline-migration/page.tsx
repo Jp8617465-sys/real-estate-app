@@ -91,7 +91,11 @@ function useMigrationHistory() {
 function useExecuteMigration() {
   const queryClient = useQueryClient();
 
-  return useMutation<MigrationResult, Error, { transactionIds: string[]; userId: string; reason?: string }>({
+  return useMutation<
+    MigrationResult,
+    Error,
+    { transactionIds: string[]; userId: string; reason?: string }
+  >({
     mutationFn: async ({ transactionIds, userId, reason }) => {
       const response = await fetch('/api/v1/pipeline-migration/execute', {
         method: 'POST',
@@ -218,7 +222,8 @@ function ConfirmationDialog({
       <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl">
         <h3 className="text-lg font-semibold text-gray-900">Confirm Migration</h3>
         <p className="mt-2 text-sm text-gray-600">
-          You are about to migrate <span className="font-semibold">{selectedCount}</span> transaction(s) from the Buying pipeline to the Buyers Agent pipeline.
+          You are about to migrate <span className="font-semibold">{selectedCount}</span>{' '}
+          transaction(s) from the Buying pipeline to the Buyers Agent pipeline.
         </p>
         <p className="mt-2 text-sm text-orange-600">
           This action cannot be undone. Please review the selected transactions before proceeding.
@@ -254,9 +259,19 @@ export default function PipelineMigrationPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [migrationReason, setMigrationReason] = useState('');
 
-  const { data: preview, isLoading: isLoadingPreview, error: previewError, refetch: refetchPreview } = useMigrationPreview();
+  const {
+    data: preview,
+    isLoading: isLoadingPreview,
+    error: previewError,
+    refetch: refetchPreview,
+  } = useMigrationPreview();
   const { data: history, isLoading: isLoadingHistory, error: historyError } = useMigrationHistory();
-  const { mutate: executeMigration, isPending: isExecuting, data: migrationResult, error: executionError } = useExecuteMigration();
+  const {
+    mutate: executeMigration,
+    isPending: isExecuting,
+    data: migrationResult,
+    error: executionError,
+  } = useExecuteMigration();
 
   const handleToggleTransaction = (transactionId: string) => {
     setSelectedTransactionIds((prev) => {
@@ -292,20 +307,24 @@ export default function PipelineMigrationPage() {
   const handleConfirmMigration = () => {
     // Use a placeholder user ID (would come from auth context in production)
     const userId = '00000000-0000-0000-0000-000000000001';
-    executeMigration({
-      transactionIds: Array.from(selectedTransactionIds),
-      userId,
-      reason: migrationReason || undefined,
-    }, {
-      onSuccess: () => {
-        setShowConfirmDialog(false);
-        setSelectedTransactionIds(new Set());
-        setMigrationReason('');
+    executeMigration(
+      {
+        transactionIds: Array.from(selectedTransactionIds),
+        userId,
+        reason: migrationReason || undefined,
       },
-    });
+      {
+        onSuccess: () => {
+          setShowConfirmDialog(false);
+          setSelectedTransactionIds(new Set());
+          setMigrationReason('');
+        },
+      },
+    );
   };
 
-  const allSelected = preview?.transactions && selectedTransactionIds.size === preview.transactions.length;
+  const allSelected =
+    preview?.transactions && selectedTransactionIds.size === preview.transactions.length;
 
   return (
     <div className="space-y-6">
@@ -385,7 +404,9 @@ export default function PipelineMigrationPage() {
               {migrationResult.errors && migrationResult.errors.length > 0 && (
                 <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-green-700">
                   {migrationResult.errors.map((err, idx) => (
-                    <li key={idx}>Transaction {err.transactionId}: {err.error}</li>
+                    <li key={idx}>
+                      Transaction {err.transactionId}: {err.error}
+                    </li>
                   ))}
                 </ul>
               )}

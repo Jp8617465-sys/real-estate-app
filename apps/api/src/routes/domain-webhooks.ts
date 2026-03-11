@@ -2,7 +2,11 @@ import crypto from 'node:crypto';
 import { PassThrough } from 'node:stream';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { DomainClient, PropertySyncService, DomainWebhookEventSchema } from '@realflow/integrations';
+import {
+  DomainClient,
+  PropertySyncService,
+  DomainWebhookEventSchema,
+} from '@realflow/integrations';
 import { PropertyMatchEngine } from '@realflow/business-logic';
 import { createSupabaseServiceClient } from '../middleware/supabase';
 import { env } from '../config/env';
@@ -13,18 +17,11 @@ import { env } from '../config/env';
  * Verify Domain.com.au webhook HMAC-SHA256 signature.
  * Uses timing-safe comparison to prevent timing attacks.
  */
-function verifyWebhookSignature(
-  rawBody: Buffer,
-  signature: string,
-  secret: string,
-): boolean {
+function verifyWebhookSignature(rawBody: Buffer, signature: string, secret: string): boolean {
   if (!secret || !signature) return false;
 
   try {
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(rawBody)
-      .digest('hex');
+    const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
 
     const signatureBuffer = Buffer.from(signature, 'hex');
     const expectedBuffer = Buffer.from(expected, 'hex');
@@ -306,9 +303,7 @@ async function processListingAlert(
     .single();
 
   if (upsertError) {
-    fastify.log.error(
-      `[domain-webhook] Upsert error: ${upsertError.message}`,
-    );
+    fastify.log.error(`[domain-webhook] Upsert error: ${upsertError.message}`);
     return;
   }
 
@@ -337,9 +332,7 @@ async function processPriceUpdate(
     .maybeSingle();
 
   if (error || !property) {
-    fastify.log.info(
-      `[domain-webhook] Property not found for listing ${event.listingId}`,
-    );
+    fastify.log.info(`[domain-webhook] Property not found for listing ${event.listingId}`);
     return;
   }
 
@@ -356,32 +349,28 @@ async function processPriceUpdate(
   if (newPrice === null || newPrice === previousPrice) return;
 
   // Update the property price
-  await supabase
-    .from('properties')
-    .update({ list_price: newPrice })
-    .eq('id', typedProperty.id);
+  await supabase.from('properties').update({ list_price: newPrice }).eq('id', typedProperty.id);
 
   // Record the price change
   const changePercent = previousPrice
     ? Math.round(((newPrice - previousPrice) / previousPrice) * 10000) / 100
     : null;
-  const changeType: string = previousPrice === null
-    ? 'price_guide_set'
-    : newPrice < previousPrice
-      ? 'reduction'
-      : 'increase';
+  const changeType: string =
+    previousPrice === null
+      ? 'price_guide_set'
+      : newPrice < previousPrice
+        ? 'reduction'
+        : 'increase';
 
-  await supabase
-    .from('property_price_changes')
-    .insert({
-      property_id: typedProperty.id,
-      domain_listing_id: typedProperty.domain_listing_id,
-      previous_price: previousPrice,
-      new_price: newPrice,
-      change_percent: changePercent,
-      change_type: changeType,
-      notified_agent_ids: [],
-    });
+  await supabase.from('property_price_changes').insert({
+    property_id: typedProperty.id,
+    domain_listing_id: typedProperty.domain_listing_id,
+    previous_price: previousPrice,
+    new_price: newPrice,
+    change_percent: changePercent,
+    change_type: changeType,
+    notified_agent_ids: [],
+  });
 
   fastify.log.info(
     `[domain-webhook] Price ${changeType} recorded for listing ${event.listingId}: ${previousPrice ?? 'null'} -> ${newPrice}`,
@@ -416,9 +405,7 @@ async function processStatusChange(
     .eq('is_deleted', false);
 
   if (error) {
-    fastify.log.error(
-      `[domain-webhook] Status update error: ${error.message}`,
-    );
+    fastify.log.error(`[domain-webhook] Status update error: ${error.message}`);
     return;
   }
 
@@ -448,7 +435,9 @@ async function matchPropertyAgainstBriefs(
   // Fetch all active client briefs that could potentially match
   const { data: briefs, error: briefsError } = await supabase
     .from('client_briefs')
-    .select('id, contact_id, created_by, budget_min, budget_max, bedrooms_min, property_types, suburbs')
+    .select(
+      'id, contact_id, created_by, budget_min, budget_max, bedrooms_min, property_types, suburbs',
+    )
     .eq('is_deleted', false);
 
   if (briefsError || !briefs || briefs.length === 0) return;
@@ -467,9 +456,9 @@ async function matchPropertyAgainstBriefs(
   }>) {
     // Quick pre-filter: check suburb match
     const suburbs = Array.isArray(brief.suburbs) ? brief.suburbs : [];
-    const suburbMatch = suburbs.length === 0 || suburbs.some(
-      (s) => s.suburb.toLowerCase() === mapped.addressSuburb.toLowerCase(),
-    );
+    const suburbMatch =
+      suburbs.length === 0 ||
+      suburbs.some((s) => s.suburb.toLowerCase() === mapped.addressSuburb.toLowerCase());
     if (!suburbMatch) continue;
 
     // Quick pre-filter: check price range
@@ -493,7 +482,10 @@ async function matchPropertyAgainstBriefs(
       if (mapped.listPrice >= brief.budget_min && mapped.listPrice <= brief.budget_max) {
         score += 25;
       } else if (mapped.listPrice > brief.budget_max) {
-        score += Math.max(0, 15 - Math.round(((mapped.listPrice - brief.budget_max) / brief.budget_max) * 100));
+        score += Math.max(
+          0,
+          15 - Math.round(((mapped.listPrice - brief.budget_max) / brief.budget_max) * 100),
+        );
       } else {
         score += 15;
       }
@@ -523,22 +515,25 @@ async function matchPropertyAgainstBriefs(
     if (existingMatch) continue; // Already matched
 
     // Create property match
-    const { error: matchError } = await supabase
-      .from('property_matches')
-      .insert({
-        property_id: propertyId,
-        brief_id: brief.id,
-        status: 'new',
-        overall_score: score,
-        score_breakdown: JSON.stringify({
-          priceMatch: mapped.listPrice !== null ? (mapped.listPrice >= brief.budget_min && mapped.listPrice <= brief.budget_max ? 100 : 50) : 50,
-          locationMatch: suburbMatch ? 100 : 0,
-          sizeMatch: brief.bedrooms_min !== null && mapped.bedrooms >= brief.bedrooms_min ? 100 : 50,
-          featureMatch: 50,
-        }),
-        flags: JSON.stringify([]),
-        is_deleted: false,
-      });
+    const { error: matchError } = await supabase.from('property_matches').insert({
+      property_id: propertyId,
+      brief_id: brief.id,
+      status: 'new',
+      overall_score: score,
+      score_breakdown: JSON.stringify({
+        priceMatch:
+          mapped.listPrice !== null
+            ? mapped.listPrice >= brief.budget_min && mapped.listPrice <= brief.budget_max
+              ? 100
+              : 50
+            : 50,
+        locationMatch: suburbMatch ? 100 : 0,
+        sizeMatch: brief.bedrooms_min !== null && mapped.bedrooms >= brief.bedrooms_min ? 100 : 50,
+        featureMatch: 50,
+      }),
+      flags: JSON.stringify([]),
+      is_deleted: false,
+    });
 
     if (!matchError && score >= 40) {
       notifications.push({
@@ -555,21 +550,19 @@ async function matchPropertyAgainstBriefs(
   // Send notifications to agents
   for (const notification of notifications) {
     try {
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: notification.agentId,
-          type: 'new_listing_match',
-          title: 'New listing matches client brief',
-          body: `A new listing scored ${notification.matchScore}/100 against a client brief`,
-          data: JSON.stringify({
-            propertyId: notification.propertyId,
-            briefId: notification.briefId,
-            clientId: notification.clientId,
-            matchScore: notification.matchScore,
-          }),
-          read: false,
-        });
+      await supabase.from('notifications').insert({
+        user_id: notification.agentId,
+        type: 'new_listing_match',
+        title: 'New listing matches client brief',
+        body: `A new listing scored ${notification.matchScore}/100 against a client brief`,
+        data: JSON.stringify({
+          propertyId: notification.propertyId,
+          briefId: notification.briefId,
+          clientId: notification.clientId,
+          matchScore: notification.matchScore,
+        }),
+        read: false,
+      });
     } catch (err) {
       fastify.log.error(
         `[domain-webhook] Notification error: ${err instanceof Error ? err.message : String(err)}`,

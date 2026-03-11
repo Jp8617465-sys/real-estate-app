@@ -157,13 +157,7 @@ function StatusBadge({ status }: { status: AmlCheckStatus }) {
 
 // ─── Points Meter ─────────────────────────────────────────────────────────────
 
-function PointsMeter({
-  current,
-  required,
-}: {
-  current: number;
-  required: number;
-}) {
+function PointsMeter({ current, required }: { current: number; required: number }) {
   const pct = Math.min((current / required) * 100, 100);
   const passed = current >= required;
 
@@ -232,9 +226,7 @@ function DocumentRow({
           </span>
           <span
             className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-              doc.isExpired
-                ? 'bg-red-100 text-red-600'
-                : 'bg-green-100 text-green-700'
+              doc.isExpired ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'
             }`}
           >
             {doc.isExpired ? 'Expired' : `${doc.points} pts`}
@@ -249,9 +241,7 @@ function DocumentRow({
               Expires: {new Date(doc.expiryDate).toLocaleDateString('en-AU')}
             </span>
           )}
-          {doc.verified && (
-            <span className="text-green-600 font-medium">Verified</span>
-          )}
+          {doc.verified && <span className="text-green-600 font-medium">Verified</span>}
         </div>
       </div>
       <button
@@ -339,7 +329,8 @@ function AddDocumentForm({
           >
             {ALL_DOCUMENT_TYPES.map(([type, label]) => (
               <option key={type} value={type}>
-                {label} — {AML_DOCUMENT_POINTS[type]} pts ({CATEGORY_LABELS[AML_DOCUMENT_CATEGORIES[type]]})
+                {label} — {AML_DOCUMENT_POINTS[type]} pts (
+                {CATEGORY_LABELS[AML_DOCUMENT_CATEGORIES[type]]})
               </option>
             ))}
           </select>
@@ -460,9 +451,7 @@ function CompletePanel({ checkId }: { checkId: string }) {
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
-        {error && (
-          <p className="text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex gap-3">
           <button
             onClick={() => passMutation.mutate()}
@@ -514,7 +503,11 @@ export default function ComplianceDetailClient({ id }: { id: string }) {
   const [notesSaving, setNotesSaving] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: check, isLoading, error } = useQuery({
+  const {
+    data: check,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['aml-check', id],
     queryFn: () => fetchCheck(id),
     refetchOnWindowFocus: false,
@@ -533,11 +526,14 @@ export default function ComplianceDetailClient({ id }: { id: string }) {
   });
 
   // Initialise notes once check loads
-  const handleNotesInit = useCallback((loadedNotes: string | null) => {
-    if (notes === '' && loadedNotes) {
-      setNotes(loadedNotes);
-    }
-  }, [notes]);
+  const handleNotesInit = useCallback(
+    (loadedNotes: string | null) => {
+      if (notes === '' && loadedNotes) {
+        setNotes(loadedNotes);
+      }
+    },
+    [notes],
+  );
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -566,7 +562,10 @@ export default function ComplianceDetailClient({ id }: { id: string }) {
             AML Check — {check.fullLegalName ?? 'Unknown Contact'}
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Started: {check.startedAt ? new Date(check.startedAt).toLocaleDateString('en-AU') : 'Not started'}
+            Started:{' '}
+            {check.startedAt
+              ? new Date(check.startedAt).toLocaleDateString('en-AU')
+              : 'Not started'}
             {check.expiryDate && (
               <span className="ml-3">
                 Expires: {new Date(check.expiryDate).toLocaleDateString('en-AU')}
@@ -592,9 +591,7 @@ export default function ComplianceDetailClient({ id }: { id: string }) {
               Date of Birth
             </p>
             <p className="mt-0.5 text-sm text-gray-900">
-              {check.dateOfBirth
-                ? new Date(check.dateOfBirth).toLocaleDateString('en-AU')
-                : '—'}
+              {check.dateOfBirth ? new Date(check.dateOfBirth).toLocaleDateString('en-AU') : '—'}
             </p>
           </div>
           <div className="sm:col-span-2">
@@ -660,8 +657,8 @@ export default function ComplianceDetailClient({ id }: { id: string }) {
 
         {documents.length === 0 ? (
           <p className="text-sm text-gray-400">
-            No documents added yet. Add at least one primary or secondary document to begin
-            the 100-point check.
+            No documents added yet. Add at least one primary or secondary document to begin the
+            100-point check.
           </p>
         ) : (
           <div className="space-y-2">

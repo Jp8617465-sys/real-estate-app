@@ -123,7 +123,8 @@ export class SocialScheduler {
     }
 
     // Aggregate engagement by day-of-week and hour
-    const timeSlots: Map<string, { total: number; count: number; platform: SocialPlatform }> = new Map();
+    const timeSlots: Map<string, { total: number; count: number; platform: SocialPlatform }> =
+      new Map();
 
     for (const post of posts) {
       const postRecord = post as Record<string, unknown>;
@@ -396,7 +397,9 @@ export class SocialScheduler {
    */
   private getDefaultOptimalTimes(platform?: SocialPlatform): OptimalPostingTime[] {
     const defaults: OptimalPostingTime[] = [];
-    const platforms: SocialPlatform[] = platform ? [platform] : ['facebook', 'instagram', 'linkedin'];
+    const platforms: SocialPlatform[] = platform
+      ? [platform]
+      : ['facebook', 'instagram', 'linkedin'];
 
     // Australian peak engagement times (AEST):
     // Weekdays: 7-8am (commute), 12-1pm (lunch), 7-8pm (evening)

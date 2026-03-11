@@ -5,8 +5,9 @@ import { TimelineStep } from '../timeline-step';
 // Suppress framer-motion warnings in test env
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) =>
-      <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
+      <div {...props}>{children}</div>
+    ),
   },
   AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
@@ -80,18 +81,14 @@ describe('TimelineStep', () => {
   it('hides the timeline line when isLast=true', () => {
     const { container } = render(<TimelineStep {...BASE_PROPS} isLast />);
     // Line div is conditionally rendered — only dot div + icon svg are aria-hidden
-    const lineEl = container.querySelector(
-      '.absolute.left-\\[15px\\]',
-    );
+    const lineEl = container.querySelector('.absolute.left-\\[15px\\]');
     expect(lineEl).toBeNull();
   });
 
   it('shows the vertical line when isLast=false', () => {
     const { container } = render(<TimelineStep {...BASE_PROPS} isLast={false} />);
     // Line div has the distinctive left-[15px] positioning class
-    const lineEl = container.querySelector(
-      '.absolute.left-\\[15px\\]',
-    );
+    const lineEl = container.querySelector('.absolute.left-\\[15px\\]');
     expect(lineEl).not.toBeNull();
   });
 });

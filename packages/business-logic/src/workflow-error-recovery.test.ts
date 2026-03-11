@@ -23,8 +23,8 @@ import type { WorkflowContext, ActionResult } from './workflow-engine';
 // ─── UUIDs ────────────────────────────────────────────────────────────────────
 
 const WORKFLOW_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const RUN_ID      = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
-const CONTACT_ID  = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
+const RUN_ID = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
+const CONTACT_ID = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
 
 // ─── Fixture helpers ──────────────────────────────────────────────────────────
 
@@ -61,7 +61,9 @@ function makeAction(type = 'send_email') {
   return { type } as import('@realflow/shared').WorkflowAction;
 }
 
-function makeOptions(overrides: Partial<{ stepIndex: number; runId: string; workflowId: string }> = {}) {
+function makeOptions(
+  overrides: Partial<{ stepIndex: number; runId: string; workflowId: string }> = {},
+) {
   return {
     stepIndex: 0,
     runId: RUN_ID,

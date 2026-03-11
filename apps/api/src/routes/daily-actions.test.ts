@@ -61,8 +61,18 @@ beforeEach(() => {
 describe('GET /api/v1/daily-actions', () => {
   it('returns cached daily action list', async () => {
     const cachedItems = [
-      { id: '00000000-0000-0000-0000-000000000010', composite_score: 90, is_completed: false, rank: 1 },
-      { id: '00000000-0000-0000-0000-000000000011', composite_score: 60, is_completed: false, rank: 2 },
+      {
+        id: '00000000-0000-0000-0000-000000000010',
+        composite_score: 90,
+        is_completed: false,
+        rank: 1,
+      },
+      {
+        id: '00000000-0000-0000-0000-000000000011',
+        composite_score: 60,
+        is_completed: false,
+        rank: 2,
+      },
     ];
 
     mockFrom.mockReturnValue({
@@ -91,7 +101,12 @@ describe('GET /api/v1/daily-actions', () => {
 
   it('generates fresh list when no cached items', async () => {
     const freshItems = [
-      { id: '00000000-0000-0000-0000-000000000010', composite_score: 85, is_completed: false, rank: 1 },
+      {
+        id: '00000000-0000-0000-0000-000000000010',
+        composite_score: 85,
+        is_completed: false,
+        rank: 1,
+      },
     ];
 
     const generatedResult = {

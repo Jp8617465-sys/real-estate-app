@@ -11,13 +11,16 @@ interface PostPreviewProps {
   activePlatform?: SocialPlatform;
 }
 
-const platformStyles: Record<SocialPlatform, {
-  name: string;
-  icon: string;
-  bgColor: string;
-  textColor: string;
-  borderColor: string;
-}> = {
+const platformStyles: Record<
+  SocialPlatform,
+  {
+    name: string;
+    icon: string;
+    bgColor: string;
+    textColor: string;
+    borderColor: string;
+  }
+> = {
   facebook: {
     name: 'Facebook',
     icon: 'FB',
@@ -54,12 +57,12 @@ export function PostPreview({ content, mediaUrls, platforms, activePlatform }: P
     <div className={cn('rounded-lg border', style.borderColor, style.bgColor, 'p-4')}>
       {/* Platform header */}
       <div className="mb-3 flex items-center gap-2">
-        <span className={cn('rounded px-1.5 py-0.5 text-xs font-bold', style.bgColor, style.textColor)}>
+        <span
+          className={cn('rounded px-1.5 py-0.5 text-xs font-bold', style.bgColor, style.textColor)}
+        >
           {style.icon}
         </span>
-        <span className={cn('text-sm font-medium', style.textColor)}>
-          {style.name} Preview
-        </span>
+        <span className={cn('text-sm font-medium', style.textColor)}>{style.name} Preview</span>
       </div>
 
       {/* Mock post frame */}
@@ -74,9 +77,7 @@ export function PostPreview({ content, mediaUrls, platforms, activePlatform }: P
         </div>
 
         {/* Content */}
-        <p className="whitespace-pre-wrap text-sm text-gray-800">
-          {displayContent}
-        </p>
+        <p className="whitespace-pre-wrap text-sm text-gray-800">{displayContent}</p>
 
         {isOverLimit && (
           <p className="mt-1 text-xs text-red-500">
@@ -86,12 +87,14 @@ export function PostPreview({ content, mediaUrls, platforms, activePlatform }: P
 
         {/* Media */}
         {mediaUrls.length > 0 && (
-          <div className={cn(
-            'mt-3 grid gap-1',
-            mediaUrls.length === 1 && 'grid-cols-1',
-            mediaUrls.length === 2 && 'grid-cols-2',
-            mediaUrls.length >= 3 && 'grid-cols-2',
-          )}>
+          <div
+            className={cn(
+              'mt-3 grid gap-1',
+              mediaUrls.length === 1 && 'grid-cols-1',
+              mediaUrls.length === 2 && 'grid-cols-2',
+              mediaUrls.length >= 3 && 'grid-cols-2',
+            )}
+          >
             {mediaUrls.slice(0, 4).map((url, idx) => (
               <div
                 key={idx}
@@ -129,10 +132,7 @@ export function PostPreview({ content, mediaUrls, platforms, activePlatform }: P
 
       {/* Character count */}
       <div className="mt-2 flex items-center justify-between">
-        <span className={cn(
-          'text-xs',
-          isOverLimit ? 'font-medium text-red-600' : 'text-gray-500',
-        )}>
+        <span className={cn('text-xs', isOverLimit ? 'font-medium text-red-600' : 'text-gray-500')}>
           {content.length} / {charLimit} characters
         </span>
       </div>

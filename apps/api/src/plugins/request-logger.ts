@@ -21,12 +21,7 @@ interface RequestLoggerPluginOptions {
 
 const HEALTH_CHECK_PATHS = ['/health', '/health/ready', '/health/live'];
 
-const REDACTED_HEADERS = new Set([
-  'authorization',
-  'cookie',
-  'set-cookie',
-  'x-api-key',
-]);
+const REDACTED_HEADERS = new Set(['authorization', 'cookie', 'set-cookie', 'x-api-key']);
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -46,10 +41,7 @@ function redactHeaders(
   return redacted;
 }
 
-function shouldSkipLogging(
-  url: string,
-  skipPaths: ReadonlyArray<string>,
-): boolean {
+function shouldSkipLogging(url: string, skipPaths: ReadonlyArray<string>): boolean {
   return skipPaths.some((path) => url.startsWith(path));
 }
 
@@ -65,9 +57,8 @@ export async function requestLoggerPlugin(
   // Assign request ID on every incoming request
   fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
     const incomingId = request.headers['x-request-id'];
-    const requestId = typeof incomingId === 'string' && incomingId.length > 0
-      ? incomingId
-      : randomUUID();
+    const requestId =
+      typeof incomingId === 'string' && incomingId.length > 0 ? incomingId : randomUUID();
 
     // Store request ID for downstream use
     request.headers['x-request-id'] = requestId;

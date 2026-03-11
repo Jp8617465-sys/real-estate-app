@@ -1,4 +1,9 @@
-import type { Property, ClientBrief, AIPropertyAnalysis, AIEnhancedMatchResult } from '@realflow/shared';
+import type {
+  Property,
+  ClientBrief,
+  AIPropertyAnalysis,
+  AIEnhancedMatchResult,
+} from '@realflow/shared';
 import { PropertyMatchEngine } from '@realflow/business-logic';
 import type { AnthropicClient } from '@realflow/integrations';
 import type { AICache } from '@realflow/integrations';
@@ -117,8 +122,11 @@ export class AIPropertyMatchingService {
   /**
    * Score multiple properties against a brief, sorted by overall score descending.
    */
-  async scoreProperties(properties: Property[], brief: ClientBrief): Promise<AIEnhancedMatchResult[]> {
-    const results = await Promise.all(properties.map(p => this.scoreProperty(p, brief)));
+  async scoreProperties(
+    properties: Property[],
+    brief: ClientBrief,
+  ): Promise<AIEnhancedMatchResult[]> {
+    const results = await Promise.all(properties.map((p) => this.scoreProperty(p, brief)));
     return results.sort((a, b) => b.overallScore - a.overallScore);
   }
 

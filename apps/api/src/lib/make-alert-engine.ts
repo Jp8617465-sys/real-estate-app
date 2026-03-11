@@ -8,8 +8,8 @@ import { PropertyAlertEngine } from '@realflow/business-logic';
 export function makeAlertEngine(supabase: SupabaseClient): PropertyAlertEngine {
   return new PropertyAlertEngine(
     supabase,
-    async () => {},   // push  — wire PushService in Sprint 6
-    async () => {},   // email — wire GmailClient / SendGrid in Sprint 6
-    async () => {},   // sms   — wire TwilioClient in Sprint 6
+    async () => {}, // push  — wire PushService in Sprint 6
+    async () => {}, // email — wire GmailClient / SendGrid in Sprint 6
+    async () => {}, // sms   — wire TwilioClient in Sprint 6
   );
 }

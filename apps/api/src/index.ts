@@ -44,6 +44,9 @@ import { alertsRoutes } from './routes/alerts';
 import { socialLeadRoutes } from './routes/social-leads';
 import { offMarketRoutes } from './routes/off-market';
 import { teamRoutes } from './routes/team';
+import { domainWebhookRoutes } from './routes/domain-webhooks';
+import { inboxEmailRoutes } from './routes/inbox-email';
+import { marketDataRoutes } from './routes/market-data';
 
 // ─── Initialize Observability ───────────────────────────────────────
 
@@ -120,6 +123,9 @@ async function start() {
   await fastify.register(socialLeadRoutes, { prefix: '/api/v1' });
   await fastify.register(offMarketRoutes, { prefix: '/api/v1' });
   await fastify.register(teamRoutes, { prefix: '/api/v1' });
+  await fastify.register(domainWebhookRoutes, { prefix: '/api/webhooks/domain' });
+  await fastify.register(inboxEmailRoutes, { prefix: '/api/v1/inbox' });
+  await fastify.register(marketDataRoutes, { prefix: '/api/v1/market-data' });
 
   // Scheduler tick — manual trigger for dev/test environments
   fastify.post('/api/v1/scheduler/tick', async () => {
@@ -163,6 +169,8 @@ process.on('SIGTERM', () => void shutdown('SIGTERM'));
 process.on('SIGINT', () => void shutdown('SIGINT'));
 
 start().catch((err) => {
-  logger.fatal('Failed to start server', { error: err instanceof Error ? err : new Error(String(err)) });
+  logger.fatal('Failed to start server', {
+    error: err instanceof Error ? err : new Error(String(err)),
+  });
   process.exit(1);
 });

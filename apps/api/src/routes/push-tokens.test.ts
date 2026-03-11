@@ -1,12 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─── Mock Supabase ─────────────────────────────────────────────────
+// Rule: vi.mock factory CANNOT reference top-level const vars — use vi.hoisted()
 
-const mockFrom = vi.fn();
-const mockSupabase = { from: mockFrom };
+const hoisted = vi.hoisted(() => {
+  const mockFrom = vi.fn();
+  const mockGetUser = vi.fn();
+  return { mockFrom, mockGetUser };
+});
 
 vi.mock('../middleware/supabase', () => ({
-  createSupabaseClient: () => mockSupabase,
+  createSupabaseClient: () => ({
+    from: hoisted.mockFrom,
+    auth: { getUser: hoisted.mockGetUser },
+  }),
 }));
 
 // ─── Import after mocks ───────────────────────────────────────────
@@ -16,6 +23,7 @@ import { pushTokenRoutes } from './push-tokens';
 
 // ─── Test setup ───────────────────────────────────────────────────
 
+const USER_ID = '00000000-0000-0000-0000-000000000001';
 const BEARER = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEifQ.abc';
 
 async function buildApp() {
@@ -26,28 +34,33 @@ async function buildApp() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Default: authenticated user
+  hoisted.mockGetUser.mockResolvedValue({
+    data: { user: { id: USER_ID } },
+    error: null,
+  });
 });
 
 // ─── POST / - Register push token ────────────────────────────────
 
 describe('POST /api/v1/push-tokens', () => {
+  // userId is no longer part of the schema — it is derived from the JWT via auth.getUser()
   const validBody = {
     token: 'ExponentPushToken[abc123xyz]',
     platform: 'ios',
     deviceId: 'device-001',
-    userId: '00000000-0000-0000-0000-000000000001',
   };
 
   it('registers a push token successfully', async () => {
     const created = {
       id: '00000000-0000-0000-0000-000000000099',
-      user_id: validBody.userId,
+      user_id: USER_ID,
       token: validBody.token,
       platform: 'ios',
       is_active: true,
     };
 
-    mockFrom.mockReturnValue({
+    hoisted.mockFrom.mockReturnValue({
       upsert: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           single: vi.fn().mockResolvedValue({ data: created, error: null }),
@@ -91,7 +104,6 @@ describe('POST /api/v1/push-tokens', () => {
       headers: { authorization: BEARER },
       payload: {
         platform: 'ios',
-        userId: '00000000-0000-0000-0000-000000000001',
         // missing token
       },
     });
@@ -99,24 +111,25 @@ describe('POST /api/v1/push-tokens', () => {
     expect(response.statusCode).toBe(400);
   });
 
-  it('returns 400 when userId is missing', async () => {
+  it('returns 401 when not authenticated', async () => {
+    hoisted.mockGetUser.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'Not authenticated' },
+    });
+
     const app = await buildApp();
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/push-tokens',
       headers: { authorization: BEARER },
-      payload: {
-        token: 'ExponentPushToken[abc123xyz]',
-        platform: 'android',
-        // missing userId
-      },
+      payload: validBody,
     });
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(401);
   });
 
   it('returns 500 on database error', async () => {
-    mockFrom.mockReturnValue({
+    hoisted.mockFrom.mockReturnValue({
       upsert: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           single: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB error' } }),
@@ -140,9 +153,11 @@ describe('POST /api/v1/push-tokens', () => {
 
 describe('DELETE /api/v1/push-tokens/:token', () => {
   it('deregisters a push token successfully', async () => {
-    mockFrom.mockReturnValue({
+    hoisted.mockFrom.mockReturnValue({
       update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ error: null }),
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        }),
       }),
     });
 
@@ -158,10 +173,28 @@ describe('DELETE /api/v1/push-tokens/:token', () => {
     expect(body.success).toBe(true);
   });
 
+  it('returns 401 when not authenticated', async () => {
+    hoisted.mockGetUser.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'Not authenticated' },
+    });
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/push-tokens/some-token',
+      headers: { authorization: BEARER },
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
   it('returns 500 on database error', async () => {
-    mockFrom.mockReturnValue({
+    hoisted.mockFrom.mockReturnValue({
       update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ error: { message: 'DB error' } }),
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: { message: 'DB error' } }),
+        }),
       }),
     });
 

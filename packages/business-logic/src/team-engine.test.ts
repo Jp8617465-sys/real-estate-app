@@ -3,10 +3,10 @@ import { TeamEngine } from './team-engine';
 
 // ─── UUIDs ───────────────────────────────────────────────────────────────────
 
-const OFFICE_ID  = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const AGENT_A    = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
-const AGENT_B    = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
-const RULE_ID    = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
+const OFFICE_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const AGENT_A = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
+const AGENT_B = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
+const RULE_ID = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
 const CONTACT_ID = 'e1b2c3d4-e5f6-7890-abcd-ef1234567894';
 const WORKFLOW_ID = 'f1b2c3d4-e5f6-7890-abcd-ef1234567895';
 
@@ -15,7 +15,10 @@ const TODAY = NOW.split('T')[0];
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-function makeUserRow(id: string, overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+function makeUserRow(
+  id: string,
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> {
   return {
     id,
     first_name: 'Agent',
@@ -48,7 +51,10 @@ function makeRuleRow(overrides: Partial<Record<string, unknown>> = {}): Record<s
   };
 }
 
-function makeSnapshotRow(agentId: string, overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+function makeSnapshotRow(
+  agentId: string,
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> {
   return {
     agent_id: agentId,
     active_contacts: 10,
@@ -130,9 +136,10 @@ describe('TeamEngine.getTeamPerformance', () => {
     ];
 
     const supabase = {
-      from: vi.fn()
+      from: vi
+        .fn()
         .mockReturnValueOnce(makeChain(snapshots)) // snapshots query
-        .mockReturnValueOnce(makeChain(users)),     // user names
+        .mockReturnValueOnce(makeChain(users)), // user names
     };
 
     const engine = new TeamEngine(supabase as never);
@@ -141,7 +148,7 @@ describe('TeamEngine.getTeamPerformance', () => {
     const performance = await engine.getTeamPerformance(OFFICE_ID, from, to);
 
     expect(performance).toHaveLength(2);
-    const agentA = performance.find(p => p.agentId === AGENT_A);
+    const agentA = performance.find((p) => p.agentId === AGENT_A);
     expect(agentA).toBeDefined();
     expect(agentA?.agentName).toBe('Alice Chen');
     expect(agentA?.dealsClosed).toBe(3); // 1 + 2 aggregated
@@ -161,15 +168,166 @@ describe('TeamEngine.getTeamPerformance', () => {
     const users = [{ id: AGENT_A, first_name: 'Alice', last_name: 'Chen' }];
 
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(snapshots))
-        .mockReturnValueOnce(makeChain(users)),
+      from: vi.fn().mockReturnValueOnce(makeChain(snapshots)).mockReturnValueOnce(makeChain(users)),
     };
 
     const engine = new TeamEngine(supabase as never);
     const performance = await engine.getTeamPerformance(OFFICE_ID, new Date(), new Date());
 
     expect(performance[0].conversionRate).toBe(40); // 4/10 = 40%
+  });
+});
+
+// ─── TeamEngine.snapshotTeamPerformance ──────────────────────────────────────
+
+describe('TeamEngine.snapshotTeamPerformance', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('runs parallel count queries via Promise.all and upserts a snapshot row per agent', async () => {
+    const users = [makeUserRow(AGENT_A)];
+    // Each count query resolves with { count: N, error: null }
+    const countChain = (count: number) => {
+      const chain: Record<string, unknown> = {};
+      const self = () => chain;
+      chain.select = vi.fn(self);
+      chain.eq = vi.fn(self);
+      chain.neq = vi.fn(self);
+      chain.gte = vi.fn(self);
+      chain.lte = vi.fn(self);
+      chain.is = vi.fn(self);
+      chain.then = (resolve: (v: { count: number | null; error: null }) => void) =>
+        Promise.resolve({ count, error: null }).then(resolve);
+      return chain;
+    };
+
+    const upsertChain = makeChain(null);
+
+    let getTeamMembersCalled = false;
+    let upsertCalled = false;
+    let countCallIdx = 0;
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        // getTeamMembers → users list
+        if (table === 'users' && !getTeamMembersCalled) {
+          getTeamMembersCalled = true;
+          return makeChain(users);
+        }
+        // The 5 count queries fired in parallel via Promise.all
+        if (table === 'contacts') return countChain(12);
+        if (table === 'transactions') {
+          countCallIdx++;
+          // First call: active deals (neq settlement), second call: deals closed (gte month)
+          return countCallIdx <= 2 ? countChain(3) : countChain(1);
+        }
+        if (table === 'social_dm_leads') return countChain(5);
+        if (table === 'team_performance_snapshots') {
+          // upsert
+          upsertCalled = true;
+          return upsertChain;
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    await engine.snapshotTeamPerformance(OFFICE_ID);
+
+    expect(upsertCalled).toBe(true);
+    expect(upsertChain.upsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          office_id: OFFICE_ID,
+          agent_id: AGENT_A,
+          snapshot_date: expect.any(String),
+          active_contacts: 12,
+        }),
+      ]),
+      expect.any(Object),
+    );
+  });
+
+  it('does nothing when office has no active agents (empty members)', async () => {
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'users') {
+          // getTeamMembers → empty
+          return makeChain([]);
+        }
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    // Should resolve without calling upsert (snapshotRows.length === 0)
+    await expect(engine.snapshotTeamPerformance(OFFICE_ID)).resolves.toBeUndefined();
+  });
+
+  it('throws when upsert fails', async () => {
+    const users = [makeUserRow(AGENT_A)];
+    const countChain = (count: number) => {
+      const chain: Record<string, unknown> = {};
+      const self = () => chain;
+      chain.select = vi.fn(self);
+      chain.eq = vi.fn(self);
+      chain.neq = vi.fn(self);
+      chain.gte = vi.fn(self);
+      chain.lte = vi.fn(self);
+      chain.is = vi.fn(self);
+      chain.then = (resolve: (v: { count: number | null; error: null }) => void) =>
+        Promise.resolve({ count, error: null }).then(resolve);
+      return chain;
+    };
+
+    const upsertErrorChain = makeChain(null, { message: 'Upsert failed' });
+
+    let getTeamMembersCalled = false;
+
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'users' && !getTeamMembersCalled) {
+          getTeamMembersCalled = true;
+          return makeChain(users);
+        }
+        if (table === 'contacts') return countChain(5);
+        if (table === 'transactions') return countChain(2);
+        if (table === 'social_dm_leads') return countChain(3);
+        if (table === 'team_performance_snapshots') return upsertErrorChain;
+        return makeChain(null);
+      }),
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.snapshotTeamPerformance(OFFICE_ID)).rejects.toThrow(
+      'Failed to snapshot team performance',
+    );
+  });
+
+  it('getTeamPerformance throws when snapshot query errors', async () => {
+    const supabase = {
+      from: vi.fn(() => makeChain(null, { message: 'Snapshot DB error' })),
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(
+      engine.getTeamPerformance(OFFICE_ID, new Date('2026-01-01'), new Date('2026-01-31')),
+    ).rejects.toThrow('Failed to get performance snapshots');
+  });
+
+  it('getTeamPerformance throws when agent names query errors', async () => {
+    const snapshots = [makeSnapshotRow(AGENT_A)];
+
+    const supabase = {
+      from: vi
+        .fn()
+        .mockReturnValueOnce(makeChain(snapshots)) // snapshots query succeeds
+        .mockReturnValueOnce(makeChain(null, { message: 'Users DB error' })), // names query fails
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(
+      engine.getTeamPerformance(OFFICE_ID, new Date('2026-01-01'), new Date('2026-01-31')),
+    ).rejects.toThrow('Failed to get agent names');
   });
 });
 
@@ -247,6 +405,62 @@ describe('TeamEngine.deleteAssignmentRule', () => {
   });
 });
 
+// ─── TeamEngine.listAssignmentRules ───────────────────────────────────────────
+
+describe('TeamEngine.listAssignmentRules', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns assignment rules for an office', async () => {
+    const rules = [makeRuleRow()];
+    const supabase = { from: vi.fn(() => makeChain(rules)) };
+
+    const engine = new TeamEngine(supabase as never);
+    const result = await engine.listAssignmentRules(OFFICE_ID);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.id).toBe(RULE_ID);
+    expect(result[0]!.ruleType).toBe('round_robin');
+  });
+
+  it('throws when query fails', async () => {
+    const supabase = { from: vi.fn(() => makeChain(null, { message: 'DB error' })) };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.listAssignmentRules(OFFICE_ID)).rejects.toThrow('Failed to list assignment rules');
+  });
+});
+
+// ─── TeamEngine.updateAssignmentRule errors ────────────────────────────────────
+
+describe('TeamEngine.updateAssignmentRule errors', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('throws when update fails', async () => {
+    const supabase = { from: vi.fn(() => makeChain(null, { message: 'Update failed' })) };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.updateAssignmentRule(RULE_ID, { isActive: false })).rejects.toThrow(
+      'Failed to update assignment rule',
+    );
+  });
+});
+
+// ─── TeamEngine.deleteAssignmentRule errors ───────────────────────────────────
+
+describe('TeamEngine.deleteAssignmentRule errors', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('throws when delete update fails', async () => {
+    const chain = makeChain(null, { message: 'Delete failed' });
+    const supabase = { from: vi.fn(() => chain) };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.deleteAssignmentRule(RULE_ID)).rejects.toThrow(
+      'Failed to delete assignment rule',
+    );
+  });
+});
+
 // ─── TeamEngine.assignLead (round-robin) ──────────────────────────────────────
 
 describe('TeamEngine.assignLead', () => {
@@ -257,9 +471,10 @@ describe('TeamEngine.assignLead', () => {
     const rules = [makeRuleRow({ round_robin_idx: 0 })];
 
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(contact))   // fetch contact
-        .mockReturnValueOnce(makeChain(rules)),     // list rules
+      from: vi
+        .fn()
+        .mockReturnValueOnce(makeChain(contact)) // fetch contact
+        .mockReturnValueOnce(makeChain(rules)), // list rules
       // rpc returns the assignee atomically
       rpc: vi.fn().mockResolvedValue({ data: { assignee_id: AGENT_A, next_idx: 1 }, error: null }),
     };
@@ -278,7 +493,8 @@ describe('TeamEngine.assignLead', () => {
     const rulesAtIdx1 = [makeRuleRow({ round_robin_idx: 1 })];
 
     const supabase = {
-      from: vi.fn()
+      from: vi
+        .fn()
         .mockReturnValueOnce(makeChain(contact))
         .mockReturnValueOnce(makeChain(rulesAtIdx1)),
       // rpc returns AGENT_B atomically (idx 1 → second agent)
@@ -298,9 +514,7 @@ describe('TeamEngine.assignLead', () => {
     const rules = [makeRuleRow({ conditions: { leadSources: ['facebook_dm'] } })];
 
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(contact))
-        .mockReturnValueOnce(makeChain(rules)),
+      from: vi.fn().mockReturnValueOnce(makeChain(contact)).mockReturnValueOnce(makeChain(rules)),
     };
 
     const engine = new TeamEngine(supabase as never);
@@ -312,9 +526,73 @@ describe('TeamEngine.assignLead', () => {
   it('returns null when no active rules exist', async () => {
     const contact = { id: CONTACT_ID, lead_source: 'facebook_dm', buyer_profile: null };
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(contact))
-        .mockReturnValueOnce(makeChain([])), // no rules
+      from: vi.fn().mockReturnValueOnce(makeChain(contact)).mockReturnValueOnce(makeChain([])), // no rules
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    const assigneeId = await engine.assignLead(CONTACT_ID, OFFICE_ID);
+
+    expect(assigneeId).toBeNull();
+  });
+
+  it('throws when contact query fails', async () => {
+    const supabase = {
+      from: vi.fn(() => makeChain(null, { message: 'Contact not found' })),
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.assignLead(CONTACT_ID, OFFICE_ID)).rejects.toThrow('Contact not found');
+  });
+
+  it('throws when round-robin RPC fails', async () => {
+    const contact = { id: CONTACT_ID, lead_source: 'facebook_dm', buyer_profile: null };
+    const rules = [makeRuleRow({ round_robin_idx: 0 })];
+
+    const supabase = {
+      from: vi.fn().mockReturnValueOnce(makeChain(contact)).mockReturnValueOnce(makeChain(rules)),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'RPC failed' } }),
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.assignLead(CONTACT_ID, OFFICE_ID)).rejects.toThrow('Failed to assign round-robin');
+  });
+
+  it('returns first assignee for manual rule type (non-round-robin)', async () => {
+    const contact = { id: CONTACT_ID, lead_source: 'facebook_dm', buyer_profile: null };
+    const rules = [makeRuleRow({ rule_type: 'manual', assignee_ids: [AGENT_A, AGENT_B] })];
+
+    const supabase = {
+      from: vi.fn().mockReturnValueOnce(makeChain(contact)).mockReturnValueOnce(makeChain(rules)),
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    const assigneeId = await engine.assignLead(CONTACT_ID, OFFICE_ID);
+
+    // manual rule — returns first assignee
+    expect(assigneeId).toBe(AGENT_A);
+  });
+
+  it('skips inactive rules', async () => {
+    const contact = { id: CONTACT_ID, lead_source: 'facebook_dm', buyer_profile: null };
+    // Inactive rule — should be skipped, resulting in null
+    const rules = [makeRuleRow({ is_active: false, assignee_ids: [AGENT_A] })];
+
+    const supabase = {
+      from: vi.fn().mockReturnValueOnce(makeChain(contact)).mockReturnValueOnce(makeChain(rules)),
+    };
+
+    const engine = new TeamEngine(supabase as never);
+    const assigneeId = await engine.assignLead(CONTACT_ID, OFFICE_ID);
+
+    expect(assigneeId).toBeNull();
+  });
+
+  it('skips rules with empty assignee list', async () => {
+    const contact = { id: CONTACT_ID, lead_source: 'facebook_dm', buyer_profile: null };
+    const rules = [makeRuleRow({ assignee_ids: [] })]; // Empty — hits `assigneeIds.length === 0` guard
+
+    const supabase = {
+      from: vi.fn().mockReturnValueOnce(makeChain(contact)).mockReturnValueOnce(makeChain(rules)),
     };
 
     const engine = new TeamEngine(supabase as never);
@@ -362,6 +640,30 @@ describe('TeamEngine.unshareWorkflowTemplate', () => {
       }),
     );
   });
+
+  it('throws when unshare update fails', async () => {
+    const supabase = { from: vi.fn(() => makeChain(null, { message: 'Update failed' })) };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.unshareWorkflowTemplate(WORKFLOW_ID, AGENT_A)).rejects.toThrow(
+      'Failed to unshare workflow template',
+    );
+  });
+});
+
+// ─── TeamEngine.shareWorkflowTemplate errors ─────────────────────────────────
+
+describe('TeamEngine.shareWorkflowTemplate errors', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('throws when share update fails', async () => {
+    const supabase = { from: vi.fn(() => makeChain(null, { message: 'Share failed' })) };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.shareWorkflowTemplate(WORKFLOW_ID, AGENT_A)).rejects.toThrow(
+      'Failed to share workflow template',
+    );
+  });
 });
 
 // ─── TeamEngine.listTeamTemplates ─────────────────────────────────────────────
@@ -371,7 +673,12 @@ describe('TeamEngine.listTeamTemplates', () => {
 
   it('returns shared templates for the office', async () => {
     const rows = [
-      { id: WORKFLOW_ID, name: 'New Buyer Onboarding', shared_at: NOW, shared_by_agent_id: AGENT_A },
+      {
+        id: WORKFLOW_ID,
+        name: 'New Buyer Onboarding',
+        shared_at: NOW,
+        shared_by_agent_id: AGENT_A,
+      },
     ];
     const supabase = { from: vi.fn(() => makeChain(rows)) };
 
@@ -381,5 +688,12 @@ describe('TeamEngine.listTeamTemplates', () => {
     expect(templates).toHaveLength(1);
     expect(templates[0].name).toBe('New Buyer Onboarding');
     expect(templates[0].sharedBy).toBe(AGENT_A);
+  });
+
+  it('throws when query fails', async () => {
+    const supabase = { from: vi.fn(() => makeChain(null, { message: 'List failed' })) };
+
+    const engine = new TeamEngine(supabase as never);
+    await expect(engine.listTeamTemplates(OFFICE_ID)).rejects.toThrow('Failed to list team templates');
   });
 });

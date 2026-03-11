@@ -4,7 +4,10 @@ import type { Contact } from '@realflow/shared';
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
-type ExistingContact = Pick<Contact, 'id' | 'phone' | 'email' | 'firstName' | 'lastName' | 'secondaryPhone'>;
+type ExistingContact = Pick<
+  Contact,
+  'id' | 'phone' | 'email' | 'firstName' | 'lastName' | 'secondaryPhone'
+>;
 
 function makeExisting(overrides: Partial<ExistingContact> & { id: string }): ExistingContact {
   return {
@@ -90,7 +93,13 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('returns empty array when no matches', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0400000000', email: 'other@example.com', firstName: 'Jane', lastName: 'Doe' }),
+      makeExisting({
+        id: '1',
+        phone: '0400000000',
+        email: 'other@example.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+      }),
     ];
     const result = DuplicateDetector.findDuplicates(
       { phone: '0412345678', email: 'john@example.com', firstName: 'John', lastName: 'Smith' },
@@ -101,25 +110,23 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('detects phone match with score 50', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0412345678', email: 'other@example.com', firstName: 'Jane', lastName: 'Doe' }),
+      makeExisting({
+        id: '1',
+        phone: '0412345678',
+        email: 'other@example.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+      }),
     ];
-    const result = DuplicateDetector.findDuplicates(
-      { phone: '0412345678' },
-      existing,
-    );
+    const result = DuplicateDetector.findDuplicates({ phone: '0412345678' }, existing);
     expect(result).toHaveLength(1);
     expect(result[0]!.score).toBe(50);
     expect(result[0]!.matchedOn).toContain('phone');
   });
 
   it('detects phone match even with different formatting', () => {
-    const existing = [
-      makeExisting({ id: '1', phone: '+61412345678' }),
-    ];
-    const result = DuplicateDetector.findDuplicates(
-      { phone: '04 1234 5678' },
-      existing,
-    );
+    const existing = [makeExisting({ id: '1', phone: '+61412345678' })];
+    const result = DuplicateDetector.findDuplicates({ phone: '04 1234 5678' }, existing);
     expect(result).toHaveLength(1);
     expect(result[0]!.matchedOn).toContain('phone');
   });
@@ -135,10 +142,7 @@ describe('DuplicateDetector.findDuplicates', () => {
         secondaryPhone: '0412345678',
       }),
     ];
-    const result = DuplicateDetector.findDuplicates(
-      { phone: '0412345678' },
-      existing,
-    );
+    const result = DuplicateDetector.findDuplicates({ phone: '0412345678' }, existing);
     expect(result).toHaveLength(1);
     expect(result[0]!.score).toBe(40);
     expect(result[0]!.matchedOn).toContain('secondary-phone');
@@ -146,12 +150,15 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('detects email match with score 45', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0400000000', email: 'john@example.com', firstName: 'Jane', lastName: 'Doe' }),
+      makeExisting({
+        id: '1',
+        phone: '0400000000',
+        email: 'john@example.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+      }),
     ];
-    const result = DuplicateDetector.findDuplicates(
-      { email: 'john@example.com' },
-      existing,
-    );
+    const result = DuplicateDetector.findDuplicates({ email: 'john@example.com' }, existing);
     expect(result).toHaveLength(1);
     expect(result[0]!.score).toBe(45);
     expect(result[0]!.matchedOn).toContain('email');
@@ -159,19 +166,28 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('normalizes email for comparison (case-insensitive)', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0400000000', email: 'John@Example.COM', firstName: 'Jane', lastName: 'Doe' }),
+      makeExisting({
+        id: '1',
+        phone: '0400000000',
+        email: 'John@Example.COM',
+        firstName: 'Jane',
+        lastName: 'Doe',
+      }),
     ];
-    const result = DuplicateDetector.findDuplicates(
-      { email: 'john@example.com' },
-      existing,
-    );
+    const result = DuplicateDetector.findDuplicates({ email: 'john@example.com' }, existing);
     expect(result).toHaveLength(1);
     expect(result[0]!.matchedOn).toContain('email');
   });
 
   it('detects name match with score 20', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0400000000', email: 'other@example.com', firstName: 'John', lastName: 'Smith' }),
+      makeExisting({
+        id: '1',
+        phone: '0400000000',
+        email: 'other@example.com',
+        firstName: 'John',
+        lastName: 'Smith',
+      }),
     ];
     const result = DuplicateDetector.findDuplicates(
       { firstName: 'John', lastName: 'Smith' },
@@ -184,7 +200,13 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('matches names case-insensitively', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0400000000', email: 'other@example.com', firstName: 'JOHN', lastName: 'SMITH' }),
+      makeExisting({
+        id: '1',
+        phone: '0400000000',
+        email: 'other@example.com',
+        firstName: 'JOHN',
+        lastName: 'SMITH',
+      }),
     ];
     const result = DuplicateDetector.findDuplicates(
       { firstName: 'john', lastName: 'smith' },
@@ -196,19 +218,28 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('requires both first and last name for name match', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0400000000', email: 'other@example.com', firstName: 'John', lastName: 'Smith' }),
+      makeExisting({
+        id: '1',
+        phone: '0400000000',
+        email: 'other@example.com',
+        firstName: 'John',
+        lastName: 'Smith',
+      }),
     ];
     // Only first name provided
-    const result = DuplicateDetector.findDuplicates(
-      { firstName: 'John' },
-      existing,
-    );
+    const result = DuplicateDetector.findDuplicates({ firstName: 'John' }, existing);
     expect(result).toEqual([]);
   });
 
   it('combines phone + email + name for highest score', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0412345678', email: 'john@example.com', firstName: 'John', lastName: 'Smith' }),
+      makeExisting({
+        id: '1',
+        phone: '0412345678',
+        email: 'john@example.com',
+        firstName: 'John',
+        lastName: 'Smith',
+      }),
     ];
     const result = DuplicateDetector.findDuplicates(
       { phone: '0412345678', email: 'john@example.com', firstName: 'John', lastName: 'Smith' },
@@ -223,8 +254,20 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('sorts results by score descending', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0400000000', email: 'john@example.com', firstName: 'Jane', lastName: 'Doe' }),
-      makeExisting({ id: '2', phone: '0412345678', email: 'other@example.com', firstName: 'Jane', lastName: 'Doe' }),
+      makeExisting({
+        id: '1',
+        phone: '0400000000',
+        email: 'john@example.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+      }),
+      makeExisting({
+        id: '2',
+        phone: '0412345678',
+        email: 'other@example.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+      }),
     ];
     const result = DuplicateDetector.findDuplicates(
       { phone: '0412345678', email: 'john@example.com' },
@@ -236,7 +279,14 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('caps combined score at 100', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0412345678', email: 'john@example.com', firstName: 'John', lastName: 'Smith', secondaryPhone: '0412345678' }),
+      makeExisting({
+        id: '1',
+        phone: '0412345678',
+        email: 'john@example.com',
+        firstName: 'John',
+        lastName: 'Smith',
+        secondaryPhone: '0412345678',
+      }),
     ];
     // phone (50) + secondary (40 - same number so also matches) + email (45) + name (20) = 155
     // but should be capped at 100
@@ -249,9 +299,27 @@ describe('DuplicateDetector.findDuplicates', () => {
 
   it('handles multiple existing contacts with different match levels', () => {
     const existing = [
-      makeExisting({ id: '1', phone: '0412345678', email: 'john@example.com', firstName: 'John', lastName: 'Smith' }),
-      makeExisting({ id: '2', phone: '0400000000', email: 'john@example.com', firstName: 'Jane', lastName: 'Doe' }),
-      makeExisting({ id: '3', phone: '0400000000', email: 'other@example.com', firstName: 'John', lastName: 'Smith' }),
+      makeExisting({
+        id: '1',
+        phone: '0412345678',
+        email: 'john@example.com',
+        firstName: 'John',
+        lastName: 'Smith',
+      }),
+      makeExisting({
+        id: '2',
+        phone: '0400000000',
+        email: 'john@example.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+      }),
+      makeExisting({
+        id: '3',
+        phone: '0400000000',
+        email: 'other@example.com',
+        firstName: 'John',
+        lastName: 'Smith',
+      }),
     ];
     const result = DuplicateDetector.findDuplicates(
       { phone: '0412345678', email: 'john@example.com', firstName: 'John', lastName: 'Smith' },

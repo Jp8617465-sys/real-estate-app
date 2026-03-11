@@ -1,8 +1,4 @@
-import {
-  type ClientBrief,
-  type Property,
-  type MatchScoreBreakdown,
-} from '@realflow/shared';
+import { type ClientBrief, type Property, type MatchScoreBreakdown } from '@realflow/shared';
 
 // ─── Match Result ───────────────────────────────────────────────────
 
@@ -76,7 +72,7 @@ export class PropertyMatchEngine {
    */
   static scoreProperties(properties: Property[], brief: ClientBrief): MatchResult[] {
     return properties
-      .map(p => this.scoreProperty(p, brief))
+      .map((p) => this.scoreProperty(p, brief))
       .sort((a, b) => b.overallScore - a.overallScore);
   }
 
@@ -84,7 +80,7 @@ export class PropertyMatchEngine {
    * Filter properties that meet a minimum score threshold.
    */
   static filterByMinScore(results: MatchResult[], minScore: number): MatchResult[] {
-    return results.filter(r => r.overallScore >= minScore);
+    return results.filter((r) => r.overallScore >= minScore);
   }
 
   // ─── Scoring Functions ──────────────────────────────────────────────
@@ -132,14 +128,12 @@ export class PropertyMatchEngine {
     if (briefSuburbs.length === 0) return 50; // No preference
 
     // Check if property suburb is in brief suburbs (case insensitive)
-    const matchedSuburb = briefSuburbs.find(
-      s => s.suburb.toLowerCase() === propertySuburb
-    );
+    const matchedSuburb = briefSuburbs.find((s) => s.suburb.toLowerCase() === propertySuburb);
 
     if (matchedSuburb) {
       // Ranked match: top choice = 100, lower ranks get less
       if (matchedSuburb.rank) {
-        const maxRank = Math.max(...briefSuburbs.map(s => s.rank ?? 999));
+        const maxRank = Math.max(...briefSuburbs.map((s) => s.rank ?? 999));
         if (matchedSuburb.rank === 1) return 100;
         if (matchedSuburb.rank <= 3) return 90;
         // Scale based on position
@@ -182,7 +176,7 @@ export class PropertyMatchEngine {
           totalScore += 30;
         }
       } else if (lMin !== undefined) {
-        totalScore += property.landSize >= lMin ? 100 : (property.landSize >= lMin * 0.8 ? 60 : 20);
+        totalScore += property.landSize >= lMin ? 100 : property.landSize >= lMin * 0.8 ? 60 : 20;
       } else {
         totalScore += 80; // Only max specified, just having land data is fine
       }
@@ -263,7 +257,7 @@ export class PropertyMatchEngine {
     // Suburb not in brief
     const propertySuburb = property.address.suburb.toLowerCase();
     const inBriefSuburbs = brief.requirements.suburbs.some(
-      s => s.suburb.toLowerCase() === propertySuburb
+      (s) => s.suburb.toLowerCase() === propertySuburb,
     );
     if (brief.requirements.suburbs.length > 0 && !inBriefSuburbs) {
       flags.push('outside_target_suburbs');

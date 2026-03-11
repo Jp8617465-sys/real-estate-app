@@ -15,7 +15,9 @@ beforeEach(() => {
   changeHandler = null;
   mockMQ = {
     matches: false,
-    addEventListener: vi.fn((_, handler) => { changeHandler = handler; }),
+    addEventListener: vi.fn((_, handler) => {
+      changeHandler = handler;
+    }),
     removeEventListener: vi.fn(),
   };
   vi.spyOn(window, 'matchMedia').mockReturnValue(mockMQ as unknown as MediaQueryList);

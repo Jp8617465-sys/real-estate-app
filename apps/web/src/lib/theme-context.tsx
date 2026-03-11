@@ -36,8 +36,7 @@ export function ThemeProvider({ children, defaultThemeId = 'default' }: ThemePro
   const [theme, setTheme] = useState<ThemeConfig>(() => getTheme(defaultThemeId));
   const [darkMode, setDarkModeState] = useState<DarkMode>('light');
 
-  const isDark =
-    darkMode === 'dark' || (darkMode === 'system' && systemPrefersDark());
+  const isDark = darkMode === 'dark' || (darkMode === 'system' && systemPrefersDark());
 
   // Apply / remove 'dark' class on <html> whenever isDark changes
   useEffect(() => {

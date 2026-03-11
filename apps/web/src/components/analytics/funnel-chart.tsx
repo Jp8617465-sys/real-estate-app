@@ -87,9 +87,7 @@ export function FunnelChart({
   if (stages.length === 0) {
     return (
       <div className="flex min-h-[10rem] items-center justify-center">
-        <p className="text-sm text-gray-400">
-          No pipeline data available for this period.
-        </p>
+        <p className="text-sm text-gray-400">No pipeline data available for this period.</p>
       </div>
     );
   }
@@ -121,7 +119,10 @@ export function FunnelChart({
             </div>
 
             {/* Bar */}
-            <div className="flex-1 overflow-hidden rounded-lg bg-gray-100" style={{ height: '28px' }}>
+            <div
+              className="flex-1 overflow-hidden rounded-lg bg-gray-100"
+              style={{ height: '28px' }}
+            >
               <div
                 className={cn(
                   'flex h-full items-center rounded-lg px-3 transition-all duration-500',
@@ -130,9 +131,7 @@ export function FunnelChart({
                 style={{ width: `${Math.max(widthPct, 6)}%` }}
               >
                 {stage.activeCount > 0 && (
-                  <span className="text-xs font-semibold text-white">
-                    {stage.activeCount}
-                  </span>
+                  <span className="text-xs font-semibold text-white">{stage.activeCount}</span>
                 )}
               </div>
             </div>
@@ -145,9 +144,7 @@ export function FunnelChart({
                 <span className="text-gray-300">&mdash;</span>
               )}
               {stage.conversionRate > 0 && (
-                <span className="ml-1.5 font-medium text-brand-600">
-                  ({stage.conversionRate}%)
-                </span>
+                <span className="ml-1.5 font-medium text-brand-600">({stage.conversionRate}%)</span>
               )}
             </div>
           </div>

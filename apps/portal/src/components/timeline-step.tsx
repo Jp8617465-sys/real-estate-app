@@ -1,12 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import {
-  CheckCircle2,
-  Circle,
-  Clock,
-  AlertCircle,
-} from 'lucide-react';
+import { CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
 import type { KeyDateStatus } from '@realflow/shared';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 

@@ -15,7 +15,10 @@ import { cache } from './cache';
 // ─── Query Builder Interfaces ───────────────────────────────────────────────────
 
 /** Minimal structural type for a pre-filtered Supabase query ready for ordering and paging. */
-interface FilterableQuery extends PromiseLike<{ data: unknown[] | null; error: { message: string } | null }> {
+interface FilterableQuery extends PromiseLike<{
+  data: unknown[] | null;
+  error: { message: string } | null;
+}> {
   order(column: string, options?: { ascending?: boolean }): FilterableQuery;
   range(
     from: number,
@@ -182,12 +185,7 @@ export async function executeOffsetPagination<T extends Record<string, unknown>>
   table: string,
   params: OffsetPaginationParams,
 ): Promise<PaginatedResponse<T>> {
-  const {
-    pagination,
-    orderBy = 'updated_at',
-    ascending = false,
-    countCacheKey,
-  } = params;
+  const { pagination, orderBy = 'updated_at', ascending = false, countCacheKey } = params;
 
   const offset = (pagination.page - 1) * pagination.pageSize;
 
@@ -233,9 +231,10 @@ export async function executeOffsetPagination<T extends Record<string, unknown>>
       page: pagination.page,
       pageSize: pagination.pageSize,
       totalPages,
-      hasMore: total !== undefined
-        ? pagination.page < (totalPages ?? 0)
-        : rows.length === pagination.pageSize,
+      hasMore:
+        total !== undefined
+          ? pagination.page < (totalPages ?? 0)
+          : rows.length === pagination.pageSize,
     },
   };
 }
@@ -304,12 +303,13 @@ export async function executeCursorPagination<T extends Record<string, unknown>>
     data: pageRows as T[],
     pagination: {
       hasMore,
-      nextCursor: hasMore && lastRow
-        ? encodeCursor(
-            String(lastRow[orderBy as keyof typeof lastRow] ?? lastRow.updated_at),
-            lastRow.id,
-          )
-        : null,
+      nextCursor:
+        hasMore && lastRow
+          ? encodeCursor(
+              String(lastRow[orderBy as keyof typeof lastRow] ?? lastRow.updated_at),
+              lastRow.id,
+            )
+          : null,
       prevCursor: firstRow
         ? encodeCursor(
             String(firstRow[orderBy as keyof typeof firstRow] ?? firstRow.updated_at),

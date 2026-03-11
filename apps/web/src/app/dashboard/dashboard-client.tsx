@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { DashboardSnapshot, AnalyticsPeriod, MarketInsight, PipelineVelocity } from '@realflow/shared';
+import type {
+  DashboardSnapshot,
+  AnalyticsPeriod,
+  MarketInsight,
+  PipelineVelocity,
+} from '@realflow/shared';
 
 // ─── Currency formatter ───────────────────────────────────────────────────────
 
@@ -65,9 +70,7 @@ function KpiCard({ title, value, sub }: KpiCardProps) {
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{title}</p>
       <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-      {sub !== undefined && sub !== null && (
-        <p className="mt-1 text-sm text-gray-500">{sub}</p>
-      )}
+      {sub !== undefined && sub !== null && <p className="mt-1 text-sm text-gray-500">{sub}</p>}
     </div>
   );
 }
@@ -113,15 +116,16 @@ function PipelineFunnel({ stages }: PipelineFunnelProps) {
             </div>
 
             {/* Bar track */}
-            <div className="flex-1 overflow-hidden rounded-full bg-gray-100" style={{ height: '22px' }}>
+            <div
+              className="flex-1 overflow-hidden rounded-full bg-gray-100"
+              style={{ height: '22px' }}
+            >
               <div
                 className="flex h-full items-center rounded-full bg-brand-600 px-2 transition-all duration-500"
                 style={{ width: `${Math.max(widthPct, 4)}%` }}
               >
                 {stage.activeCount > 0 && (
-                  <span className="text-[10px] font-semibold text-white">
-                    {stage.activeCount}
-                  </span>
+                  <span className="text-[10px] font-semibold text-white">{stage.activeCount}</span>
                 )}
               </div>
             </div>
@@ -155,7 +159,14 @@ interface RevenueSectionProps {
   referral: number;
 }
 
-function RevenueSection({ earned, pipeline, forecast, retainer, success, referral }: RevenueSectionProps) {
+function RevenueSection({
+  earned,
+  pipeline,
+  forecast,
+  retainer,
+  success,
+  referral,
+}: RevenueSectionProps) {
   return (
     <div className="space-y-4">
       {/* Top three headline figures */}
@@ -177,16 +188,13 @@ function RevenueSection({ earned, pipeline, forecast, retainer, success, referra
       {/* Breakdown row */}
       <div className="flex flex-wrap gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3 shadow-sm">
         <div className="text-sm text-gray-600">
-          <span className="font-medium text-gray-900">Retainer:</span>{' '}
-          {formatAud(retainer)}
+          <span className="font-medium text-gray-900">Retainer:</span> {formatAud(retainer)}
         </div>
         <div className="text-sm text-gray-600">
-          <span className="font-medium text-gray-900">Success:</span>{' '}
-          {formatAud(success)}
+          <span className="font-medium text-gray-900">Success:</span> {formatAud(success)}
         </div>
         <div className="text-sm text-gray-600">
-          <span className="font-medium text-gray-900">Referral:</span>{' '}
-          {formatAud(referral)}
+          <span className="font-medium text-gray-900">Referral:</span> {formatAud(referral)}
         </div>
       </div>
     </div>
@@ -203,7 +211,8 @@ function MarketInsightsTable({ insights }: MarketInsightsTableProps) {
   if (insights.length === 0) {
     return (
       <div className="py-8 text-center text-sm text-gray-400">
-        No market data available. Market insights populate as client suburb preferences are captured.
+        No market data available. Market insights populate as client suburb preferences are
+        captured.
       </div>
     );
   }
@@ -242,13 +251,9 @@ function MarketInsightsTable({ insights }: MarketInsightsTableProps) {
               <tr key={idx} className="hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
                   {row.suburb}
-                  {row.state && (
-                    <span className="ml-1 text-xs text-gray-400">{row.state}</span>
-                  )}
+                  {row.state && <span className="ml-1 text-xs text-gray-400">{row.state}</span>}
                 </td>
-                <td className="px-4 py-3 text-sm capitalize text-gray-600">
-                  {row.propertyType}
-                </td>
+                <td className="px-4 py-3 text-sm capitalize text-gray-600">{row.propertyType}</td>
                 <td className="px-4 py-3 text-right text-sm text-gray-900">
                   {row.medianSalePrice !== null ? formatAud(row.medianSalePrice) : 'n/a'}
                 </td>
@@ -258,17 +263,15 @@ function MarketInsightsTable({ insights }: MarketInsightsTableProps) {
                     : 'n/a'}
                 </td>
                 <td className="px-4 py-3 text-right text-sm text-gray-600">
-                  {row.clearanceRate !== null
-                    ? `${row.clearanceRate.toFixed(1)}%`
-                    : 'n/a'}
+                  {row.clearanceRate !== null ? `${row.clearanceRate.toFixed(1)}%` : 'n/a'}
                 </td>
                 <td
                   className={`px-4 py-3 text-right text-sm font-medium ${
                     changeIsPositive
                       ? 'text-green-600'
                       : changeIsNegative
-                      ? 'text-red-600'
-                      : 'text-gray-600'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
                   }`}
                 >
                   {row.priceChange1yPercent !== null
@@ -340,19 +343,15 @@ export default function DashboardClient() {
         } = await supabase.auth.getSession();
 
         const token = session?.access_token ?? '';
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
-        const res = await fetch(
-          `${apiUrl}/api/v1/analytics/snapshot?period=${period}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            cache: 'no-store',
+        const res = await fetch(`${apiUrl}/api/v1/analytics/snapshot?period=${period}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
-        );
+          cache: 'no-store',
+        });
 
         if (!res.ok) {
           throw new Error(`API returned ${res.status}`);
@@ -423,7 +422,9 @@ export default function DashboardClient() {
             <KpiCard
               title="Settled This Period"
               value={String(perf?.dealsSettled ?? 0)}
-              sub={perf?.dealsSettled ? formatAud(perf.totalRevenue) + ' earned' : 'No settlements yet'}
+              sub={
+                perf?.dealsSettled ? formatAud(perf.totalRevenue) + ' earned' : 'No settlements yet'
+              }
             />
             <KpiCard
               title="Pipeline Value"

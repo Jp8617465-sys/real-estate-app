@@ -24,7 +24,10 @@ export async function offMarketRoutes(fastify: FastifyInstance) {
       });
       return { data: properties };
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
@@ -54,7 +57,10 @@ export async function offMarketRoutes(fastify: FastifyInstance) {
       const result = await engine.create(parsed.data, user.id, agent.office_id as string);
       return reply.status(201).send({ data: result });
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
@@ -72,7 +78,10 @@ export async function offMarketRoutes(fastify: FastifyInstance) {
       const stats = await engine.getSuccessStats(user.id);
       return { data: stats };
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
@@ -88,10 +97,16 @@ export async function offMarketRoutes(fastify: FastifyInstance) {
     const engine = new OffMarketEngine(supabase);
     try {
       const property = await engine.getById(request.params.id);
+      if (!property) return reply.status(404).send({ error: 'Off-market property not found' });
       if (property.agentId !== user.id) return reply.status(403).send({ error: 'Forbidden' });
       return { data: property };
-    } catch {
-      return reply.status(404).send({ error: 'Off-market property not found' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Internal error';
+      if (message.includes('PGRST116') || message.includes('not found')) {
+        return reply.status(404).send({ error: 'Off-market property not found' });
+      }
+      request.log.error(err, 'handler failed');
+      return reply.status(500).send({ error: message });
     }
   });
 
@@ -114,7 +129,10 @@ export async function offMarketRoutes(fastify: FastifyInstance) {
       const property = await engine.update(request.params.id, parsed.data, user.id);
       return { data: property };
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
@@ -132,7 +150,10 @@ export async function offMarketRoutes(fastify: FastifyInstance) {
       await engine.softDelete(request.params.id, user.id);
       return reply.status(204).send();
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
@@ -150,7 +171,10 @@ export async function offMarketRoutes(fastify: FastifyInstance) {
       const matches = await engine.getMatches(request.params.id);
       return { data: matches };
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
@@ -169,53 +193,68 @@ export async function offMarketRoutes(fastify: FastifyInstance) {
       const matches = await engine.matchAgainstBriefs(request.params.id, user.id);
       return { data: matches };
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
   // ─── POST /off-market/:id/send-to-client ─────────────────────────────────
-  fastify.post<{ Params: { id: string } }>('/off-market/:id/send-to-client', async (request, reply) => {
-    const supabase = createSupabaseClient(request);
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+  fastify.post<{ Params: { id: string } }>(
+    '/off-market/:id/send-to-client',
+    async (request, reply) => {
+      const supabase = createSupabaseClient(request);
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
 
-    const body = request.body as { clientBriefId?: string };
-    if (!body?.clientBriefId) {
-      return reply.status(400).send({ error: 'clientBriefId is required' });
-    }
+      const body = request.body as { clientBriefId?: string };
+      if (!body?.clientBriefId) {
+        return reply.status(400).send({ error: 'clientBriefId is required' });
+      }
 
-    const engine = new OffMarketEngine(supabase);
-    try {
-      const match = await engine.sendToClient(request.params.id, body.clientBriefId);
-      return { data: match };
-    } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
-    }
-  });
+      const engine = new OffMarketEngine(supabase);
+      try {
+        const match = await engine.sendToClient(request.params.id, body.clientBriefId);
+        return { data: match };
+      } catch (err) {
+        request.log.error(err, 'handler failed');
+        return reply
+          .status(500)
+          .send({ error: err instanceof Error ? err.message : 'Internal error' });
+      }
+    },
+  );
 
   // ─── DELETE /off-market/:id/send-to-client ───────────────────────────────
-  fastify.delete<{ Params: { id: string } }>('/off-market/:id/send-to-client', async (request, reply) => {
-    const supabase = createSupabaseClient(request);
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+  fastify.delete<{ Params: { id: string } }>(
+    '/off-market/:id/send-to-client',
+    async (request, reply) => {
+      const supabase = createSupabaseClient(request);
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
 
-    const body = request.body as { clientBriefId?: string };
-    if (!body?.clientBriefId) {
-      return reply.status(400).send({ error: 'clientBriefId is required' });
-    }
+      const body = request.body as { clientBriefId?: string };
+      if (!body?.clientBriefId) {
+        return reply.status(400).send({ error: 'clientBriefId is required' });
+      }
 
-    const engine = new OffMarketEngine(supabase);
-    try {
-      const match = await engine.retractFromClient(request.params.id, body.clientBriefId);
-      return { data: match };
-    } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
-    }
-  });
+      const engine = new OffMarketEngine(supabase);
+      try {
+        const match = await engine.retractFromClient(request.params.id, body.clientBriefId);
+        return { data: match };
+      } catch (err) {
+        request.log.error(err, 'handler failed');
+        return reply
+          .status(500)
+          .send({ error: err instanceof Error ? err.message : 'Internal error' });
+      }
+    },
+  );
 }

@@ -85,7 +85,7 @@ export class TeamEngine {
 
     if (error) throw new Error(`Failed to get team members: ${error.message}`);
 
-    return (data as UserRow[]).map(row => ({
+    return (data as UserRow[]).map((row) => ({
       id: row.id,
       firstName: row.first_name,
       lastName: row.last_name,
@@ -102,15 +102,13 @@ export class TeamEngine {
    * Get team performance stats for a date range.
    * Uses pre-computed snapshots when available, falls back to live counts.
    */
-  async getTeamPerformance(
-    officeId: string,
-    from: Date,
-    to: Date,
-  ): Promise<TeamPerformance[]> {
+  async getTeamPerformance(officeId: string, from: Date, to: Date): Promise<TeamPerformance[]> {
     // Try snapshot table first (pre-aggregated daily)
     const { data: snapshots, error: snapErr } = await this.db
       .from('team_performance_snapshots')
-      .select('agent_id, active_contacts, active_deals, deals_closed, avg_response_h, leads_received, leads_converted')
+      .select(
+        'agent_id, active_contacts, active_deals, deals_closed, avg_response_h, leads_received, leads_converted',
+      )
       .eq('office_id', officeId)
       .gte('snapshot_date', from.toISOString().split('T')[0])
       .lte('snapshot_date', to.toISOString().split('T')[0]);
@@ -176,56 +174,58 @@ export class TeamEngine {
    */
   async snapshotTeamPerformance(officeId: string): Promise<void> {
     const today = new Date().toISOString().split('T')[0];
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    const monthStartIso = monthStart.toISOString();
 
     // Get all active agents
     const members = await this.getTeamMembers(officeId);
 
-    for (const member of members) {
-      // Active contacts (not deleted)
-      const { count: activeContacts } = await this.db
-        .from('contacts')
-        .select('id', { count: 'exact', head: true })
-        .eq('assigned_agent_id', member.id)
-        .eq('is_deleted', false);
+    // PERF: Run all 5 count queries per agent in parallel instead of sequentially,
+    // then batch all upserts into a single call.
+    const snapshotRows = await Promise.all(
+      members.map(async (member) => {
+        const [
+          { count: activeContacts },
+          { count: activeDeals },
+          { count: dealsClosed },
+          { count: leadsReceived },
+          { count: leadsConverted },
+        ] = await Promise.all([
+          this.db
+            .from('contacts')
+            .select('id', { count: 'exact', head: true })
+            .eq('assigned_agent_id', member.id)
+            .eq('is_deleted', false),
+          this.db
+            .from('transactions')
+            .select('id', { count: 'exact', head: true })
+            .eq('assigned_agent_id', member.id)
+            .eq('is_deleted', false)
+            .neq('current_stage', 'settlement'),
+          this.db
+            .from('transactions')
+            .select('id', { count: 'exact', head: true })
+            .eq('assigned_agent_id', member.id)
+            .eq('current_stage', 'settlement')
+            .gte('updated_at', monthStartIso),
+          this.db
+            .from('social_dm_leads')
+            .select('id', { count: 'exact', head: true })
+            .eq('agent_id', member.id)
+            .gte('created_at', monthStartIso)
+            .is('deleted_at', null),
+          this.db
+            .from('social_dm_leads')
+            .select('id', { count: 'exact', head: true })
+            .eq('agent_id', member.id)
+            .eq('status', 'converted')
+            .gte('created_at', monthStartIso)
+            .is('deleted_at', null),
+        ]);
 
-      // Active deals
-      const { count: activeDeals } = await this.db
-        .from('transactions')
-        .select('id', { count: 'exact', head: true })
-        .eq('assigned_agent_id', member.id)
-        .eq('is_deleted', false)
-        .neq('current_stage', 'settlement');
-
-      // Deals closed this month
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
-      const { count: dealsClosed } = await this.db
-        .from('transactions')
-        .select('id', { count: 'exact', head: true })
-        .eq('assigned_agent_id', member.id)
-        .eq('current_stage', 'settlement')
-        .gte('updated_at', monthStart.toISOString());
-
-      // Social DM leads received this month
-      const { count: leadsReceived } = await this.db
-        .from('social_dm_leads')
-        .select('id', { count: 'exact', head: true })
-        .eq('agent_id', member.id)
-        .gte('created_at', monthStart.toISOString())
-        .is('deleted_at', null);
-
-      // Social DM leads converted this month
-      const { count: leadsConverted } = await this.db
-        .from('social_dm_leads')
-        .select('id', { count: 'exact', head: true })
-        .eq('agent_id', member.id)
-        .eq('status', 'converted')
-        .gte('created_at', monthStart.toISOString())
-        .is('deleted_at', null);
-
-      const { error: upsertErr } = await this.db.from('team_performance_snapshots').upsert(
-        {
+        return {
           office_id: officeId,
           agent_id: member.id,
           snapshot_date: today,
@@ -234,12 +234,17 @@ export class TeamEngine {
           deals_closed: dealsClosed ?? 0,
           leads_received: leadsReceived ?? 0,
           leads_converted: leadsConverted ?? 0,
-        },
-        { onConflict: 'office_id,agent_id,snapshot_date' },
-      );
+        };
+      }),
+    );
+
+    if (snapshotRows.length > 0) {
+      const { error: upsertErr } = await this.db
+        .from('team_performance_snapshots')
+        .upsert(snapshotRows, { onConflict: 'office_id,agent_id,snapshot_date' });
 
       if (upsertErr) {
-        throw new Error(`Failed to snapshot agent ${member.id}: ${upsertErr.message}`);
+        throw new Error(`Failed to snapshot team performance: ${upsertErr.message}`);
       }
     }
   }
@@ -335,10 +340,7 @@ export class TeamEngine {
    * Rules are evaluated in priority order; first match wins.
    * For round_robin rules, the index is atomically incremented in the DB.
    */
-  async assignLead(
-    contactId: string,
-    officeId: string,
-  ): Promise<string | null> {
+  async assignLead(contactId: string, officeId: string): Promise<string | null> {
     // Fetch the contact to evaluate against conditions
     const { data: contact, error: contactErr } = await this.db
       .from('contacts')
@@ -407,7 +409,9 @@ export class TeamEngine {
   /**
    * List workflow templates shared within an office.
    */
-  async listTeamTemplates(officeId: string): Promise<{ id: string; name: string; sharedAt: string; sharedBy: string }[]> {
+  async listTeamTemplates(
+    officeId: string,
+  ): Promise<{ id: string; name: string; sharedAt: string; sharedBy: string }[]> {
     const { data, error } = await this.db
       .from('workflows')
       .select('id, name, shared_at, shared_by_agent_id')
@@ -418,26 +422,27 @@ export class TeamEngine {
 
     if (error) throw new Error(`Failed to list team templates: ${error.message}`);
 
-    return (data as { id: string; name: string; shared_at: string; shared_by_agent_id: string }[]).map(
-      row => ({
-        id: row.id,
-        name: row.name,
-        sharedAt: row.shared_at,
-        sharedBy: row.shared_by_agent_id,
-      }),
-    );
+    return (
+      data as { id: string; name: string; shared_at: string; shared_by_agent_id: string }[]
+    ).map((row) => ({
+      id: row.id,
+      name: row.name,
+      sharedAt: row.shared_at,
+      sharedBy: row.shared_by_agent_id,
+    }));
   }
 
   // ─── Private Helpers ───────────────────────────────────────────────────────
 
-  private ruleMatchesContact(
-    rule: LeadAssignmentRule,
-    contact: Record<string, unknown>,
-  ): boolean {
+  private ruleMatchesContact(rule: LeadAssignmentRule, contact: Record<string, unknown>): boolean {
     const conditions = rule.conditions;
 
     // Lead source filter
-    if (conditions.leadSources && Array.isArray(conditions.leadSources) && conditions.leadSources.length > 0) {
+    if (
+      conditions.leadSources &&
+      Array.isArray(conditions.leadSources) &&
+      conditions.leadSources.length > 0
+    ) {
       if (!conditions.leadSources.includes(contact.lead_source as string)) return false;
     }
 

@@ -82,15 +82,17 @@ export function useAgentPerformance(period: AnalyticsPeriod) {
 export function useRevenueForecast(period: AnalyticsPeriod) {
   return useQuery({
     queryKey: ['revenue-forecast', period],
-    queryFn: () =>
-      analyticsApiFetch<RevenueForecast>('/api/v1/analytics/revenue', { period }),
+    queryFn: () => analyticsApiFetch<RevenueForecast>('/api/v1/analytics/revenue', { period }),
     staleTime: 60_000,
   });
 }
 
 // ─── Market Insights ─────────────────────────────────────────────────────────
 
-export function useMarketInsights(suburbs: string[], propertyType?: 'house' | 'unit' | 'townhouse') {
+export function useMarketInsights(
+  suburbs: string[],
+  propertyType?: 'house' | 'unit' | 'townhouse',
+) {
   return useQuery({
     queryKey: ['market-insights', suburbs, propertyType],
     queryFn: () => {

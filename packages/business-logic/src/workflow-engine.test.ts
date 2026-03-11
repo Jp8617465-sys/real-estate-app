@@ -10,8 +10,20 @@ import {
   resumeExecution,
   scheduleResume,
 } from './workflow-engine';
-import type { WorkflowEvent, WorkflowContext, SupabaseClient, RunWorkflowOptions } from './workflow-engine';
-import type { WorkflowTrigger, WorkflowCondition, WorkflowAction, Workflow, CompoundCondition, ConditionNode } from '@realflow/shared';
+import type {
+  WorkflowEvent,
+  WorkflowContext,
+  SupabaseClient,
+  RunWorkflowOptions,
+} from './workflow-engine';
+import type {
+  WorkflowTrigger,
+  WorkflowCondition,
+  WorkflowAction,
+  Workflow,
+  CompoundCondition,
+  ConditionNode,
+} from '@realflow/shared';
 import {
   evaluateFieldCondition,
   evaluateConditionNode,
@@ -59,9 +71,7 @@ function createMockWorkflow(overrides?: Partial<Workflow>): Workflow {
     name: 'Test Workflow',
     trigger: { type: 'new_lead' },
     conditions: [],
-    actions: [
-      { type: 'notify_agent', message: 'Test notification' },
-    ],
+    actions: [{ type: 'notify_agent', message: 'Test notification' }],
     isActive: true,
     createdBy: 'user-1',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -129,7 +139,11 @@ describe('evaluateTrigger', () => {
     });
 
     it('matches with optional "from" when present and correct', () => {
-      const triggerWithFrom: WorkflowTrigger = { type: 'stage_change', from: 'offer-made', to: 'under-contract' };
+      const triggerWithFrom: WorkflowTrigger = {
+        type: 'stage_change',
+        from: 'offer-made',
+        to: 'under-contract',
+      };
       const event: WorkflowEvent = {
         type: 'stage_change',
         data: { from: 'offer-made', to: 'under-contract' },
@@ -138,7 +152,11 @@ describe('evaluateTrigger', () => {
     });
 
     it('does not match when "from" is specified but differs', () => {
-      const triggerWithFrom: WorkflowTrigger = { type: 'stage_change', from: 'active-search', to: 'under-contract' };
+      const triggerWithFrom: WorkflowTrigger = {
+        type: 'stage_change',
+        from: 'active-search',
+        to: 'under-contract',
+      };
       const event: WorkflowEvent = {
         type: 'stage_change',
         data: { from: 'offer-made', to: 'under-contract' },
@@ -178,7 +196,10 @@ describe('evaluateTrigger', () => {
   describe('field_change trigger', () => {
     it('matches when field name matches', () => {
       const trigger: WorkflowTrigger = { type: 'field_change', field: 'clientBriefSignedOff' };
-      const event: WorkflowEvent = { type: 'field_change', data: { field: 'clientBriefSignedOff' } };
+      const event: WorkflowEvent = {
+        type: 'field_change',
+        data: { field: 'clientBriefSignedOff' },
+      };
       expect(evaluateTrigger(trigger, event)).toBe(true);
     });
 
@@ -219,7 +240,11 @@ describe('evaluateTrigger', () => {
     });
 
     it('date_approaching always returns false', () => {
-      const trigger: WorkflowTrigger = { type: 'date_approaching', field: 'settlementDate', daysBefore: 7 };
+      const trigger: WorkflowTrigger = {
+        type: 'date_approaching',
+        field: 'settlementDate',
+        daysBefore: 7,
+      };
       const event: WorkflowEvent = { type: 'new_lead', data: {} };
       expect(evaluateTrigger(trigger, event)).toBe(false);
     });
@@ -244,13 +269,21 @@ describe('evaluateCondition', () => {
   });
 
   it('not_equals: matches when values differ', () => {
-    const condition: WorkflowCondition = { field: 'status', operator: 'not_equals', value: 'deleted' };
+    const condition: WorkflowCondition = {
+      field: 'status',
+      operator: 'not_equals',
+      value: 'deleted',
+    };
     const context = ctx({ entityData: { status: 'active' } });
     expect(evaluateCondition(condition, context)).toBe(true);
   });
 
   it('not_equals: fails when values are equal', () => {
-    const condition: WorkflowCondition = { field: 'status', operator: 'not_equals', value: 'active' };
+    const condition: WorkflowCondition = {
+      field: 'status',
+      operator: 'not_equals',
+      value: 'active',
+    };
     const context = ctx({ entityData: { status: 'active' } });
     expect(evaluateCondition(condition, context)).toBe(false);
   });
@@ -268,19 +301,31 @@ describe('evaluateCondition', () => {
   });
 
   it('greater_than: matches when value is greater', () => {
-    const condition: WorkflowCondition = { field: 'matchScore', operator: 'greater_than', value: 79 };
+    const condition: WorkflowCondition = {
+      field: 'matchScore',
+      operator: 'greater_than',
+      value: 79,
+    };
     const context = ctx({ entityData: { matchScore: 85 } });
     expect(evaluateCondition(condition, context)).toBe(true);
   });
 
   it('greater_than: fails when value is equal', () => {
-    const condition: WorkflowCondition = { field: 'matchScore', operator: 'greater_than', value: 85 };
+    const condition: WorkflowCondition = {
+      field: 'matchScore',
+      operator: 'greater_than',
+      value: 85,
+    };
     const context = ctx({ entityData: { matchScore: 85 } });
     expect(evaluateCondition(condition, context)).toBe(false);
   });
 
   it('greater_than: fails when value is less', () => {
-    const condition: WorkflowCondition = { field: 'matchScore', operator: 'greater_than', value: 90 };
+    const condition: WorkflowCondition = {
+      field: 'matchScore',
+      operator: 'greater_than',
+      value: 90,
+    };
     const context = ctx({ entityData: { matchScore: 85 } });
     expect(evaluateCondition(condition, context)).toBe(false);
   });
@@ -335,7 +380,11 @@ describe('evaluateCondition', () => {
 
   // Dot notation tests
   it('handles dot-notation fields (nested access)', () => {
-    const condition: WorkflowCondition = { field: 'buyer_profile.budget_max', operator: 'greater_than', value: 500000 };
+    const condition: WorkflowCondition = {
+      field: 'buyer_profile.budget_max',
+      operator: 'greater_than',
+      value: 500000,
+    };
     const context = ctx({
       entityData: {
         buyer_profile: { budget_max: 750000 },
@@ -353,7 +402,10 @@ describe('evaluateCondition', () => {
   });
 
   it('returns undefined (is_empty) for non-existent nested path', () => {
-    const condition: WorkflowCondition = { field: 'buyer_profile.budget_max', operator: 'is_empty' };
+    const condition: WorkflowCondition = {
+      field: 'buyer_profile.budget_max',
+      operator: 'is_empty',
+    };
     const context = ctx({ entityData: {} });
     expect(evaluateCondition(condition, context)).toBe(true);
   });
@@ -566,9 +618,12 @@ describe('executeAction', () => {
 
     expect(result.success).toBe(true);
     expect(result.actionType).toBe('webhook');
-    expect(mockFetch).toHaveBeenCalledWith('https://example.com/hook', expect.objectContaining({
-      method: 'POST',
-    }));
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://example.com/hook',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
 
     vi.unstubAllGlobals();
   });
@@ -876,7 +931,11 @@ describe('evaluateFieldCondition (enhanced operators)', () => {
   });
 
   it('in_stage: matches when value is a string and matches', () => {
-    const condition: WorkflowCondition = { field: 'stage', operator: 'in_stage', value: 'active-search' };
+    const condition: WorkflowCondition = {
+      field: 'stage',
+      operator: 'in_stage',
+      value: 'active-search',
+    };
     const context = ctx({ entityData: { stage: 'active-search' } });
     expect(evaluateFieldCondition(condition, context)).toBe(true);
   });
@@ -902,13 +961,21 @@ describe('evaluateFieldCondition (enhanced operators)', () => {
   });
 
   it('lead_score_above: matches when score is above threshold', () => {
-    const condition: WorkflowCondition = { field: 'leadScore', operator: 'lead_score_above', value: 70 };
+    const condition: WorkflowCondition = {
+      field: 'leadScore',
+      operator: 'lead_score_above',
+      value: 70,
+    };
     const context = ctx({ entityData: { leadScore: 85 } });
     expect(evaluateFieldCondition(condition, context)).toBe(true);
   });
 
   it('lead_score_above: fails when score is below threshold', () => {
-    const condition: WorkflowCondition = { field: 'leadScore', operator: 'lead_score_above', value: 90 };
+    const condition: WorkflowCondition = {
+      field: 'leadScore',
+      operator: 'lead_score_above',
+      value: 90,
+    };
     const context = ctx({ entityData: { leadScore: 85 } });
     expect(evaluateFieldCondition(condition, context)).toBe(false);
   });
@@ -1337,7 +1404,11 @@ describe('recoverFromError', () => {
       type: 'assign_contact',
       agentId: '00000000-0000-0000-0000-000000000001',
     };
-    const failedResult = { success: false, actionType: 'assign_contact', error: 'No contact ID in context' };
+    const failedResult = {
+      success: false,
+      actionType: 'assign_contact',
+      error: 'No contact ID in context',
+    };
     const context = createMockContext();
 
     const result = await recoverFromError(
@@ -1470,9 +1541,7 @@ describe('execution history logging', () => {
 
     const workflow = createMockWorkflow({
       trigger: { type: 'new_lead' },
-      actions: [
-        { type: 'create_task', taskTitle: 'Task', taskType: 'call', dueDaysFromNow: 0 },
-      ],
+      actions: [{ type: 'create_task', taskTitle: 'Task', taskType: 'call', dueDaysFromNow: 0 }],
     });
 
     const event: WorkflowEvent = { type: 'new_lead', data: {} };
@@ -1532,9 +1601,7 @@ describe('execution history logging', () => {
     const workflow = createMockWorkflow({
       trigger: { type: 'new_lead' },
       conditions: [],
-      actions: [
-        { type: 'notify_agent', message: 'Step 1' },
-      ],
+      actions: [{ type: 'notify_agent', message: 'Step 1' }],
     });
 
     const event: WorkflowEvent = { type: 'new_lead', data: {} };

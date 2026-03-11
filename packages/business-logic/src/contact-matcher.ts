@@ -43,7 +43,10 @@ interface SupabaseClient {
   from(table: string): {
     select(columns: string): {
       contains(column: string, value: unknown): Promise<SupabaseQueryResult<ContactChannelRecord>>;
-      eq(column: string, value: string): {
+      eq(
+        column: string,
+        value: string,
+      ): {
         select(columns: string): Promise<SupabaseQueryResult<ContactChannelRecord>>;
       } & Promise<SupabaseQueryResult<ContactChannelRecord>>;
     };
@@ -71,28 +74,19 @@ export class ContactMatcher {
   ): Promise<ContactMatchOutcome> {
     // 1. Try phone match
     if (message.senderPhone) {
-      const phoneMatch = await ContactMatcher.matchByPhone(
-        message.senderPhone,
-        supabase,
-      );
+      const phoneMatch = await ContactMatcher.matchByPhone(message.senderPhone, supabase);
       if (phoneMatch) return phoneMatch;
     }
 
     // 2. Try email match
     if (message.senderEmail) {
-      const emailMatch = await ContactMatcher.matchByEmail(
-        message.senderEmail,
-        supabase,
-      );
+      const emailMatch = await ContactMatcher.matchByEmail(message.senderEmail, supabase);
       if (emailMatch) return emailMatch;
     }
 
     // 3. Try social ID match
     if (message.senderSocialId) {
-      const socialMatch = await ContactMatcher.matchBySocialId(
-        message,
-        supabase,
-      );
+      const socialMatch = await ContactMatcher.matchBySocialId(message, supabase);
       if (socialMatch) return socialMatch;
     }
 
@@ -209,9 +203,7 @@ export class ContactMatcher {
    * Build a "no match" result with suggested contact info extracted
    * from the message.
    */
-  private static buildNoMatchResult(
-    message: NormalisedInboundMessage,
-  ): ContactNoMatch {
+  private static buildNoMatchResult(message: NormalisedInboundMessage): ContactNoMatch {
     const name = message.senderName ?? 'Unknown';
     const parts = name.split(' ');
     const firstName = parts[0] ?? 'Unknown';

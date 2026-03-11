@@ -29,35 +29,39 @@ vi.mock('../middleware/supabase', () => ({
 // ─── Mock integrations ────────────────────────────────────────────
 
 vi.mock('@realflow/integrations', () => ({
-  DomainClient: vi.fn().mockImplementation(function() { return {}; }),
-  PropertySyncService: vi.fn().mockImplementation(function() { return {
-    mapListing: vi.fn().mockReturnValue({
-      domainListingId: '12345',
-      addressStreetNumber: '1',
-      addressStreet: 'Test St',
-      addressSuburb: 'Mosman',
-      addressState: 'NSW',
-      addressPostcode: '2088',
-      addressCountry: 'AU',
-      propertyType: 'house',
-      bedrooms: 3,
-      bathrooms: 2,
-      carSpaces: 1,
-      landSize: null,
-      buildingSize: null,
-      yearBuilt: null,
-      listPrice: 1500000,
-      priceGuide: null,
-      listingStatus: 'active',
-      saleType: 'sale',
-      auctionDate: null,
-      listingDescription: 'Test listing',
-      photos: [],
-      floorPlans: [],
-      virtualTourUrl: null,
-      features: [],
-    }),
-  }; }),
+  DomainClient: vi.fn().mockImplementation(function () {
+    return {};
+  }),
+  PropertySyncService: vi.fn().mockImplementation(function () {
+    return {
+      mapListing: vi.fn().mockReturnValue({
+        domainListingId: '12345',
+        addressStreetNumber: '1',
+        addressStreet: 'Test St',
+        addressSuburb: 'Mosman',
+        addressState: 'NSW',
+        addressPostcode: '2088',
+        addressCountry: 'AU',
+        propertyType: 'house',
+        bedrooms: 3,
+        bathrooms: 2,
+        carSpaces: 1,
+        landSize: null,
+        buildingSize: null,
+        yearBuilt: null,
+        listPrice: 1500000,
+        priceGuide: null,
+        listingStatus: 'active',
+        saleType: 'sale',
+        auctionDate: null,
+        listingDescription: 'Test listing',
+        photos: [],
+        floorPlans: [],
+        virtualTourUrl: null,
+        features: [],
+      }),
+    };
+  }),
   DomainWebhookEventSchema: {
     safeParse: vi.fn().mockImplementation((data: unknown) => {
       const d = data as Record<string, unknown>;
@@ -78,10 +82,7 @@ vi.mock('@realflow/business-logic', () => ({
 // ─── Helper: Generate valid HMAC signature ────────────────────────
 
 function signBody(body: string): string {
-  return crypto
-    .createHmac('sha256', WEBHOOK_SECRET)
-    .update(Buffer.from(body))
-    .digest('hex');
+  return crypto.createHmac('sha256', WEBHOOK_SECRET).update(Buffer.from(body)).digest('hex');
 }
 
 // ─── Import after mocks ───────────────────────────────────────────
@@ -227,6 +228,34 @@ describe('POST /api/webhooks/domain/price-update', () => {
     expect(response.statusCode).toBe(401);
   });
 
+  it('returns 401 when signature is invalid', async () => {
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/webhooks/domain/price-update',
+      headers: { 'x-domain-signature': 'invalid-signature' },
+      payload: validPayload,
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it('returns 400 with valid signature but invalid payload', async () => {
+    const invalidPayload = { notAValidField: 'test' };
+    const body = JSON.stringify(invalidPayload);
+    const signature = signBody(body);
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/webhooks/domain/price-update',
+      headers: { 'x-domain-signature': signature },
+      payload: invalidPayload,
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
   it('returns 200 with valid signature', async () => {
     const body = JSON.stringify(validPayload);
     const signature = signBody(body);
@@ -264,6 +293,34 @@ describe('POST /api/webhooks/domain/status-change', () => {
     });
 
     expect(response.statusCode).toBe(401);
+  });
+
+  it('returns 401 when signature is invalid', async () => {
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/webhooks/domain/status-change',
+      headers: { 'x-domain-signature': 'bad-signature-value' },
+      payload: validPayload,
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it('returns 400 with valid signature but invalid payload', async () => {
+    const invalidPayload = { notValid: true };
+    const body = JSON.stringify(invalidPayload);
+    const signature = signBody(body);
+
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/webhooks/domain/status-change',
+      headers: { 'x-domain-signature': signature },
+      payload: invalidPayload,
+    });
+
+    expect(response.statusCode).toBe(400);
   });
 
   it('returns 200 with valid signature', async () => {

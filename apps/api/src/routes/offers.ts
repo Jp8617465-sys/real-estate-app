@@ -15,10 +15,7 @@ export async function offerRoutes(fastify: FastifyInstance) {
       const supabase = createSupabaseClient(request);
       const { transactionId, clientId } = request.query;
 
-      let query = supabase
-        .from('offers')
-        .select('*')
-        .order('updated_at', { ascending: false });
+      let query = supabase.from('offers').select('*').order('updated_at', { ascending: false });
 
       if (transactionId) {
         query = query.eq('transaction_id', transactionId);
@@ -129,11 +126,14 @@ export async function offerRoutes(fastify: FastifyInstance) {
     if (updates.saleMethod !== undefined) updatePayload.sale_method = updates.saleMethod;
     if (updates.status !== undefined) updatePayload.status = updates.status;
     if (updates.strategyNotes !== undefined) updatePayload.strategy_notes = updates.strategyNotes;
-    if (updates.clientMaxPrice !== undefined) updatePayload.client_max_price = updates.clientMaxPrice;
-    if (updates.recommendedOffer !== undefined) updatePayload.recommended_offer = updates.recommendedOffer;
+    if (updates.clientMaxPrice !== undefined)
+      updatePayload.client_max_price = updates.clientMaxPrice;
+    if (updates.recommendedOffer !== undefined)
+      updatePayload.recommended_offer = updates.recommendedOffer;
     if (updates.walkAwayPrice !== undefined) updatePayload.walk_away_price = updates.walkAwayPrice;
     if (updates.conditions !== undefined) updatePayload.conditions = updates.conditions;
-    if (updates.settlementPeriod !== undefined) updatePayload.settlement_period = updates.settlementPeriod;
+    if (updates.settlementPeriod !== undefined)
+      updatePayload.settlement_period = updates.settlementPeriod;
     if (updates.depositAmount !== undefined) updatePayload.deposit_amount = updates.depositAmount;
     if (updates.depositType !== undefined) updatePayload.deposit_type = updates.depositType;
 

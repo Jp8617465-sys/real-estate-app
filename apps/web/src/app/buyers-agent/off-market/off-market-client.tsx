@@ -41,15 +41,22 @@ export default function OffMarketClient() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['off-market', statusFilter],
-    queryFn: () => apiRequest(`/api/v1/off-market?status=${statusFilter}`).then(r => r.data as OffMarketProperty[]),
+    queryFn: () =>
+      apiRequest(`/api/v1/off-market?status=${statusFilter}`).then(
+        (r) => r.data as OffMarketProperty[],
+      ),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/api/v1/off-market/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['off-market'] }),
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 
-  if (isLoading) return <div className="p-6 text-sm text-gray-500">Loading off-market properties...</div>;
+  if (isLoading)
+    return <div className="p-6 text-sm text-gray-500">Loading off-market properties...</div>;
   if (error) return <div className="p-6 text-sm text-red-600">Failed to load properties.</div>;
 
   const properties = data ?? [];
@@ -61,7 +68,7 @@ export default function OffMarketClient() {
         <div className="flex items-center gap-3">
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className="border border-gray-300 rounded-md px-3 py-1.5 text-sm"
           >
             <option value="active">Active</option>
@@ -88,12 +95,14 @@ export default function OffMarketClient() {
       )}
 
       <div className="space-y-3">
-        {properties.map(prop => (
+        {properties.map((prop) => (
           <div key={prop.id} className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOURS[prop.status] ?? 'bg-gray-100 text-gray-700'}`}>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOURS[prop.status] ?? 'bg-gray-100 text-gray-700'}`}
+                  >
                     {prop.status.replace('_', ' ')}
                   </span>
                   {prop.visibility === 'sent_to_client' && (
@@ -109,10 +118,12 @@ export default function OffMarketClient() {
                 </Link>
                 <p className="text-sm text-gray-600 mt-0.5">
                   {prop.propertyType} · {prop.bedrooms ?? '?'}bd · {prop.bathrooms ?? '?'}ba
-                  {prop.askingPrice && ` · ${new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(prop.askingPrice)}`}
+                  {prop.askingPrice &&
+                    ` · ${new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(prop.askingPrice)}`}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Source: {prop.source.replace('_', ' ')} · Added {new Date(prop.createdAt).toLocaleDateString('en-AU')}
+                  Source: {prop.source.replace('_', ' ')} · Added{' '}
+                  {new Date(prop.createdAt).toLocaleDateString('en-AU')}
                 </p>
               </div>
 

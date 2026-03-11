@@ -94,13 +94,27 @@ function makeSupabaseMock(overrides?: {
     };
 
     // Build fluent chain — every method returns chain or terminal
-    const methods = ['select', 'eq', 'gte', 'lte', 'order', 'limit', 'single', 'update', 'insert', 'delete', 'from'];
+    const methods = [
+      'select',
+      'eq',
+      'gte',
+      'lte',
+      'order',
+      'limit',
+      'single',
+      'update',
+      'insert',
+      'delete',
+      'from',
+    ];
     for (const m of methods) {
       chain[m] = vi.fn().mockReturnValue(chain);
     }
 
     // Override .single() and implicit .then to resolve
-    (chain as Record<string, unknown>).single = vi.fn().mockResolvedValue({ data: resolvedData, error: resolvedError });
+    (chain as Record<string, unknown>).single = vi
+      .fn()
+      .mockResolvedValue({ data: resolvedData, error: resolvedError });
     // Make the chain itself thenable
     (chain as Record<string, unknown>).then = terminal.then;
 
@@ -119,7 +133,8 @@ function makeSupabaseMock(overrides?: {
       if (table === 'aml_checks') {
         const checkData = overrides?.check !== undefined ? overrides.check : defaultCheck;
         const checkErr = overrides?.checkError ?? null;
-        const updatedData = overrides?.updatedCheck !== undefined ? overrides.updatedCheck : defaultUpdatedCheck;
+        const updatedData =
+          overrides?.updatedCheck !== undefined ? overrides.updatedCheck : defaultUpdatedCheck;
         const updateErr = overrides?.updateError ?? null;
         const allChecks = overrides?.allChecks ?? [];
 
@@ -156,7 +171,10 @@ function makeSupabaseMock(overrides?: {
             return Promise.resolve({ data: allChecks, error: null }).then(resolve);
           }
           if (overrides?.expiringChecks !== undefined) {
-            return Promise.resolve({ data: overrides.expiringChecks, error: overrides.expiringError ?? null }).then(resolve);
+            return Promise.resolve({
+              data: overrides.expiringChecks,
+              error: overrides.expiringError ?? null,
+            }).then(resolve);
           }
           return Promise.resolve({ data: allChecks, error: null }).then(resolve);
         };
@@ -178,7 +196,8 @@ function makeSupabaseMock(overrides?: {
       }
 
       if (table === 'users') {
-        const userData = overrides?.user !== undefined ? overrides.user : { full_name: 'Test Agent' };
+        const userData =
+          overrides?.user !== undefined ? overrides.user : { full_name: 'Test Agent' };
         const chain: Record<string, unknown> = {};
         chain.select = vi.fn().mockReturnValue(chain);
         chain.eq = vi.fn().mockReturnValue(chain);
@@ -286,7 +305,7 @@ describe('AmlEngine.validateDocumentSet', () => {
     const result = AmlEngine.validateDocumentSet([MEDICARE, CREDIT_CARD, UTILITY_BILL, BANK_STMT]);
     expect(result.isValid).toBe(false);
     expect(result.hasPrimaryOrSecondaryA).toBe(false);
-    expect(result.errors.some((e) => e.includes("primary or secondary category"))).toBe(true);
+    expect(result.errors.some((e) => e.includes('primary or secondary category'))).toBe(true);
   });
 
   it('fails with two errors when < 100 pts AND no primary/secondary_a', () => {
@@ -320,7 +339,7 @@ describe('AmlEngine.validateDocumentSet', () => {
       BANK_STMT,
     ]);
     expect(result.hasPrimaryOrSecondaryA).toBe(false);
-    expect(result.errors.some((e) => e.includes("primary or secondary category"))).toBe(true);
+    expect(result.errors.some((e) => e.includes('primary or secondary category'))).toBe(true);
   });
 
   it('passes with birth certificate (70) + 2x supporting (25+25=50) = 120pts', () => {
@@ -331,7 +350,12 @@ describe('AmlEngine.validateDocumentSet', () => {
 
   it('passes with drivers_licence (40) alone if its secondary_a and points >= 100 via other docs', () => {
     // 40 + 25 + 25 + 25 = 115 — secondary_a present
-    const result = AmlEngine.validateDocumentSet([DRIVERS_LICENCE, MEDICARE, CREDIT_CARD, UTILITY_BILL]);
+    const result = AmlEngine.validateDocumentSet([
+      DRIVERS_LICENCE,
+      MEDICARE,
+      CREDIT_CARD,
+      UTILITY_BILL,
+    ]);
     expect(result.isValid).toBe(true);
     expect(result.hasPrimaryOrSecondaryA).toBe(true);
   });
@@ -362,9 +386,7 @@ describe('AmlEngine.tryAutoComplete', () => {
 
   it('returns null when check has insufficient points', async () => {
     const supabase = makeSupabaseMock({
-      docs: [
-        { document_type: 'medicare_card', points: 25, is_expired: false },
-      ],
+      docs: [{ document_type: 'medicare_card', points: 25, is_expired: false }],
     });
     const result = await AmlEngine.tryAutoComplete('check-1', supabase as never);
 

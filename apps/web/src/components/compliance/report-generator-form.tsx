@@ -56,9 +56,7 @@ export function ReportGeneratorForm({
   return (
     <div className="rounded-lg border border-gray-200 bg-white">
       <div className="border-b border-gray-200 px-4 py-3">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Generate AUSTRAC Report
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-900">Generate AUSTRAC Report</h3>
         <p className="mt-0.5 text-xs text-gray-500">
           Generate a compliance report for submission to AUSTRAC
         </p>
@@ -67,11 +65,11 @@ export function ReportGeneratorForm({
       <form onSubmit={handleSubmit} className="space-y-4 p-4">
         {/* Report Type */}
         <div>
-          <label
-            htmlFor="report-type"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Report Type <span className="text-red-500" aria-hidden="true">*</span>
+          <label htmlFor="report-type" className="block text-sm font-medium text-gray-700">
+            Report Type{' '}
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
           </label>
           <select
             id="report-type"
@@ -110,18 +108,18 @@ export function ReportGeneratorForm({
         {reportType === 'suspicious_matter' && (
           <div className="rounded-md bg-yellow-50 p-3">
             <p className="text-xs text-yellow-800">
-              A Suspicious Matter Report (SMR) must be submitted to AUSTRAC within 24 hours
-              of forming a suspicion, or 3 business days for less urgent matters. Under
-              section 41 of the AML/CTF Act 2006.
+              A Suspicious Matter Report (SMR) must be submitted to AUSTRAC within 24 hours of
+              forming a suspicion, or 3 business days for less urgent matters. Under section 41 of
+              the AML/CTF Act 2006.
             </p>
           </div>
         )}
         {reportType === 'threshold_transaction' && (
           <div className="rounded-md bg-blue-50 p-3">
             <p className="text-xs text-blue-800">
-              A Threshold Transaction Report (TTR) must be submitted for any cash transaction
-              of $10,000 AUD or more, or foreign currency equivalent. Under section 43 of the
-              AML/CTF Act 2006.
+              A Threshold Transaction Report (TTR) must be submitted for any cash transaction of
+              $10,000 AUD or more, or foreign currency equivalent. Under section 43 of the AML/CTF
+              Act 2006.
             </p>
           </div>
         )}
@@ -137,11 +135,11 @@ export function ReportGeneratorForm({
         {/* Date range */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label
-              htmlFor="period-start"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Period Start <span className="text-red-500" aria-hidden="true">*</span>
+            <label htmlFor="period-start" className="block text-sm font-medium text-gray-700">
+              Period Start{' '}
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
             </label>
             <input
               type="date"
@@ -166,11 +164,11 @@ export function ReportGeneratorForm({
             )}
           </div>
           <div>
-            <label
-              htmlFor="period-end"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Period End <span className="text-red-500" aria-hidden="true">*</span>
+            <label htmlFor="period-end" className="block text-sm font-medium text-gray-700">
+              Period End{' '}
+              <span className="text-red-500" aria-hidden="true">
+                *
+              </span>
             </label>
             <input
               type="date"
