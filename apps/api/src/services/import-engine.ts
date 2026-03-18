@@ -136,13 +136,15 @@ export class ImportEngine {
     if (job.entity_type === 'contacts') {
       for (const preview of previewRows) {
         if (preview.mapped.email) {
-          const { data } = await (this.supabase
+          const { data } = await this.supabase
             .from('contacts')
-            .select('id') as unknown as Promise<{ data: Array<{ id: string }> | null }>);
+            .select('id')
+            .eq('email', preview.mapped.email)
+            .limit(1);
 
           if (data && data.length > 0) {
             preview.isDuplicate = true;
-            preview.duplicateOfId = data[0]!.id;
+            preview.duplicateOfId = data[0].id;
             duplicateCount++;
           }
         }
@@ -207,9 +209,11 @@ export class ImportEngine {
 
           // Duplicate check for contacts (by email)
           if (job.entity_type === 'contacts' && mapped.email && job.skip_duplicates) {
-            const { data: existing } = await (this.supabase
+            const { data: existing } = await this.supabase
               .from('contacts')
-              .select('id') as unknown as Promise<{ data: Array<{ id: string }> | null }>);
+              .select('id')
+              .eq('email', mapped.email)
+              .limit(1);
 
             if (existing && existing.length > 0) {
               duplicateCount++;

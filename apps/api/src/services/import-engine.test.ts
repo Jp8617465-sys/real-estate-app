@@ -4,6 +4,8 @@ import { ImportEngine } from './import-engine';
 // ─── Mock Supabase ─────────────────────────────────────────────────
 
 function createMockSupabase(options?: { insertError?: boolean; selectData?: unknown[] }) {
+  const selectResult = { data: options?.selectData ?? [], error: null };
+
   const mockInsert = vi.fn().mockReturnValue({
     select: vi.fn().mockReturnValue({
       single: vi.fn().mockResolvedValue(
@@ -14,12 +16,23 @@ function createMockSupabase(options?: { insertError?: boolean; selectData?: unkn
     }),
   });
 
+  // Chainable select mock: .select().eq().limit() resolves to selectResult
+  const chainable = {
+    eq: vi.fn().mockReturnValue({
+      limit: vi.fn().mockResolvedValue(selectResult),
+      single: vi.fn().mockResolvedValue(selectResult),
+      eq: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue(selectResult),
+        single: vi.fn().mockResolvedValue(selectResult),
+      }),
+    }),
+    limit: vi.fn().mockResolvedValue(selectResult),
+    then: (resolve: (v: unknown) => void) => resolve(selectResult),
+  };
+
   return {
     from: vi.fn().mockReturnValue({
-      select: vi.fn().mockResolvedValue({
-        data: options?.selectData ?? [],
-        error: null,
-      }),
+      select: vi.fn().mockReturnValue(chainable),
       insert: mockInsert,
       upsert: vi.fn().mockResolvedValue({ data: null, error: null }),
     }),

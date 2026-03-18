@@ -90,6 +90,19 @@ export async function calendarRoutes(fastify: FastifyInstance) {
     const supabase = createSupabaseClient(request);
     const query = request.query as { startDate?: string; endDate?: string; eventType?: string };
 
+    // Validate date parameters
+    if (query.startDate && isNaN(new Date(query.startDate).getTime())) {
+      return reply.status(400).send({ error: 'Invalid startDate format' });
+    }
+    if (query.endDate && isNaN(new Date(query.endDate).getTime())) {
+      return reply.status(400).send({ error: 'Invalid endDate format' });
+    }
+
+    const validEventTypes = ['inspection', 'open_home', 'client_meeting', 'auction', 'settlement', 'phone_call', 'other'];
+    if (query.eventType && !validEventTypes.includes(query.eventType)) {
+      return reply.status(400).send({ error: 'Invalid eventType' });
+    }
+
     let builder = supabase
       .from('calendar_events')
       .select('*, contact:contacts(id, first_name, last_name), property:properties(id, address_line_1, suburb)')

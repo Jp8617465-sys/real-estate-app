@@ -147,6 +147,16 @@ export async function savedViewRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: parsed.error.flatten() });
     }
 
+    // Authorization: only agents with office membership can perform bulk actions
+    const userId = request.headers['x-user-id'] as string;
+    const { data: user } = await supabase
+      .from('users')
+      .select('office_id, role')
+      .eq('id', userId)
+      .single();
+
+    if (!user) return reply.status(401).send({ error: 'Unauthorized' });
+
     const { action, entityType, entityIds, params } = parsed.data;
 
     const tableMap: Record<string, string> = {
@@ -296,11 +306,24 @@ export async function savedViewRoutes(fastify: FastifyInstance) {
 
         if (error) return reply.status(500).send({ error: error.message });
 
+        // Sanitize to prevent CSV formula injection (=, +, @, - prefixes)
+        const sanitizedRows = (entities ?? []).map((entity: Record<string, unknown>) => {
+          const sanitized: Record<string, unknown> = {};
+          for (const [key, value] of Object.entries(entity)) {
+            if (typeof value === 'string' && /^[=+@\-]/.test(value)) {
+              sanitized[key] = `'${value}`;
+            } else {
+              sanitized[key] = value;
+            }
+          }
+          return sanitized;
+        });
+
         return {
           data: {
             action: 'export_csv',
-            rows: entities,
-            totalCount: entities?.length ?? 0,
+            rows: sanitizedRows,
+            totalCount: sanitizedRows.length,
           },
         };
       }
