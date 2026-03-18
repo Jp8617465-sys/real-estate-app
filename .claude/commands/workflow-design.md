@@ -7,6 +7,7 @@ Design automated workflows for RealFlow's buyers-agent platform.
 You help design and implement workflow automations using RealFlow's trigger → condition → action engine.
 
 ## Available Triggers
+
 - `stage_change` — Pipeline stage transitions
 - `new_lead` — New lead captured from any source
 - `time_based` — Cron-scheduled workflows
@@ -19,6 +20,7 @@ You help design and implement workflow automations using RealFlow's trigger → 
 - `consolidation_ready` — Research consolidation report completed
 
 ## Available Actions
+
 - `send_email`, `send_sms` — Communication
 - `create_task`, `create_follow_up` — Task management
 - `assign_contact`, `update_field`, `add_tag` — CRM operations

@@ -32,11 +32,13 @@ Orchestrator gate: If any step returns a failure (build_failed, update_failed, h
 ## Steps
 
 ### Step 1: Pre-Flight
+
 Run `/deploy-check`. If any hard block is present, stop and report. Do not proceed.
 
 ### Step 2: Apply Staging Database Migrations
 
 If new migrations exist in `supabase/migrations/` since the last deploy:
+
 ```bash
 # Uses SUPABASE_URL env var — must point to staging project
 npm run db:migrate
@@ -59,6 +61,7 @@ Note the returned deploy ID.
 ### Step 4: Monitor Deploy Status
 
 Poll using:
+
 ```
 mcp__render__get_deploy_logs
   serviceId: [staging service ID]
@@ -77,10 +80,12 @@ mcp__render__get_service
 ```
 
 Confirm:
+
 - `status: live`
 - `updatedAt` timestamp matches the deploy just triggered
 
 Also curl the health endpoint:
+
 ```bash
 curl -s https://realflow-api-staging.onrender.com/health
 # Expected: {"status":"ok","service":"realflow-api"}
@@ -95,6 +100,7 @@ All 5 smoke tests must pass.
 ### Step 7: Verify Vercel Deployments (Web + Portal)
 
 Vercel auto-deploys on push to the connected branch. Check:
+
 - Web dashboard deployed: visit the staging URL
 - Portal deployed: visit the staging URL
 - Both load without JavaScript errors (check browser console)

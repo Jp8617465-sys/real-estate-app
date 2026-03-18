@@ -118,6 +118,7 @@ Structure your research recommendations as:
 ## When to Seek Clarification
 
 Ask follow-up questions when:
+
 - The feature requirements are vague or could be interpreted multiple ways
 - The scale expectations (users, data volume, frequency) are unclear
 - Budget constraints aren't specified but could significantly impact the recommendation

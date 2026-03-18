@@ -27,6 +27,7 @@ Agent returns: Complete `*.test.tsx` file with all 5 required states covered, vi
 Orchestrator gate: Verify the returned content has tests for all 5 states (loading, empty, data, error, navigation). If complete, write to the expected test file path alongside the screen file.
 
 ## Reference
+
 Read the screen file in `apps/mobile/app/` before generating.
 
 ## Test Template

@@ -31,6 +31,7 @@ $ARGUMENTS
 Sprint 4 complete baseline: **606/616 tests passing**
 
 Known pre-existing failures (NOT regressions — do not fix unless specifically tasked):
+
 - 7 in `packages/business-logic/src/pipeline-migration.test.ts` (Supabase mock setup issue)
 - 2 in `packages/integrations/src/integration-registry.test.ts` (arrow fn mock constructor)
 - 1 in `apps/api/src/routes/social-posts.test.ts` (same constructor issue)
@@ -53,33 +54,37 @@ cd apps/api && npx vitest run --coverage
 Count passing tests in output. Expected: ≥ 606 passing.
 
 If count is < 606 (excluding the 10 known pre-existing failures):
+
 - Identify which tests are newly failing
 - These are regressions and must be fixed before QUALITY phase begins
 
 ### Step 3: Coverage Targets
 
-| Package | Target | Why |
-|---------|--------|-----|
-| `packages/business-logic/src/` | 80%+ line coverage | Core business logic — highest risk |
-| `apps/api/src/routes/` | 70%+ line coverage | External interface — needs validation testing |
-| `packages/shared/src/types/` | 90%+ line coverage | Zod schemas are easy to test and critical |
-| `packages/integrations/src/` | 60%+ line coverage | External APIs are hard to mock fully |
+| Package                        | Target             | Why                                           |
+| ------------------------------ | ------------------ | --------------------------------------------- |
+| `packages/business-logic/src/` | 80%+ line coverage | Core business logic — highest risk            |
+| `apps/api/src/routes/`         | 70%+ line coverage | External interface — needs validation testing |
+| `packages/shared/src/types/`   | 90%+ line coverage | Zod schemas are easy to test and critical     |
+| `packages/integrations/src/`   | 60%+ line coverage | External APIs are hard to mock fully          |
 
 ### Step 4: Identify Coverage Gaps
 
 For each file below its target, generate a prioritised list of missing tests:
 
 **Priority 1 (write immediately):**
+
 - Public methods with 0% coverage
 - Error paths with 0% coverage
 - Zod schema validation branches not tested
 
 **Priority 2 (write in TEST phase):**
+
 - Edge cases in complex methods
 - Boundary conditions (empty arrays, null values)
 - Combined filter queries
 
 **Priority 3 (write when time permits):**
+
 - Performance-sensitive paths
 - Rare error codes
 

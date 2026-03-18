@@ -12,6 +12,7 @@ $ARGUMENTS
 ## Optimization Strategy for Solo Developers
 
 ### 1. **Profiling First**
+
 - Identify actual bottlenecks
 - Don't optimize prematurely
 - Measure before and after
@@ -20,6 +21,7 @@ $ARGUMENTS
 ### 2. **Performance Optimization Areas**
 
 **React/Next.js**
+
 - Memoization (React.memo, useMemo, useCallback)
 - Code splitting and lazy loading
 - Image optimization (next/image)
@@ -28,6 +30,7 @@ $ARGUMENTS
 - Virtual scrolling for long lists
 
 **Database Queries**
+
 - Add indexes for frequently queried fields
 - Batch queries (reduce N+1 problems)
 - Use select to limit fields
@@ -36,6 +39,7 @@ $ARGUMENTS
 - Use database views for complex joins
 
 **API Calls**
+
 - Implement caching (SWR, React Query)
 - Debounce/throttle requests
 - Parallel requests where possible
@@ -43,6 +47,7 @@ $ARGUMENTS
 - Optimistic updates
 
 **Bundle Size**
+
 - Tree-shaking unused code
 - Dynamic imports for large libraries
 - Replace heavy dependencies
@@ -50,6 +55,7 @@ $ARGUMENTS
 - Lazy load below-the-fold content
 
 **Memory**
+
 - Fix memory leaks (cleanup useEffect)
 - Avoid unnecessary object creation
 - Use const for non-changing values
@@ -59,6 +65,7 @@ $ARGUMENTS
 ### 3. **Optimization Checklist**
 
 **JavaScript/TypeScript**
+
 -  Use const/let instead of var
 -  Avoid nested loops where possible
 -  Use Map/Set for lookups
@@ -66,6 +73,7 @@ $ARGUMENTS
 -  Debounce/throttle expensive operations
 
 **React**
+
 -  Memo components that render often
 -  Move static values outside components
 -  Use keys properly in lists
@@ -73,6 +81,7 @@ $ARGUMENTS
 -  Lazy load routes and components
 
 **Next.js**
+
 -  Use Server Components where possible
 -  Implement ISR for dynamic content
 -  Optimize images with next/image
@@ -80,6 +89,7 @@ $ARGUMENTS
 -  Use Suspense for streaming
 
 **Database**
+
 -  Add indexes on foreign keys
 -  Use prepared statements
 -  Batch inserts/updates
@@ -87,6 +97,7 @@ $ARGUMENTS
 -  Cache expensive queries
 
 **Network**
+
 -  Compress responses (gzip/brotli)
 -  Use CDN for static assets
 -  Implement HTTP/2
@@ -96,12 +107,14 @@ $ARGUMENTS
 ### 4. **Measurement Tools**
 
 **Frontend**
+
 - Chrome DevTools Performance tab
 - Lighthouse CI
 - React DevTools Profiler
 - Bundle Analyzer (next/bundle-analyzer)
 
 **Backend**
+
 - Node.js profiler
 - Database query analyzer
 - APM tools (DataDog, New Relic)
@@ -110,29 +123,32 @@ $ARGUMENTS
 ### 5. **Common Optimizations**
 
 **Replace inefficient array methods**
+
 ```typescript
 // Before: Multiple iterations
 const result = arr
-  .filter(x => x > 0)
-  .map(x => x * 2)
-  .reduce((sum, x) => sum + x, 0)
+  .filter((x) => x > 0)
+  .map((x) => x * 2)
+  .reduce((sum, x) => sum + x, 0);
 
 // After: Single iteration
 const result = arr.reduce((sum, x) => {
-  return x > 0 ? sum + (x * 2) : sum
-}, 0)
+  return x > 0 ? sum + x * 2 : sum;
+}, 0);
 ```
 
 **Memoize expensive calculations**
+
 ```typescript
 const expensiveValue = useMemo(() => {
-  return complexCalculation(props.data)
-}, [props.data])
+  return complexCalculation(props.data);
+}, [props.data]);
 ```
 
 **Virtual scrolling for long lists**
+
 ```typescript
-import { useVirtual } from 'react-virtual'
+import { useVirtual } from 'react-virtual';
 // Only render visible items
 ```
 

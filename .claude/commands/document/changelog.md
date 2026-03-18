@@ -9,6 +9,7 @@ $ARGUMENTS
 ## Steps
 
 ### 1. Read Git History
+
 ```bash
 # Since last tag (sprint close)
 git log $(git describe --tags --abbrev=0)..HEAD --oneline
@@ -21,17 +22,17 @@ git log main..HEAD --oneline
 
 Map conventional commit prefixes to changelog sections:
 
-| Commit prefix | Changelog section |
-|---------------|------------------|
-| `feat:` | Added |
-| `fix:` | Fixed |
-| `perf:` | Changed |
-| `refactor:` | Changed |
-| `docs:` | Changed |
-| `chore:` | Changed (only if user-visible) |
-| `security:` | Security |
-| `deprecate:` | Deprecated |
-| `remove:` | Removed |
+| Commit prefix | Changelog section              |
+| ------------- | ------------------------------ |
+| `feat:`       | Added                          |
+| `fix:`        | Fixed                          |
+| `perf:`       | Changed                        |
+| `refactor:`   | Changed                        |
+| `docs:`       | Changed                        |
+| `chore:`      | Changed (only if user-visible) |
+| `security:`   | Security                       |
+| `deprecate:`  | Deprecated                     |
+| `remove:`     | Removed                        |
 
 Ignore: `test:`, `ci:`, `build:` — not user-visible.
 
@@ -50,23 +51,28 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Sprint N] — YYYY-MM-DD
 
 ### Added
+
 - Property matching now uses AI scoring via Anthropic Claude — buyers agents see a 0–100 match score for each listing against client briefs
 - Client portal: clients can now view matched properties and schedule inspections directly
 - Domain.com.au sync: listings automatically imported when new properties hit the market in watched suburbs
 
 ### Fixed
+
 - Contact duplicate detection no longer triggers on middle name variations
 - Pipeline stage validation now correctly prevents skipping mandatory stages
 
 ### Changed
+
 - Analytics dashboard now loads in <200ms (previously ~800ms) via pre-computed snapshots
 - Client brief transformer handles nested address objects from mobile form
 
 ### Security
+
 - Service role key access restricted — removed from portal app bundle
 - AML identity document uploads now require authenticated session
 
 ## [Sprint N-1] — YYYY-MM-DD
+
 [previous entry...]
 ```
 

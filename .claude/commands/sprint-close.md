@@ -5,6 +5,7 @@ You are a **Sprint Close Orchestrator** for RealFlow. You verify pre-conditions,
 ## Agent Delegation
 
 ### Step 1 (always) — @sprint-manager → `subagent_type: "sprint-manager"`
+
 ```
 Task prompt: "Close Sprint $N for RealFlow. Read MEMORY.md and STRATEGIC_ROADMAP.md for context.
 Verify production status using mcp__render__get_service. Run npm run test and record the final
@@ -19,6 +20,7 @@ on any deferred scope; (5) the git tag command: git tag -a sprint-$N -m 'Sprint 
 Agent returns: Complete MEMORY.md update block, STRATEGIC_ROADMAP.md changes, retrospective.
 
 ### Step 2 (always) — @technical-writer → `subagent_type: "technical-writer"`
+
 ```
 Task prompt: "Generate a Sprint $N Report for RealFlow at docs/sprints/SPRINT_N_REPORT.md. Read
 MEMORY.md, the SPRINT_N_PLAN.md, and git log for the sprint branch. Cover: executive summary
@@ -74,6 +76,7 @@ Produces `docs/sprints/SPRINT_N_REPORT.md` with planned vs delivered, test delta
 Produce the exact text to paste into `MEMORY.md`. Do not describe what to add — write the actual block:
 
 Sprint Status section:
+
 ```
 - **Sprint N** ✅ COMPLETE — [Sprint Theme]
   - Team A: [engine file path], migration [number], [N] routes ([route file path]), [N] pages
@@ -83,17 +86,20 @@ Sprint Status section:
 ```
 
 Test Baseline section:
+
 ```
 - Sprint N complete: [X]/[Y] api, [X]/[Y] business-logic, [X]/[Y] shared, [X]/[Y] integrations — all green
 ```
 
 Key File Paths section — add any new engines, routes:
+
 ```
 - [new engine name]: [packages/business-logic/src/engine-name.ts]
 - [new routes]: [apps/api/src/routes/feature.ts]
 ```
 
 DB Tables section — append new table names:
+
 ```
 - [table1], [table2], [table3] (Sprint N ✅)
 ```

@@ -43,9 +43,11 @@ If any pre-condition is not met, stop and ask for confirmation before proceeding
 ## Steps
 
 ### Step 1: Final Pre-Flight
+
 ```
 /deploy-check
 ```
+
 Must pass all hard gates. Even if staging passed, run again — time may have elapsed.
 
 ### Step 2: Apply Production Database Migrations
@@ -59,6 +61,7 @@ npm run db:migrate
 ```
 
 If the migration fails:
+
 - Do NOT retry blindly
 - Read the exact error
 - If schema is in a broken state, invoke Supabase backup restore procedure
@@ -80,6 +83,7 @@ mcp__render__get_deploy_logs
 ```
 
 Wait for `live` status. If `build_failed` or `update_failed`:
+
 1. Do NOT retry immediately
 2. Read full logs
 3. If the old service is still running (Render keeps previous deploy live on build fail), users are unaffected — fix the error first
@@ -103,11 +107,13 @@ All 5 tests must pass. If any fail, do not declare success — investigate immed
 ### Step 7: Rollback Procedure (If Needed)
 
 Via Render dashboard:
+
 1. Dashboard → realflow-api → Deploys
 2. Find the last known-good deploy
 3. Click "Redeploy" on that deploy
 
 Via git:
+
 ```bash
 git revert HEAD
 git push origin main
@@ -115,6 +121,7 @@ git push origin main
 ```
 
 For database migration rollback:
+
 - Supabase Pro: Dashboard → Database → Backups → Restore to pre-migration snapshot
 - Free tier: `pg_dump` backup must have been taken before running migrations
 

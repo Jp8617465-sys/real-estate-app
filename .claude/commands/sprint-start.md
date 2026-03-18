@@ -58,6 +58,7 @@ Orchestrator: Write returned content to `SPRINT_N_PLAN.md`, record test baseline
 ### Step 2: Validate Discovery
 
 For each planned feature, check `docs/discovery/`:
+
 - If `docs/discovery/FEATURE.md` exists → discovery complete ✅
 - If missing → run `/discover FEATURE` before proceeding
 
@@ -68,6 +69,7 @@ For each planned feature, check `docs/discovery/`:
 Run `/sprint-plan $N: feature1, feature2, ...`
 
 The sprint plan MUST include:
+
 - [ ] Parallel team table (Team A, B, C with clear ownership)
 - [ ] Interface contracts table (API shapes agreed on Day 1)
 - [ ] Test baseline (current count from MEMORY.md)

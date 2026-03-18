@@ -15,9 +15,11 @@ Generate a user story map in the following format. If a `docs/discovery/` file a
 For each persona affected, generate stories at two levels:
 
 **Epic (the capability):**
+
 > As a [persona], I want to [high-level capability] so that [business outcome].
 
 **Stories (the specific interactions):**
+
 > As a [persona], I want to [specific action] so that [specific outcome].
 > **Acceptance:** Given [context], when [action], then [result].
 
@@ -25,13 +27,13 @@ For each persona affected, generate stories at two levels:
 
 Always consider which personas are affected:
 
-| Persona | Context |
-|---------|---------|
-| **Buyers agent** | Field-based, primarily on phone. Books inspections, manages client briefs, sends offers. Lives in the mobile app. |
-| **Buyers agent (desk)** | Same person but at their desk. Uses the web dashboard for detailed work, reporting, bulk actions. |
-| **Client (buyer)** | The person buying a property. Uses the client portal to track their search, view matched properties, and communicate with their agent. |
-| **Seller** | Vendor of a property. Rarely direct user — interacts via the sellers agent or portal. |
-| **Admin / Principal** | Office manager. Reviews agent performance, manages team settings, handles compliance. |
+| Persona                 | Context                                                                                                                                |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Buyers agent**        | Field-based, primarily on phone. Books inspections, manages client briefs, sends offers. Lives in the mobile app.                      |
+| **Buyers agent (desk)** | Same person but at their desk. Uses the web dashboard for detailed work, reporting, bulk actions.                                      |
+| **Client (buyer)**      | The person buying a property. Uses the client portal to track their search, view matched properties, and communicate with their agent. |
+| **Seller**              | Vendor of a property. Rarely direct user — interacts via the sellers agent or portal.                                                  |
+| **Admin / Principal**   | Office manager. Reviews agent performance, manages team settings, handles compliance.                                                  |
 
 ### Story Quality Rules
 
@@ -43,6 +45,7 @@ Always consider which personas are affected:
 ### Edge Cases
 
 For each story, list edge cases that need to be handled:
+
 - What happens when the data is missing?
 - What happens with invalid input?
 - What happens when an external API is unavailable (Domain, Anthropic)?
@@ -56,21 +59,26 @@ For each story, list edge cases that need to be handled:
 ## [Persona 1] Stories
 
 ### Epic: [High-level capability]
+
 As a [persona], I want [capability] so that [outcome].
 
 #### Story 1: [Short title] — [Small/Medium/Large]
+
 As a [persona], I want to [action] so that [outcome].
 
 **Acceptance criteria:**
+
 - Given [context], when [action], then [result]
 - Given [context], when [action], then [result]
 
 **Edge cases:**
+
 - If [condition], then [handling]
 
 [repeat for each story]
 
 ## [Persona 2] Stories
+
 [repeat structure]
 ```
 

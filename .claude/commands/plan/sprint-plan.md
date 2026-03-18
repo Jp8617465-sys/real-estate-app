@@ -5,6 +5,7 @@ You are a **Sprint Plan Orchestrator** for RealFlow. You set up context, spawn `
 ## Agent Delegation
 
 ### Step 1 — @sprint-manager → `subagent_type: "sprint-manager"`
+
 ```
 Task prompt: "Produce a complete sprint plan for $ARGUMENTS. Read SPRINT_4_PLAN.md as the
 canonical reference structure. Read MEMORY.md for the current test baseline and sprint status.
@@ -17,6 +18,7 @@ depends on an external API approval (Domain.com.au, Anthropic) as a risk item."
 ```
 
 ### Step 2 — @system-architect → `subagent_type: "system-architect"`
+
 ```
 Task prompt: "Review the interface contracts and team assignments in the sprint plan for
 $ARGUMENTS. Specifically: (1) verify the proposed parallel teams truly have zero shared file
@@ -43,6 +45,7 @@ Produce the plan as `SPRINT_N_PLAN.md` at the repo root.
 ## Sprint Plan Structure
 
 ### 1. Sprint Overview
+
 ```
 Sprint: N
 Theme: [one sentence]
@@ -51,45 +54,58 @@ Goal: [what "done" looks like for this sprint]
 ```
 
 ### 2. Features to Deliver
+
 List all features with:
+
 - Feature name
 - Link to discovery doc: `docs/discovery/FEATURE.md`
 - Complexity: Low / Medium / High
 - Value: Core / Supporting / Nice-to-have
 
 ### 3. Parallel Team Structure
+
 Identify features with zero shared dependencies and assign to parallel "teams":
 
-| Team | Feature | Key Files | Est. Dev-Days |
-|------|---------|-----------|---------------|
-| Team A | Feature 1 | `packages/business-logic/src/engine-a.ts`, `apps/api/src/routes/feature-a.ts` | N |
-| Team B | Feature 2 | `packages/business-logic/src/engine-b.ts`, `apps/api/src/routes/feature-b.ts` | N |
-| Team C | Feature 3 | ... | N |
+| Team   | Feature   | Key Files                                                                     | Est. Dev-Days |
+| ------ | --------- | ----------------------------------------------------------------------------- | ------------- |
+| Team A | Feature 1 | `packages/business-logic/src/engine-a.ts`, `apps/api/src/routes/feature-a.ts` | N             |
+| Team B | Feature 2 | `packages/business-logic/src/engine-b.ts`, `apps/api/src/routes/feature-b.ts` | N             |
+| Team C | Feature 3 | ...                                                                           | N             |
 
 ### 4. Interface Contracts (Agree Day 1)
+
 These must be defined before parallel teams begin — they prevent merge conflicts.
 
 For each inter-team boundary:
+
 ```typescript
 // API contract: Feature A endpoint
-POST /api/v1/feature-a/action
-Request: { field1: string; field2: number }
-Response: { id: string; result: string }
+POST / api / v1 / feature - a / action;
+Request: {
+  field1: string;
+  field2: number;
+}
+Response: {
+  id: string;
+  result: string;
+}
 ```
 
 For each shared Zod schema:
+
 ```typescript
 // packages/shared/src/types/feature-a.ts
 export const FeatureASchema = z.object({...})
 ```
 
 ### 5. Database Migrations
+
 List all migrations to be created this sprint:
 
-| Migration | Number | Tables Created/Modified | RLS Required |
-|-----------|--------|------------------------|--------------|
-| Sprint N schema | 000XX | table_a, table_b | Yes |
-| Sprint N RLS | 000XY | (RLS policies for above) | N/A |
+| Migration       | Number | Tables Created/Modified  | RLS Required |
+| --------------- | ------ | ------------------------ | ------------ |
+| Sprint N schema | 000XX  | table_a, table_b         | Yes          |
+| Sprint N RLS    | 000XY  | (RLS policies for above) | N/A          |
 
 ⚠️ Migration numbers must be strictly sequential. Check `supabase/migrations/` for the highest existing number before assigning.
 
@@ -98,28 +114,34 @@ List all migrations to be created this sprint:
 For each team, list tasks in dependency order:
 
 #### Team A: [Feature Name]
+
 **Day 1–2: Database**
+
 - [ ] Create migration `000XX_feature_name.sql`
 - [ ] Run `npm run db:migrate`
 - [ ] Run `npm run db:types`
 - [ ] Verify RLS policies in Supabase Studio
 
 **Day 2–3: Business Logic**
+
 - [ ] Create `packages/business-logic/src/feature-engine.ts`
 - [ ] Write Zod schemas in `packages/shared/src/types/feature.ts`
 - [ ] Write unit tests `packages/business-logic/src/feature-engine.test.ts`
 
 **Day 3–4: API Routes**
+
 - [ ] Create `apps/api/src/routes/feature.ts`
 - [ ] Register route in `apps/api/src/index.ts`
 - [ ] Write API tests `apps/api/src/routes/feature.test.ts`
 
 **Day 4–5: Web + Mobile**
+
 - [ ] Web page: `apps/web/src/app/feature/page.tsx`
 - [ ] Mobile screen: `apps/mobile/app/feature.tsx`
 - [ ] Hooks: `apps/web/src/hooks/use-feature.ts`
 
 ### 7. Test Baseline
+
 ```
 Sprint start baseline: [N]/[M] tests passing (from npm run test)
 Sprint target: at least [N + new_tests] passing
@@ -127,7 +149,9 @@ Known pre-existing failures (do not count): 10 (see MEMORY.md)
 ```
 
 ### 8. Success Metrics
+
 Define "done" for the sprint:
+
 - [ ] All planned features deployed to production
 - [ ] Test count equals or exceeds baseline + new tests
 - [ ] No CRITICAL security findings open

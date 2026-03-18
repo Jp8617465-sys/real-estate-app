@@ -12,37 +12,47 @@ API Endpoint: $ARGUMENTS
 ## Implementation Guidelines
 
 ### 1. **Fastify Route Handler** (RealFlow pattern)
+
 Create route in `apps/api/src/routes/` and register in `apps/api/src/index.ts`
 
 ### 2. **Validation**
+
 - Use Zod for runtime type validation (schemas in `packages/shared/src/types/`)
 - Validate input early (before DB/API calls)
 - Return clear validation error messages
 
 ### 3. **Error Handling**
+
 - Global error handling with try/catch
 - Consistent error response format
 - Appropriate HTTP status codes
 - Never expose sensitive error details
 
 ### 4. **TypeScript**
+
 - Strict typing for requests/responses
 - Shared type definitions in `@realflow/shared`
 - No `any` types
 
 ### 5. **Security**
+
 - Use `createSupabaseClient(request)` middleware for auth
 - RLS policies handle data isolation
 - Input sanitization via Zod
 - Rate limiting considerations
 
 ### 6. **Response Format**
+
 ```typescript
 // Success
-{ data: T }
+{
+  data: T;
+}
 
 // Error
-{ error: string }
+{
+  error: string;
+}
 ```
 
 ## Code Structure
@@ -56,18 +66,17 @@ import { createSupabaseClient } from '../middleware/supabase';
 
 export async function featureRoutes(fastify: FastifyInstance) {
   // List
-  fastify.get<{ Querystring: { /* filters */ } }>(
-    '/',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      // query with RLS
-      const { data, error } = await supabase
-        .from('table')
-        .select('*');
-      if (error) return reply.status(500).send({ error: error.message });
-      return { data };
-    },
-  );
+  fastify.get<{
+    Querystring: {
+      /* filters */
+    };
+  }>('/', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    // query with RLS
+    const { data, error } = await supabase.from('table').select('*');
+    if (error) return reply.status(500).send({ error: error.message });
+    return { data };
+  });
 
   // Get single
   fastify.get<{ Params: { id: string } }>('/:id', async (request, reply) => {
@@ -91,7 +100,9 @@ export async function featureRoutes(fastify: FastifyInstance) {
     // insert with snake_case column mapping
     const { data, error } = await supabase
       .from('table')
-      .insert({ /* mapped fields */ })
+      .insert({
+        /* mapped fields */
+      })
       .select()
       .single();
     if (error) return reply.status(500).send({ error: error.message });
@@ -133,6 +144,7 @@ export async function featureRoutes(fastify: FastifyInstance) {
 ## Registration
 
 Register in `apps/api/src/index.ts`:
+
 ```typescript
 import { featureRoutes } from './routes/feature';
 await fastify.register(featureRoutes, { prefix: '/api/v1/feature' });
@@ -140,14 +152,14 @@ await fastify.register(featureRoutes, { prefix: '/api/v1/feature' });
 
 ## Best Practices to Follow
 
--  Zod validation before expensive operations
--  Proper HTTP status codes (200, 201, 400, 401, 404, 500)
--  Consistent error response format
--  TypeScript strict mode
--  Minimal logic in routes (extract to `@realflow/business-logic` engines)
--  Supabase RLS for data isolation
--  Soft deletes — never hard delete
--  snake_case for DB columns, camelCase for TypeScript
+- Zod validation before expensive operations
+- Proper HTTP status codes (200, 201, 400, 401, 404, 500)
+- Consistent error response format
+- TypeScript strict mode
+- Minimal logic in routes (extract to `@realflow/business-logic` engines)
+- Supabase RLS for data isolation
+- Soft deletes — never hard delete
+- snake_case for DB columns, camelCase for TypeScript
 - L No sensitive data in responses
 - L No database queries without Zod validation
 - L No inline business logic (extract to engines)

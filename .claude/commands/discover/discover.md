@@ -30,24 +30,30 @@ $ARGUMENTS
 ## Discovery Process
 
 ### 1. Feature Framing
+
 - **Problem statement:** What pain does this solve for a buyers agent, seller, or client?
 - **Beachhead user:** Which of the 3,000–4,000 AU buyers agents benefits most?
 - **Success metric:** How will we know this feature is working in production?
 
 ### 2. User Personas
+
 Map to RealFlow's actual users:
+
 - **Buyers agent** — licensed agent representing the buyer, field-based on phone
 - **Seller** — vendor whose property is being sold (uses portal indirectly)
 - **Client (buyer)** — person buying through the buyers agent, uses the client portal
 - **Admin** — office manager or principal managing the team
 
 ### 3. User Stories
+
 Format: **As a [persona], I want to [action] so that [outcome].**
 
 Write at least one story per persona affected. Stories must be testable (can be verified in a browser or via API).
 
 ### 4. Acceptance Criteria
+
 For each story, write Given/When/Then criteria:
+
 ```
 Given [precondition]
 When [user action]
@@ -56,27 +62,34 @@ And [additional outcome if applicable]
 ```
 
 ### 5. Out-of-Scope (Explicit)
+
 List what this feature deliberately does NOT include. This prevents scope creep during BUILD.
 
 ### 6. Mobile Requirements
+
 Every RealFlow feature must work on phones — buyers agents live on mobile.
+
 - Which screens need a mobile version?
 - What offline behaviour is needed (React Query caching)?
 - Any Expo-specific considerations?
 
 ### 7. Australian Regulatory Context
+
 Check for:
+
 - AML/KYC implications (AUSTRAC compliance — `packages/business-logic/src/aml-engine.ts`)
 - State-specific variations (NSW, QLD, VIC contract law)
 - Privacy Act implications (PII handling, consent)
 - Consumer law (agency agreements, fee disclosure)
 
 ### 8. Supabase RLS Boundary Analysis
+
 - What data does each role need to read/write?
 - Which tables need new RLS policies?
 - Are there any multi-tenant data isolation risks?
 
 ### 9. Dependencies
+
 - Which existing engines does this touch? (property-match, workflow, pipeline, due-diligence, key-dates, fee-calculator, domain-sync, analytics, aml)
 - Which existing API routes are affected?
 - Are there any external API dependencies? (Domain.com.au, Anthropic, Meta, Twilio)

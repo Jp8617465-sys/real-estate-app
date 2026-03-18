@@ -29,6 +29,7 @@ $ARGUMENTS
 ## Review Process
 
 First, read the diff:
+
 ```bash
 git diff main...HEAD -- "*.ts" "*.tsx" "*.sql"
 ```
@@ -38,6 +39,7 @@ Then check each criterion:
 ---
 
 ### Criterion 1: Spec Compliance
+
 **Question:** Does the implementation match `docs/discovery/FEATURE.md`?
 
 - Read the discovery doc for the feature being reviewed
@@ -49,6 +51,7 @@ Then check each criterion:
 ---
 
 ### Criterion 2: No `any` Types
+
 **Question:** Are there any `any` types in new or modified files?
 
 ```bash
@@ -62,6 +65,7 @@ Zero matches expected. One match = FAIL.
 ---
 
 ### Criterion 3: Route Registration
+
 **Question:** Are all new API routes registered in `apps/api/src/index.ts`?
 
 - List all new route files added in `apps/api/src/routes/`
@@ -73,6 +77,7 @@ Zero matches expected. One match = FAIL.
 ---
 
 ### Criterion 4: Soft Delete Compliance
+
 **Question:** Do all new database tables have `deleted_at TIMESTAMPTZ`?
 
 - Check all new `CREATE TABLE` statements in `supabase/migrations/`
@@ -84,6 +89,7 @@ Zero matches expected. One match = FAIL.
 ---
 
 ### Criterion 5: Shared Types Only
+
 **Question:** Are Zod schemas defined in `packages/shared/src/types/` and not duplicated elsewhere?
 
 - Search for `z.object(` in `apps/web/src/`, `apps/api/src/`, `apps/portal/src/`
@@ -95,9 +101,11 @@ Zero matches expected. One match = FAIL.
 ---
 
 ### Criterion 6: Optimistic Updates
+
 **Question:** Do all new mutations in the web/portal apps use optimistic updates?
 
 For each new React Query `useMutation`:
+
 - Check for `onMutate` handler with `queryClient.setQueryData()`
 - Check for `onError` rollback handler
 - Check for `onSettled` that calls `invalidateQueries`
@@ -109,6 +117,7 @@ Simple creates/deletes on admin-only pages can be exempt (WARN not FAIL).
 ---
 
 ### Criterion 7: Mobile Compatibility
+
 **Question:** Does every new web feature have a corresponding mobile screen?
 
 - List new pages added in `apps/web/src/app/`
@@ -121,6 +130,7 @@ Simple creates/deletes on admin-only pages can be exempt (WARN not FAIL).
 ---
 
 ### Criterion 8: Test Coverage
+
 **Question:** Does every new engine method have at least one test?
 
 - List public methods in new/modified engine files

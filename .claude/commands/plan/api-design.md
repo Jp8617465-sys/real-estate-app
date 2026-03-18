@@ -32,6 +32,7 @@ Orchestrator gate: Verify all 8 sections present and every endpoint has auth req
 ## Reference Files
 
 Read these before designing:
+
 - `apps/api/src/routes/contacts.ts` — canonical Fastify route pattern
 - `apps/api/src/middleware/supabase.ts` — auth middleware pattern
 - `packages/shared/src/types/` — existing Zod schemas (to avoid duplication)
@@ -43,6 +44,7 @@ Produce `docs/api/FEATURE_NAME.md` with the complete API surface.
 ## API Surface Document Structure
 
 ### 1. Overview
+
 ```
 Feature: [name]
 Sprint: N
@@ -93,23 +95,25 @@ Response 401 (not authenticated):
 ### 3. Route Registration
 
 List the exact Fastify plugin registration in `apps/api/src/index.ts`:
+
 ```typescript
 await app.register(import('./routes/feature'), { prefix: '/api/v1' });
 ```
 
 ### 4. Engine Method Mapping
 
-| Route | HTTP | Engine Method | Description |
-|-------|------|---------------|-------------|
-| `/api/v1/feature` | GET | `FeatureEngine.list()` | List records for user |
-| `/api/v1/feature` | POST | `FeatureEngine.create()` | Create record |
-| `/api/v1/feature/:id` | GET | `FeatureEngine.getById()` | Get single record |
-| `/api/v1/feature/:id` | PATCH | `FeatureEngine.update()` | Update record |
-| `/api/v1/feature/:id` | DELETE | `FeatureEngine.softDelete()` | Soft delete |
+| Route                 | HTTP   | Engine Method                | Description           |
+| --------------------- | ------ | ---------------------------- | --------------------- |
+| `/api/v1/feature`     | GET    | `FeatureEngine.list()`       | List records for user |
+| `/api/v1/feature`     | POST   | `FeatureEngine.create()`     | Create record         |
+| `/api/v1/feature/:id` | GET    | `FeatureEngine.getById()`    | Get single record     |
+| `/api/v1/feature/:id` | PATCH  | `FeatureEngine.update()`     | Update record         |
+| `/api/v1/feature/:id` | DELETE | `FeatureEngine.softDelete()` | Soft delete           |
 
 ### 5. Auth Patterns
 
 Use the existing middleware:
+
 ```typescript
 // User-scoped route (most routes) — uses JWT, RLS applies
 const supabase = createSupabaseClient(request);
@@ -121,18 +125,19 @@ const supabase = createSupabaseServiceClient();
 
 ### 6. Error Code Reference
 
-| Code | When | Response |
-|------|------|----------|
-| 400 | Zod validation fails | `{ error: string, details: ZodIssue[] }` |
-| 401 | No/invalid Bearer token | `{ error: "Unauthorized" }` |
-| 403 | RLS policy violation | `{ error: "Forbidden" }` |
-| 404 | Record not found or soft-deleted | `{ error: "Not found" }` |
-| 409 | Duplicate (unique constraint) | `{ error: "Conflict", detail: string }` |
-| 500 | Unhandled error | `{ error: "Internal server error" }` |
+| Code | When                             | Response                                 |
+| ---- | -------------------------------- | ---------------------------------------- |
+| 400  | Zod validation fails             | `{ error: string, details: ZodIssue[] }` |
+| 401  | No/invalid Bearer token          | `{ error: "Unauthorized" }`              |
+| 403  | RLS policy violation             | `{ error: "Forbidden" }`                 |
+| 404  | Record not found or soft-deleted | `{ error: "Not found" }`                 |
+| 409  | Duplicate (unique constraint)    | `{ error: "Conflict", detail: string }`  |
+| 500  | Unhandled error                  | `{ error: "Internal server error" }`     |
 
 ### 7. Example Requests
 
 For each endpoint, provide a working curl command:
+
 ```bash
 # Create a feature record
 curl -X POST https://realflow-api.onrender.com/api/v1/feature \
@@ -159,7 +164,7 @@ const { data, error } = await supabase
 const response = await fetch('/api/v1/feature', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${session.access_token}`,
+    Authorization: `Bearer ${session.access_token}`,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({ field1: 'value', field2: 123 }),

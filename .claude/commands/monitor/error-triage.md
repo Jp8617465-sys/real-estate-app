@@ -25,14 +25,14 @@ Build Layer:     TypeScript errors, tsc compilation failures, turbo build errors
 
 **Do NOT raise these as new bugs** — they are known and tracked in MEMORY.md:
 
-| Error Pattern | Location | Known Issue |
-|---|---|---|
-| `isDigestItem` type mismatch | `apps/api/src/services/workflow-scheduler.ts` | Pre-existing TypeScript error, Sprint 3 |
-| `PostgrestQueryBuilder` generic | `apps/api/src/routes/` | Pre-existing type error, not runtime |
-| `rootDir` error | `apps/api/src/services/workflow-engine.ts` | Pre-existing build config issue |
-| 7 failing tests | `packages/business-logic/src/pipeline-migration.test.ts` | Pre-existing mock setup |
-| 2 failing tests | `packages/integrations/src/integration-registry.test.ts` | Arrow fn mock constructor |
-| 1 failing test | `apps/api/src/routes/social-posts.test.ts` | Same constructor issue |
+| Error Pattern                   | Location                                                 | Known Issue                             |
+| ------------------------------- | -------------------------------------------------------- | --------------------------------------- |
+| `isDigestItem` type mismatch    | `apps/api/src/services/workflow-scheduler.ts`            | Pre-existing TypeScript error, Sprint 3 |
+| `PostgrestQueryBuilder` generic | `apps/api/src/routes/`                                   | Pre-existing type error, not runtime    |
+| `rootDir` error                 | `apps/api/src/services/workflow-engine.ts`               | Pre-existing build config issue         |
+| 7 failing tests                 | `packages/business-logic/src/pipeline-migration.test.ts` | Pre-existing mock setup                 |
+| 2 failing tests                 | `packages/integrations/src/integration-registry.test.ts` | Arrow fn mock constructor               |
+| 1 failing test                  | `apps/api/src/routes/social-posts.test.ts`               | Same constructor issue                  |
 
 If the error matches a known issue, note it and move on.
 
