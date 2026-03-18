@@ -44,6 +44,12 @@ import { alertsRoutes } from './routes/alerts';
 import { socialLeadRoutes } from './routes/social-leads';
 import { offMarketRoutes } from './routes/off-market';
 import { teamRoutes } from './routes/team';
+import { subscriptionRoutes } from './routes/subscriptions';
+import { stripeWebhookRoutes } from './routes/stripe-webhooks';
+import { reportRoutes } from './routes/reports';
+import { calendarRoutes } from './routes/calendar';
+import { savedViewRoutes } from './routes/saved-views';
+import { importRoutes } from './routes/imports';
 
 // ─── Initialize Observability ───────────────────────────────────────
 
@@ -120,6 +126,12 @@ async function start() {
   await fastify.register(socialLeadRoutes, { prefix: '/api/v1' });
   await fastify.register(offMarketRoutes, { prefix: '/api/v1' });
   await fastify.register(teamRoutes, { prefix: '/api/v1' });
+  await fastify.register(subscriptionRoutes, { prefix: '/api/v1/subscriptions' });
+  await fastify.register(stripeWebhookRoutes, { prefix: '/api/v1/webhooks' });
+  await fastify.register(reportRoutes, { prefix: '/api/v1/reports' });
+  await fastify.register(calendarRoutes, { prefix: '/api/v1/calendar' });
+  await fastify.register(savedViewRoutes, { prefix: '/api/v1/views' });
+  await fastify.register(importRoutes, { prefix: '/api/v1/imports' });
 
   // Scheduler tick — manual trigger for dev/test environments
   fastify.post('/api/v1/scheduler/tick', async () => {

@@ -53,6 +53,7 @@ export { TwilioClient } from './twilio/client';
 export { WhatsAppClient } from './whatsapp/client';
 export { SocialPublishingService } from './social/publishing-service';
 export { AnthropicClient, AICache } from './ai/index';
+export { StripeClient, StripeAPIError, StripeWebhookError } from './stripe/index';
 export type {
   PropertyAnalysisResult,
   LeadScoringResult,
@@ -61,3 +62,11 @@ export type {
   EmailSignalsResult,
   CacheStats,
 } from './ai/index';
+export type {
+  StripeCustomer,
+  StripeSubscription,
+  StripeCheckoutSession,
+  StripeBillingPortalSession,
+  StripeInvoice,
+  StripeWebhookEvent,
+} from './stripe/index';
