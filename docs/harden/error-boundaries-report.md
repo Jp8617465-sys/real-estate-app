@@ -26,6 +26,7 @@ Fix: Replace the catch-all pattern in each route. Example applied to `social-lea
 ```
 
 Apply the same substitution to:
+
 - `social-leads.ts` lines 40, 65, 111, 130, 153
 - `off-market.ts` lines 26, 56, 74, 116, 134, 152, 171, 194, 217
 - `team.ts` lines 33, 58, 79, 105, 128, 146, 173, 194, 212, 230
@@ -209,6 +210,7 @@ export default function SocialLeadsError({ error, reset }: ErrorProps) {
 ```
 
 Apply an equivalent `error.tsx` to:
+
 - `apps/web/src/app/buyers-agent/off-market/error.tsx`
 - `apps/web/src/app/team/error.tsx`
 - `apps/web/src/app/social/analytics/error.tsx`
@@ -342,14 +344,25 @@ try {
       'x-api-key': this.config.apiKey,
       'anthropic-version': '2023-06-01',
     },
-    body: JSON.stringify({ model: this.config.model, max_tokens: this.config.maxTokens, temperature: this.config.defaultTemperature, system, messages }),
+    body: JSON.stringify({
+      model: this.config.model,
+      max_tokens: this.config.maxTokens,
+      temperature: this.config.defaultTemperature,
+      system,
+      messages,
+    }),
   });
   clearTimeout(timeoutId);
   // ... rest of existing error handling unchanged
 } catch (err) {
   clearTimeout(timeoutId);
   if ((err as Error).name === 'AbortError') {
-    throw new AnthropicAPIError('Anthropic API request timed out', 408, 'Request Timeout', 'timeout');
+    throw new AnthropicAPIError(
+      'Anthropic API request timed out',
+      408,
+      'Request Timeout',
+      'timeout',
+    );
   }
   throw err;
 }
@@ -537,6 +550,7 @@ export default function AlertsScreen() {
 ```
 
 Apply the same error block to:
+
 - `apps/mobile/app/notifications/index.tsx` (wrap `useNotifications` isError)
 - `apps/mobile/app/matches/index.tsx` (wrap `usePropertyMatches` isError)
 - `apps/mobile/app/(tabs)/index.tsx` (wrap any of `statsLoading`, `tasksLoading`, `pipelineLoading` isError)
@@ -683,8 +697,8 @@ if (linkError || !linkData?.properties?.action_link) {
 
 ### Summary: 5 CRITICAL, 4 HIGH, 3 MEDIUM, 2 LOW
 
-| ID      | Severity | Title                                                              |
-|---------|----------|--------------------------------------------------------------------|
+| ID      | Severity | Title                                                             |
+| ------- | -------- | ----------------------------------------------------------------- |
 | ERR-001 | CRITICAL | No `request.log.error` in any new route catch block               |
 | ERR-002 | CRITICAL | `GET /:id` handlers swallow all errors as 404                     |
 | ERR-003 | CRITICAL | Portal app has zero `error.tsx` boundaries                        |
@@ -697,7 +711,7 @@ if (linkError || !linkData?.properties?.action_link) {
 | ERR-010 | MEDIUM   | `PropertyAlertEngine` uses `console.error` bypassing Pino logger  |
 | ERR-011 | MEDIUM   | `SocialLeadEngine.getById` masks PGRST116 as generic error        |
 | ERR-012 | MEDIUM   | Date query params in stats routes not validated before `new Date` |
-| ERR-013 | MEDIUM   | `GET /team/performance` date params have same unvalidated pattern  |
+| ERR-013 | MEDIUM   | `GET /team/performance` date params have same unvalidated pattern |
 | ERR-014 | MEDIUM   | `PortalEngine` callers need null-guard after PGRST116 fix         |
 | ERR-015 | LOW      | Alert engine notification loop aborts on single channel failure   |
 | ERR-016 | LOW      | `portal.ts` magic link property access unchecked before use       |

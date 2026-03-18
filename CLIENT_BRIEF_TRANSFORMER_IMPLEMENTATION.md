@@ -11,11 +11,13 @@ Successfully implemented a comprehensive Client Brief transformation layer to fi
 **Lines of Code:** 330
 
 **Exports:**
+
 - `ClientBriefDbRow` interface (60+ fields)
 - `toDbSchema(brief: ClientBrief): ClientBriefDbRow` - Transforms nested → flat
 - `fromDbSchema(row: ClientBriefDbRow): ClientBrief` - Transforms flat → nested
 
 **Key Features:**
+
 - Handles all 60+ database columns with exact snake_case naming
 - Preserves JSONB fields (suburbs, max_commute, investor_criteria)
 - Intelligently reconstructs optional nested objects (solicitor, landSize, buildingAge)
@@ -27,6 +29,7 @@ Successfully implemented a comprehensive Client Brief transformation layer to fi
 **Lines of Code:** 566
 **Test Cases:** 9 test suites
 **Coverage:**
+
 - Complete field mapping (60+ fields)
 - Optional field handling
 - Nested object reconstruction
@@ -35,6 +38,7 @@ Successfully implemented a comprehensive Client Brief transformation layer to fi
 - Edge cases (partial nested objects, solicitor reconstruction)
 
 **Test Results:**
+
 ```
 ✓ src/client-brief-transformer.test.ts (9 tests) 10ms
   Test Files  1 passed (1)
@@ -44,6 +48,7 @@ Successfully implemented a comprehensive Client Brief transformation layer to fi
 ### 3. Usage Documentation (`packages/business-logic/TRANSFORMER_USAGE.md`)
 
 **Comprehensive guide covering:**
+
 - Problem statement with schema comparison
 - API usage patterns (insert/update/select)
 - Frontend hook usage (React Query)
@@ -57,6 +62,7 @@ Successfully implemented a comprehensive Client Brief transformation layer to fi
 ### 4. Package Export (`packages/business-logic/src/index.ts`)
 
 Updated to export:
+
 ```typescript
 export { toDbSchema, fromDbSchema, type ClientBriefDbRow } from './client-brief-transformer';
 ```
@@ -65,52 +71,52 @@ export { toDbSchema, fromDbSchema, type ClientBriefDbRow } from './client-brief-
 
 ### Nested Zod Schema → Flat Database Schema
 
-| Zod Schema (Nested) | Database Schema (Flat/JSONB) | Type |
-|---------------------|------------------------------|------|
-| `budget.min` | `budget_min` | NUMERIC |
-| `budget.max` | `budget_max` | NUMERIC |
-| `budget.absoluteMax` | `budget_absolute_max` | NUMERIC (nullable) |
-| `budget.stampDutyBudgeted` | `stamp_duty_budgeted` | BOOLEAN |
-| `finance.preApproved` | `pre_approved` | BOOLEAN |
-| `finance.preApprovalAmount` | `pre_approval_amount` | NUMERIC (nullable) |
-| `finance.preApprovalExpiry` | `pre_approval_expiry` | TIMESTAMPTZ (nullable) |
-| `finance.lender` | `lender` | TEXT (nullable) |
-| `finance.brokerName` | `broker_name` | TEXT (nullable) |
-| `finance.brokerPhone` | `broker_phone` | TEXT (nullable) |
-| `finance.brokerEmail` | `broker_email` | TEXT (nullable) |
-| `finance.depositAvailable` | `deposit_available` | NUMERIC (nullable) |
-| `finance.firstHomeBuyer` | `first_home_buyer` | BOOLEAN |
-| `requirements.propertyTypes` | `property_types` | TEXT[] |
-| `requirements.bedrooms.min` | `bedrooms_min` | INTEGER |
-| `requirements.bedrooms.ideal` | `bedrooms_ideal` | INTEGER (nullable) |
-| `requirements.bathrooms.min` | `bathrooms_min` | INTEGER |
-| `requirements.bathrooms.ideal` | `bathrooms_ideal` | INTEGER (nullable) |
-| `requirements.carSpaces.min` | `car_spaces_min` | INTEGER |
-| `requirements.carSpaces.ideal` | `car_spaces_ideal` | INTEGER (nullable) |
-| `requirements.landSize.min` | `land_size_min` | NUMERIC (nullable) |
-| `requirements.landSize.max` | `land_size_max` | NUMERIC (nullable) |
-| `requirements.buildingAge.min` | `building_age_min` | INTEGER (nullable) |
-| `requirements.buildingAge.max` | `building_age_max` | INTEGER (nullable) |
-| `requirements.suburbs` | `suburbs` | JSONB (preserved) |
-| `requirements.maxCommute` | `max_commute` | JSONB (preserved) |
-| `requirements.schoolZones` | `school_zones` | TEXT[] (nullable) |
-| `requirements.mustHaves` | `must_haves` | TEXT[] |
-| `requirements.niceToHaves` | `nice_to_haves` | TEXT[] |
-| `requirements.dealBreakers` | `deal_breakers` | TEXT[] |
-| `requirements.investorCriteria` | `investor_criteria` | JSONB (preserved) |
-| `timeline.urgency` | `urgency` | TEXT |
-| `timeline.mustSettleBefore` | `must_settle_before` | TIMESTAMPTZ (nullable) |
-| `timeline.idealSettlement` | `ideal_settlement` | TEXT (nullable) |
-| `communication.preferredMethod` | `preferred_contact_method` | TEXT (nullable) |
-| `communication.updateFrequency` | `update_frequency` | TEXT (nullable) |
-| `communication.bestTimeToCall` | `best_time_to_call` | TEXT (nullable) |
-| `communication.partnerName` | `partner_name` | TEXT (nullable) |
-| `communication.partnerPhone` | `partner_phone` | TEXT (nullable) |
-| `communication.partnerEmail` | `partner_email` | TEXT (nullable) |
-| `solicitor.firmName` | `solicitor_firm` | TEXT (nullable) |
-| `solicitor.contactName` | `solicitor_contact` | TEXT (nullable) |
-| `solicitor.phone` | `solicitor_phone` | TEXT (nullable) |
-| `solicitor.email` | `solicitor_email` | TEXT (nullable) |
+| Zod Schema (Nested)             | Database Schema (Flat/JSONB) | Type                   |
+| ------------------------------- | ---------------------------- | ---------------------- |
+| `budget.min`                    | `budget_min`                 | NUMERIC                |
+| `budget.max`                    | `budget_max`                 | NUMERIC                |
+| `budget.absoluteMax`            | `budget_absolute_max`        | NUMERIC (nullable)     |
+| `budget.stampDutyBudgeted`      | `stamp_duty_budgeted`        | BOOLEAN                |
+| `finance.preApproved`           | `pre_approved`               | BOOLEAN                |
+| `finance.preApprovalAmount`     | `pre_approval_amount`        | NUMERIC (nullable)     |
+| `finance.preApprovalExpiry`     | `pre_approval_expiry`        | TIMESTAMPTZ (nullable) |
+| `finance.lender`                | `lender`                     | TEXT (nullable)        |
+| `finance.brokerName`            | `broker_name`                | TEXT (nullable)        |
+| `finance.brokerPhone`           | `broker_phone`               | TEXT (nullable)        |
+| `finance.brokerEmail`           | `broker_email`               | TEXT (nullable)        |
+| `finance.depositAvailable`      | `deposit_available`          | NUMERIC (nullable)     |
+| `finance.firstHomeBuyer`        | `first_home_buyer`           | BOOLEAN                |
+| `requirements.propertyTypes`    | `property_types`             | TEXT[]                 |
+| `requirements.bedrooms.min`     | `bedrooms_min`               | INTEGER                |
+| `requirements.bedrooms.ideal`   | `bedrooms_ideal`             | INTEGER (nullable)     |
+| `requirements.bathrooms.min`    | `bathrooms_min`              | INTEGER                |
+| `requirements.bathrooms.ideal`  | `bathrooms_ideal`            | INTEGER (nullable)     |
+| `requirements.carSpaces.min`    | `car_spaces_min`             | INTEGER                |
+| `requirements.carSpaces.ideal`  | `car_spaces_ideal`           | INTEGER (nullable)     |
+| `requirements.landSize.min`     | `land_size_min`              | NUMERIC (nullable)     |
+| `requirements.landSize.max`     | `land_size_max`              | NUMERIC (nullable)     |
+| `requirements.buildingAge.min`  | `building_age_min`           | INTEGER (nullable)     |
+| `requirements.buildingAge.max`  | `building_age_max`           | INTEGER (nullable)     |
+| `requirements.suburbs`          | `suburbs`                    | JSONB (preserved)      |
+| `requirements.maxCommute`       | `max_commute`                | JSONB (preserved)      |
+| `requirements.schoolZones`      | `school_zones`               | TEXT[] (nullable)      |
+| `requirements.mustHaves`        | `must_haves`                 | TEXT[]                 |
+| `requirements.niceToHaves`      | `nice_to_haves`              | TEXT[]                 |
+| `requirements.dealBreakers`     | `deal_breakers`              | TEXT[]                 |
+| `requirements.investorCriteria` | `investor_criteria`          | JSONB (preserved)      |
+| `timeline.urgency`              | `urgency`                    | TEXT                   |
+| `timeline.mustSettleBefore`     | `must_settle_before`         | TIMESTAMPTZ (nullable) |
+| `timeline.idealSettlement`      | `ideal_settlement`           | TEXT (nullable)        |
+| `communication.preferredMethod` | `preferred_contact_method`   | TEXT (nullable)        |
+| `communication.updateFrequency` | `update_frequency`           | TEXT (nullable)        |
+| `communication.bestTimeToCall`  | `best_time_to_call`          | TEXT (nullable)        |
+| `communication.partnerName`     | `partner_name`               | TEXT (nullable)        |
+| `communication.partnerPhone`    | `partner_phone`              | TEXT (nullable)        |
+| `communication.partnerEmail`    | `partner_email`              | TEXT (nullable)        |
+| `solicitor.firmName`            | `solicitor_firm`             | TEXT (nullable)        |
+| `solicitor.contactName`         | `solicitor_contact`          | TEXT (nullable)        |
+| `solicitor.phone`               | `solicitor_phone`            | TEXT (nullable)        |
+| `solicitor.email`               | `solicitor_email`            | TEXT (nullable)        |
 
 **Total: 47 flat columns + 3 JSONB columns + 5 array columns = 55 database fields**
 
@@ -120,19 +126,15 @@ export { toDbSchema, fromDbSchema, type ClientBriefDbRow } from './client-brief-
 
 ```typescript
 // API route (BROKEN)
-const { data, error } = await supabase
-  .from('client_briefs')
-  .insert({
-    contact_id: brief.contactId,
-    budget: brief.budget, // ❌ Trying to insert nested object
-    finance: brief.finance, // ❌ Trying to insert nested object
-    requirements: brief.requirements, // ❌ Trying to insert nested object
-  });
+const { data, error } = await supabase.from('client_briefs').insert({
+  contact_id: brief.contactId,
+  budget: brief.budget, // ❌ Trying to insert nested object
+  finance: brief.finance, // ❌ Trying to insert nested object
+  requirements: brief.requirements, // ❌ Trying to insert nested object
+});
 
 // Frontend hook (BROKEN)
-const { data } = await supabase
-  .from('client_briefs')
-  .select('*');
+const { data } = await supabase.from('client_briefs').select('*');
 return data as ClientBrief; // ❌ Type mismatch, flat schema cast as nested
 ```
 
@@ -143,17 +145,11 @@ import { toDbSchema, fromDbSchema } from '@realflow/business-logic';
 
 // API route (FIXED - Write)
 const dbRow = toDbSchema(brief); // ✅ Transform nested → flat
-const { data, error } = await supabase
-  .from('client_briefs')
-  .insert(dbRow)
-  .select()
-  .single();
+const { data, error } = await supabase.from('client_briefs').insert(dbRow).select().single();
 const result = fromDbSchema(data); // ✅ Transform flat → nested
 
 // Frontend hook (FIXED - Read)
-const { data } = await supabase
-  .from('client_briefs')
-  .select('*');
+const { data } = await supabase.from('client_briefs').select('*');
 const briefs = data.map(fromDbSchema); // ✅ Transform flat → nested
 return briefs;
 ```
@@ -163,6 +159,7 @@ return briefs;
 The transformer needs to be integrated at these locations:
 
 ### API Routes (High Priority)
+
 - `/apps/api/src/routes/client-briefs.ts`
   - `GET /` - List briefs (6 read operations)
   - `GET /:id` - Get single brief
@@ -172,12 +169,14 @@ The transformer needs to be integrated at these locations:
   - `DELETE /:id` - Soft delete brief
 
 ### Frontend Hooks (High Priority)
+
 - `/apps/web/src/hooks/use-client-briefs.ts` - Web app
 - `/apps/mobile/src/hooks/use-client-briefs.ts` - Mobile app
 - `/apps/portal/src/hooks/use-brief.ts` - Portal app
 - `/apps/portal/src/hooks/use-portal-dashboard.ts` - Portal dashboard
 
 ### Property Matches (Related)
+
 - `/apps/api/src/routes/property-matches.ts`
 - `/apps/web/src/hooks/use-property-matches.ts`
 - `/apps/mobile/src/hooks/use-property-matches.ts`
@@ -192,6 +191,7 @@ npm test
 ```
 
 **Results:**
+
 ```
 ✓ src/client-brief-transformer.test.ts (9 tests) 18ms
 ✓ All other tests (337 tests)
@@ -227,7 +227,9 @@ npm run type-check --workspace=packages/business-logic
 ### 1. Bidirectional Transformation
 
 ```typescript
-const original = { /* ClientBrief */ };
+const original = {
+  /* ClientBrief */
+};
 const dbRow = toDbSchema(original);
 const reconstructed = fromDbSchema(dbRow);
 // reconstructed === original (structurally)
@@ -248,6 +250,7 @@ The transformer intelligently reconstructs optional nested objects only when at 
 ### 3. JSONB Preservation
 
 Complex JSONB fields are preserved as-is:
+
 - `suburbs: SuburbPreference[]` - Array of suburb objects with rank/notes
 - `max_commute: MaxCommute` - Destination, maxMinutes, mode
 - `investor_criteria: InvestorCriteria` - targetYield, growthPriority, etc.
@@ -255,6 +258,7 @@ Complex JSONB fields are preserved as-is:
 ### 4. Array Handling
 
 PostgreSQL arrays are properly mapped:
+
 - `property_types: PropertyType[]` - ['house', 'townhouse']
 - `must_haves: string[]` - ['Air conditioning', 'Garage']
 - `nice_to_haves: string[]` - ['Pool', 'Study room']
@@ -288,6 +292,7 @@ To fully integrate the transformer:
 ## Impact
 
 This transformation layer:
+
 - ✅ **Fixes critical schema mismatch bug** that was causing data corruption
 - ✅ **Enables proper type safety** between frontend and database
 - ✅ **Maintains clean separation** between domain models and database schema

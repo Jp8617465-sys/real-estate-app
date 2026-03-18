@@ -51,7 +51,11 @@ export default function ContactsScreen() {
 
   const filterTypes = getFilterTypes(activeTab);
 
-  const { data: contacts, isLoading, refetch } = useContacts({
+  const {
+    data: contacts,
+    isLoading,
+    refetch,
+  } = useContacts({
     query: searchQuery || undefined,
     types: filterTypes,
   });
@@ -68,10 +72,7 @@ export default function ContactsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Contact }) => (
-      <ContactCard
-        contact={item}
-        onPress={() => router.push(`/contact/${item.id}`)}
-      />
+      <ContactCard contact={item} onPress={() => router.push(`/contact/${item.id}`)} />
     ),
     [router],
   );
@@ -100,10 +101,7 @@ export default function ContactsScreen() {
             accessibilityLabel="Search contacts"
           />
           {searchQuery.length > 0 ? (
-            <TouchableOpacity
-              onPress={() => setSearchQuery('')}
-              accessibilityLabel="Clear search"
-            >
+            <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityLabel="Clear search">
               <Ionicons name="close-circle" size={18} color="#9ca3af" />
             </TouchableOpacity>
           ) : null}
@@ -124,14 +122,8 @@ export default function ContactsScreen() {
               accessibilityState={{ selected: isActive }}
               accessibilityLabel={`Filter by ${tab.label}`}
             >
-              <Ionicons
-                name={tab.icon}
-                size={14}
-                color={isActive ? '#2563eb' : '#6b7280'}
-              />
-              <Text style={[styles.tabText, isActive && styles.activeTabText]}>
-                {tab.label}
-              </Text>
+              <Ionicons name={tab.icon} size={14} color={isActive ? '#2563eb' : '#6b7280'} />
+              <Text style={[styles.tabText, isActive && styles.activeTabText]}>{tab.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -150,7 +142,9 @@ export default function ContactsScreen() {
           <EmptyState
             icon="people-outline"
             title="No contacts found"
-            message={searchQuery ? 'Try a different search term' : 'Add your first contact to get started'}
+            message={
+              searchQuery ? 'Try a different search term' : 'Add your first contact to get started'
+            }
           />
         }
         showsVerticalScrollIndicator={false}

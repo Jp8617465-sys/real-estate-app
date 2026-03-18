@@ -43,10 +43,20 @@ describe('TaskStatusSchema', () => {
 
 describe('TaskTypeSchema', () => {
   const validTypes = [
-    'call', 'email', 'sms', 'meeting', 'inspection',
-    'follow-up', 'document-review', 'appraisal',
-    'listing-preparation', 'marketing', 'open-home',
-    'auction-prep', 'settlement-task', 'general',
+    'call',
+    'email',
+    'sms',
+    'meeting',
+    'inspection',
+    'follow-up',
+    'document-review',
+    'appraisal',
+    'listing-preparation',
+    'marketing',
+    'open-home',
+    'auction-prep',
+    'settlement-task',
+    'general',
   ];
 
   it('accepts all valid task types', () => {
@@ -112,9 +122,7 @@ describe('TaskSchema', () => {
   });
 
   it('rejects empty title', () => {
-    expect(() =>
-      TaskSchema.parse({ ...validTask, title: '' }),
-    ).toThrow();
+    expect(() => TaskSchema.parse({ ...validTask, title: '' })).toThrow();
   });
 });
 

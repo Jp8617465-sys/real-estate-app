@@ -53,25 +53,29 @@ export class WhatsAppClient {
     this.baseUrl = `https://graph.facebook.com/${this.config.apiVersion}/${this.config.phoneNumberId}`;
   }
 
-  private async request<T>(
-    path: string,
-    options: RequestInit = {},
-  ): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${this.config.accessToken}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+  private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${this.config.accessToken}`,
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`WhatsApp API error: ${response.status} ${errorBody}`);
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`WhatsApp API error: ${response.status} ${errorBody}`);
+      }
+
+      return response.json() as Promise<T>;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    return response.json() as Promise<T>;
   }
 
   /**
@@ -196,10 +200,7 @@ export class WhatsAppClient {
     challenge: string;
     expectedToken: string;
   }): { valid: boolean; challenge?: string } {
-    if (
-      params.mode === 'subscribe' &&
-      params.token === params.expectedToken
-    ) {
+    if (params.mode === 'subscribe' && params.token === params.expectedToken) {
       return { valid: true, challenge: params.challenge };
     }
     return { valid: false };

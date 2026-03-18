@@ -84,9 +84,12 @@ export const NotificationPreferencesSchema = z.object({
 });
 export type NotificationPreferences = z.infer<typeof NotificationPreferencesSchema>;
 
-export const UpdateNotificationPreferencesSchema = NotificationPreferencesSchema
-  .omit({ id: true, userId: true, createdAt: true, updatedAt: true })
-  .partial();
+export const UpdateNotificationPreferencesSchema = NotificationPreferencesSchema.omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial();
 export type UpdateNotificationPreferences = z.infer<typeof UpdateNotificationPreferencesSchema>;
 
 export const PushDeviceTokenSchema = z.object({

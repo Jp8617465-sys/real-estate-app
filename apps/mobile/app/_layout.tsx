@@ -34,7 +34,10 @@ async function registerPushToken() {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
     body: JSON.stringify({ userId, token, platform: 'ios' }),
   }).catch((error: unknown) => {
-    console.error('[PushToken] Registration failed:', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[PushToken] Registration failed:',
+      error instanceof Error ? error.message : String(error),
+    );
   });
 }
 
@@ -87,50 +90,24 @@ export default function RootLayout() {
           headerTitleStyle: { fontWeight: '600' },
         }}
       >
-        <Stack.Screen
-          name="(tabs)"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="contact/[id]"
-          options={{ title: 'Contact' }}
-        />
-        <Stack.Screen
-          name="property/[id]"
-          options={{ title: 'Property' }}
-        />
-        <Stack.Screen
-          name="inspection/new"
-          options={{ title: 'Log Inspection' }}
-        />
-        <Stack.Screen
-          name="inspection/[id]"
-          options={{ title: 'Inspection' }}
-        />
-        <Stack.Screen
-          name="matches/index"
-          options={{ title: 'Property Matches' }}
-        />
-        <Stack.Screen
-          name="matches/[id]"
-          options={{ title: 'Match Detail' }}
-        />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="contact/[id]" options={{ title: 'Contact' }} />
+        <Stack.Screen name="property/[id]" options={{ title: 'Property' }} />
+        <Stack.Screen name="inspection/new" options={{ title: 'Log Inspection' }} />
+        <Stack.Screen name="inspection/[id]" options={{ title: 'Inspection' }} />
+        <Stack.Screen name="matches/index" options={{ title: 'Property Matches' }} />
+        <Stack.Screen name="matches/[id]" options={{ title: 'Match Detail' }} />
         <Stack.Screen
           name="auction/[offerId]"
-          options={{ title: 'Auction Day', headerStyle: { backgroundColor: '#1e3a8a' }, headerTintColor: '#ffffff' }}
+          options={{
+            title: 'Auction Day',
+            headerStyle: { backgroundColor: '#1e3a8a' },
+            headerTintColor: '#ffffff',
+          }}
         />
-        <Stack.Screen
-          name="brief/[clientId]"
-          options={{ title: 'Client Brief' }}
-        />
-        <Stack.Screen
-          name="notifications/index"
-          options={{ title: 'Notifications' }}
-        />
-        <Stack.Screen
-          name="alerts/index"
-          options={{ title: 'Property Alerts' }}
-        />
+        <Stack.Screen name="brief/[clientId]" options={{ title: 'Client Brief' }} />
+        <Stack.Screen name="notifications/index" options={{ title: 'Notifications' }} />
+        <Stack.Screen name="alerts/index" options={{ title: 'Property Alerts' }} />
       </Stack>
     </QueryClientProvider>
   );

@@ -26,10 +26,6 @@
       },
       "package": "com.realflow.app"
     },
-    "plugins": [
-      "expo-router",
-      "expo-haptics",
-      "react-native-reanimated"
-    ]
+    "plugins": ["expo-router", "expo-haptics", "react-native-reanimated"]
   }
 }

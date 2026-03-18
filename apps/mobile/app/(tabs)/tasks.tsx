@@ -107,12 +107,7 @@ function groupTasksByDate(tasks: Task[]): TaskSection[] {
 function CompletableTaskItem({ task }: { task: Task }) {
   const completeTask = useCompleteTask(task.id);
 
-  return (
-    <TaskItemComponent
-      task={task}
-      onComplete={() => completeTask.mutate()}
-    />
-  );
+  return <TaskItemComponent task={task} onComplete={() => completeTask.mutate()} />;
 }
 
 // ─── Tasks Screen ───────────────────────────────────────────────────
@@ -133,9 +128,7 @@ export default function TasksScreen() {
     }
   }, [activeFilter]);
 
-  const { data: tasks, isLoading, refetch } = useTasks(
-    dueDate ? { dueDate } : undefined,
-  );
+  const { data: tasks, isLoading, refetch } = useTasks(dueDate ? { dueDate } : undefined);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -189,11 +182,7 @@ export default function TasksScreen() {
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
             >
-              <Ionicons
-                name={filter.icon}
-                size={14}
-                color={isActive ? '#2563eb' : '#6b7280'}
-              />
+              <Ionicons name={filter.icon} size={14} color={isActive ? '#2563eb' : '#6b7280'} />
               <Text style={[styles.filterText, isActive && styles.activeFilterText]}>
                 {filter.label}
               </Text>

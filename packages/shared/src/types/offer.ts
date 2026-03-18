@@ -5,7 +5,14 @@ export const SaleMethodSchema = z.enum(['private_treaty', 'auction', 'eoi', 'ten
 export type SaleMethod = z.infer<typeof SaleMethodSchema>;
 
 // ─── Offer Status ──────────────────────────────────────────────────
-export const OfferStatusSchema = z.enum(['preparing', 'submitted', 'countered', 'accepted', 'rejected', 'withdrawn']);
+export const OfferStatusSchema = z.enum([
+  'preparing',
+  'submitted',
+  'countered',
+  'accepted',
+  'rejected',
+  'withdrawn',
+]);
 export type OfferStatus = z.infer<typeof OfferStatusSchema>;
 
 // ─── Offer Response ────────────────────────────────────────────────
@@ -51,7 +58,11 @@ export const AuctionEventSchema = z.object({
 });
 export type AuctionEvent = z.infer<typeof AuctionEventSchema>;
 
-export const CreateAuctionEventSchema = AuctionEventSchema.omit({ id: true, createdAt: true, updatedAt: true });
+export const CreateAuctionEventSchema = AuctionEventSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 export type CreateAuctionEvent = z.infer<typeof CreateAuctionEventSchema>;
 
 // ─── Offer ─────────────────────────────────────────────────────────

@@ -11,7 +11,10 @@ export default defineConfig({
     alias: {
       '@realflow/shared': path.resolve(__dirname, '../../packages/shared/src'),
       '@realflow/business-logic': path.resolve(__dirname, '../../packages/business-logic/src'),
-      '@realflow/integrations/src/errors': path.resolve(__dirname, '../../packages/integrations/src/errors'),
+      '@realflow/integrations/src/errors': path.resolve(
+        __dirname,
+        '../../packages/integrations/src/errors',
+      ),
       '@realflow/integrations': path.resolve(__dirname, '../../packages/integrations/src'),
     },
   },

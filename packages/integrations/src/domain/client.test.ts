@@ -247,9 +247,7 @@ describe('DomainClient.getListingDetails', () => {
         { imageUrl: 'https://example.com/photo1.jpg', rank: 0 },
         { imageUrl: 'https://example.com/photo2.jpg', rank: 1 },
       ],
-      agents: [
-        { agentId: 'agent-1', name: 'Jane Smith', phone: '0400000000' },
-      ],
+      agents: [{ agentId: 'agent-1', name: 'Jane Smith', phone: '0400000000' }],
       features: ['Air Conditioning', 'Pool', 'Garden'],
     });
 
@@ -274,7 +272,9 @@ describe('DomainClient.getListingDetails', () => {
       statusText: 'Not Found',
     });
 
-    await expect(client.getListingDetails('nonexistent')).rejects.toThrow('Domain API error: 404 Not Found');
+    await expect(client.getListingDetails('nonexistent')).rejects.toThrow(
+      'Domain API error: 404 Not Found',
+    );
   });
 });
 
@@ -301,7 +301,9 @@ describe('DomainClient.getListing', () => {
       statusText: 'Not Found',
     });
 
-    await expect(client.getListing('nonexistent')).rejects.toThrow('Domain API error: 404 Not Found');
+    await expect(client.getListing('nonexistent')).rejects.toThrow(
+      'Domain API error: 404 Not Found',
+    );
   });
 });
 
@@ -432,9 +434,7 @@ describe('DomainClient.getAuctionResults', () => {
     await client.getAuctionResults('North Sydney', undefined, 'NSW');
 
     const apiCall = mockFetch.mock.calls[1]!;
-    expect(apiCall[0]).toBe(
-      'https://api.domain.com.au/v1/salesResults/NSW/North%20Sydney',
-    );
+    expect(apiCall[0]).toBe('https://api.domain.com.au/v1/salesResults/NSW/North%20Sydney');
   });
 
   it('appends date range query parameters', async () => {
@@ -442,11 +442,7 @@ describe('DomainClient.getAuctionResults', () => {
     mockTokenResponse();
     mockApiResponse({ salesResults: [] });
 
-    await client.getAuctionResults(
-      'Paddington',
-      { from: '2026-01-01', to: '2026-03-01' },
-      'NSW',
-    );
+    await client.getAuctionResults('Paddington', { from: '2026-01-01', to: '2026-03-01' }, 'NSW');
 
     const apiCall = mockFetch.mock.calls[1]!;
     expect(apiCall[0]).toContain('from=2026-01-01');
@@ -488,9 +484,7 @@ describe('DomainClient.getSalesResults', () => {
     await client.getSalesResults('North Sydney', 'NSW');
 
     const apiCall = mockFetch.mock.calls[1]!;
-    expect(apiCall[0]).toBe(
-      'https://api.domain.com.au/v1/salesResults/NSW/North%20Sydney',
-    );
+    expect(apiCall[0]).toBe('https://api.domain.com.au/v1/salesResults/NSW/North%20Sydney');
   });
 });
 

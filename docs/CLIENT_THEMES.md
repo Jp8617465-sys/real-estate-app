@@ -9,12 +9,14 @@ The theme system allows RealFlow to dynamically switch between different color p
 ## Current Themes
 
 ### 1. Default Theme
+
 - **ID:** `default`
 - **Description:** The standard RealFlow brand theme
 - **Primary Color:** Modern blue (#3b82f6)
 - **Use Case:** Default for all non-branded clients
 
 ### 2. ePlace Theme
+
 - **ID:** `eplace`
 - **Description:** Professional navy blue theme for Place Estate Agents (Brisbane)
 - **Primary Color:** Navy blue (#1a1f5e)
@@ -38,9 +40,7 @@ export function MyComponent() {
   return (
     <div>
       <p>Current theme: {theme.name}</p>
-      <button onClick={() => setThemeId('eplace')}>
-        Switch to ePlace theme
-      </button>
+      <button onClick={() => setThemeId('eplace')}>Switch to ePlace theme</button>
     </div>
   );
 }
@@ -102,12 +102,24 @@ export const myClientTheme: ThemeConfig = {
       900: '#...',
       950: '#...',
     },
-    secondary: { /* ... */ },
-    accent: { /* ... */ },
-    neutral: { /* ... */ },
-    success: { /* ... */ },
-    warning: { /* ... */ },
-    error: { /* ... */ },
+    secondary: {
+      /* ... */
+    },
+    accent: {
+      /* ... */
+    },
+    neutral: {
+      /* ... */
+    },
+    success: {
+      /* ... */
+    },
+    warning: {
+      /* ... */
+    },
+    error: {
+      /* ... */
+    },
   },
   typography: {
     fontFamily: {
@@ -263,16 +275,19 @@ function AppWrapper() {
 ## Troubleshooting
 
 **Theme not applying:**
+
 - Check browser console for errors
 - Verify CSS variables are set in DevTools
 - Clear localStorage and refresh
 
 **Colors look wrong:**
+
 - Ensure Tailwind classes use `primary-*`, `secondary-*`, `accent-*`
 - Check for hardcoded color values (avoid hex codes in components)
 - Rebuild Tailwind CSS
 
 **Theme not persisting:**
+
 - Check localStorage for `realflow-theme` key
 - Ensure ThemeProvider is mounted
 - Verify no conflicting theme logic
@@ -289,6 +304,7 @@ function AppWrapper() {
 ## Support
 
 For questions or issues with theming:
+
 - Check this documentation
 - Review existing theme files as examples
 - Contact the RealFlow development team

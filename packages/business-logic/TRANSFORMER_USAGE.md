@@ -7,6 +7,7 @@ The Client Brief transformer (`client-brief-transformer.ts`) solves the critical
 ## The Problem
 
 **Zod Schema (Nested):**
+
 ```typescript
 {
   budget: {
@@ -29,6 +30,7 @@ The Client Brief transformer (`client-brief-transformer.ts`) solves the critical
 ```
 
 **Database Schema (Flat + JSONB):**
+
 ```typescript
 {
   budget_min: 500000,
@@ -56,15 +58,13 @@ import { toDbSchema } from '@realflow/business-logic';
 import type { ClientBrief } from '@realflow/shared';
 
 // Transform nested Zod schema to flat database schema
-const clientBrief: ClientBrief = { /* ... */ };
+const clientBrief: ClientBrief = {
+  /* ... */
+};
 const dbRow = toDbSchema(clientBrief);
 
 // Now insert to database
-const { data, error } = await supabase
-  .from('client_briefs')
-  .insert(dbRow)
-  .select()
-  .single();
+const { data, error } = await supabase.from('client_briefs').insert(dbRow).select().single();
 ```
 
 ### Reading from Database (Select)
@@ -74,11 +74,7 @@ import { fromDbSchema } from '@realflow/business-logic';
 import type { ClientBriefDbRow } from '@realflow/business-logic';
 
 // Read from database
-const { data, error } = await supabase
-  .from('client_briefs')
-  .select('*')
-  .eq('id', briefId)
-  .single();
+const { data, error } = await supabase.from('client_briefs').select('*').eq('id', briefId).single();
 
 // Transform flat database schema to nested Zod schema
 const clientBrief = fromDbSchema(data as ClientBriefDbRow);
@@ -143,11 +139,7 @@ export function useCreateClientBrief() {
         updatedAt: new Date().toISOString(),
       } as ClientBrief);
 
-      const { data, error } = await supabase
-        .from('client_briefs')
-        .insert(dbRow)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('client_briefs').insert(dbRow).select().single();
 
       if (error) throw error;
 
@@ -211,11 +203,7 @@ fastify.post('/', async (request, reply) => {
     updatedAt: new Date().toISOString(),
   });
 
-  const { data, error } = await supabase
-    .from('client_briefs')
-    .insert(dbRow)
-    .select()
-    .single();
+  const { data, error } = await supabase.from('client_briefs').insert(dbRow).select().single();
 
   if (error) return reply.status(500).send({ error: error.message });
 
@@ -299,7 +287,9 @@ The transformer intelligently handles optional nested objects:
 The transformer maintains bidirectional transformation integrity:
 
 ```typescript
-const original: ClientBrief = { /* ... */ };
+const original: ClientBrief = {
+  /* ... */
+};
 const dbRow = toDbSchema(original);
 const reconstructed = fromDbSchema(dbRow);
 
@@ -316,6 +306,7 @@ npm test -- client-brief-transformer.test.ts
 ```
 
 Tests cover:
+
 - Complete field mapping (60+ fields)
 - Optional field handling
 - Nested object reconstruction
@@ -328,15 +319,19 @@ Tests cover:
 When integrating the transformer, update these files:
 
 ### API
+
 - `apps/api/src/routes/client-briefs.ts` (6 read operations, 2 write operations)
 
 ### Web App
+
 - `apps/web/src/hooks/use-client-briefs.ts`
 
 ### Mobile App
+
 - `apps/mobile/src/hooks/use-client-briefs.ts`
 
 ### Portal App
+
 - `apps/portal/src/hooks/use-brief.ts`
 - `apps/portal/src/hooks/use-portal-dashboard.ts`
 

@@ -1,12 +1,5 @@
 import { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -27,7 +20,7 @@ const SELLER_STAGE_COLORS: Record<SellerStage, string> = {
   'on-market': '#2563eb',
   'offers-negotiation': '#ca8a04',
   'under-contract': '#ea580c',
-  'settled': '#16a34a',
+  settled: '#16a34a',
 };
 
 const BUYER_STAGE_COLORS: Record<BuyerStage, string> = {
@@ -38,7 +31,7 @@ const BUYER_STAGE_COLORS: Record<BuyerStage, string> = {
   'due-diligence': '#ca8a04',
   'offer-made': '#ea580c',
   'under-contract': '#dc2626',
-  'settled': '#16a34a',
+  settled: '#16a34a',
 };
 
 // ─── Pipeline type config ───────────────────────────────────────────
@@ -153,7 +146,9 @@ export default function PipelineScreen() {
               {/* Column Header */}
               <View style={styles.columnHeader}>
                 <View style={[styles.stageIndicator, { backgroundColor: color }]} />
-                <Text style={styles.columnTitle} numberOfLines={1}>{label}</Text>
+                <Text style={styles.columnTitle} numberOfLines={1}>
+                  {label}
+                </Text>
                 <View style={[styles.countBadge, { backgroundColor: color + '20' }]}>
                   <Text style={[styles.countText, { color }]}>{cards.length}</Text>
                 </View>

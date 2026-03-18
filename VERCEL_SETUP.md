@@ -1,6 +1,7 @@
 # Vercel Deployment Setup for RealFlow
 
 ## ✅ Local Build Status: WORKING
+
 - All packages build successfully
 - Next.js production build completes in ~34s
 - Output generates at `apps/web/.next/`
@@ -8,6 +9,7 @@
 ## 🚀 Vercel Configuration (Required Steps)
 
 ### The Problem
+
 Vercel's automatic Turborepo detection conflicts with manual `vercel.json` configuration, causing path resolution issues where Vercel looks for output in the wrong directory.
 
 ### The Solution: Use Vercel's Root Directory Setting
@@ -41,6 +43,7 @@ Vercel's automatic Turborepo detection conflicts with manual `vercel.json` confi
 ### Alternative: Build from Root (Advanced)
 
 If you must build from the monorepo root, you need to:
+
 1. Remove all vercel.json configuration
 2. Let Vercel auto-detect Turborepo
 3. Configure which app to deploy via Vercel's UI
@@ -50,6 +53,7 @@ If you must build from the monorepo root, you need to:
 ## 📦 Pre-Deploy Checklist
 
 Before pushing to GitHub/Vercel:
+
 - [ ] `npm install` completes successfully
 - [ ] `npm run build` completes successfully (or `npx turbo run build --filter=@realflow/web`)
 - [ ] `apps/web/.next/` directory exists
@@ -75,6 +79,7 @@ cd apps/web && npm run start
 ## 📝 Summary
 
 **What Changed:**
+
 - ❌ Removed `vercel.json` (was causing path conflicts)
 - ✅ Local builds work perfectly
 - ✅ Next step: Configure Vercel dashboard Root Directory to `apps/web`

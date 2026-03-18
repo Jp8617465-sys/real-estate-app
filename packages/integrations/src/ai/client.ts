@@ -61,15 +61,15 @@ interface AnthropicErrorResponse {
 // ─── Cost Constants (AUD per million tokens) ────────────────────────
 
 const COST_PER_MILLION_INPUT: Record<string, number> = {
-  'claude-sonnet-4-20250514': 4.80,   // $3 USD ≈ $4.80 AUD
-  'claude-haiku-4-5-20251001': 1.28,   // $0.80 USD ≈ $1.28 AUD
-  'claude-opus-4-6': 24.00,           // $15 USD ≈ $24 AUD
+  'claude-sonnet-4-20250514': 4.8, // $3 USD ≈ $4.80 AUD
+  'claude-haiku-4-5-20251001': 1.28, // $0.80 USD ≈ $1.28 AUD
+  'claude-opus-4-6': 24.0, // $15 USD ≈ $24 AUD
 };
 
 const COST_PER_MILLION_OUTPUT: Record<string, number> = {
-  'claude-sonnet-4-20250514': 24.00,  // $15 USD ≈ $24 AUD
-  'claude-haiku-4-5-20251001': 6.40,   // $4 USD ≈ $6.40 AUD
-  'claude-opus-4-6': 120.00,          // $75 USD ≈ $120 AUD
+  'claude-sonnet-4-20250514': 24.0, // $15 USD ≈ $24 AUD
+  'claude-haiku-4-5-20251001': 6.4, // $4 USD ≈ $6.40 AUD
+  'claude-opus-4-6': 120.0, // $75 USD ≈ $120 AUD
 };
 
 // ─── Result Types ───────────────────────────────────────────────────
@@ -332,7 +332,9 @@ export class AnthropicClient {
     const prompt = buildDailyActionsPrompt(candidates);
     const response = await this.sendMessage(prompt.system, prompt.user);
 
-    const parsed = this.parseJsonResponse<{ items: Array<{ index: number; subtitle: string }> }>(response.text);
+    const parsed = this.parseJsonResponse<{ items: Array<{ index: number; subtitle: string }> }>(
+      response.text,
+    );
 
     return (parsed.items ?? []).map((item) => ({
       index: item.index,
@@ -372,7 +374,9 @@ export class AnthropicClient {
    * Generate a plain-prose search progress narrative for a client.
    * Returns free-form text (not JSON) — not cached, as search data changes frequently.
    */
-  async generateSearchNarrative(params: SearchNarrativeInput): Promise<{ narrative: string; tokenUsage: AITokenUsage }> {
+  async generateSearchNarrative(
+    params: SearchNarrativeInput,
+  ): Promise<{ narrative: string; tokenUsage: AITokenUsage }> {
     const prompt = buildSearchNarrativePrompt(params);
     const response = await this.sendMessage(prompt.system, prompt.user);
     return { narrative: response.text.trim(), tokenUsage: response.tokenUsage };
@@ -389,56 +393,73 @@ export class AnthropicClient {
 
     const messages: AnthropicMessage[] = [{ role: 'user', content: userContent }];
 
-    const response = await fetch(`${this.config.baseUrl}/v1/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': this.config.apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: this.config.model,
-        max_tokens: this.config.maxTokens,
-        temperature: this.config.defaultTemperature,
-        system,
-        messages,
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+    try {
+      const response = await fetch(`${this.config.baseUrl}/v1/messages`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.config.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: this.config.model,
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.defaultTemperature,
+          system,
+          messages,
+        }),
+      });
 
-    this.requestTimestamps.push(Date.now());
+      this.requestTimestamps.push(Date.now());
 
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => null);
-      const errorResponse = errorBody as AnthropicErrorResponse | null;
-      const errorType = errorResponse?.error?.type ?? 'unknown';
-      const errorMessage = errorResponse?.error?.message ?? response.statusText;
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        const errorResponse = errorBody as AnthropicErrorResponse | null;
+        const errorType = errorResponse?.error?.type ?? 'unknown';
+        const errorMessage = errorResponse?.error?.message ?? response.statusText;
 
-      // Retry on rate limit (429) and overloaded (529)
-      if ((response.status === 429 || response.status === 529) && retryCount < this.config.maxRetries) {
-        const delayMs = Math.min(this.config.retryBaseDelayMs * Math.pow(2, retryCount) + Math.random() * 500, 30_000);
-        await this.sleep(delayMs);
-        return this.sendMessage(system, userContent, retryCount + 1);
+        // Retry on rate limit (429) and overloaded (529)
+        if (
+          (response.status === 429 || response.status === 529) &&
+          retryCount < this.config.maxRetries
+        ) {
+          const delayMs = Math.min(
+            this.config.retryBaseDelayMs * Math.pow(2, retryCount) + Math.random() * 500,
+            30_000,
+          );
+          await this.sleep(delayMs);
+          return this.sendMessage(system, userContent, retryCount + 1);
+        }
+
+        throw new AnthropicAPIError(
+          `Anthropic API error: ${errorMessage}`,
+          response.status,
+          response.statusText,
+          errorType,
+        );
       }
 
-      throw new AnthropicAPIError(
-        `Anthropic API error: ${errorMessage}`,
-        response.status,
-        response.statusText,
-        errorType,
-      );
+      const data = (await response.json()) as AnthropicResponse;
+      const text = data.content[0]?.text ?? '';
+
+      const tokenUsage: AITokenUsage = {
+        inputTokens: data.usage.input_tokens,
+        outputTokens: data.usage.output_tokens,
+        model: data.model,
+        estimatedCostAud: this.calculateCost(
+          data.model,
+          data.usage.input_tokens,
+          data.usage.output_tokens,
+        ),
+      };
+
+      return { text, tokenUsage };
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const data = (await response.json()) as AnthropicResponse;
-    const text = data.content[0]?.text ?? '';
-
-    const tokenUsage: AITokenUsage = {
-      inputTokens: data.usage.input_tokens,
-      outputTokens: data.usage.output_tokens,
-      model: data.model,
-      estimatedCostAud: this.calculateCost(data.model, data.usage.input_tokens, data.usage.output_tokens),
-    };
-
-    return { text, tokenUsage };
   }
 
   private parseJsonResponse<T>(text: string): T {
@@ -462,13 +483,12 @@ export class AnthropicClient {
   }
 
   private calculateCost(model: string, inputTokens: number, outputTokens: number): number {
-    const inputRate = COST_PER_MILLION_INPUT[model] ?? COST_PER_MILLION_INPUT['claude-sonnet-4-20250514']!;
-    const outputRate = COST_PER_MILLION_OUTPUT[model] ?? COST_PER_MILLION_OUTPUT['claude-sonnet-4-20250514']!;
+    const inputRate =
+      COST_PER_MILLION_INPUT[model] ?? COST_PER_MILLION_INPUT['claude-sonnet-4-20250514']!;
+    const outputRate =
+      COST_PER_MILLION_OUTPUT[model] ?? COST_PER_MILLION_OUTPUT['claude-sonnet-4-20250514']!;
 
-    return (
-      (inputTokens / 1_000_000) * inputRate +
-      (outputTokens / 1_000_000) * outputRate
-    );
+    return (inputTokens / 1_000_000) * inputRate + (outputTokens / 1_000_000) * outputRate;
   }
 
   private async enforceRateLimit(): Promise<void> {
@@ -476,7 +496,7 @@ export class AnthropicClient {
     const windowMs = 60_000;
 
     // Remove timestamps older than 1 minute
-    this.requestTimestamps = this.requestTimestamps.filter(t => now - t < windowMs);
+    this.requestTimestamps = this.requestTimestamps.filter((t) => now - t < windowMs);
 
     if (this.requestTimestamps.length >= this.config.rateLimitPerMinute) {
       const oldestInWindow = this.requestTimestamps[0]!;
@@ -486,6 +506,6 @@ export class AnthropicClient {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

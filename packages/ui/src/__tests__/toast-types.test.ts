@@ -3,7 +3,13 @@
  * These tests verify the type shapes are correct at import time.
  */
 import { describe, it, expect } from 'vitest';
-import type { ToastVariant, ToastPayload, ToastContextValue, EmptyStateIllustration, EmptyStateProps } from '../index';
+import type {
+  ToastVariant,
+  ToastPayload,
+  ToastContextValue,
+  EmptyStateIllustration,
+  EmptyStateProps,
+} from '../index';
 
 describe('packages/ui type exports', () => {
   it('ToastVariant covers all expected values', () => {
@@ -31,8 +37,14 @@ describe('packages/ui type exports', () => {
 
   it('EmptyStateIllustration covers all expected types', () => {
     const types: EmptyStateIllustration[] = [
-      'contacts', 'properties', 'pipeline', 'alerts',
-      'matches', 'documents', 'messages', 'generic',
+      'contacts',
+      'properties',
+      'pipeline',
+      'alerts',
+      'matches',
+      'documents',
+      'messages',
+      'generic',
     ];
     expect(types).toHaveLength(8);
   });

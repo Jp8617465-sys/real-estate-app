@@ -68,9 +68,7 @@ describe('WorkflowTriggerSchema', () => {
   });
 
   it('rejects unknown trigger type', () => {
-    expect(() =>
-      WorkflowTriggerSchema.parse({ type: 'unknown' }),
-    ).toThrow();
+    expect(() => WorkflowTriggerSchema.parse({ type: 'unknown' })).toThrow();
   });
 });
 
@@ -160,9 +158,7 @@ describe('WorkflowActionSchema', () => {
   });
 
   it('rejects unknown action type', () => {
-    expect(() =>
-      WorkflowActionSchema.parse({ type: 'unknown' }),
-    ).toThrow();
+    expect(() => WorkflowActionSchema.parse({ type: 'unknown' })).toThrow();
   });
 });
 
@@ -180,8 +176,13 @@ describe('WorkflowConditionSchema', () => {
 
   it('accepts all valid operators', () => {
     const operators = [
-      'equals', 'not_equals', 'contains',
-      'greater_than', 'less_than', 'is_empty', 'is_not_empty',
+      'equals',
+      'not_equals',
+      'contains',
+      'greater_than',
+      'less_than',
+      'is_empty',
+      'is_not_empty',
     ];
     for (const operator of operators) {
       const result = WorkflowConditionSchema.parse({ field: 'test', operator });
@@ -190,9 +191,7 @@ describe('WorkflowConditionSchema', () => {
   });
 
   it('rejects invalid operator', () => {
-    expect(() =>
-      WorkflowConditionSchema.parse({ field: 'test', operator: 'matches' }),
-    ).toThrow();
+    expect(() => WorkflowConditionSchema.parse({ field: 'test', operator: 'matches' })).toThrow();
   });
 });
 
@@ -217,9 +216,7 @@ describe('WorkflowSchema', () => {
   });
 
   it('rejects empty name', () => {
-    expect(() =>
-      WorkflowSchema.parse({ ...validWorkflow, name: '' }),
-    ).toThrow();
+    expect(() => WorkflowSchema.parse({ ...validWorkflow, name: '' })).toThrow();
   });
 });
 

@@ -173,15 +173,11 @@ export const CompoundConditionSchema: z.ZodType<CompoundCondition> = z.lazy(() =
   z.discriminatedUnion('logic', [
     z.object({
       logic: z.literal('AND'),
-      conditions: z.array(
-        z.union([WorkflowConditionSchema, CompoundConditionSchema]),
-      ),
+      conditions: z.array(z.union([WorkflowConditionSchema, CompoundConditionSchema])),
     }),
     z.object({
       logic: z.literal('OR'),
-      conditions: z.array(
-        z.union([WorkflowConditionSchema, CompoundConditionSchema]),
-      ),
+      conditions: z.array(z.union([WorkflowConditionSchema, CompoundConditionSchema])),
     }),
     z.object({
       logic: z.literal('NOT'),
@@ -294,7 +290,13 @@ export const DeadLetterEntrySchema = z.object({
 export type DeadLetterEntry = z.infer<typeof DeadLetterEntrySchema>;
 
 // ─── Workflow Run ───────────────────────────────────────────────────
-export const WorkflowRunStatusSchema = z.enum(['running', 'completed', 'failed', 'cancelled', 'paused']);
+export const WorkflowRunStatusSchema = z.enum([
+  'running',
+  'completed',
+  'failed',
+  'cancelled',
+  'paused',
+]);
 export type WorkflowRunStatus = z.infer<typeof WorkflowRunStatusSchema>;
 
 export const WorkflowRunSchema = z.object({
@@ -311,10 +313,12 @@ export const WorkflowRunSchema = z.object({
   resumeAt: z.string().datetime().optional(),
   executionLog: z.array(ExecutionStepLogSchema).optional(),
   variableContext: z.record(z.unknown()).optional(),
-  retryState: z.object({
-    stepIndex: z.number().int().nonnegative(),
-    attempt: z.number().int().nonnegative(),
-    nextRetryAt: z.string().datetime().optional(),
-  }).optional(),
+  retryState: z
+    .object({
+      stepIndex: z.number().int().nonnegative(),
+      attempt: z.number().int().nonnegative(),
+      nextRetryAt: z.string().datetime().optional(),
+    })
+    .optional(),
 });
 export type WorkflowRun = z.infer<typeof WorkflowRunSchema>;

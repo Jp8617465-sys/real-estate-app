@@ -25,26 +25,30 @@ export class MetaSocialClient {
     this.baseUrl = `https://graph.facebook.com/${this.config.apiVersion}`;
   }
 
-  private async request<T>(
-    path: string,
-    options: RequestInit = {},
-  ): Promise<T> {
+  private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
     url.searchParams.set('access_token', this.config.pageAccessToken);
 
-    const response = await fetch(url.toString(), {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(url.toString(), {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
 
-    if (!response.ok) {
-      throw new MetaAPIError('Meta API error', response.status, response.statusText);
+      if (!response.ok) {
+        throw new MetaAPIError('Meta API error', response.status, response.statusText);
+      }
+
+      return response.json() as Promise<T>;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    return response.json() as Promise<T>;
   }
 
   /**
@@ -78,10 +82,7 @@ export class MetaSocialClient {
    * Post a listing to Instagram (requires Instagram Business account).
    * Instagram posting is a two-step process: create media container, then publish.
    */
-  async postToInstagram(params: {
-    imageUrl: string;
-    caption: string;
-  }): Promise<{ id: string }> {
+  async postToInstagram(params: { imageUrl: string; caption: string }): Promise<{ id: string }> {
     if (!this.config.instagramAccountId) {
       throw new Error('Instagram account ID not configured');
     }

@@ -229,19 +229,13 @@ export default function NewInspectionScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.suitabilityButton,
-              suitability === 'no' && styles.suitabilityNoActive,
-            ]}
+            style={[styles.suitabilityButton, suitability === 'no' && styles.suitabilityNoActive]}
             onPress={() => setSuitability('no')}
             activeOpacity={0.7}
           >
             <Text style={styles.suitabilityEmoji}>❌</Text>
             <Text
-              style={[
-                styles.suitabilityLabel,
-                suitability === 'no' && styles.suitabilityLabelNo,
-              ]}
+              style={[styles.suitabilityLabel, suitability === 'no' && styles.suitabilityLabelNo]}
             >
               No
             </Text>
@@ -272,19 +266,11 @@ export default function NewInspectionScreen() {
           {TIME_OPTIONS.map((mins) => (
             <TouchableOpacity
               key={mins}
-              style={[
-                styles.timeChip,
-                timeSpent === mins && styles.timeChipActive,
-              ]}
+              style={[styles.timeChip, timeSpent === mins && styles.timeChipActive]}
               onPress={() => setTimeSpent(mins)}
               activeOpacity={0.7}
             >
-              <Text
-                style={[
-                  styles.timeChipText,
-                  timeSpent === mins && styles.timeChipTextActive,
-                ]}
-              >
+              <Text style={[styles.timeChipText, timeSpent === mins && styles.timeChipTextActive]}>
                 {mins}m
               </Text>
             </TouchableOpacity>

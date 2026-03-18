@@ -66,8 +66,8 @@ export const DomainSyncStatusSchema = z.object({
 
 // ─── Inferred Types ───────────────────────────────────────────────────────────
 
-export type DomainSyncJob       = z.infer<typeof DomainSyncJobSchema>;
+export type DomainSyncJob = z.infer<typeof DomainSyncJobSchema>;
 export type CreateDomainSyncJob = z.infer<typeof CreateDomainSyncJobSchema>;
-export type PriceChange         = z.infer<typeof PriceChangeSchema>;
+export type PriceChange = z.infer<typeof PriceChangeSchema>;
 export type DomainAuctionResult = z.infer<typeof DomainAuctionResultSchema>;
-export type DomainSyncStatus    = z.infer<typeof DomainSyncStatusSchema>;
+export type DomainSyncStatus = z.infer<typeof DomainSyncStatusSchema>;

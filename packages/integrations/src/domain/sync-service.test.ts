@@ -38,19 +38,28 @@ function makeDomainListing(overrides: Partial<DomainListing> = {}): DomainListin
     carspaces: 2,
     landAreaSqm: 600,
     headline: 'Stunning Paddington Queenslander',
-    description: 'A beautiful renovated kitchen with north-facing backyard. Features pool and study.',
+    description:
+      'A beautiful renovated kitchen with north-facing backyard. Features pool and study.',
     saleMode: 'auction',
     status: 'live',
     auctionSchedule: { time: '2026-04-01T10:00:00Z' },
     media: [
       { imageUrl: 'https://images.domain.com.au/photo1.jpg', rank: 0 },
-      { imageUrl: 'https://images.domain.com.au/photo2.jpg', fullUrl: 'https://images.domain.com.au/photo2-full.jpg', rank: 1 },
+      {
+        imageUrl: 'https://images.domain.com.au/photo2.jpg',
+        fullUrl: 'https://images.domain.com.au/photo2-full.jpg',
+        rank: 1,
+      },
     ],
-    floorplans: [
-      { imageUrl: 'https://images.domain.com.au/floorplan1.jpg' },
-    ],
+    floorplans: [{ imageUrl: 'https://images.domain.com.au/floorplan1.jpg' }],
     agents: [
-      { agentId: 'agent-1', name: 'Jane Smith', email: 'jane@agency.com.au', phone: '0400000000', agencyName: 'Ray White' },
+      {
+        agentId: 'agent-1',
+        name: 'Jane Smith',
+        email: 'jane@agency.com.au',
+        phone: '0400000000',
+        agencyName: 'Ray White',
+      },
     ],
     features: ['Air Conditioning', 'Pool', 'Garden'],
     dateListed: '2026-02-15T00:00:00Z',
@@ -244,9 +253,7 @@ describe('PropertySyncService.syncListings', () => {
       totalResults: 1,
     } as DomainSearchResponse);
 
-    const existingListings = new Map([
-      ['dom-100', { listPrice: 950000, listingStatus: 'active' }],
-    ]);
+    const existingListings = new Map([['dom-100', { listPrice: 950000, listingStatus: 'active' }]]);
 
     const { priceChanges, result } = await syncService.syncListings(
       [{ suburb: 'Paddington', state: 'QLD', postcode: '4064' }],
@@ -270,9 +277,7 @@ describe('PropertySyncService.syncListings', () => {
       totalResults: 1,
     } as DomainSearchResponse);
 
-    const existingListings = new Map([
-      ['dom-100', { listPrice: 950000, listingStatus: 'active' }],
-    ]);
+    const existingListings = new Map([['dom-100', { listPrice: 950000, listingStatus: 'active' }]]);
 
     const { statusChanges, result } = await syncService.syncListings(
       [{ suburb: 'Paddington', state: 'QLD', postcode: '4064' }],
@@ -314,9 +319,7 @@ describe('PropertySyncService.syncListings', () => {
       delayBetweenCallsMs: 0,
     });
 
-    const listings = Array.from({ length: 5 }, (_, i) =>
-      makeDomainListing({ id: `dom-${i}` }),
-    );
+    const listings = Array.from({ length: 5 }, (_, i) => makeDomainListing({ id: `dom-${i}` }));
 
     mockClient.searchListings.mockResolvedValue({
       listings,
@@ -390,9 +393,7 @@ describe('PropertySyncService.syncListings', () => {
       totalResults: 1,
     });
 
-    const existingListings = new Map([
-      ['dom-100', { listPrice: null, listingStatus: 'active' }],
-    ]);
+    const existingListings = new Map([['dom-100', { listPrice: null, listingStatus: 'active' }]]);
 
     const { priceChanges } = await syncService.syncListings(
       [{ suburb: 'Paddington', state: 'QLD', postcode: '4064' }],
@@ -425,10 +426,10 @@ describe('PropertySyncService.syncSingleListing', () => {
       makeDomainListing({ priceDetails: { price: 900000 } }),
     );
 
-    const { priceChange } = await syncService.syncSingleListing(
-      'dom-100',
-      { listPrice: 950000, listingStatus: 'active' },
-    );
+    const { priceChange } = await syncService.syncSingleListing('dom-100', {
+      listPrice: 950000,
+      listingStatus: 'active',
+    });
 
     expect(priceChange).not.toBeNull();
     expect(priceChange?.changeType).toBe('reduction');
@@ -438,14 +439,12 @@ describe('PropertySyncService.syncSingleListing', () => {
   it('detects status change for single listing', async () => {
     const syncService = new PropertySyncService(mockClient as never);
 
-    mockClient.getListingDetails.mockResolvedValue(
-      makeDomainListing({ status: 'sold' }),
-    );
+    mockClient.getListingDetails.mockResolvedValue(makeDomainListing({ status: 'sold' }));
 
-    const { statusChange } = await syncService.syncSingleListing(
-      'dom-100',
-      { listPrice: 950000, listingStatus: 'active' },
-    );
+    const { statusChange } = await syncService.syncSingleListing('dom-100', {
+      listPrice: 950000,
+      listingStatus: 'active',
+    });
 
     expect(statusChange).not.toBeNull();
     expect(statusChange?.previousStatus).toBe('active');

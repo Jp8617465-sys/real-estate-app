@@ -1,12 +1,5 @@
 import { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  RefreshControl,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,7 +20,11 @@ interface StatCardProps {
 
 function StatCard({ title, value, subtitle, icon, iconColor }: StatCardProps) {
   return (
-    <View style={styles.statCard} accessibilityRole="text" accessibilityLabel={`${title}: ${value} ${subtitle}`}>
+    <View
+      style={styles.statCard}
+      accessibilityRole="text"
+      accessibilityLabel={`${title}: ${value} ${subtitle}`}
+    >
       <View style={[styles.statIconWrapper, { backgroundColor: iconColor + '15' }]}>
         <Ionicons name={icon} size={18} color={iconColor} />
       </View>
@@ -53,10 +50,17 @@ function PipelineSummaryRow({ label, count, color, total }: PipelineSummaryProps
     <View style={styles.pipelineRow}>
       <View style={styles.pipelineLabel}>
         <View style={[styles.pipelineDot, { backgroundColor: color }]} />
-        <Text style={styles.pipelineLabelText} numberOfLines={1}>{label}</Text>
+        <Text style={styles.pipelineLabelText} numberOfLines={1}>
+          {label}
+        </Text>
       </View>
       <View style={styles.pipelineBarContainer}>
-        <View style={[styles.pipelineBar, { width: `${Math.max(percentage, 2)}%`, backgroundColor: color }]} />
+        <View
+          style={[
+            styles.pipelineBar,
+            { width: `${Math.max(percentage, 2)}%`, backgroundColor: color },
+          ]}
+        />
       </View>
       <Text style={styles.pipelineCount}>{count}</Text>
     </View>
@@ -101,7 +105,7 @@ const STAGE_COLORS: Record<string, string> = {
   'on-market': '#2563eb',
   'offers-negotiation': '#ca8a04',
   'under-contract': '#ea580c',
-  'settled': '#16a34a',
+  settled: '#16a34a',
 };
 
 const STAGE_LABELS: Record<string, string> = {
@@ -110,15 +114,23 @@ const STAGE_LABELS: Record<string, string> = {
   'on-market': 'On Market',
   'offers-negotiation': 'Offers',
   'under-contract': 'Under Contract',
-  'settled': 'Settled',
+  settled: 'Settled',
 };
 
 // ─── Dashboard Screen ───────────────────────────────────────────────
 export default function DashboardScreen() {
   const router = useRouter();
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useDashboardStats();
-  const { data: tasks, isLoading: tasksLoading, refetch: refetchTasks } = useTasks({ status: 'pending' });
-  const { data: sellingDeals, isLoading: pipelineLoading, refetch: refetchPipeline } = usePipeline('selling');
+  const {
+    data: tasks,
+    isLoading: tasksLoading,
+    refetch: refetchTasks,
+  } = useTasks({ status: 'pending' });
+  const {
+    data: sellingDeals,
+    isLoading: pipelineLoading,
+    refetch: refetchPipeline,
+  } = usePipeline('selling');
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -277,9 +289,18 @@ export default function DashboardScreen() {
                 onPress={() => router.push('/(tabs)/tasks')}
                 activeOpacity={0.7}
               >
-                <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(task.priority) }]} />
-                <Ionicons name={getTaskTypeIcon(task.type)} size={14} color="#6b7280" style={styles.taskIcon} />
-                <Text style={styles.taskTitle} numberOfLines={1}>{task.title}</Text>
+                <View
+                  style={[styles.priorityDot, { backgroundColor: getPriorityColor(task.priority) }]}
+                />
+                <Ionicons
+                  name={getTaskTypeIcon(task.type)}
+                  size={14}
+                  color="#6b7280"
+                  style={styles.taskIcon}
+                />
+                <Text style={styles.taskTitle} numberOfLines={1}>
+                  {task.title}
+                </Text>
                 <Ionicons name="chevron-forward" size={14} color="#d1d5db" />
               </TouchableOpacity>
             ))}

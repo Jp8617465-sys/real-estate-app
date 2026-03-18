@@ -1,19 +1,44 @@
 import { z } from 'zod';
 
 // ─── Due Diligence Category ────────────────────────────────────────
-export const DueDiligenceCategorySchema = z.enum(['legal', 'physical', 'financial', 'environmental', 'council', 'strata']);
+export const DueDiligenceCategorySchema = z.enum([
+  'legal',
+  'physical',
+  'financial',
+  'environmental',
+  'council',
+  'strata',
+]);
 export type DueDiligenceCategory = z.infer<typeof DueDiligenceCategorySchema>;
 
 // ─── Due Diligence Item Status ─────────────────────────────────────
-export const DueDiligenceItemStatusSchema = z.enum(['not_started', 'in_progress', 'completed', 'issue_found', 'not_applicable']);
+export const DueDiligenceItemStatusSchema = z.enum([
+  'not_started',
+  'in_progress',
+  'completed',
+  'issue_found',
+  'not_applicable',
+]);
 export type DueDiligenceItemStatus = z.infer<typeof DueDiligenceItemStatusSchema>;
 
 // ─── Due Diligence Assignee ────────────────────────────────────────
-export const DueDiligenceAssigneeSchema = z.enum(['buyers_agent', 'solicitor', 'broker', 'building_inspector', 'pest_inspector', 'client']);
+export const DueDiligenceAssigneeSchema = z.enum([
+  'buyers_agent',
+  'solicitor',
+  'broker',
+  'building_inspector',
+  'pest_inspector',
+  'client',
+]);
 export type DueDiligenceAssignee = z.infer<typeof DueDiligenceAssigneeSchema>;
 
 // ─── Due Diligence Checklist Status ────────────────────────────────
-export const DueDiligenceChecklistStatusSchema = z.enum(['not_started', 'in_progress', 'completed', 'blocked']);
+export const DueDiligenceChecklistStatusSchema = z.enum([
+  'not_started',
+  'in_progress',
+  'completed',
+  'blocked',
+]);
 export type DueDiligenceChecklistStatus = z.infer<typeof DueDiligenceChecklistStatusSchema>;
 
 // ─── Due Diligence Document ────────────────────────────────────────

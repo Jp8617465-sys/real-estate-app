@@ -4,9 +4,22 @@ import { z } from 'zod';
 // Each step is a workflow action + a day offset from enrollment date.
 
 export const SequenceStepActionSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('send_email'), templateId: z.string(), aiDraft: z.boolean().default(false) }),
-  z.object({ type: z.literal('send_sms'), templateId: z.string(), aiDraft: z.boolean().default(false) }),
-  z.object({ type: z.literal('create_task'), taskTitle: z.string(), taskType: z.string(), priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium') }),
+  z.object({
+    type: z.literal('send_email'),
+    templateId: z.string(),
+    aiDraft: z.boolean().default(false),
+  }),
+  z.object({
+    type: z.literal('send_sms'),
+    templateId: z.string(),
+    aiDraft: z.boolean().default(false),
+  }),
+  z.object({
+    type: z.literal('create_task'),
+    taskTitle: z.string(),
+    taskType: z.string(),
+    priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
+  }),
   z.object({ type: z.literal('notify_agent'), message: z.string() }),
   z.object({ type: z.literal('add_tag'), tag: z.string() }),
   z.object({ type: z.literal('update_field'), field: z.string(), value: z.unknown() }),

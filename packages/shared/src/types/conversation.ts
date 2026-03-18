@@ -21,21 +21,11 @@ export const MessageDirectionSchema = z.enum(['inbound', 'outbound']);
 export type MessageDirection = z.infer<typeof MessageDirectionSchema>;
 
 // ─── Message Status ────────────────────────────────────────────────
-export const MessageStatusSchema = z.enum([
-  'pending',
-  'delivered',
-  'read',
-  'failed',
-]);
+export const MessageStatusSchema = z.enum(['pending', 'delivered', 'read', 'failed']);
 export type MessageStatus = z.infer<typeof MessageStatusSchema>;
 
 // ─── Call Outcome ──────────────────────────────────────────────────
-export const CallOutcomeSchema = z.enum([
-  'answered',
-  'missed',
-  'voicemail',
-  'no_answer',
-]);
+export const CallOutcomeSchema = z.enum(['answered', 'missed', 'voicemail', 'no_answer']);
 export type CallOutcome = z.infer<typeof CallOutcomeSchema>;
 
 // ─── Portal Source ─────────────────────────────────────────────────

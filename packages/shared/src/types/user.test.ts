@@ -49,15 +49,11 @@ describe('UserSchema', () => {
   });
 
   it('rejects invalid email', () => {
-    expect(() =>
-      UserSchema.parse({ ...validUser, email: 'not-email' }),
-    ).toThrow();
+    expect(() => UserSchema.parse({ ...validUser, email: 'not-email' })).toThrow();
   });
 
   it('rejects empty firstName', () => {
-    expect(() =>
-      UserSchema.parse({ ...validUser, firstName: '' }),
-    ).toThrow();
+    expect(() => UserSchema.parse({ ...validUser, firstName: '' })).toThrow();
   });
 });
 

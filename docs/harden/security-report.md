@@ -10,6 +10,7 @@
 ## Executive Summary
 
 The RealFlow API has a solid security foundation with several well-implemented controls:
+
 - A correctly designed `createSupabaseClient` middleware that rejects missing/malformed JWTs before touching Supabase
 - HMAC-SHA256 signature validation with timing-safe comparison on all webhook endpoints
 - Zod input validation on all mutating routes
@@ -65,6 +66,7 @@ fastify.post('/', async (request, reply) => {
 3. `POST /send` retrieves `agent_id` via `.from('users').select('id').single()` — a query with no `WHERE` clause, meaning it returns an arbitrary first user row rather than the authenticated agent.
 
 Specific affected handlers:
+
 - `GET /` (list threads) — filters by optional `agentId` query param, not by authenticated user
 - `GET /contacts/:contactId` — returns all messages for any `contactId` without ownership check
 - `GET /messages/:id` — returns any message by ID
@@ -86,10 +88,7 @@ fastify.get('/', async (request, reply) => {
 
 ```typescript
 // inbox.ts lines 121-124 — agent ID from unbounded query
-const { data: userData } = await supabase
-  .from('users')
-  .select('id')
-  .single();   // <-- no WHERE clause; returns arbitrary row
+const { data: userData } = await supabase.from('users').select('id').single(); // <-- no WHERE clause; returns arbitrary row
 ```
 
 **Impact:** Any authenticated user can read, mark, or delete messages belonging to other agents. The `POST /send` route attributes outbound messages to an arbitrary user rather than the authenticated sender.
@@ -107,7 +106,7 @@ const { data: userData } = await supabase
 ```typescript
 const CreateWorkflowBodySchema = z.object({
   // ...
-  createdBy: z.string().uuid(),   // <-- caller-supplied, never cross-checked with auth
+  createdBy: z.string().uuid(), // <-- caller-supplied, never cross-checked with auth
 });
 ```
 
@@ -124,6 +123,7 @@ const CreateWorkflowBodySchema = z.object({
 #### H-1: IDOR Risk — `contacts.ts`, `properties.ts`, `client-briefs.ts`, and Many Others Rely Solely on RLS with No Application-Layer Ownership Filter
 
 **Files:**
+
 - `apps/api/src/routes/contacts.ts`
 - `apps/api/src/routes/properties.ts`
 - `apps/api/src/routes/client-briefs.ts`
@@ -144,11 +144,13 @@ const CreateWorkflowBodySchema = z.object({
 **Description:** These 16 route files use `createSupabaseClient(request)` but never call `supabase.auth.getUser()` to resolve the authenticated user's ID, and never filter list/fetch queries by the authenticated agent. All access control is deferred entirely to Supabase Row Level Security.
 
 This is the documented design pattern for this codebase and is safe **only if** RLS policies are correctly configured on every affected table. The risk is:
+
 1. A missing or incomplete RLS policy on any table silently exposes all records to all authenticated users.
 2. There is no defense-in-depth — if RLS is disabled (e.g., during a migration or by mistake), all data is immediately accessible to any authenticated caller.
 3. PATCH/DELETE routes on resources like contacts, properties, and offers accept only an `id` URL param; without application-layer ownership verification, any authenticated user can modify/delete records owned by other agents if RLS fails.
 
 Example in `contacts.ts` (GET by ID, no ownership filter):
+
 ```typescript
 fastify.get<{ Params: { id: string } }>('/:id', async (request, reply) => {
   const supabase = createSupabaseClient(request);
@@ -161,6 +163,7 @@ fastify.get<{ Params: { id: string } }>('/:id', async (request, reply) => {
 ```
 
 Example in `client-briefs.ts` (GET list, no auth scoping):
+
 ```typescript
 fastify.get<{ Querystring: { contactId?: string } }>('/', async (request, reply) => {
   const supabase = createSupabaseClient(request);
@@ -174,6 +177,7 @@ fastify.get<{ Querystring: { contactId?: string } }>('/', async (request, reply)
 **Impact:** If any RLS policy is absent or incorrect, authenticated users can enumerate, read, modify, or delete records belonging to other agents. Client brief data contains sensitive financial and personal information (pre-approval amounts, broker details, AML status).
 
 **Remediation (two-pronged):**
+
 1. Audit every Supabase migration file to confirm RLS is `ENABLED` and policies exist for `SELECT`, `INSERT`, `UPDATE`, and `DELETE` on all affected tables.
 2. For the highest-sensitivity tables (client_briefs, contacts, aml_checks), add application-layer auth guards that call `supabase.auth.getUser()` and explicitly filter by `assigned_agent_id = user.id`.
 
@@ -211,6 +215,7 @@ fastify.post('/meta/lead', async (request, reply) => {
 **Impact:** In environments where `DOMAIN_WEBHOOK_SECRET` is not configured (development or a misconfigured staging/production), any unauthenticated actor can POST to `/webhooks/domain/enquiry` and create arbitrary contact records in the CRM. The Meta endpoint has no rate limiting.
 
 **Remediation:**
+
 - Change the signature check from conditional to required: reject with 401 if the secret is not configured at all (fail-closed rather than fail-open).
 - Add IP-based rate limiting to `/meta/lead` matching the pattern used in `inbox-email.ts`.
 
@@ -226,7 +231,7 @@ fastify.post('/meta/lead', async (request, reply) => {
 const secret = process.env['DOMAIN_WEBHOOK_SECRET'] ?? '';
 // ...
 const expected = crypto
-  .createHmac('sha256', secret)  // empty string as HMAC key when unset
+  .createHmac('sha256', secret) // empty string as HMAC key when unset
   .update(rawBody)
   .digest('hex');
 ```
@@ -251,6 +256,7 @@ const supabaseAdmin = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_K
 ```
 
 While functionally equivalent, this pattern is dangerous because:
+
 1. It bypasses the project's established convention, making auditing harder.
 2. The `createSupabaseServiceClient()` wrapper is the designated place to add future controls (e.g., logging, rate limiting, or environment guards).
 3. An agent who can call this endpoint gains access to a code path that uses the service role — if future changes to this handler are not carefully reviewed, RLS bypass could be accidentally introduced.
@@ -318,7 +324,7 @@ Fields are only checked for truthiness, not validated for type, format, or allow
 const { data, error } = await supabase
   .from('aml_checks')
   .update(payload)
-  .eq('id', id)       // <-- only filtered by id, not agent_id
+  .eq('id', id) // <-- only filtered by id, not agent_id
   .select()
   .single();
 ```
@@ -340,7 +346,7 @@ const { data, error } = await supabase
   .from('conversation_messages')
   .select('*, contacts!inner(first_name, last_name)')
   .eq('is_deleted', false)
-  .or(`content->>text.ilike.%${searchQuery}%,...`)  // no agent_id filter
+  .or(`content->>text.ilike.%${searchQuery}%,...`); // no agent_id filter
 ```
 
 The `searchQuery` value is interpolated directly into the Supabase `.or()` filter string. While Supabase ORM parameterises the final query, the filter string construction should be reviewed to confirm there is no string injection risk specific to the `.or()` helper syntax.
@@ -443,7 +449,9 @@ SUPABASE_SERVICE_ROLE_KEY=sb_secret_[REDACTED]
 function extractUserIdFromToken(request: FastifyRequest): string | null {
   const token = request.headers.authorization?.slice(7);
   // ...
-  const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as { sub?: string };
+  const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as {
+    sub?: string;
+  };
   return payload.sub ?? null;
 }
 ```
@@ -506,27 +514,27 @@ Any authenticated user can dismiss or snooze another user's notifications if the
 
 ## Summary Table
 
-| ID  | Severity | File(s) | Issue |
-|-----|----------|---------|-------|
-| C-1 | CRITICAL | `push-tokens.ts` | `userId` from request body, no auth verification |
-| C-2 | CRITICAL | `inbox.ts` | No auth guard on any of 9 handlers; unbounded agent ID query |
-| C-3 | CRITICAL | `workflows.ts` | No auth guard; `createdBy` from request body |
-| H-1 | HIGH | 16 route files | IDOR risk — RLS-only access control, no app-layer ownership |
-| H-2 | HIGH | `webhooks.ts` | Conditional signature validation (fail-open when secret unset) |
-| H-3 | HIGH | `domain-sync.ts` | Empty string HMAC key when webhook secret unset |
-| H-4 | HIGH | `portal.ts` | Service role key instantiated inline in user-facing route |
-| H-5 | HIGH | `social-leads.ts` | Webhook skips signature verification when secret unset |
-| M-1 | MEDIUM | `compliance.ts` | `POST /reports/generate` uses cast instead of Zod schema |
-| M-2 | MEDIUM | `compliance.ts` | AML update/patch endpoints lack `agent_id` ownership filter |
-| M-3 | MEDIUM | `inbox.ts` | Message search has no agent scoping |
-| M-4 | MEDIUM | `market-data.ts` | Bulk refresh endpoints lack role/admin check |
-| M-5 | MEDIUM | `health.ts` | Memory details exposed in public readiness endpoint |
-| M-6 | MEDIUM | `webhook-validation.ts` | In-memory rate limiter/idempotency guard ineffective at scale |
-| L-1 | LOW | `apps/api/.env` | `.env` file with credentials exists in working tree |
-| L-2 | LOW | `.claude/settings.local.json` | Supabase PAT stored in Claude settings file |
-| L-3 | LOW | `ai.ts` | JWT decoded without signature verification for rate limit key |
-| L-4 | LOW | `inbox.ts` | Search query interpolated into PostgREST filter string |
-| L-5 | LOW | `notifications.ts` | Dismiss/snooze lack `user_id` ownership filter |
+| ID  | Severity | File(s)                       | Issue                                                          |
+| --- | -------- | ----------------------------- | -------------------------------------------------------------- |
+| C-1 | CRITICAL | `push-tokens.ts`              | `userId` from request body, no auth verification               |
+| C-2 | CRITICAL | `inbox.ts`                    | No auth guard on any of 9 handlers; unbounded agent ID query   |
+| C-3 | CRITICAL | `workflows.ts`                | No auth guard; `createdBy` from request body                   |
+| H-1 | HIGH     | 16 route files                | IDOR risk — RLS-only access control, no app-layer ownership    |
+| H-2 | HIGH     | `webhooks.ts`                 | Conditional signature validation (fail-open when secret unset) |
+| H-3 | HIGH     | `domain-sync.ts`              | Empty string HMAC key when webhook secret unset                |
+| H-4 | HIGH     | `portal.ts`                   | Service role key instantiated inline in user-facing route      |
+| H-5 | HIGH     | `social-leads.ts`             | Webhook skips signature verification when secret unset         |
+| M-1 | MEDIUM   | `compliance.ts`               | `POST /reports/generate` uses cast instead of Zod schema       |
+| M-2 | MEDIUM   | `compliance.ts`               | AML update/patch endpoints lack `agent_id` ownership filter    |
+| M-3 | MEDIUM   | `inbox.ts`                    | Message search has no agent scoping                            |
+| M-4 | MEDIUM   | `market-data.ts`              | Bulk refresh endpoints lack role/admin check                   |
+| M-5 | MEDIUM   | `health.ts`                   | Memory details exposed in public readiness endpoint            |
+| M-6 | MEDIUM   | `webhook-validation.ts`       | In-memory rate limiter/idempotency guard ineffective at scale  |
+| L-1 | LOW      | `apps/api/.env`               | `.env` file with credentials exists in working tree            |
+| L-2 | LOW      | `.claude/settings.local.json` | Supabase PAT stored in Claude settings file                    |
+| L-3 | LOW      | `ai.ts`                       | JWT decoded without signature verification for rate limit key  |
+| L-4 | LOW      | `inbox.ts`                    | Search query interpolated into PostgREST filter string         |
+| L-5 | LOW      | `notifications.ts`            | Dismiss/snooze lack `user_id` ownership filter                 |
 
 ---
 
@@ -579,4 +587,4 @@ Any authenticated user can dismiss or snooze another user's notifications if the
 
 ---
 
-*Report generated by Security Engineer Agent — RealFlow Audit 2026-03-09*
+_Report generated by Security Engineer Agent — RealFlow Audit 2026-03-09_

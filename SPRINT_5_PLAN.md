@@ -11,6 +11,7 @@
 ## Sprint Goal
 
 Two outcomes define "done":
+
 1. At least one real client can log in to their portal and self-serve their brief, property shortlist, timeline, and documents without agent intervention.
 2. A property alert fires within 5 minutes of a Domain API sync result matching a client brief above the configured score threshold.
 
@@ -20,10 +21,10 @@ Two outcomes define "done":
 
 Sprint 5 has **minimal inter-team dependencies** — both workstreams run in parallel from day 1, with one interface contract agreed upfront.
 
-| Team | Feature | Discovery | Backend | Frontend | Mobile | Est. Effort |
-|------|---------|-----------|---------|----------|--------|-------------|
-| **Team A** | Client Portal — complete & harden | [docs/discovery/client-portal.md](docs/discovery/client-portal.md) | 3 days | 3 days | 1 day | 7 dev-days |
-| **Team B** | Property Alerts | [docs/discovery/property-alerts.md](docs/discovery/property-alerts.md) | 4 days | 1 day | 1 day | 6 dev-days |
+| Team       | Feature                           | Discovery                                                              | Backend | Frontend | Mobile | Est. Effort |
+| ---------- | --------------------------------- | ---------------------------------------------------------------------- | ------- | -------- | ------ | ----------- |
+| **Team A** | Client Portal — complete & harden | [docs/discovery/client-portal.md](docs/discovery/client-portal.md)     | 3 days  | 3 days   | 1 day  | 7 dev-days  |
+| **Team B** | Property Alerts                   | [docs/discovery/property-alerts.md](docs/discovery/property-alerts.md) | 4 days  | 1 day    | 1 day  | 6 dev-days  |
 
 **Total:** ~13 dev-days across 2 parallel tracks.
 
@@ -46,7 +47,7 @@ Agree on these shapes before either team writes implementation code.
 'purchased'     → contract exchanged (existing)
 ```
 
-**Rule:** Only Team B's alert engine sets `sent_to_client`. Team A's portal *reads* this status but does not set it. The agent action lives in the agent-facing web dashboard or the alert action (`/alerts/matches/:id/send-to-client`).
+**Rule:** Only Team B's alert engine sets `sent_to_client`. Team A's portal _reads_ this status but does not set it. The agent action lives in the agent-facing web dashboard or the alert action (`/alerts/matches/:id/send-to-client`).
 
 ---
 
@@ -91,23 +92,25 @@ POST /api/v1/alerts/test                       → send test alert (dev/QA only,
 ### Shared Zod Schemas (packages/shared/src/types/)
 
 **`portal.ts`** — Team A owns, Team B reads:
+
 ```typescript
 export const PortalClientFeedbackSchema = z.object({
   propertyMatchId: z.string().uuid(),
   feedback: z.enum(['interested', 'not_interested', 'ask_agent']),
   notes: z.string().max(500).optional(),
-})
+});
 
 export const PortalBriefAcknowledgementSchema = z.object({
   clientBriefId: z.string().uuid(),
   acknowledgedAt: z.string().datetime(),
   ipAddress: z.string().optional(), // for audit trail
-})
+});
 ```
 
 **`property-alerts.ts`** — Team B owns, Team A reads:
+
 ```typescript
-export const AlertChannelSchema = z.enum(['push', 'email', 'sms'])
+export const AlertChannelSchema = z.enum(['push', 'email', 'sms']);
 
 export const PropertyAlertSubscriptionSchema = z.object({
   id: z.string().uuid(),
@@ -116,13 +119,22 @@ export const PropertyAlertSubscriptionSchema = z.object({
   scoreThreshold: z.number().int().min(50).max(100).default(70),
   channels: z.array(AlertChannelSchema).min(1),
   digestMode: z.boolean().default(false),
-  digestTime: z.string().regex(/^\d{2}:\d{2}$/).default('07:00'), // HH:MM AEST
-  quietHoursStart: z.string().regex(/^\d{2}:\d{2}$/).default('21:00'),
-  quietHoursEnd: z.string().regex(/^\d{2}:\d{2}$/).default('07:00'),
+  digestTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default('07:00'), // HH:MM AEST
+  quietHoursStart: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default('21:00'),
+  quietHoursEnd: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default('07:00'),
   isActive: z.boolean().default(true),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-})
+});
 
 export const PropertyAlertEventSchema = z.object({
   id: z.string().uuid(),
@@ -136,7 +148,7 @@ export const PropertyAlertEventSchema = z.object({
   action: z.enum(['viewed', 'sent_to_client', 'dismissed', 'snoozed']).nullable(),
   snoozeUntil: z.string().datetime().nullable(),
   createdAt: z.string().datetime(),
-})
+});
 
 export const CreateAlertSubscriptionSchema = PropertyAlertSubscriptionSchema.pick({
   briefId: true,
@@ -146,17 +158,17 @@ export const CreateAlertSubscriptionSchema = PropertyAlertSubscriptionSchema.pic
   digestTime: true,
   quietHoursStart: true,
   quietHoursEnd: true,
-})
+});
 ```
 
 ---
 
 ## Database Migrations
 
-| Migration | Number | Tables Created / Modified | RLS Required |
-|-----------|--------|--------------------------|--------------|
-| Portal completions | `00014` | `ALTER inspections` (add client_rating, client_feedback), `ALTER documents` (add portal_visible), `ALTER client_briefs` (add acknowledged_at, acknowledged_ip), new RLS policies for portal client reads | Yes |
-| Property alerts | `00015` | `property_alert_subscriptions`, `property_alert_events` | Yes |
+| Migration          | Number  | Tables Created / Modified                                                                                                                                                                                | RLS Required |
+| ------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| Portal completions | `00014` | `ALTER inspections` (add client_rating, client_feedback), `ALTER documents` (add portal_visible), `ALTER client_briefs` (add acknowledged_at, acknowledged_ip), new RLS policies for portal client reads | Yes          |
+| Property alerts    | `00015` | `property_alert_subscriptions`, `property_alert_events`                                                                                                                                                  | Yes          |
 
 ⚠️ **Warning:** Existing migrations have duplicate numbering (two `00006_` files, two `00009_` files). Do NOT repeat this. `00014` and `00015` must be unique. Verify with `ls supabase/migrations/ | grep 0001` before creating files.
 
@@ -167,6 +179,7 @@ export const CreateAlertSubscriptionSchema = PropertyAlertSubscriptionSchema.pic
 **Goal:** Close the 5 gaps identified in discovery. Every item in this list must be done before the portal is shown to a real client.
 
 **What already works (do not rebuild):**
+
 - Magic link auth + middleware (`apps/portal/src/middleware.ts`)
 - Dashboard with pipeline progress (`apps/portal/src/app/page.tsx`)
 - Brief read-only view (`apps/portal/src/app/brief/page.tsx`)
@@ -323,24 +336,25 @@ CREATE POLICY "portal_client_read_documents" ON documents
 (Extend existing portal types — do not recreate the file from scratch)
 
 Add to existing exports:
+
 ```typescript
 export const PortalBriefAcknowledgementSchema = z.object({
   clientBriefId: z.string().uuid(),
   acknowledgedAt: z.string().datetime(),
   ipAddress: z.string().optional(),
-})
+});
 
 export const PortalPropertyFeedbackSchema = z.object({
   propertyMatchId: z.string().uuid(),
   feedback: z.enum(['interested', 'not_interested', 'ask_agent']),
   notes: z.string().max(500).optional(),
-})
+});
 
 export const PortalInspectionFeedbackSchema = z.object({
   inspectionId: z.string().uuid(),
   rating: z.number().int().min(1).max(5),
   feedback: z.string().max(1000).optional(),
-})
+});
 ```
 
 ---
@@ -348,24 +362,28 @@ export const PortalInspectionFeedbackSchema = z.object({
 ### A.3 Business Logic — `packages/business-logic/src/portal-engine.ts`
 
 New engine (thin — mostly orchestration, not complex logic):
+
 ```typescript
 export class PortalEngine {
   constructor(private supabase: SupabaseClient) {}
 
   // Returns the portal client record for the authenticated portal user
-  async getPortalClient(authId: string): Promise<PortalClient>
+  async getPortalClient(authId: string): Promise<PortalClient>;
 
   // Acknowledges the brief — sets acknowledged_at + IP, returns updated brief
-  async acknowledgeBrief(briefId: string, authId: string, ip?: string): Promise<ClientBrief>
+  async acknowledgeBrief(briefId: string, authId: string, ip?: string): Promise<ClientBrief>;
 
   // Returns property_matches with status='sent_to_client' for the client's brief
-  async getSentMatches(contactId: string): Promise<PropertyMatch[]>
+  async getSentMatches(contactId: string): Promise<PropertyMatch[]>;
 
   // Records client feedback on a match
-  async recordMatchFeedback(matchId: string, feedback: PortalPropertyFeedback): Promise<void>
+  async recordMatchFeedback(matchId: string, feedback: PortalPropertyFeedback): Promise<void>;
 
   // Records client rating/notes after an inspection
-  async recordInspectionFeedback(inspectionId: string, feedback: PortalInspectionFeedback): Promise<void>
+  async recordInspectionFeedback(
+    inspectionId: string,
+    feedback: PortalInspectionFeedback,
+  ): Promise<void>;
 }
 ```
 
@@ -387,28 +405,28 @@ API tests: `apps/api/src/routes/portal.test.ts`
 
 ### A.5 Portal Pages — `apps/portal/src/`
 
-| Page | File | Change |
-|------|------|--------|
-| Brief sign-off button | `apps/portal/src/app/brief/page.tsx` | Add "I acknowledge this brief" button → `POST /portal/brief/acknowledge` |
-| Property feedback | `apps/portal/src/app/properties/page.tsx` | Add Interested / Not Interested / Ask Agent actions |
-| Inspection feedback | `apps/portal/src/app/inspections/page.tsx` | New page — calendar view + feedback form per inspection |
-| Document visibility | `apps/portal/src/app/documents/page.tsx` | Filter to `portal_visible=true` only (already via RLS, confirm UI matches) |
+| Page                  | File                                       | Change                                                                     |
+| --------------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
+| Brief sign-off button | `apps/portal/src/app/brief/page.tsx`       | Add "I acknowledge this brief" button → `POST /portal/brief/acknowledge`   |
+| Property feedback     | `apps/portal/src/app/properties/page.tsx`  | Add Interested / Not Interested / Ask Agent actions                        |
+| Inspection feedback   | `apps/portal/src/app/inspections/page.tsx` | New page — calendar view + feedback form per inspection                    |
+| Document visibility   | `apps/portal/src/app/documents/page.tsx`   | Filter to `portal_visible=true` only (already via RLS, confirm UI matches) |
 
 ---
 
 ### A.6 Agent Web Controls — `apps/web/src/`
 
-| Feature | File | Change |
-|---------|------|--------|
-| Document visibility toggle | `apps/web/src/app/contacts/[id]/documents/page.tsx` | Add "Visible in portal" toggle per document |
-| Portal invite | `apps/web/src/app/contacts/[id]/page.tsx` | "Send portal invite" button → triggers magic link email |
+| Feature                    | File                                                | Change                                                  |
+| -------------------------- | --------------------------------------------------- | ------------------------------------------------------- |
+| Document visibility toggle | `apps/web/src/app/contacts/[id]/documents/page.tsx` | Add "Visible in portal" toggle per document             |
+| Portal invite              | `apps/web/src/app/contacts/[id]/page.tsx`           | "Send portal invite" button → triggers magic link email |
 
 ---
 
 ### A.7 Mobile — `apps/mobile/`
 
-| Feature | File |
-|---------|------|
+| Feature                | File                                                                |
+| ---------------------- | ------------------------------------------------------------------- |
 | Portal invite shortcut | `apps/mobile/app/contacts/[id].tsx` — add "Invite to portal" action |
 
 ---
@@ -418,6 +436,7 @@ API tests: `apps/api/src/routes/portal.test.ts`
 **Goal:** Agent receives a push/email/SMS alert within 5 minutes of a Domain sync match scoring ≥ their configured threshold. Agent can approve a match for portal visibility with one tap.
 
 **What already exists (do not rebuild):**
+
 - `DomainSyncEngine` — creates `property_matches` + `property_price_changes`
 - `notification_preferences` table + `notify_property_match` toggle
 - `notifications` routes with snooze/dismiss
@@ -504,42 +523,43 @@ New engine following the `AmlEngine` / `DomainSyncEngine` pattern:
 export class PropertyAlertEngine {
   constructor(
     private supabase: SupabaseClient,
-    private pushClient: PushClient,         // injected — no arrow fn constructors
-    private twilioClient: TwilioClient,     // injected
-    private gmailClient: GmailClient,       // injected
+    private pushClient: PushClient, // injected — no arrow fn constructors
+    private twilioClient: TwilioClient, // injected
+    private gmailClient: GmailClient, // injected
   ) {}
 
   // Called by DomainSyncEngine after each match is created
-  async handleNewMatch(propertyMatchId: string): Promise<void>
+  async handleNewMatch(propertyMatchId: string): Promise<void>;
 
   // Called by DomainSyncEngine after each price change is recorded
-  async handlePriceChange(priceChangeId: string): Promise<void>
+  async handlePriceChange(priceChangeId: string): Promise<void>;
 
   // Checks quiet hours in AEST. Returns true if alerts should be suppressed.
-  isQuietHours(sub: PropertyAlertSubscription, nowUtc: Date): boolean
+  isQuietHours(sub: PropertyAlertSubscription, nowUtc: Date): boolean;
 
   // Dispatches to all configured channels. Returns delivered channels.
   private async dispatch(
     sub: PropertyAlertSubscription,
     match: PropertyMatch,
     alertType: PropertyAlertEvent['alertType'],
-  ): Promise<string[]>
+  ): Promise<string[]>;
 
   // Sets property_matches.status = 'sent_to_client', creates portal notification
-  async sendMatchToClient(matchId: string, agentId: string): Promise<void>
+  async sendMatchToClient(matchId: string, agentId: string): Promise<void>;
 
   // Runs the digest job — collects unsent matches for digest subscribers since last digest
-  async runDigest(agentId: string): Promise<void>
+  async runDigest(agentId: string): Promise<void>;
 }
 ```
 
 Unit tests: `packages/business-logic/src/property-alert-engine.test.ts`
 — Target: 20–25 tests
 — **Critical Vitest rules:**
-  - Use `vi.hoisted()` for `mockPushClient`, `mockTwilioClient`, `mockGmailClient`
-  - All `briefId`, `agentId`, `matchId` fixtures must be proper UUIDs (e.g., `'a1b2c3d4-e5f6-7890-abcd-ef1234567890'`)
-  - No arrow fn mocks as class constructors — use dependency injection
-  - Terminal `.select()` calls use `mockResolvedValue`, not `mockReturnThis()`
+
+- Use `vi.hoisted()` for `mockPushClient`, `mockTwilioClient`, `mockGmailClient`
+- All `briefId`, `agentId`, `matchId` fixtures must be proper UUIDs (e.g., `'a1b2c3d4-e5f6-7890-abcd-ef1234567890'`)
+- No arrow fn mocks as class constructors — use dependency injection
+- Terminal `.select()` calls use `mockResolvedValue`, not `mockReturnThis()`
 
 ---
 
@@ -554,20 +574,20 @@ API tests: `apps/api/src/routes/alerts.test.ts`
 
 ### B.5 Agent Web — `apps/web/src/`
 
-| Feature | File |
-|---------|------|
-| Alert preferences per brief | `apps/web/src/app/briefs/[id]/alerts/page.tsx` — configure threshold, channels, digest mode |
-| Alert history | `apps/web/src/app/alerts/page.tsx` — timeline of sent alerts + actions taken |
-| Match approval action | `apps/web/src/app/alerts/page.tsx` — "Send to client" button → `POST /alerts/matches/:id/send-to-client` |
+| Feature                     | File                                                                                                     |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Alert preferences per brief | `apps/web/src/app/briefs/[id]/alerts/page.tsx` — configure threshold, channels, digest mode              |
+| Alert history               | `apps/web/src/app/alerts/page.tsx` — timeline of sent alerts + actions taken                             |
+| Match approval action       | `apps/web/src/app/alerts/page.tsx` — "Send to client" button → `POST /alerts/matches/:id/send-to-client` |
 
 ---
 
 ### B.6 Mobile — `apps/mobile/`
 
-| Feature | File |
-|---------|------|
-| Push notification handler | `apps/mobile/app/_layout.tsx` — add foreground handler for alert deep-links |
-| Alert list screen | `apps/mobile/app/alerts.tsx` — new screen showing recent alerts with actions |
+| Feature                   | File                                                                         |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| Push notification handler | `apps/mobile/app/_layout.tsx` — add foreground handler for alert deep-links  |
+| Alert list screen         | `apps/mobile/app/alerts.tsx` — new screen showing recent alerts with actions |
 
 ---
 
@@ -592,6 +612,7 @@ Sprint 5 target: ≥ 977 passing (baseline 907 + ~70 new)
 ```
 
 Run baseline before any Sprint 5 code is written:
+
 ```bash
 npm run test 2>&1 | tail -5
 ```
@@ -600,13 +621,13 @@ npm run test 2>&1 | tail -5
 
 ## Risk Register
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| `portal_clients.agent_id` mismatch (auth.uid vs internal UUID) | Medium | High | Verify in Supabase Studio on Day 1 before any portal testing |
-| Push notification delivery on iOS requires APNs cert | Medium | Medium | Test on Android first; add APNs cert to Expo config if blocking |
-| AML documents surfaced in portal (Privacy Act breach) | Low | Critical | Document RLS category filter guard is highest-priority check in `/harden` |
-| digest cron job (07:00 AEST) not running on Render free tier | Medium | Low | Implement as Render Cron Job or Supabase pg_cron; document in `/deploy-production` |
-| Duplicate migration numbers (sprint 3 pattern) | Low | High | CI check: `ls supabase/migrations | sort | uniq -d` must return empty |
+| Risk                                                           | Likelihood | Impact   | Mitigation                                                                         |
+| -------------------------------------------------------------- | ---------- | -------- | ---------------------------------------------------------------------------------- | ---- | -------------------------- |
+| `portal_clients.agent_id` mismatch (auth.uid vs internal UUID) | Medium     | High     | Verify in Supabase Studio on Day 1 before any portal testing                       |
+| Push notification delivery on iOS requires APNs cert           | Medium     | Medium   | Test on Android first; add APNs cert to Expo config if blocking                    |
+| AML documents surfaced in portal (Privacy Act breach)          | Low        | Critical | Document RLS category filter guard is highest-priority check in `/harden`          |
+| digest cron job (07:00 AEST) not running on Render free tier   | Medium     | Low      | Implement as Render Cron Job or Supabase pg_cron; document in `/deploy-production` |
+| Duplicate migration numbers (sprint 3 pattern)                 | Low        | High     | CI check: `ls supabase/migrations                                                  | sort | uniq -d` must return empty |
 
 ---
 
@@ -631,6 +652,7 @@ Sprint 5 is complete when:
 To avoid blockers, follow this sequence within each team:
 
 **Team A:**
+
 1. Verify `portal_clients.agent_id` / `auth_id` (Day 1 — unblocks everything else)
 2. Migration `00014` → `npm run db:migrate` → `npm run db:types`
 3. `packages/shared/src/types/portal.ts` additions
@@ -640,6 +662,7 @@ To avoid blockers, follow this sequence within each team:
 7. Agent web controls (document toggle, portal invite)
 
 **Team B:**
+
 1. Interface contract sign-off with Team A (Day 1 — `property_matches.status` lifecycle)
 2. Migration `00015` → `npm run db:migrate` → `npm run db:types`
 3. `packages/shared/src/types/property-alerts.ts`
@@ -651,8 +674,7 @@ To avoid blockers, follow this sequence within each team:
 
 ---
 
-*Next: `/sprint-start 5` is complete. Run `/build-db client-portal` and `/build-db property-alerts` to begin implementation.*
----
+## _Next: `/sprint-start 5` is complete. Run `/build-db client-portal` and `/build-db property-alerts` to begin implementation._
 
 ## Deferred to Sprint 6
 
@@ -665,6 +687,7 @@ The following item was planned for Sprint 5 but deferred due to scope. The aucti
 **Why deferred:** Requires a cron scheduler infrastructure (not yet wired in the API), and the existing Sprint 5 scope already delivered the alert subscription system, event dispatch pipeline, and agent UI. The auction_date alert type is already defined in `PropertyAlertEvent['alertType']` and in the migration DDL.
 
 **Sprint 6 tasks (pre-existing backlog):**
+
 - Wire a Fastify cron plugin (e.g. `fastify-cron` or a pg_cron trigger) to run daily at 09:00 AEST
 - Implement `PropertyAlertEngine.handleAuctionDate(propertyId)` — already stubbed
 - Add tests for `handleAuctionDate`

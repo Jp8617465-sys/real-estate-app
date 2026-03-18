@@ -12,6 +12,7 @@
 Successfully implemented complete pipeline migration infrastructure to migrate existing "buying" transactions to the specialized "buyers-agent" pipeline type. The implementation includes intelligent context-aware stage mapping, automatic client brief generation, comprehensive audit trails, and a production-ready admin dashboard.
 
 **All 7 components delivered:**
+
 1. ✅ Migration tracking table (database migration 00006)
 2. ✅ Migration SQL function (database migration 00007)
 3. ✅ Business logic engine with 18 passing tests
@@ -27,6 +28,7 @@ Successfully implemented complete pipeline migration infrastructure to migrate e
 ### 1. Database Infrastructure
 
 **Migration 00006: `pipeline_migration_history` Table**
+
 - File: `supabase/migrations/00006_pipeline_migration_tracking.sql`
 - Complete audit trail with before/after state
 - Client brief creation tracking
@@ -36,6 +38,7 @@ Successfully implemented complete pipeline migration infrastructure to migrate e
 - Row Level Security (RLS) policies for multi-tenant access
 
 **Migration 00007: SQL Migration Function**
+
 - File: `supabase/migrations/00007_pipeline_migration_function.sql`
 - Function: `migrate_transaction_to_buyers_agent()`
 - Atomic transaction updates with full audit logging
@@ -49,11 +52,13 @@ Successfully implemented complete pipeline migration infrastructure to migrate e
 **File:** `packages/business-logic/src/pipeline-migration.ts` (462 lines)
 
 **Core Classes:**
+
 - `PipelineMigrationEngine` - Stage mapping and brief generation
 - `MigrationContext` interface - Transaction state aggregation
 - `MigrationDecision` interface - Migration decision output
 
 **Key Methods:**
+
 ```typescript
 determineTargetStage(context: MigrationContext): MigrationDecision
 // Implements 10-rule stage mapping with confidence scoring
@@ -66,6 +71,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ```
 
 **Stage Mapping Logic (10 Rules):**
+
 1. Settled → `settled-nurture` (terminal)
 2. Under contract → `under-contract` (preserve progression)
 3. Accepted offer → `under-contract` (awaiting exchange)
@@ -79,6 +85,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 11. Default → `enquiry` (minimal data)
 
 **Confidence Scoring:**
+
 - **High**: Clear indicators, complete data, low risk
 - **Medium**: Some missing data, manual review recommended
 - **Low**: Incomplete data, requires manual intervention
@@ -111,6 +118,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
    - Creates rollback activity logs
 
 **Technical Features:**
+
 - Zod schema validation for all inputs
 - TypeScript strict mode compliance
 - Proper HTTP status codes (400, 404, 500)
@@ -124,12 +132,14 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 **Features:**
 
 **Overview Statistics:**
+
 - Total transactions to migrate
 - High/medium/low confidence breakdown
 - Brief creation requirement count
 - Color-coded stat cards
 
 **Transaction List:**
+
 - Individual checkbox selection
 - Current stage → Target stage display
 - Confidence badges (green/yellow/orange)
@@ -138,6 +148,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 - Brief creation indicator
 
 **Batch Operations:**
+
 - "Load Preview" button
 - "Select All" / "Deselect All" toggle
 - "Migrate Selected" with count
@@ -145,6 +156,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 - Real-time progress indication
 
 **History View (Audit Trail):**
+
 - Recent migration batches
 - Batch ID, transaction count
 - User attribution
@@ -152,6 +164,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 - Optional migration reasons
 
 **Safety Features:**
+
 - Confirmation before execution
 - Warning about irreversibility
 - Disabled buttons during loading
@@ -163,6 +176,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 **File:** `packages/business-logic/src/pipeline-migration.test.ts` (485 lines)
 
 **Test Coverage:**
+
 - 18 comprehensive test cases
 - All stage mapping scenarios (settled, under-contract, offers, etc.)
 - Edge cases (missing data, incomplete profiles, rejected offers)
@@ -179,6 +193,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ## Files Created/Modified
 
 ### New Files (8)
+
 1. `supabase/migrations/00006_pipeline_migration_tracking.sql` (5,066 bytes)
 2. `supabase/migrations/00007_pipeline_migration_function.sql` (8,551 bytes)
 3. `packages/business-logic/src/pipeline-migration.ts` (462 lines)
@@ -189,6 +204,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 8. `packages/business-logic/dist/pipeline-migration.d.ts` (type definitions)
 
 ### Modified Files (2)
+
 1. `packages/business-logic/src/index.ts` - Added exports
 2. `apps/api/src/index.ts` - Registered migration routes
 
@@ -213,12 +229,14 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ## Key Features
 
 ### Intelligent Stage Mapping
+
 - 10-rule decision tree based on transaction context
 - Analyzes: client briefs, offers, contracts, properties, retainer payments
 - Confidence scoring for manual review guidance
 - Comprehensive edge case handling
 
 ### Automatic Brief Generation
+
 - Extracts data from `contacts.buyer_profile` JSONB
 - Maps to flat client_brief schema (60+ columns)
 - Marks as unsigned for agent review
@@ -226,6 +244,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 - Preserves data quality with sensible defaults
 
 ### Comprehensive Audit Trail
+
 - Every migration tracked in `pipeline_migration_history`
 - Stage transitions logged in `stage_transitions`
 - Activity records for user-facing timeline
@@ -233,6 +252,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 - Rollback capability with reason tracking
 
 ### Production Safety
+
 - Dry-run preview before execution
 - Confirmation dialogs in UI
 - Transaction-level error handling (continues on failures)
@@ -244,6 +264,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ## Architecture Decisions
 
 ### Database Design
+
 - **Separate tracking table** instead of modifying transactions directly
   - Rationale: Clean audit trail, supports rollback, no schema bloat
 
@@ -254,6 +275,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
   - Rationale: Most queries filter by rolled_back = false
 
 ### Business Logic
+
 - **Static class methods** instead of instance methods
   - Rationale: Pure functions, stateless, easier to test
 
@@ -264,6 +286,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
   - Rationale: Type-safe, extensible, clear contracts
 
 ### API Design
+
 - **Batch operations** with UUID grouping
   - Rationale: Supports staged rollout, rollback by batch
 
@@ -278,6 +301,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ## Integration Points
 
 ### Consumes
+
 - `transactions` table → current state
 - `contacts.buyer_profile` → brief generation source
 - `client_briefs` → existence check, sign-off status
@@ -286,12 +310,14 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 - `users` → migration attribution
 
 ### Produces
+
 - `pipeline_migration_history` → audit records
 - `client_briefs` → auto-generated briefs
 - `stage_transitions` → stage change logs
 - `activities` → user-facing timeline entries
 
 ### Integrates With
+
 - PropertyMatchEngine → expects nested brief structure
 - PipelineEngine → stage validation rules
 - Workflow system → migration triggers possible
@@ -303,6 +329,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ### Immediate (Before Production Use)
 
 1. **Apply Database Migrations**
+
    ```bash
    # Staging environment
    supabase db push --linked
@@ -312,6 +339,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
    ```
 
 2. **Test Preview Endpoint**
+
    ```bash
    curl -X POST http://localhost:3001/api/v1/pipeline-migration/preview \
      -H "Content-Type: application/json" \
@@ -341,6 +369,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ### Staged Rollout (Week 1-3)
 
 **Week 1: Staging Environment**
+
 - Deploy all infrastructure
 - Test with 5-10 transactions
 - Validate brief generation quality
@@ -348,6 +377,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 - User acceptance testing
 
 **Week 2: Production Dry-Run**
+
 - Enable preview mode in production
 - Review all migration decisions
 - Stakeholder sign-off
@@ -355,6 +385,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 - Prepare user training materials
 
 **Week 3: Production Execution**
+
 - Full database backup
 - Batch 1: High confidence (50-100 at a time)
 - Batch 2: Medium confidence
@@ -369,21 +400,25 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ### Identified Risks
 
 **Risk 1: Incorrect Stage Mapping**
+
 - **Mitigation**: Preview mode, confidence scoring, manual review for low confidence
 - **Rollback**: Batch rollback via API endpoint
 - **Detection**: Validation queries (see below)
 
 **Risk 2: Poor Brief Quality**
+
 - **Mitigation**: Generated briefs marked as unsigned, quality warnings shown
 - **Recovery**: Agents review and complete auto-generated briefs
 - **Prevention**: buyer_profile data quality improvements
 
 **Risk 3: Data Loss**
+
 - **Mitigation**: Full audit trail, rollback capability, database backup before execution
 - **Recovery**: Rollback API + manual restoration if needed
 - **Prevention**: Dry-run testing, staged rollout
 
 **Risk 4: Performance Issues**
+
 - **Mitigation**: Batch processing (50-100 at a time), indexes on all FK columns
 - **Monitoring**: Execute during low-traffic hours
 - **Scaling**: Can pause and resume via batch IDs
@@ -391,6 +426,7 @@ generateBriefCompletionWarnings(buyerProfile): string[]
 ### Validation Queries
 
 **After Migration:**
+
 ```sql
 -- Check for transactions without required data at each stage
 SELECT t.id, t.current_stage, cb.id as brief_id
@@ -424,6 +460,7 @@ ORDER BY count DESC;
 ## Success Metrics
 
 ### Technical Success
+
 - ✅ Zero TypeScript compilation errors
 - ✅ All 18 unit tests passing
 - ✅ Clean build with no warnings
@@ -431,6 +468,7 @@ ORDER BY count DESC;
 - ✅ API endpoints return proper status codes
 
 ### Migration Success (Post-Execution)
+
 - [ ] 100% of buying transactions migrated
 - [ ] Zero data loss (verified via validation queries)
 - [ ] All stage transitions logged
@@ -439,6 +477,7 @@ ORDER BY count DESC;
 - [ ] Rollback tested and working
 
 ### User Success (Post-Rollout)
+
 - [ ] Users comfortable with new pipeline
 - [ ] No critical bugs reported
 - [ ] Auto-generated briefs reviewed by agents
@@ -450,12 +489,14 @@ ORDER BY count DESC;
 ## Documentation
 
 ### Code Documentation
+
 - ✅ Inline comments in all complex logic
 - ✅ JSDoc comments for public methods
 - ✅ README examples in migration files
 - ✅ Type definitions for all interfaces
 
 ### User Documentation
+
 - [ ] Admin dashboard user guide
 - [ ] Migration decision logic explanation
 - [ ] Rollback procedure documentation
@@ -463,6 +504,7 @@ ORDER BY count DESC;
 - [ ] FAQ for common questions
 
 ### Technical Documentation
+
 - ✅ This completion summary
 - ✅ Plan file with implementation details
 - [ ] Deployment runbook
@@ -486,23 +528,27 @@ The implementation follows RealFlow coding standards, integrates seamlessly with
 ## Appendix: Quick Reference
 
 ### API Endpoints
+
 - `POST /api/v1/pipeline-migration/preview` - Preview decisions
 - `POST /api/v1/pipeline-migration/execute` - Execute migration
 - `GET /api/v1/pipeline-migration/history` - View history
 - `POST /api/v1/pipeline-migration/rollback` - Rollback batch
 
 ### Database Tables
+
 - `pipeline_migration_history` - Migration audit trail
 - `stage_transitions` - Stage change logs
 - `activities` - User-facing timeline
 
 ### Key Files
+
 - Business Logic: `packages/business-logic/src/pipeline-migration.ts`
 - API Routes: `apps/api/src/routes/pipeline-migration.ts`
 - Admin UI: `apps/web/src/app/admin/pipeline-migration/page.tsx`
 - Migrations: `supabase/migrations/00006*.sql`, `00007*.sql`
 
 ### Stage Mappings
+
 - settled → settled-nurture
 - under-contract → under-contract
 - offer-made → offer-negotiate

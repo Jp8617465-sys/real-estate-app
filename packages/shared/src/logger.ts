@@ -160,9 +160,6 @@ export function createLogger(config: LoggerConfig): StructuredLogger {
  * Create a child logger for a specific module.
  * Convenience function for per-module logging.
  */
-export function createModuleLogger(
-  parent: StructuredLogger,
-  moduleName: string,
-): StructuredLogger {
+export function createModuleLogger(parent: StructuredLogger, moduleName: string): StructuredLogger {
   return parent.child({ module: moduleName });
 }

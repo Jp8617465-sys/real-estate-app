@@ -1,13 +1,10 @@
-import {
-  View,
-  Text,
-  FlatList,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, FlatList, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import type { PropertyAlertEvent, PropertyAlertSubscription, AlertChannel } from '@realflow/shared';
-import { useAlertEvents, useAlertSubscriptions, useSendMatchToClient } from '../../src/hooks/use-alerts';
+import {
+  useAlertEvents,
+  useAlertSubscriptions,
+  useSendMatchToClient,
+} from '../../src/hooks/use-alerts';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -114,7 +111,9 @@ function AlertEventCard({ item }: { item: PropertyAlertEvent }) {
       {isActioned ? (
         <View style={styles.actionedRow}>
           <Text style={styles.actionedText}>
-            {item.action === 'sent_to_client' ? '✓ Sent to client' : `✓ ${item.action ?? 'actioned'}`}
+            {item.action === 'sent_to_client'
+              ? '✓ Sent to client'
+              : `✓ ${item.action ?? 'actioned'}`}
             {item.actionedAt !== null ? ` — ${formatTimeAgo(item.actionedAt)}` : ''}
           </Text>
         </View>
@@ -152,9 +151,7 @@ function SubscriptionCard({ item }: { item: PropertyAlertSubscription }) {
         Brief ID: {item.briefId}
       </Text>
       <View style={styles.subscriptionMeta}>
-        <Text style={styles.subscriptionThreshold}>
-          Threshold: ≥ {item.scoreThreshold}/100
-        </Text>
+        <Text style={styles.subscriptionThreshold}>Threshold: ≥ {item.scoreThreshold}/100</Text>
         <View style={styles.channelChips}>
           {item.channels.map((ch) => (
             <View key={ch} style={styles.channelChip}>
@@ -163,9 +160,7 @@ function SubscriptionCard({ item }: { item: PropertyAlertSubscription }) {
           ))}
         </View>
       </View>
-      {item.digestMode && (
-        <Text style={styles.digestText}>Digest: {item.digestTime} AEST</Text>
-      )}
+      {item.digestMode && <Text style={styles.digestText}>Digest: {item.digestTime} AEST</Text>}
     </View>
   );
 }
@@ -218,7 +213,9 @@ export default function AlertsScreen() {
         <FlatList<PropertyAlertSubscription>
           data={subscriptions}
           keyExtractor={(item: PropertyAlertSubscription) => item.id}
-          renderItem={({ item }: { item: PropertyAlertSubscription }) => <SubscriptionCard item={item} />}
+          renderItem={({ item }: { item: PropertyAlertSubscription }) => (
+            <SubscriptionCard item={item} />
+          )}
           scrollEnabled={false}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />

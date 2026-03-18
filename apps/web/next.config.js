@@ -133,9 +133,7 @@ const nextConfig = {
       config.plugins.push(
         new BundleAnalyzerPlugin({
           analyzerMode: 'static',
-          reportFilename: isServer
-            ? '../analyze/server.html'
-            : './analyze/client.html',
+          reportFilename: isServer ? '../analyze/server.html' : './analyze/client.html',
           openAnalyzer: false,
         }),
       );

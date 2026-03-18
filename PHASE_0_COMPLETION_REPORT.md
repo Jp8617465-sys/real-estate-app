@@ -25,6 +25,7 @@ Successfully fixed the **BLOCKING bug** in the Client Brief API that was prevent
 ### 1. Architecture Analysis (Phase 0.1) ✅
 
 Deployed 3 parallel exploration agents to analyze:
+
 - **Complete schema mapping** - 57 fields requiring transformation
 - **Existing code patterns** - Established inline transformation pattern
 - **Usage analysis** - 8 API endpoints + 4 frontend hooks + 2 business logic consumers
@@ -36,12 +37,14 @@ Deployed 3 parallel exploration agents to analyze:
 **Created:** `packages/business-logic/src/client-brief-transformer.ts` (315 lines)
 
 **Core Functions:**
+
 ```typescript
-export function toDbSchema(brief: ClientBrief): ClientBriefDbRow
-export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
+export function toDbSchema(brief: ClientBrief): ClientBriefDbRow;
+export function fromDbSchema(row: ClientBriefDbRow): ClientBrief;
 ```
 
 **Handles:**
+
 - 47 flat field mappings (e.g., `budget.min` ↔ `budget_min`)
 - 3 JSONB field preservations (`suburbs`, `max_commute`, `investor_criteria`)
 - 5 TEXT[] arrays (`propertyTypes`, `mustHaves`, `niceToHaves`, `dealBreakers`, `schoolZones`)
@@ -54,6 +57,7 @@ export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
 **Created:** `packages/business-logic/src/client-brief-transformer.test.ts` (1,008 lines)
 
 **Coverage:**
+
 - ✅ 23 test cases covering all transformation scenarios
 - ✅ Round-trip tests (nested → flat → nested = identity)
 - ✅ Edge cases (optional objects, empty arrays, null handling)
@@ -64,6 +68,7 @@ export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
 ### 4. API Routes Integration (Phase 0.3) ✅
 
 **Updated Files:**
+
 1. **`apps/api/src/routes/client-briefs.ts`**
    - GET / (list) - Added `data.map(fromDbSchema)`
    - GET /:id (single) - Added `fromDbSchema(data)`
@@ -80,6 +85,7 @@ export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
 ### 5. Frontend Hooks Integration (Phase 0.3) ✅
 
 **Updated Files:**
+
 1. **`apps/web/src/hooks/use-client-briefs.ts`**
    - All queries: Transform DB rows with `fromDbSchema()`
    - Create mutation: Use `toDbSchema()` before INSERT
@@ -101,6 +107,7 @@ export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
 **Updated:** `apps/portal/src/app/brief/page.tsx`
 
 **Changes:** Fixed 14 snake_case property accesses to camelCase:
+
 - `purchase_type` → `purchaseType`
 - `brief_version` → `briefVersion`
 - `client_signed_off` → `clientSignedOff`
@@ -120,12 +127,14 @@ export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
 ## Files Created/Modified
 
 ### New Files (4)
+
 1. `packages/business-logic/src/client-brief-transformer.ts` (315 lines)
 2. `packages/business-logic/src/client-brief-transformer.test.ts` (1,008 lines)
 3. `packages/business-logic/TRANSFORMER_USAGE.md` (351 lines)
 4. `CLIENT_BRIEF_TRANSFORMER_IMPLEMENTATION.md` (400+ lines)
 
 ### Modified Files (8)
+
 1. `packages/business-logic/src/index.ts` - Exported transformation functions
 2. `apps/api/src/routes/client-briefs.ts` - Integrated transformations (6 endpoints)
 3. `apps/api/src/routes/property-matches.ts` - Transform before PropertyMatchEngine
@@ -142,6 +151,7 @@ export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
 ## Test Results
 
 ### Business Logic Package
+
 ```
 ✓ 11 test files passed (11)
 ✓ 360 tests passed (360)
@@ -149,9 +159,11 @@ export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
 ```
 
 **New Tests:**
+
 - client-brief-transformer.test.ts: 23 tests (100% passing)
 
 ### Integration Tests
+
 - ✅ All transformations preserve data integrity (round-trip tests)
 - ✅ TypeScript compilation successful (strict mode)
 - ✅ No runtime errors in transformation functions
@@ -163,28 +175,31 @@ export function fromDbSchema(row: ClientBriefDbRow): ClientBrief
 ## Impact Assessment
 
 ### Before Phase 0 ❌
+
 ```typescript
 // API tried to insert nested objects into flat columns
 await supabase.from('client_briefs').insert({
-  budget: brief.budget,  // ❌ PostgreSQL error: column "budget" does not exist
-  finance: brief.finance,  // ❌ Should be pre_approved, broker_name, etc.
+  budget: brief.budget, // ❌ PostgreSQL error: column "budget" does not exist
+  finance: brief.finance, // ❌ Should be pre_approved, broker_name, etc.
 });
 
 // Business logic crashed on data access
-const minBudget = brief.budget.min;  // ❌ TypeError: Cannot read property 'min' of undefined
+const minBudget = brief.budget.min; // ❌ TypeError: Cannot read property 'min' of undefined
 ```
 
 ### After Phase 0 ✅
+
 ```typescript
 // API correctly transforms data
-const dbRow = toDbSchema(brief);  // ✅ Nested → flat
-await supabase.from('client_briefs').insert(dbRow);  // ✅ Correct columns
+const dbRow = toDbSchema(brief); // ✅ Nested → flat
+await supabase.from('client_briefs').insert(dbRow); // ✅ Correct columns
 
 // Business logic receives correct structure
-const minBudget = brief.budget.min;  // ✅ Works! brief.budget is properly nested
+const minBudget = brief.budget.min; // ✅ Works! brief.budget is properly nested
 ```
 
 ### Features Unblocked
+
 1. ✅ **Client Brief Creation** - Mobile/Web forms can now save briefs
 2. ✅ **Property Matching** - PropertyMatchEngine can score properties against briefs
 3. ✅ **Pipeline Validation** - "strategy-brief" stage validation works
@@ -218,40 +233,51 @@ const minBudget = brief.budget.min;  // ✅ Works! brief.budget is properly nest
 ## Next Steps
 
 ### Immediate (Ready Now)
+
 1. ✅ **Phase 0 Complete** - All Client Brief operations now functional
 2. 🔄 **Manual Testing** - Test create/update/read operations via Postman/UI
 3. 🔄 **Database Verification** - Verify flat columns are correctly populated
 
 ### Phase 1 (Next Priority - 3-4 weeks)
+
 **Pipeline Migration: Generic Buyer → Buyers-Agent**
+
 - Migrate existing `buying` transactions to `buyers-agent` pipeline type
 - Context-aware stage mapping based on client brief, offers, contracts
 - Admin UI for migration preview and execution
 - Staged rollout with audit trail
 
 ### Phase 2 (1.5-2 weeks)
+
 **Client Brief Enhancements**
+
 - Version history (already has brief_version field)
 - Enhanced validation (Zod refinements)
 - Client portal access for brief suggestions
 - Lifecycle integration (auto-create brief when transaction reaches "engaged")
 
 ### Phase 3 (4 weeks)
+
 **Property Match Automation**
+
 - Batch processor for scoring
 - Database triggers for new properties
 - Workflow templates for high-quality matches
 - Agent configuration UI
 
 ### Phase 4 (2-3 weeks)
+
 **Due Diligence Enhancements**
+
 - Auto-reminders for critical items
 - Critical path analysis
 - Task integration
 - Timing hints
 
 ### Phase 5 (2-3 weeks)
+
 **Offer Tracker Web UI**
+
 - Complete web parity with mobile
 - Multi-round offer tracking
 - Acceptance workflow
@@ -294,12 +320,14 @@ The transformation layer follows established patterns, has excellent test covera
 ## Appendix: Complete Field Mapping
 
 ### Budget (4 fields)
+
 - `budget.min` ↔ `budget_min`
 - `budget.max` ↔ `budget_max`
 - `budget.absoluteMax` ↔ `budget_absolute_max`
 - `budget.stampDutyBudgeted` ↔ `stamp_duty_budgeted`
 
 ### Finance (9 fields)
+
 - `finance.preApproved` ↔ `pre_approved`
 - `finance.preApprovalAmount` ↔ `pre_approval_amount`
 - `finance.preApprovalExpiry` ↔ `pre_approval_expiry`
@@ -311,6 +339,7 @@ The transformation layer follows established patterns, has excellent test covera
 - `finance.firstHomeBuyer` ↔ `first_home_buyer`
 
 ### Requirements (24 fields)
+
 - `requirements.propertyTypes` ↔ `property_types`
 - `requirements.bedrooms.min` ↔ `bedrooms_min`
 - `requirements.bedrooms.ideal` ↔ `bedrooms_ideal`
@@ -331,11 +360,13 @@ The transformation layer follows established patterns, has excellent test covera
 - `requirements.investorCriteria` ↔ `investor_criteria` (JSONB preserved)
 
 ### Timeline (3 fields)
+
 - `timeline.urgency` ↔ `urgency`
 - `timeline.mustSettleBefore` ↔ `must_settle_before`
 - `timeline.idealSettlement` ↔ `ideal_settlement`
 
 ### Communication (6 fields)
+
 - `communication.preferredMethod` ↔ `preferred_contact_method`
 - `communication.updateFrequency` ↔ `update_frequency`
 - `communication.bestTimeToCall` ↔ `best_time_to_call`
@@ -344,6 +375,7 @@ The transformation layer follows established patterns, has excellent test covera
 - `communication.partnerEmail` ↔ `partner_email`
 
 ### Solicitor (4 fields, optional object)
+
 - `solicitor.firmName` ↔ `solicitor_firm`
 - `solicitor.contactName` ↔ `solicitor_contact`
 - `solicitor.phone` ↔ `solicitor_phone`

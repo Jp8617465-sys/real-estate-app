@@ -27,7 +27,9 @@ const DomainConfigSchema = z.object({
   clientSecret: z.string(),
   baseUrl: z.string().url().default('https://auth.domain.com.au'),
   apiBaseUrl: z.string().url().default('https://api.domain.com.au/v1'),
-  scopes: z.array(z.string()).default(['api_listings_read', 'api_salesresults_read', 'api_agents_read']),
+  scopes: z
+    .array(z.string())
+    .default(['api_listings_read', 'api_salesresults_read', 'api_agents_read']),
   rateLimit: z.custom<RateLimitConfig>().optional(),
   cache: z.custom<CacheConfig>().optional(),
 });
@@ -94,26 +96,33 @@ export class DomainClient {
       return this.accessToken;
     }
 
-    const response = await fetch(`${this.config.baseUrl}/v1/connect/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: this.config.clientId,
-        client_secret: this.config.clientSecret,
-        scope: this.config.scopes.join(' '),
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const response = await fetch(`${this.config.baseUrl}/v1/connect/token`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'client_credentials',
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
+          scope: this.config.scopes.join(' '),
+        }),
+      });
 
-    if (!response.ok) {
-      throw new DomainAPIError('Domain auth failed', response.status, response.statusText);
+      if (!response.ok) {
+        throw new DomainAPIError('Domain auth failed', response.status, response.statusText);
+      }
+
+      const data = (await response.json()) as DomainTokenResponse;
+      this.accessToken = data.access_token;
+      this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
+
+      return this.accessToken;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const data = (await response.json()) as DomainTokenResponse;
-    this.accessToken = data.access_token;
-    this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
-
-    return this.accessToken;
   }
 
   // ─── Rate Limiting ──────────────────────────────────────────────────
@@ -140,9 +149,7 @@ export class DomainClient {
 
     if (this.rateLimiter.tokens <= 0) {
       // Calculate wait time until next token is available
-      const waitMs = Math.ceil(
-        this.rateLimitConfig.windowMs / this.rateLimitConfig.maxRequests,
-      );
+      const waitMs = Math.ceil(this.rateLimitConfig.windowMs / this.rateLimitConfig.maxRequests);
       await new Promise<void>((resolve) => setTimeout(resolve, waitMs));
       this.rateLimiter.tokens = 1;
       this.rateLimiter.lastRefill = Date.now();
@@ -199,11 +206,7 @@ export class DomainClient {
 
   // ─── Core Request ───────────────────────────────────────────────────
 
-  private async request<T>(
-    path: string,
-    options: RequestInit = {},
-    skipCache = false,
-  ): Promise<T> {
+  private async request<T>(path: string, options: RequestInit = {}, skipCache = false): Promise<T> {
     const cacheKey = `${options.method ?? 'GET'}:${path}:${options.body ?? ''}`;
     const ttl = this.getCacheTtl(path);
 
@@ -218,34 +221,41 @@ export class DomainClient {
 
     const token = await this.authenticate();
 
-    const response = await fetch(`${this.config.apiBaseUrl}${path}`, {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const response = await fetch(`${this.config.apiBaseUrl}${path}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
 
-    if (response.status === 429) {
-      // Rate limited by Domain API — wait and retry once
-      const retryAfter = parseInt(response.headers.get('Retry-After') ?? '5', 10);
-      await new Promise<void>((resolve) => setTimeout(resolve, retryAfter * 1000));
-      return this.request<T>(path, options, true);
+      if (response.status === 429) {
+        // Rate limited by Domain API — wait and retry once
+        const retryAfter = parseInt(response.headers.get('Retry-After') ?? '5', 10);
+        await new Promise<void>((resolve) => setTimeout(resolve, retryAfter * 1000));
+        return this.request<T>(path, options, true);
+      }
+
+      if (!response.ok) {
+        throw new DomainAPIError('Domain API error', response.status, response.statusText);
+      }
+
+      const data = (await response.json()) as T;
+
+      // Cache the response
+      if (!options.body) {
+        this.setCache(cacheKey, data, ttl);
+      }
+
+      return data;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    if (!response.ok) {
-      throw new DomainAPIError('Domain API error', response.status, response.statusText);
-    }
-
-    const data = (await response.json()) as T;
-
-    // Cache the response
-    if (!options.body) {
-      this.setCache(cacheKey, data, ttl);
-    }
-
-    return data;
   }
 
   // ─── Search Listings ──────────────────────────────────────────────────

@@ -9,7 +9,7 @@
 ## Summary
 
 | Severity | Count |
-|----------|-------|
+| -------- | ----- |
 | CRITICAL | 3     |
 | HIGH     | 5     |
 | MEDIUM   | 6     |
@@ -30,7 +30,7 @@
 for (const wf of workflows) {
   // ...trigger evaluation...
   if (event.contactId) {
-    const { data: contact } = await supabase   // <-- DB hit per workflow
+    const { data: contact } = await supabase // <-- DB hit per workflow
       .from('contacts')
       .select('*')
       .eq('id', event.contactId)
@@ -55,7 +55,7 @@ for (const wf of workflows) {
 ```typescript
 // property-alert-engine.ts:259
 for (const match of matches) {
-  const { data: subsData } = await this.supabase   // <-- DB hit per match
+  const { data: subsData } = await this.supabase // <-- DB hit per match
     .from('property_alert_subscriptions')
     .select('*')
     .eq('brief_id', match.brief_id)
@@ -113,7 +113,7 @@ For an office with 15 agents this is 90 sequential round-trips. This runs as a d
 const { data: existing } = await supabase
   .from('contacts')
   .select('id, first_name, last_name, email, phone, secondary_phone')
-  .eq('is_deleted', false);   // no .limit() — full table scan
+  .eq('is_deleted', false); // no .limit() — full table scan
 ```
 
 **Impact:** At 10 000 contacts this transfers ~60 KB of data per contact creation. At 100 000 contacts (~600 KB) this will noticeably slow every lead capture. Because the CLAUDE.md target is < 60 s from enquiry to agent notification, this is a bottleneck on the critical path.
@@ -134,7 +134,7 @@ const { data: workflows } = await supabase
   .from('workflows')
   .select('*')
   .eq('is_active', true)
-  .eq('is_deleted', false);   // no .limit()
+  .eq('is_deleted', false); // no .limit()
 ```
 
 There is no limit, no cursor, and no pagination. As the workflow count grows — especially after agents create team templates — this will return progressively larger payloads and take longer to scan in memory.
@@ -157,7 +157,7 @@ const { data, error } = await supabase
   .select(`*, contact:contacts(...), property:properties(...)`)
   .eq('pipeline_type', pipelineType)
   .eq('is_deleted', false)
-  .order('updated_at', { ascending: false });   // no limit
+  .order('updated_at', { ascending: false }); // no limit
 ```
 
 The join to `contacts` and `properties` multiplies the response size. An agency with 200 active buyer transactions will transfer a large payload on every pipeline view. The mobile hook renders this directly in a Kanban board.
@@ -169,6 +169,7 @@ The join to `contacts` and `properties` multiplies the response size. An agency 
 ### HIGH-4: No `staleTime` on high-frequency mobile hooks — causes waterfall re-fetches
 
 **Files:**
+
 - `apps/mobile/src/hooks/use-contacts.ts` — `useContacts`, `useContact`
 - `apps/mobile/src/hooks/use-pipeline.ts` — `usePipeline`
 - `apps/mobile/src/hooks/use-properties.ts` — `useProperties`, `useProperty`
@@ -181,6 +182,7 @@ The join to `contacts` and `properties` multiplies the response size. An agency 
 **Contrast:** The correctly configured hooks are `useOffMarketProperties` (`staleTime: 60_000`) and `useOffMarketStats` (`staleTime: 300_000`) in `apps/mobile/src/hooks/use-off-market.ts`.
 
 **Fix:** Apply appropriate staleTime values:
+
 - `useDashboardStats`: `staleTime: 60_000` (1 minute — counts change slowly)
 - `usePipeline`: `staleTime: 30_000`
 - `useContacts`: `staleTime: 30_000`
@@ -193,6 +195,7 @@ The join to `contacts` and `properties` multiplies the response size. An agency 
 ### HIGH-5: Meta and Twilio `fetch()` calls have no timeout
 
 **Files:**
+
 - `packages/integrations/src/meta/client.ts` — `request()` method
 - `packages/integrations/src/twilio/client.ts` — `request()` method
 
@@ -353,14 +356,14 @@ The following areas were audited and found to be well-implemented:
 
 ## Recommended Fix Priority
 
-| Priority | Item | Estimated Effort |
-|----------|------|-----------------|
-| 1 (this sprint) | CRIT-1: workflow dispatch N+1 contact fetch | 30 min |
-| 2 (this sprint) | HIGH-1: contacts duplicate detection full-table scan | 2 h |
-| 3 (this sprint) | HIGH-4: add staleTime to all React Query hooks missing it | 1 h |
-| 4 (this sprint) | HIGH-5: add AbortController timeouts to Meta + Twilio fetch | 1 h |
-| 5 (next sprint) | CRIT-2: price change alert N+1 subscription fetches | 2 h |
-| 6 (next sprint) | CRIT-3: team snapshot — parallelize counts + batch upsert | 2 h |
-| 7 (next sprint) | HIGH-2 + HIGH-3: limits on workflow/pipeline queries | 1 h |
-| 8 (backlog) | MED-1 through MED-6 | varies |
-| 9 (backlog) | LOW-1 through LOW-4 | varies |
+| Priority        | Item                                                        | Estimated Effort |
+| --------------- | ----------------------------------------------------------- | ---------------- |
+| 1 (this sprint) | CRIT-1: workflow dispatch N+1 contact fetch                 | 30 min           |
+| 2 (this sprint) | HIGH-1: contacts duplicate detection full-table scan        | 2 h              |
+| 3 (this sprint) | HIGH-4: add staleTime to all React Query hooks missing it   | 1 h              |
+| 4 (this sprint) | HIGH-5: add AbortController timeouts to Meta + Twilio fetch | 1 h              |
+| 5 (next sprint) | CRIT-2: price change alert N+1 subscription fetches         | 2 h              |
+| 6 (next sprint) | CRIT-3: team snapshot — parallelize counts + batch upsert   | 2 h              |
+| 7 (next sprint) | HIGH-2 + HIGH-3: limits on workflow/pipeline queries        | 1 h              |
+| 8 (backlog)     | MED-1 through MED-6                                         | varies           |
+| 9 (backlog)     | LOW-1 through LOW-4                                         | varies           |

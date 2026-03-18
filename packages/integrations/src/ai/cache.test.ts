@@ -69,8 +69,8 @@ describe('AICache', () => {
     // Add one more — should evict key0
     cache.set('key5', 5, mockTokenUsage);
 
-    expect(cache.get('key0')).toBeNull();  // evicted
-    expect(cache.get('key5')).toBe(5);     // new entry present
+    expect(cache.get('key0')).toBeNull(); // evicted
+    expect(cache.get('key5')).toBe(5); // new entry present
   });
 
   // ─── Key Generation ────────────────────────────────────────────
@@ -102,9 +102,9 @@ describe('AICache', () => {
 
   it('tracks hits and misses', () => {
     cache.set('tracked', 'value', mockTokenUsage);
-    cache.get('tracked');       // hit
-    cache.get('tracked');       // hit
-    cache.get('nonexistent');   // miss
+    cache.get('tracked'); // hit
+    cache.get('tracked'); // hit
+    cache.get('nonexistent'); // miss
 
     const stats = cache.getStats();
     expect(stats.hits).toBe(2);
@@ -117,7 +117,7 @@ describe('AICache', () => {
     cache.get('hit-key');
 
     const stats = cache.getStats();
-    expect(stats.totalTokensSaved.input).toBe(200);  // 2 hits × 100
+    expect(stats.totalTokensSaved.input).toBe(200); // 2 hits × 100
     expect(stats.totalTokensSaved.output).toBe(100); // 2 hits × 50
     expect(stats.totalCostSavedAud).toBeCloseTo(0.002, 4); // 2 hits × 0.001
   });
