@@ -7,16 +7,20 @@ import { Sun, Moon, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSidebar } from './sidebar-context';
 import { useTheme } from '@/lib/theme-context';
+import { useProductContext } from '@/contexts/product-context';
+import type { ProductFeature } from '@realflow/shared';
 
 interface NavItem {
   label: string;
   href: string;
   icon: string;
+  feature?: ProductFeature;
 }
 
 interface NavSection {
   title?: string;
   items: NavItem[];
+  feature?: ProductFeature;
 }
 
 const navSections: NavSection[] = [
@@ -25,25 +29,32 @@ const navSections: NavSection[] = [
       { label: 'Dashboard', href: '/dashboard', icon: '📊' },
       { label: 'Inbox', href: '/inbox', icon: '💬' },
       { label: 'Contacts', href: '/contacts', icon: '👤' },
-      { label: 'Properties', href: '/properties', icon: '🏠' },
       { label: 'Pipeline', href: '/pipeline', icon: '📈' },
       { label: 'Tasks', href: '/tasks', icon: '✅' },
       { label: 'Today', href: '/daily-actions', icon: '⭐' },
       { label: 'Workflows', href: '/workflows', icon: '⚡' },
       { label: 'Sequences', href: '/workflows/sequences', icon: '🔄' },
-      { label: 'Social', href: '/social', icon: '📱' },
       { label: 'Analytics', href: '/analytics', icon: '📉' },
       { label: 'Alerts', href: '/alerts', icon: '🔔' },
     ],
   },
   {
-    title: 'Buyers Agent',
+    title: 'Selling Agent',
     items: [
-      { label: 'BA Dashboard', href: '/buyers-agent', icon: '🏡' },
-      { label: 'Client Briefs', href: '/buyers-agent/briefs', icon: '📋' },
-      { label: 'Property Matches', href: '/buyers-agent/matches', icon: '🎯' },
-      { label: 'Due Diligence', href: '/buyers-agent/due-diligence', icon: '🔍' },
-      { label: 'Selling Agents', href: '/buyers-agent/selling-agents', icon: '🤝' },
+      { label: 'Properties', href: '/properties', icon: '🏠', feature: 'listings' },
+      { label: 'Social', href: '/social', icon: '📱', feature: 'social_publishing' },
+    ],
+    feature: 'listings',
+  },
+  {
+    title: 'Buyers Agent',
+    feature: 'client_briefs',
+    items: [
+      { label: 'BA Dashboard', href: '/buyers-agent', icon: '🏡', feature: 'client_briefs' },
+      { label: 'Client Briefs', href: '/buyers-agent/briefs', icon: '📋', feature: 'client_briefs' },
+      { label: 'Property Matches', href: '/buyers-agent/matches', icon: '🎯', feature: 'property_matching' },
+      { label: 'Due Diligence', href: '/buyers-agent/due-diligence', icon: '🔍', feature: 'due_diligence' },
+      { label: 'Selling Agents', href: '/buyers-agent/selling-agents', icon: '🤝', feature: 'selling_agents' },
     ],
   },
   {
@@ -55,6 +66,26 @@ export function Sidebar() {
   const pathname = usePathname();
   const { isOpen, close } = useSidebar();
   const { darkMode, setDarkMode } = useTheme();
+  const { hasFeature, isLoading } = useProductContext();
+
+  // Filter sections and items based on product access
+  const filteredSections = navSections
+    .filter((section) => {
+      // While loading, show everything to prevent layout shift
+      if (isLoading) return true;
+      // If section has a feature gate, check access
+      if (section.feature) return hasFeature(section.feature);
+      return true;
+    })
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (isLoading) return true;
+        if (item.feature) return hasFeature(item.feature);
+        return true;
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
 
   // Close sidebar when route changes (mobile)
   useEffect(() => {
@@ -107,7 +138,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          {navSections.map((section, sectionIdx) => (
+          {filteredSections.map((section, sectionIdx) => (
             <div key={sectionIdx}>
               {section.title && (
                 <p className="mb-1 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
