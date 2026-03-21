@@ -2,8 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import { CreatePropertyMatchSchema, UpdatePropertyMatchSchema } from '@realflow/shared';
 import { PropertyMatchEngine, fromDbSchema } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
+import { productGuardHook } from '../plugins/product-guard';
 
 export async function propertyMatchRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', productGuardHook('property_matching'));
+
   // List matches (filter by clientBriefId or clientId)
   fastify.get<{ Querystring: { clientBriefId?: string; clientId?: string } }>(
     '/',

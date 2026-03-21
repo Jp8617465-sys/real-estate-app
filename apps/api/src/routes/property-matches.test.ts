@@ -9,6 +9,10 @@ vi.mock('../middleware/supabase', () => ({
   createSupabaseClient: () => mockSupabase,
 }));
 
+vi.mock('../plugins/product-guard', () => ({
+  productGuardHook: () => async () => {},
+}));
+
 // ─── Mock business-logic ──────────────────────────────────────────
 
 const mockScoreProperty = vi.fn();

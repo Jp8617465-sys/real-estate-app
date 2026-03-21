@@ -9,6 +9,10 @@ vi.mock('../middleware/supabase', () => ({
   createSupabaseClient: () => mockSupabase,
 }));
 
+vi.mock('../plugins/product-guard', () => ({
+  productGuardHook: () => async () => {},
+}));
+
 // ─── Mock Integration Registry ─────────────────────────────────────
 
 vi.mock('../services/integration-registry', () => ({

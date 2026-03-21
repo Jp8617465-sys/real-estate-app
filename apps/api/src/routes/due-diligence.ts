@@ -2,8 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import { UpdateDueDiligenceItemSchema } from '@realflow/shared';
 import { DueDiligenceEngine } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
+import { productGuardHook } from '../plugins/product-guard';
 
 export async function dueDiligenceRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', productGuardHook('due_diligence'));
+
   // Get checklist with items for a transaction
   fastify.get<{ Params: { transactionId: string } }>(
     '/transaction/:transactionId',

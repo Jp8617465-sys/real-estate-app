@@ -35,3 +35,4 @@ export * from './property-alerts';
 export * from './social-leads';
 export * from './off-market';
 export * from './team';
+export * from './deal-health';
