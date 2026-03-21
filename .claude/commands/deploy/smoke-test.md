@@ -11,39 +11,47 @@ The base URL is provided in `$ARGUMENTS` (e.g., `https://realflow-api.onrender.c
 ## The 5 Smoke Tests
 
 ### Test 1: Health Check
+
 ```bash
 curl -s -w "\nHTTP %{http_code}" $BASE_URL/health
 ```
+
 Expected: HTTP 200, body `{"status":"ok","service":"realflow-api"}`
 
 PASS if: status 200 and `"status":"ok"` in body
 FAIL if: any other status code, or body missing `status` field
 
 ### Test 2: Auth Endpoint Responds
+
 ```bash
 curl -s -w "\nHTTP %{http_code}" $BASE_URL/api/v1/contacts -X GET
 ```
+
 Expected: HTTP 401 (no auth header provided)
 
 PASS if: status 401
 FAIL if: status 200 (auth not working) or 500 (server error)
 
 ### Test 3: Auth with Invalid Token Returns 401
+
 ```bash
 curl -s -w "\nHTTP %{http_code}" $BASE_URL/api/v1/contacts \
   -H "Authorization: Bearer invalid-token-abc123"
 ```
+
 Expected: HTTP 401
 
 PASS if: status 401
 FAIL if: status 200 (auth bypass) or 500
 
 ### Test 4: Valid Endpoint Shape (Contacts List)
+
 ```bash
 # Requires a valid Supabase JWT for the test environment
 curl -s -w "\nHTTP %{http_code}" $BASE_URL/api/v1/contacts \
   -H "Authorization: Bearer $TEST_JWT"
 ```
+
 Expected: HTTP 200, body has `data` array field
 
 PASS if: status 200 and response body parses as JSON with `data` key
@@ -52,9 +60,11 @@ FAIL if: any other status, invalid JSON, or missing `data` field
 Note: If `$TEST_JWT` is not available, skip this test and note it.
 
 ### Test 5: 404 for Unknown Route
+
 ```bash
 curl -s -w "\nHTTP %{http_code}" $BASE_URL/api/v1/nonexistent-route-xyz
 ```
+
 Expected: HTTP 404
 
 PASS if: status 404

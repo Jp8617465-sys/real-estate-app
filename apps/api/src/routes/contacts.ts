@@ -41,11 +41,7 @@ export async function contactRoutes(fastify: FastifyInstance) {
     const supabase = createSupabaseClient(request);
     const { id } = request.params;
 
-    const { data, error } = await supabase
-      .from('contacts')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from('contacts').select('*').eq('id', id).single();
 
     if (error) return reply.status(404).send({ error: 'Contact not found' });
     return { data };
@@ -63,6 +59,9 @@ export async function contactRoutes(fastify: FastifyInstance) {
     const contact = parsed.data;
 
     // Check for duplicates
+    // PERF: This performs a full table scan. A future migration should add a
+    // pg_trgm GIN index on (first_name, last_name, email, phone) and use a
+    // server-side similarity query instead of fetching all contacts into memory.
     const { data: existing } = await supabase
       .from('contacts')
       .select('id, first_name, last_name, email, phone, secondary_phone')

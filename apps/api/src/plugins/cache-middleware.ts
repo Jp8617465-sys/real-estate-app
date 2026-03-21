@@ -68,15 +68,9 @@ function extractUserId(request: FastifyRequest): string {
 /**
  * Build a deterministic cache key from the request.
  */
-function buildCacheKey(
-  namespace: CacheNamespace,
-  request: FastifyRequest,
-  userId: string,
-): string {
+function buildCacheKey(namespace: CacheNamespace, request: FastifyRequest, userId: string): string {
   const url = request.url.split('?')[0] ?? request.url;
-  const queryString = request.url.includes('?')
-    ? request.url.slice(request.url.indexOf('?'))
-    : '';
+  const queryString = request.url.includes('?') ? request.url.slice(request.url.indexOf('?')) : '';
 
   // Sort query params for consistent keys
   const params = new URLSearchParams(queryString);
@@ -154,47 +148,50 @@ async function cacheMiddlewarePlugin(
 
   // ─── Hook: onSend — store successful responses in cache ───────────────────
 
-  fastify.addHook('onSend', async (request: FastifyRequest, reply: FastifyReply, payload: string) => {
-    // Only cache specified methods
-    if (!cachedMethods.has(request.method)) return payload;
+  fastify.addHook(
+    'onSend',
+    async (request: FastifyRequest, reply: FastifyReply, payload: string) => {
+      // Only cache specified methods
+      if (!cachedMethods.has(request.method)) return payload;
 
-    // Check exclusions
-    const path = request.url.split('?')[0] ?? '';
-    const isExcluded = excludeRoutes.some((route) => path.endsWith(route));
-    if (isExcluded) return payload;
+      // Check exclusions
+      const path = request.url.split('?')[0] ?? '';
+      const isExcluded = excludeRoutes.some((route) => path.endsWith(route));
+      if (isExcluded) return payload;
 
-    // Skip if already served from cache
-    if (reply.getHeader('X-Cache') === 'HIT') return payload;
+      // Skip if already served from cache
+      if (reply.getHeader('X-Cache') === 'HIT') return payload;
 
-    // Skip if bypass was requested
-    if (shouldBypassCache(request)) return payload;
+      // Skip if bypass was requested
+      if (shouldBypassCache(request)) return payload;
 
-    // Only cache successful responses
-    if (reply.statusCode < 200 || reply.statusCode >= 300) return payload;
+      // Only cache successful responses
+      if (reply.statusCode < 200 || reply.statusCode >= 300) return payload;
 
-    const userId = extractUserId(request);
-    const cacheKey = buildCacheKey(namespace, request, userId);
+      const userId = extractUserId(request);
+      const cacheKey = buildCacheKey(namespace, request, userId);
 
-    try {
-      const body = typeof payload === 'string' ? JSON.parse(payload) as unknown : payload;
+      try {
+        const body = typeof payload === 'string' ? (JSON.parse(payload) as unknown) : payload;
 
-      const cachedResponse: CachedResponse = {
-        statusCode: reply.statusCode,
-        body,
-        cachedAt: Date.now(),
-      };
+        const cachedResponse: CachedResponse = {
+          statusCode: reply.statusCode,
+          body,
+          cachedAt: Date.now(),
+        };
 
-      await cache.set(namespace, cacheKey, cachedResponse, { ttl });
+        await cache.set(namespace, cacheKey, cachedResponse, { ttl });
 
-      // Set cache headers for fresh responses
-      reply.header('X-Cache', 'MISS');
-      reply.header('Cache-Control', `private, max-age=${ttl}`);
-    } catch {
-      // Serialization failed — skip caching, do not break the response
-    }
+        // Set cache headers for fresh responses
+        reply.header('X-Cache', 'MISS');
+        reply.header('Cache-Control', `private, max-age=${ttl}`);
+      } catch {
+        // Serialization failed — skip caching, do not break the response
+      }
 
-    return payload;
-  });
+      return payload;
+    },
+  );
 
   // ─── Hook: onResponse — invalidate cache on mutations ─────────────────────
 

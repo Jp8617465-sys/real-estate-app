@@ -25,7 +25,7 @@ export const BUYER_STAGE_ORDER: Record<BuyerStage, number> = {
   'due-diligence': 5,
   'offer-made': 6,
   'under-contract': 7,
-  'settled': 8,
+  settled: 8,
 };
 
 export const BUYER_STAGE_LABELS: Record<BuyerStage, string> = {
@@ -36,7 +36,7 @@ export const BUYER_STAGE_LABELS: Record<BuyerStage, string> = {
   'due-diligence': 'Due Diligence',
   'offer-made': 'Offer Made',
   'under-contract': 'Under Contract',
-  'settled': 'Settled / Complete',
+  settled: 'Settled / Complete',
 };
 
 // ─── Seller Pipeline Stages ─────────────────────────────────────────
@@ -56,7 +56,7 @@ export const SELLER_STAGE_ORDER: Record<SellerStage, number> = {
   'on-market': 3,
   'offers-negotiation': 4,
   'under-contract': 5,
-  'settled': 6,
+  settled: 6,
 };
 
 export const SELLER_STAGE_LABELS: Record<SellerStage, string> = {
@@ -65,7 +65,7 @@ export const SELLER_STAGE_LABELS: Record<SellerStage, string> = {
   'on-market': 'On Market',
   'offers-negotiation': 'Offers / Negotiation',
   'under-contract': 'Under Contract',
-  'settled': 'Settled / Complete',
+  settled: 'Settled / Complete',
 };
 
 // ─── Buyers Agent Pipeline Stages ────────────────────────────────────
@@ -83,9 +83,9 @@ export const BuyersAgentStageSchema = z.enum([
 export type BuyersAgentStage = z.infer<typeof BuyersAgentStageSchema>;
 
 export const BUYERS_AGENT_STAGE_ORDER: Record<BuyersAgentStage, number> = {
-  'enquiry': 1,
+  enquiry: 1,
   'consult-qualify': 2,
-  'engaged': 3,
+  engaged: 3,
   'strategy-brief': 4,
   'active-search': 5,
   'offer-negotiate': 6,
@@ -94,9 +94,9 @@ export const BUYERS_AGENT_STAGE_ORDER: Record<BuyersAgentStage, number> = {
 };
 
 export const BUYERS_AGENT_STAGE_LABELS: Record<BuyersAgentStage, string> = {
-  'enquiry': 'Enquiry',
+  enquiry: 'Enquiry',
   'consult-qualify': 'Consultation & Qualify',
-  'engaged': 'Engaged (Signed)',
+  engaged: 'Engaged (Signed)',
   'strategy-brief': 'Strategy & Brief',
   'active-search': 'Active Search',
   'offer-negotiate': 'Offer & Negotiate',
@@ -106,14 +106,22 @@ export const BUYERS_AGENT_STAGE_LABELS: Record<BuyersAgentStage, string> = {
 
 // Stage descriptions for UI tooltips / help text
 export const BUYERS_AGENT_STAGE_DESCRIPTIONS: Record<BuyersAgentStage, string> = {
-  'enquiry': 'Initial contact from potential client. Respond fast, qualify interest, book discovery call.',
-  'consult-qualify': 'Discovery meeting to understand needs, assess fit, explain fees. Send engagement agreement if qualified.',
-  'engaged': 'Agreement signed, retainer paid. Collect detailed requirements, verify finance, connect with solicitor/broker.',
-  'strategy-brief': 'Full client brief completed. Market analysis, suburb comparison, search strategy activated.',
-  'active-search': 'Actively sourcing, inspecting, and presenting properties. Multiple properties evaluated simultaneously.',
-  'offer-negotiate': 'Making offers or bidding at auction. Multi-round negotiation with selling agents.',
-  'under-contract': 'Contracts exchanged. Due diligence, building & pest, finance approval, settlement coordination.',
-  'settled-nurture': 'Settlement complete. Post-purchase nurture, review requests, referral generation, long-term relationship.',
+  enquiry:
+    'Initial contact from potential client. Respond fast, qualify interest, book discovery call.',
+  'consult-qualify':
+    'Discovery meeting to understand needs, assess fit, explain fees. Send engagement agreement if qualified.',
+  engaged:
+    'Agreement signed, retainer paid. Collect detailed requirements, verify finance, connect with solicitor/broker.',
+  'strategy-brief':
+    'Full client brief completed. Market analysis, suburb comparison, search strategy activated.',
+  'active-search':
+    'Actively sourcing, inspecting, and presenting properties. Multiple properties evaluated simultaneously.',
+  'offer-negotiate':
+    'Making offers or bidding at auction. Multi-round negotiation with selling agents.',
+  'under-contract':
+    'Contracts exchanged. Due diligence, building & pest, finance approval, settlement coordination.',
+  'settled-nurture':
+    'Settlement complete. Post-purchase nurture, review requests, referral generation, long-term relationship.',
 };
 
 // ─── Transaction (links contact + property + pipeline) ──────────────

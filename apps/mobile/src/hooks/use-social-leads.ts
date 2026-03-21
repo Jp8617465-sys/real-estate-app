@@ -15,12 +15,11 @@ export function useSocialLeads(status?: string) {
     queryKey: ['social-leads', status],
     queryFn: async () => {
       const params = status ? `?status=${status}` : '';
-      const res = await fetch(
-        `${API_BASE}/api/v1/social/leads${params}`,
-        { headers: { Authorization: `Bearer ${await getToken()}` } },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/social/leads${params}`, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to fetch social leads');
-      const json = await res.json() as { data: SocialDmLead[] };
+      const json = (await res.json()) as { data: SocialDmLead[] };
       return json.data;
     },
     staleTime: 30_000,
@@ -33,12 +32,11 @@ export function useSocialLeadStats() {
   return useQuery({
     queryKey: ['social-lead-stats'],
     queryFn: async () => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/social/leads/stats`,
-        { headers: { Authorization: `Bearer ${await getToken()}` } },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/social/leads/stats`, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to fetch social lead stats');
-      const json = await res.json() as { data: SocialLeadStats };
+      const json = (await res.json()) as { data: SocialLeadStats };
       return json.data;
     },
     staleTime: 60_000,
@@ -51,18 +49,21 @@ export function useConvertSocialLead() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ leadId, overrides }: { leadId: string; overrides?: Record<string, unknown> }) => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/social/leads/${leadId}/convert`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${await getToken()}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(overrides ?? {}),
+    mutationFn: async ({
+      leadId,
+      overrides,
+    }: {
+      leadId: string;
+      overrides?: Record<string, unknown>;
+    }) => {
+      const res = await fetch(`${API_BASE}/api/v1/social/leads/${leadId}/convert`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify(overrides ?? {}),
+      });
       if (!res.ok) throw new Error('Failed to convert social lead');
       return res.json();
     },
@@ -80,13 +81,10 @@ export function useDismissSocialLead() {
 
   return useMutation({
     mutationFn: async (leadId: string) => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/social/leads/${leadId}`,
-        {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${await getToken()}` },
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/social/leads/${leadId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to dismiss social lead');
     },
     onSuccess: () => {

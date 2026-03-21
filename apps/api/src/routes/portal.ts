@@ -5,9 +5,8 @@ import {
   PortalInspectionFeedbackSchema,
 } from '@realflow/shared';
 import { PortalEngine } from '@realflow/business-logic';
-import { createSupabaseClient } from '../middleware/supabase';
+import { createSupabaseClient, createSupabaseServiceClient } from '../middleware/supabase';
 import { z } from 'zod';
-import { createClient } from '@supabase/supabase-js';
 import { GmailClient } from '@realflow/integrations';
 import { env } from '../config/env';
 
@@ -53,7 +52,11 @@ export async function portalRoutes(fastify: FastifyInstance) {
       .single();
 
     if (error) {
-      return reply.status(404).send({ error: 'Portal client not found' });
+      if (error.code === 'PGRST116') {
+        return reply.status(404).send({ error: 'Portal client not found' });
+      }
+      request.log.error(error, 'handler failed');
+      return reply.status(500).send({ error: error.message });
     }
 
     return { data };
@@ -94,7 +97,11 @@ export async function portalRoutes(fastify: FastifyInstance) {
       .single();
 
     if (error) {
-      return reply.status(404).send({ error: 'No active transaction found' });
+      if (error.code === 'PGRST116') {
+        return reply.status(404).send({ error: 'No active transaction found' });
+      }
+      request.log.error(error, 'handler failed');
+      return reply.status(500).send({ error: error.message });
     }
 
     return { data };
@@ -131,7 +138,11 @@ export async function portalRoutes(fastify: FastifyInstance) {
       .single();
 
     if (error) {
-      return reply.status(404).send({ error: 'Agent not found' });
+      if (error.code === 'PGRST116') {
+        return reply.status(404).send({ error: 'Agent not found' });
+      }
+      request.log.error(error, 'handler failed');
+      return reply.status(500).send({ error: error.message });
     }
 
     return { data };
@@ -170,6 +181,7 @@ export async function portalRoutes(fastify: FastifyInstance) {
       if (message.includes('Forbidden')) {
         return reply.status(403).send({ error: message });
       }
+      request.log.error(err, 'handler failed');
       return reply.status(500).send({ error: message });
     }
   });
@@ -200,6 +212,7 @@ export async function portalRoutes(fastify: FastifyInstance) {
       return { data: matches };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
+      request.log.error(err, 'handler failed');
       return reply.status(500).send({ error: message });
     }
   });
@@ -239,6 +252,7 @@ export async function portalRoutes(fastify: FastifyInstance) {
       if (message.includes('Forbidden')) {
         return reply.status(403).send({ error: message });
       }
+      request.log.error(err, 'handler failed');
       return reply.status(500).send({ error: message });
     }
   });
@@ -290,6 +304,7 @@ export async function portalRoutes(fastify: FastifyInstance) {
       .order('inspection_date', { ascending: false });
 
     if (error) {
+      request.log.error(error, 'handler failed');
       return reply.status(500).send({ error: error.message });
     }
 
@@ -331,6 +346,7 @@ export async function portalRoutes(fastify: FastifyInstance) {
       if (message.includes('Forbidden')) {
         return reply.status(403).send({ error: message });
       }
+      request.log.error(err, 'handler failed');
       return reply.status(500).send({ error: message });
     }
   });
@@ -374,11 +390,14 @@ export async function portalRoutes(fastify: FastifyInstance) {
       .single();
 
     if (upsertError || !portalClient) {
-      return reply.status(500).send({ error: upsertError?.message ?? 'Failed to create portal client' });
+      request.log.error(upsertError, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: upsertError?.message ?? 'Failed to create portal client' });
     }
 
     // Generate magic link using the Supabase admin client (service role)
-    const supabaseAdmin = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+    const supabaseAdmin = createSupabaseServiceClient();
 
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
@@ -387,12 +406,16 @@ export async function portalRoutes(fastify: FastifyInstance) {
     });
 
     if (linkError) {
+      request.log.error(linkError, 'handler failed');
       return reply.status(500).send({ error: linkError.message });
     }
 
     // Log the magic link in non-production environments for easy testing
     if (env.NODE_ENV !== 'production') {
-      fastify.log.debug({ magicLink: linkData.properties.action_link }, '[Portal invite] Magic link');
+      fastify.log.debug(
+        { magicLink: linkData.properties.action_link },
+        '[Portal invite] Magic link',
+      );
     }
 
     // Optionally send via GmailClient if agent's Gmail credentials are configured.

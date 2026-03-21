@@ -47,6 +47,9 @@ export function useCreateAlertSubscription() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['alert-subscriptions'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -62,6 +65,9 @@ export function useUpdateAlertSubscription() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['alert-subscriptions'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -72,6 +78,9 @@ export function useDeleteAlertSubscription() {
       apiFetch<undefined>(`/api/v1/alerts/subscriptions/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['alert-subscriptions'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -86,6 +95,9 @@ export function useSendMatchToClient() {
       ),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['alert-events'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

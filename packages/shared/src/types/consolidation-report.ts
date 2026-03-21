@@ -74,18 +74,22 @@ export const ConsolidationReportContentSchema = z.object({
   marketSnapshots: z.array(MarketSnapshotSchema).optional(),
   risks: z.array(ReportRiskItemSchema).optional(),
   recommendedActions: z.array(RecommendedActionSchema).optional(),
-  searchProgress: z.object({
-    propertiesReviewed: z.number().int().nonnegative(),
-    inspectionsCompleted: z.number().int().nonnegative(),
-    offersMade: z.number().int().nonnegative(),
-    daysInSearch: z.number().int().nonnegative(),
-  }).optional(),
-  ddSummary: z.object({
-    totalItems: z.number().int().nonnegative(),
-    completedItems: z.number().int().nonnegative(),
-    criticalPending: z.number().int().nonnegative(),
-    completionPercent: z.number().min(0).max(100),
-  }).optional(),
+  searchProgress: z
+    .object({
+      propertiesReviewed: z.number().int().nonnegative(),
+      inspectionsCompleted: z.number().int().nonnegative(),
+      offersMade: z.number().int().nonnegative(),
+      daysInSearch: z.number().int().nonnegative(),
+    })
+    .optional(),
+  ddSummary: z
+    .object({
+      totalItems: z.number().int().nonnegative(),
+      completedItems: z.number().int().nonnegative(),
+      criticalPending: z.number().int().nonnegative(),
+      completionPercent: z.number().min(0).max(100),
+    })
+    .optional(),
   aiConfidence: z.enum(['high', 'medium', 'low']).optional(),
   rawDataSources: z.array(z.string()).optional(),
 });

@@ -78,13 +78,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </svg>
             </div>
 
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">
-              Something went wrong
-            </h2>
+            <h2 className="mb-2 text-xl font-semibold text-gray-900">Something went wrong</h2>
 
             <p className="mb-6 text-sm text-gray-600">
-              An unexpected error occurred while loading this section.
-              Please try again, or contact support if the problem persists.
+              An unexpected error occurred while loading this section. Please try again, or contact
+              support if the problem persists.
             </p>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (

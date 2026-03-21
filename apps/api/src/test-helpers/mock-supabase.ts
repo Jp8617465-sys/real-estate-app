@@ -73,9 +73,20 @@ export function createChainedQueryBuilder(finalResult: QueryResult): MockQueryBu
 
   // Make all chainable methods return the builder itself
   const chainMethods: Array<keyof MockQueryBuilder> = [
-    'select', 'insert', 'update', 'delete', 'upsert',
-    'eq', 'neq', 'is', 'in', 'or', 'overlaps',
-    'order', 'limit', 'range',
+    'select',
+    'insert',
+    'update',
+    'delete',
+    'upsert',
+    'eq',
+    'neq',
+    'is',
+    'in',
+    'or',
+    'overlaps',
+    'order',
+    'limit',
+    'range',
   ];
 
   for (const method of chainMethods) {
@@ -114,9 +125,9 @@ export function createChainedQueryBuilder(finalResult: QueryResult): MockQueryBu
  * );
  * ```
  */
-export function createMockSupabaseClient(options?: {
-  userId?: string;
-}): { mockSupabase: MockSupabaseClient } {
+export function createMockSupabaseClient(options?: { userId?: string }): {
+  mockSupabase: MockSupabaseClient;
+} {
   const userId = options?.userId ?? '00000000-0000-0000-0000-000000000001';
 
   const defaultBuilder = createChainedQueryBuilder({ data: null, error: null });
@@ -187,7 +198,10 @@ export function configureMockTables(
 export const SUPABASE_ERRORS = {
   NOT_FOUND: { message: 'JSON object requested, multiple (or no) rows returned', code: 'PGRST116' },
   UNIQUE_VIOLATION: { message: 'duplicate key value violates unique constraint', code: '23505' },
-  FOREIGN_KEY_VIOLATION: { message: 'insert or update on table violates foreign key constraint', code: '23503' },
+  FOREIGN_KEY_VIOLATION: {
+    message: 'insert or update on table violates foreign key constraint',
+    code: '23503',
+  },
   RLS_DENIED: { message: 'new row violates row-level security policy', code: '42501' },
   CONNECTION_ERROR: { message: 'connection to server at "localhost" refused', code: 'PGRST000' },
 } as const;

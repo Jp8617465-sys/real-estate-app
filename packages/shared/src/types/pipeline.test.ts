@@ -32,9 +32,14 @@ describe('PipelineTypeSchema', () => {
 
 describe('BuyerStageSchema', () => {
   const buyerStages = [
-    'new-enquiry', 'qualified-lead', 'active-search',
-    'property-shortlisted', 'due-diligence', 'offer-made',
-    'under-contract', 'settled',
+    'new-enquiry',
+    'qualified-lead',
+    'active-search',
+    'property-shortlisted',
+    'due-diligence',
+    'offer-made',
+    'under-contract',
+    'settled',
   ];
 
   it('accepts all buyer stages', () => {
@@ -52,8 +57,12 @@ describe('BuyerStageSchema', () => {
 
 describe('SellerStageSchema', () => {
   const sellerStages = [
-    'appraisal-request', 'listing-preparation', 'on-market',
-    'offers-negotiation', 'under-contract', 'settled',
+    'appraisal-request',
+    'listing-preparation',
+    'on-market',
+    'offers-negotiation',
+    'under-contract',
+    'settled',
   ];
 
   it('accepts all seller stages', () => {

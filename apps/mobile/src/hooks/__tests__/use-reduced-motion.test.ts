@@ -77,7 +77,9 @@ describe('useReducedMotion (mobile)', () => {
     await act(async () => {});
     expect(result.current).toBe(false);
 
-    act(() => { changeHandler(true); });
+    act(() => {
+      changeHandler(true);
+    });
     expect(result.current).toBe(true);
   });
 });

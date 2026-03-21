@@ -538,7 +538,9 @@ Listing ID: 99999
       });
 
       expect(result.normalisedMessage.content.text).toBe('Can you call me about the property?');
-      expect(result.normalisedMessage.content.html).toBe('<p>Can you call me about the property?</p>');
+      expect(result.normalisedMessage.content.html).toBe(
+        '<p>Can you call me about the property?</p>',
+      );
       expect(result.normalisedMessage.content.subject).toBe('Quick question');
     });
 

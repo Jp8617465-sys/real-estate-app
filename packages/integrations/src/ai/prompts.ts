@@ -330,7 +330,9 @@ export function buildSequenceContentPrompt(input: SequenceContentInput): {
       : 'Channel: Email — include a subject line, professional structure, 2-3 short paragraphs.';
 
   const timing =
-    input.dayOffset === 0 ? 'immediately upon enrollment' : `${input.dayOffset} days after initial contact`;
+    input.dayOffset === 0
+      ? 'immediately upon enrollment'
+      : `${input.dayOffset} days after initial contact`;
 
   return {
     system: `You are an Australian real estate communication specialist drafting automated sequence messages for buyers agents.
@@ -370,13 +372,15 @@ export function buildSearchNarrativePrompt(input: SearchNarrativeInput): {
   system: string;
   user: string;
 } {
-  const propertyLines = input.properties.length > 0
-    ? input.properties
-        .map((p, i) =>
-          `${i + 1}. ${sanitizeForPrompt(p.address, 200)} — match score: ${p.score}%, status: ${sanitizeForPrompt(p.status, 50)}${p.notes ? `, notes: ${sanitizeForPrompt(p.notes, 200)}` : ''}`,
-        )
-        .join('\n')
-    : 'No properties reviewed yet.';
+  const propertyLines =
+    input.properties.length > 0
+      ? input.properties
+          .map(
+            (p, i) =>
+              `${i + 1}. ${sanitizeForPrompt(p.address, 200)} — match score: ${p.score}%, status: ${sanitizeForPrompt(p.status, 50)}${p.notes ? `, notes: ${sanitizeForPrompt(p.notes, 200)}` : ''}`,
+          )
+          .join('\n')
+      : 'No properties reviewed yet.';
 
   return {
     system: `You are a buyers agent writing a concise search progress update for your client.
@@ -404,7 +408,7 @@ export function buildBriefRefinementPrompt(input: BriefRefinementInput): {
   user: string;
 } {
   const sanitizedRejectionReasons = input.searchHistory?.commonRejectionReasons
-    .map(r => sanitizeForPrompt(r, 150))
+    .map((r) => sanitizeForPrompt(r, 150))
     .filter(Boolean);
 
   const historySection = input.searchHistory

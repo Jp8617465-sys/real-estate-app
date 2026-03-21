@@ -62,9 +62,7 @@ export default function ClientBriefsClient() {
               suburbs: Array<{ suburb: string }>;
             };
             const timeline = brief.timeline as { urgency: Urgency };
-            const suburbs = (requirements?.suburbs ?? []).map(
-              (s: { suburb: string }) => s.suburb,
-            );
+            const suburbs = (requirements?.suburbs ?? []).map((s: { suburb: string }) => s.suburb);
 
             return (
               <ClientBriefCard

@@ -54,31 +54,35 @@ export class TwilioClient {
   }
 
   private getAuthHeader(): string {
-    const credentials = Buffer.from(
-      `${this.config.accountSid}:${this.config.authToken}`,
-    ).toString('base64');
+    const credentials = Buffer.from(`${this.config.accountSid}:${this.config.authToken}`).toString(
+      'base64',
+    );
     return `Basic ${credentials}`;
   }
 
-  private async request<T>(
-    path: string,
-    options: RequestInit = {},
-  ): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...options,
-      headers: {
-        Authorization: this.getAuthHeader(),
-        'Content-Type': 'application/x-www-form-urlencoded',
-        ...options.headers,
-      },
-    });
+  private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          Authorization: this.getAuthHeader(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+          ...options.headers,
+        },
+      });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Twilio API error: ${response.status} ${errorBody}`);
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Twilio API error: ${response.status} ${errorBody}`);
+      }
+
+      return response.json() as Promise<T>;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    return response.json() as Promise<T>;
   }
 
   /**
@@ -187,10 +191,7 @@ export class TwilioClient {
 
     // HMAC-SHA1 hash
     const crypto = require('crypto') as typeof import('crypto');
-    const expected = crypto
-      .createHmac('sha1', authToken)
-      .update(data)
-      .digest('base64');
+    const expected = crypto.createHmac('sha1', authToken).update(data).digest('base64');
 
     return signature === expected;
   }

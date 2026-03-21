@@ -46,10 +46,7 @@ describe('useClientBrief', () => {
     const chain = createChainedQuery({ data: brief, error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useClientBrief('client-1'),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useClientBrief('client-1'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -66,10 +63,7 @@ describe('useClientBrief', () => {
     const chain = createChainedQuery({ data: null, error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useClientBrief(''),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useClientBrief(''), { wrapper: createWrapper() });
 
     expect(result.current.fetchStatus).toBe('idle');
   });
@@ -77,9 +71,7 @@ describe('useClientBrief', () => {
 
 describe('useClientBriefs', () => {
   it('fetches all client briefs with contact relation', async () => {
-    const briefs = [
-      { id: '1', contact: { id: 'c1', first_name: 'Jane', last_name: 'Doe' } },
-    ];
+    const briefs = [{ id: '1', contact: { id: 'c1', first_name: 'Jane', last_name: 'Doe' } }];
     const chain = createChainedQuery({ data: briefs, error: null });
     mockFrom.mockReturnValue(chain);
 

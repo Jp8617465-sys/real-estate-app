@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { enrollContact, processEnrollmentStep, processDueEnrollments } from './follow-up-sequence-engine';
+import {
+  enrollContact,
+  processEnrollmentStep,
+  processDueEnrollments,
+} from './follow-up-sequence-engine';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -103,10 +107,16 @@ describe('enrollContact', () => {
   });
 
   it('throws if sequence not found', async () => {
-    const supabase = makeMockSupabase({ sequence: null as unknown as ReturnType<typeof makeSequence> });
+    const supabase = makeMockSupabase({
+      sequence: null as unknown as ReturnType<typeof makeSequence>,
+    });
     supabase.from = (table: string) => {
       if (table === 'follow_up_sequences') {
-        const qb = { select: () => qb, eq: () => qb, single: () => Promise.resolve({ data: null, error: { message: 'not found' } }) };
+        const qb = {
+          select: () => qb,
+          eq: () => qb,
+          single: () => Promise.resolve({ data: null, error: { message: 'not found' } }),
+        };
         return qb as unknown as ReturnType<typeof makeMockSupabase>['from'];
       }
       return makeMockSupabase().from(table);
@@ -167,10 +177,16 @@ describe('processEnrollmentStep', () => {
   });
 
   it('returns error if enrollment not found', async () => {
-    const supabase = makeMockSupabase({ enrollment: null as unknown as ReturnType<typeof makeEnrollment> });
+    const supabase = makeMockSupabase({
+      enrollment: null as unknown as ReturnType<typeof makeEnrollment>,
+    });
     supabase.from = (table: string) => {
       if (table === 'sequence_enrollments') {
-        const qb = { select: () => qb, eq: () => qb, single: () => Promise.resolve({ data: null, error: { message: 'not found' } }) };
+        const qb = {
+          select: () => qb,
+          eq: () => qb,
+          single: () => Promise.resolve({ data: null, error: { message: 'not found' } }),
+        };
         return qb as unknown as ReturnType<typeof makeMockSupabase>['from'];
       }
       return makeMockSupabase().from(table);

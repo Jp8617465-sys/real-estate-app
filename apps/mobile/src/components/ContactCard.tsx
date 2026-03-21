@@ -55,7 +55,8 @@ export function ContactCard({ contact, onPress }: ContactCardProps) {
           </Text>
           {contact.phone ? (
             <Text className="text-xs text-gray-500" numberOfLines={1}>
-              {' · '}{contact.phone}
+              {' · '}
+              {contact.phone}
             </Text>
           ) : null}
         </View>

@@ -45,9 +45,7 @@ function generateTempId(): string {
 /**
  * Map camelCase CreateContact fields to snake_case database columns.
  */
-function mapContactToDbRow(
-  contact: CreateContact,
-): Record<string, unknown> {
+function mapContactToDbRow(contact: CreateContact): Record<string, unknown> {
   return {
     types: contact.types,
     first_name: contact.firstName,
@@ -68,9 +66,7 @@ function mapContactToDbRow(
 /**
  * Map camelCase UpdateContact fields to snake_case database columns.
  */
-function mapUpdateToDbRow(
-  updates: UpdateContact,
-): Record<string, unknown> {
+function mapUpdateToDbRow(updates: UpdateContact): Record<string, unknown> {
   const payload: Record<string, unknown> = {};
   if (updates.types) payload.types = updates.types;
   if (updates.firstName) payload.first_name = updates.firstName;
@@ -84,7 +80,8 @@ function mapUpdateToDbRow(
   if (updates.buyerProfile) payload.buyer_profile = updates.buyerProfile;
   if (updates.sellerProfile) payload.seller_profile = updates.sellerProfile;
   if (updates.tags) payload.tags = updates.tags;
-  if (updates.communicationPreference) payload.communication_preference = updates.communicationPreference;
+  if (updates.communicationPreference)
+    payload.communication_preference = updates.communicationPreference;
   if (updates.nextFollowUp !== undefined) payload.next_follow_up = updates.nextFollowUp;
   return payload;
 }
@@ -235,7 +232,7 @@ export function useOfflineContacts(
       setContacts((prev) => [optimisticContact, ...prev]);
 
       // Persist to cache
-      const cached = await storageGet<Contact[]>(cacheKey) ?? [];
+      const cached = (await storageGet<Contact[]>(cacheKey)) ?? [];
       await storageSet(cacheKey, [optimisticContact, ...cached], CONTACTS_TTL_MS);
 
       // Queue for sync
@@ -256,12 +253,10 @@ export function useOfflineContacts(
           const serverContact = serverData as Contact;
 
           // Replace temp contact with server contact
-          setContacts((prev) =>
-            prev.map((c) => (c.id === tempId ? serverContact : c)),
-          );
+          setContacts((prev) => prev.map((c) => (c.id === tempId ? serverContact : c)));
 
           // Update cache
-          const currentCache = await storageGet<Contact[]>(cacheKey) ?? [];
+          const currentCache = (await storageGet<Contact[]>(cacheKey)) ?? [];
           await storageSet(
             cacheKey,
             currentCache.map((c) => (c.id === tempId ? serverContact : c)),
@@ -330,7 +325,7 @@ export function useOfflineContacts(
       }
 
       // Persist to cache
-      const cached = await storageGet<Contact[]>(cacheKey) ?? [];
+      const cached = (await storageGet<Contact[]>(cacheKey)) ?? [];
       await storageSet(
         cacheKey,
         cached.map((c) => (c.id === id ? updatedContact : c)),
@@ -355,11 +350,9 @@ export function useOfflineContacts(
 
           const serverContact = serverData as Contact;
 
-          setContacts((prev) =>
-            prev.map((c) => (c.id === id ? serverContact : c)),
-          );
+          setContacts((prev) => prev.map((c) => (c.id === id ? serverContact : c)));
 
-          const currentCache = await storageGet<Contact[]>(cacheKey) ?? [];
+          const currentCache = (await storageGet<Contact[]>(cacheKey)) ?? [];
           await storageSet(
             cacheKey,
             currentCache.map((c) => (c.id === id ? serverContact : c)),
@@ -408,24 +401,17 @@ export function useOfflineContacts(
 
 // ─── Local Filter Helper ───────────────────────────────────────────
 
-function applySearchFilter(
-  contacts: Contact[],
-  search?: ContactSearch,
-): Contact[] {
+function applySearchFilter(contacts: Contact[], search?: ContactSearch): Contact[] {
   if (!search) return contacts;
 
   let filtered = contacts;
 
   if (search.types?.length) {
-    filtered = filtered.filter((c) =>
-      c.types.some((t) => search.types?.includes(t)),
-    );
+    filtered = filtered.filter((c) => c.types.some((t) => search.types?.includes(t)));
   }
 
   if (search.assignedAgentId) {
-    filtered = filtered.filter(
-      (c) => c.assignedAgentId === search.assignedAgentId,
-    );
+    filtered = filtered.filter((c) => c.assignedAgentId === search.assignedAgentId);
   }
 
   if (search.sources?.length) {
@@ -433,9 +419,7 @@ function applySearchFilter(
   }
 
   if (search.tags?.length) {
-    filtered = filtered.filter((c) =>
-      c.tags.some((t) => search.tags?.includes(t)),
-    );
+    filtered = filtered.filter((c) => c.tags.some((t) => search.tags?.includes(t)));
   }
 
   if (search.query) {

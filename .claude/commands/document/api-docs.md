@@ -43,49 +43,51 @@ Produce `docs/api/FEATURE_NAME.md`. Create the `docs/api/` directory if it doesn
 ## Endpoints
 
 ### GET /api/v1/[feature]
+
 List [feature] records for the authenticated user.
 
 **Auth:** Required
 
 **Query parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `status` | `"active" \| "inactive"` | No | Filter by status |
-| `limit` | `number` (1–100) | No | Records per page. Default: 50 |
-| `offset` | `number` | No | Pagination offset. Default: 0 |
+| Parameter | Type                     | Required | Description                   |
+| --------- | ------------------------ | -------- | ----------------------------- |
+| `status`  | `"active" \| "inactive"` | No       | Filter by status              |
+| `limit`   | `number` (1–100)         | No       | Records per page. Default: 50 |
+| `offset`  | `number`                 | No       | Pagination offset. Default: 0 |
 
 **Response 200:**
 \`\`\`json
 {
-  "data": [
-    {
-      "id": "uuid",
-      "name": "string",
-      "status": "active",
-      "created_at": "2026-03-02T00:00:00Z"
-    }
-  ],
-  "total": 42
+"data": [
+{
+"id": "uuid",
+"name": "string",
+"status": "active",
+"created_at": "2026-03-02T00:00:00Z"
+}
+],
+"total": 42
 }
 \`\`\`
 
 **Error responses:**
 
-| Code | When |
-|------|------|
-| 401 | Missing or invalid Bearer token |
-| 500 | Internal server error |
+| Code | When                            |
+| ---- | ------------------------------- |
+| 401  | Missing or invalid Bearer token |
+| 500  | Internal server error           |
 
 **curl example:**
 \`\`\`bash
 curl https://realflow-api.onrender.com/api/v1/feature \
-  -H "Authorization: Bearer $TOKEN"
+ -H "Authorization: Bearer $TOKEN"
 \`\`\`
 
 ---
 
 ### POST /api/v1/[feature]
+
 Create a new [feature] record.
 
 **Auth:** Required
@@ -93,8 +95,8 @@ Create a new [feature] record.
 **Request body:**
 \`\`\`json
 {
-  "name": "string",       // required, min length 1
-  "amount": 12500.00      // optional
+"name": "string", // required, min length 1
+"amount": 12500.00 // optional
 }
 \`\`\`
 
@@ -103,34 +105,35 @@ Create a new [feature] record.
 **Response 201:**
 \`\`\`json
 {
-  "data": {
-    "id": "uuid",
-    "name": "string",
-    "status": "active",
-    "created_at": "2026-03-02T00:00:00Z"
-  }
+"data": {
+"id": "uuid",
+"name": "string",
+"status": "active",
+"created_at": "2026-03-02T00:00:00Z"
+}
 }
 \`\`\`
 
 **Error responses:**
 
-| Code | When |
-|------|------|
-| 400 | Validation failed — response includes `details: ZodIssue[]` |
-| 401 | Missing or invalid Bearer token |
-| 500 | Internal server error |
+| Code | When                                                        |
+| ---- | ----------------------------------------------------------- |
+| 400  | Validation failed — response includes `details: ZodIssue[]` |
+| 401  | Missing or invalid Bearer token                             |
+| 500  | Internal server error                                       |
 
 **curl example:**
 \`\`\`bash
 curl -X POST https://realflow-api.onrender.com/api/v1/feature \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "New Feature"}'
+ -H "Authorization: Bearer $TOKEN" \
+ -H "Content-Type: application/json" \
+ -d '{"name": "New Feature"}'
 \`\`\`
 
 ---
 
 ### GET /api/v1/[feature]/:id
+
 Get a single [feature] record.
 
 [continue pattern for each endpoint...]
@@ -142,14 +145,14 @@ Get a single [feature] record.
 \`\`\`typescript
 // Using Supabase client directly (recommended for web/portal)
 const { data, error } = await supabase
-  .from('feature_table')
-  .select('*')
-  .is('deleted_at', null)
-  .order('created_at', { ascending: false });
+.from('feature_table')
+.select('\*')
+.is('deleted_at', null)
+.order('created_at', { ascending: false });
 
 // Using the API proxy (web app via /api/v1/ rewrite rule)
 const response = await fetch('/api/v1/feature', {
-  headers: { 'Authorization': `Bearer ${session.access_token}` },
+headers: { 'Authorization': `Bearer ${session.access_token}` },
 });
 const { data } = await response.json();
 \`\`\`
@@ -160,25 +163,25 @@ const { data } = await response.json();
 
 All schemas in `packages/shared/src/types/feature.ts`:
 
-| Schema | Used For |
-|--------|---------|
-| `FeatureSchema` | Full record shape (DB response) |
-| `CreateFeatureSchema` | POST request body |
-| `UpdateFeatureSchema` | PATCH request body |
-| `FeatureQuerySchema` | GET query params |
+| Schema                | Used For                        |
+| --------------------- | ------------------------------- |
+| `FeatureSchema`       | Full record shape (DB response) |
+| `CreateFeatureSchema` | POST request body               |
+| `UpdateFeatureSchema` | PATCH request body              |
+| `FeatureQuerySchema`  | GET query params                |
 
 ---
 
 ## Error Reference
 
-| Code | Body | When |
-|------|------|------|
-| 400 | `{ error: string, details: ZodIssue[] }` | Request validation failed |
-| 401 | `{ error: "Unauthorized" }` | Missing/invalid Bearer token |
-| 403 | `{ error: "Forbidden" }` | RLS policy violation |
-| 404 | `{ error: "Not found" }` | Record doesn't exist or soft-deleted |
-| 409 | `{ error: "Conflict", detail: string }` | Unique constraint violation |
-| 500 | `{ error: "Internal server error" }` | Unhandled error (logged server-side) |
+| Code | Body                                     | When                                 |
+| ---- | ---------------------------------------- | ------------------------------------ |
+| 400  | `{ error: string, details: ZodIssue[] }` | Request validation failed            |
+| 401  | `{ error: "Unauthorized" }`              | Missing/invalid Bearer token         |
+| 403  | `{ error: "Forbidden" }`                 | RLS policy violation                 |
+| 404  | `{ error: "Not found" }`                 | Record doesn't exist or soft-deleted |
+| 409  | `{ error: "Conflict", detail: string }`  | Unique constraint violation          |
+| 500  | `{ error: "Internal server error" }`     | Unhandled error (logged server-side) |
 ```
 
 ## Instructions

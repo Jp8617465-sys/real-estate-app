@@ -61,8 +61,9 @@ export default function AuthPage() {
               </div>
               <h2 className="mt-4 text-lg font-semibold text-gray-900">Check your email</h2>
               <p className="mt-2 text-sm text-gray-500">
-                We have sent a magic link to <span className="font-medium text-gray-700">{email}</span>.
-                Click the link to sign in to your portal.
+                We have sent a magic link to{' '}
+                <span className="font-medium text-gray-700">{email}</span>. Click the link to sign
+                in to your portal.
               </p>
               <button
                 type="button"

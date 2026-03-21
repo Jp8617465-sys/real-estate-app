@@ -11,7 +11,9 @@ const CONTACT_ID = '00000000-0000-0000-0000-000000000002';
 const CHECK_ID = '00000000-0000-0000-0000-000000000003';
 const DOC_ID = '00000000-0000-0000-0000-000000000004';
 
-const makeCheckRow = (overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> => ({
+const makeCheckRow = (
+  overrides: Partial<Record<string, unknown>> = {},
+): Record<string, unknown> => ({
   id: CHECK_ID,
   contact_id: CONTACT_ID,
   agent_id: AGENT_ID,
@@ -189,10 +191,7 @@ describe('POST /api/v1/compliance/checks', () => {
 
   it('creates a new AML check and returns 201', async () => {
     const newCheck = makeCheckRow();
-    const supabase = makeSupabase(
-      { aml_checks: { single: newCheck } },
-      { id: AGENT_ID },
-    );
+    const supabase = makeSupabase({ aml_checks: { single: newCheck } }, { id: AGENT_ID });
     vi.mocked(createSupabaseClient).mockReturnValue(supabase as never);
 
     const app = Fastify();
@@ -297,9 +296,7 @@ describe('GET /api/v1/compliance/checks/:id', () => {
         return makeChainFor(null);
       }),
       auth: {
-        getUser: vi.fn(() =>
-          Promise.resolve({ data: { user: { id: AGENT_ID } }, error: null }),
-        ),
+        getUser: vi.fn(() => Promise.resolve({ data: { user: { id: AGENT_ID } }, error: null })),
       },
     };
     vi.mocked(createSupabaseClient).mockReturnValue(supabase as never);
@@ -322,9 +319,7 @@ describe('GET /api/v1/compliance/checks/:id', () => {
     const supabase = {
       from: vi.fn(() => makeChainFor(null, { message: 'Not found' })),
       auth: {
-        getUser: vi.fn(() =>
-          Promise.resolve({ data: { user: { id: AGENT_ID } }, error: null }),
-        ),
+        getUser: vi.fn(() => Promise.resolve({ data: { user: { id: AGENT_ID } }, error: null })),
       },
     };
     vi.mocked(createSupabaseClient).mockReturnValue(supabase as never);

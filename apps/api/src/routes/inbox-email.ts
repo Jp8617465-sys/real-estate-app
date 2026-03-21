@@ -1,10 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { createSupabaseServiceClient } from '../middleware/supabase';
-import {
-  validateWebhookSignature,
-  createWebhookGuards,
-} from '../middleware/webhook-validation';
+import { validateWebhookSignature, createWebhookGuards } from '../middleware/webhook-validation';
 import {
   EmailLeadProcessor,
   type EmailLeadProcessingResult,
@@ -44,11 +41,13 @@ const MailgunInboundSchema = z.object({
   'In-Reply-To': z.string().optional(),
   timestamp: z.string().optional(),
   token: z.string().optional(),
-  signature: z.object({
-    timestamp: z.string(),
-    token: z.string(),
-    signature: z.string(),
-  }).optional(),
+  signature: z
+    .object({
+      timestamp: z.string(),
+      token: z.string(),
+      signature: z.string(),
+    })
+    .optional(),
 });
 
 /**
@@ -57,9 +56,9 @@ const MailgunInboundSchema = z.object({
  */
 const NormalisedEmailWebhookSchema = z.object({
   from: z.string().min(1, 'Sender address is required'),
-  to: z.union([z.string(), z.array(z.string())]).transform((val) =>
-    Array.isArray(val) ? val : [val],
-  ),
+  to: z
+    .union([z.string(), z.array(z.string())])
+    .transform((val) => (Array.isArray(val) ? val : [val])),
   subject: z.string().default('(No subject)'),
   textBody: z.string().default(''),
   htmlBody: z.string().optional(),
@@ -129,16 +128,22 @@ async function dispatchWorkflowEvents(
   const supabase = createSupabaseServiceClient();
 
   // Fetch all active workflows
-  const { data: workflows, error } = await (supabase
-    .from('workflows')
-    .select('*') as unknown as {
-      eq: (field: string, value: unknown) => {
-        eq: (field: string, value: unknown) => Promise<{
+  const { data: workflows, error } = await (
+    supabase.from('workflows').select('*') as unknown as {
+      eq: (
+        field: string,
+        value: unknown,
+      ) => {
+        eq: (
+          field: string,
+          value: unknown,
+        ) => Promise<{
           data: Array<Record<string, unknown>> | null;
           error: { message: string } | null;
         }>;
       };
-    })
+    }
+  )
     .eq('is_active', true)
     .eq('is_deleted', false);
 
@@ -156,7 +161,18 @@ async function dispatchWorkflowEvents(
         name: wf['name'] as string,
         description: wf['description'] as string | undefined,
         trigger: wf['trigger'] as Parameters<typeof evaluateTrigger>[0],
-        conditions: wf['conditions'] as { field: string; operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'is_empty' | 'is_not_empty'; value?: unknown }[],
+        conditions: wf['conditions'] as {
+          field: string;
+          operator:
+            | 'equals'
+            | 'not_equals'
+            | 'contains'
+            | 'greater_than'
+            | 'less_than'
+            | 'is_empty'
+            | 'is_not_empty';
+          value?: unknown;
+        }[],
         actions: wf['actions'] as { type: string }[],
         isActive: wf['is_active'] as boolean,
         createdBy: wf['created_by'] as string,
@@ -191,7 +207,11 @@ async function dispatchWorkflowEvents(
           context,
         );
         fastify.log.info(
-          { workflowId: workflow.id, status: result.status, actionsExecuted: result.actionsExecuted },
+          {
+            workflowId: workflow.id,
+            status: result.status,
+            actionsExecuted: result.actionsExecuted,
+          },
           'Workflow executed from email lead',
         );
       } catch (err) {
@@ -248,7 +268,9 @@ export async function inboxEmailRoutes(fastify: FastifyInstance) {
 
     // Process the email lead
     const supabase = createSupabaseServiceClient();
-    const processor = new EmailLeadProcessor(supabase as unknown as ConstructorParameters<typeof EmailLeadProcessor>[0]);
+    const processor = new EmailLeadProcessor(
+      supabase as unknown as ConstructorParameters<typeof EmailLeadProcessor>[0],
+    );
 
     let result: EmailLeadProcessingResult;
     try {
@@ -320,7 +342,9 @@ export async function inboxEmailRoutes(fastify: FastifyInstance) {
 
     // Process
     const supabase = createSupabaseServiceClient();
-    const processor = new EmailLeadProcessor(supabase as unknown as ConstructorParameters<typeof EmailLeadProcessor>[0]);
+    const processor = new EmailLeadProcessor(
+      supabase as unknown as ConstructorParameters<typeof EmailLeadProcessor>[0],
+    );
 
     let result: EmailLeadProcessingResult;
     try {
@@ -392,7 +416,9 @@ export async function inboxEmailRoutes(fastify: FastifyInstance) {
 
     // Process
     const supabase = createSupabaseServiceClient();
-    const processor = new EmailLeadProcessor(supabase as unknown as ConstructorParameters<typeof EmailLeadProcessor>[0]);
+    const processor = new EmailLeadProcessor(
+      supabase as unknown as ConstructorParameters<typeof EmailLeadProcessor>[0],
+    );
 
     let result: EmailLeadProcessingResult;
     try {

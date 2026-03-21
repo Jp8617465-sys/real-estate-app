@@ -36,7 +36,9 @@ function extractUserIdFromToken(request: FastifyRequest): string | null {
     const parts = token.split('.');
     const payloadB64 = parts[1];
     if (!payloadB64) return null;
-    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as { sub?: string };
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as {
+      sub?: string;
+    };
     return payload.sub ?? null;
   } catch {
     return null;
@@ -50,7 +52,9 @@ function extractUserIdFromToken(request: FastifyRequest): string | null {
 function enforceAIRateLimit(request: FastifyRequest, reply: FastifyReply): boolean {
   const userId = extractUserIdFromToken(request) ?? request.ip;
   if (!checkAIRateLimit(userId)) {
-    reply.status(429).send({ error: 'Too many AI requests. Please wait a moment before retrying.' });
+    reply
+      .status(429)
+      .send({ error: 'Too many AI requests. Please wait a moment before retrying.' });
     return false;
   }
   return true;
@@ -221,18 +225,19 @@ export async function aiRoutes(fastify: FastifyInstance) {
       .eq('client_brief_id', clientBriefId)
       .eq('status', 'rejected');
 
-    const searchHistory = rejectedMatches && rejectedMatches.length > 0
-      ? {
-          rejectedProperties: rejectedMatches.length,
-          averageScore: Math.round(
-            rejectedMatches.reduce((sum, m) => sum + ((m.overall_score as number) ?? 0), 0) /
-            rejectedMatches.length,
-          ),
-          commonRejectionReasons: rejectedMatches
-            .map(m => m.rejection_reason)
-            .filter((r): r is string => r !== null && r !== undefined),
-        }
-      : undefined;
+    const searchHistory =
+      rejectedMatches && rejectedMatches.length > 0
+        ? {
+            rejectedProperties: rejectedMatches.length,
+            averageScore: Math.round(
+              rejectedMatches.reduce((sum, m) => sum + ((m.overall_score as number) ?? 0), 0) /
+                rejectedMatches.length,
+            ),
+            commonRejectionReasons: rejectedMatches
+              .map((m) => m.rejection_reason)
+              .filter((r): r is string => r !== null && r !== undefined),
+          }
+        : undefined;
 
     const anthropic = getAnthropicClientOrNull();
     if (!anthropic) {
@@ -244,7 +249,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
         mustHaves: brief.requirements.mustHaves,
         niceToHaves: brief.requirements.niceToHaves,
         dealBreakers: brief.requirements.dealBreakers,
-        suburbs: brief.requirements.suburbs.map(s => s.suburb),
+        suburbs: brief.requirements.suburbs.map((s) => s.suburb),
         propertyTypes: brief.requirements.propertyTypes,
         budget: {
           min: brief.budget.min,
@@ -319,7 +324,7 @@ export async function aiRoutes(fastify: FastifyInstance) {
         name: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim(),
         source: c.source ?? undefined,
         pipelineStage: c.pipeline_stage ?? undefined,
-        recentActivities: acts.map(a => a.title ?? '').filter(Boolean),
+        recentActivities: acts.map((a) => a.title ?? '').filter(Boolean),
       },
     });
 
@@ -460,13 +465,17 @@ export async function aiRoutes(fastify: FastifyInstance) {
           const budget = briefData.budget as Record<string, number> | null;
           const reqs = briefData.requirements as Record<string, unknown> | null;
           const suburbs = (reqs?.suburbs as Array<Record<string, string>> | null)
-            ?.map(s => s.suburb)
+            ?.map((s) => s.suburb)
             .filter(Boolean)
             .join(', ');
           return [
-            budget ? `Budget: $${budget.min?.toLocaleString()}–$${budget.max?.toLocaleString()} AUD` : null,
+            budget
+              ? `Budget: $${budget.min?.toLocaleString()}–$${budget.max?.toLocaleString()} AUD`
+              : null,
             suburbs ? `Suburbs: ${suburbs}` : null,
-          ].filter(Boolean).join(', ');
+          ]
+            .filter(Boolean)
+            .join(', ');
         })()
       : 'Brief not yet completed';
 

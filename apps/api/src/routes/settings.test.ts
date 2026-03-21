@@ -162,9 +162,7 @@ describe('GET /api/v1/settings/integrations', () => {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockResolvedValue({
-              data: [
-                { provider: 'gmail', is_active: true, last_sync_at: '2026-01-01T00:00:00Z' },
-              ],
+              data: [{ provider: 'gmail', is_active: true, last_sync_at: '2026-01-01T00:00:00Z' }],
               error: null,
             }),
           }),
@@ -175,7 +173,11 @@ describe('GET /api/v1/settings/integrations', () => {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({
             data: [
-              { provider: 'gmail', account_email: 'sarah@gmail.com', expires_at: '2026-12-31T00:00:00Z' },
+              {
+                provider: 'gmail',
+                account_email: 'sarah@gmail.com',
+                expires_at: '2026-12-31T00:00:00Z',
+              },
             ],
             error: null,
           }),

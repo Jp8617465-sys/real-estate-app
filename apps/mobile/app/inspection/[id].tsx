@@ -10,7 +10,12 @@ import { useLocalSearchParams } from 'expo-router';
 import { useInspection } from '../../src/hooks/use-inspections';
 import type { InspectionImpression, ClientSuitability } from '@realflow/shared';
 
-function getImpressionDisplay(impression: InspectionImpression): { emoji: string; label: string; color: string; bgColor: string } {
+function getImpressionDisplay(impression: InspectionImpression): {
+  emoji: string;
+  label: string;
+  color: string;
+  bgColor: string;
+} {
   switch (impression) {
     case 'positive':
       return { emoji: '👍', label: 'Positive', color: '#16a34a', bgColor: '#dcfce7' };
@@ -21,7 +26,11 @@ function getImpressionDisplay(impression: InspectionImpression): { emoji: string
   }
 }
 
-function getSuitabilityDisplay(suitability: ClientSuitability): { label: string; color: string; bgColor: string } {
+function getSuitabilityDisplay(suitability: ClientSuitability): {
+  label: string;
+  color: string;
+  bgColor: string;
+} {
   switch (suitability) {
     case 'match':
       return { label: 'Match', color: '#16a34a', bgColor: '#dcfce7' };
@@ -70,7 +79,9 @@ export default function InspectionDetailScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.dateTime}>{formattedDate} at {formattedTime}</Text>
+        <Text style={styles.dateTime}>
+          {formattedDate} at {formattedTime}
+        </Text>
       </View>
 
       {/* Impression & Suitability */}
@@ -82,8 +93,18 @@ export default function InspectionDetailScreen() {
           </Text>
         </View>
         {inspection.clientSuitability && (
-          <View style={[styles.badge, { backgroundColor: getSuitabilityDisplay(inspection.clientSuitability).bgColor }]}>
-            <Text style={[styles.badgeText, { color: getSuitabilityDisplay(inspection.clientSuitability).color }]}>
+          <View
+            style={[
+              styles.badge,
+              { backgroundColor: getSuitabilityDisplay(inspection.clientSuitability).bgColor },
+            ]}
+          >
+            <Text
+              style={[
+                styles.badgeText,
+                { color: getSuitabilityDisplay(inspection.clientSuitability).color },
+              ]}
+            >
               Client: {getSuitabilityDisplay(inspection.clientSuitability).label}
             </Text>
           </View>
@@ -151,7 +172,12 @@ export default function InspectionDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
   errorText: { fontSize: 16, color: '#dc2626' },
 
   header: { marginBottom: 16 },

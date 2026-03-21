@@ -83,13 +83,14 @@ function NotificationRow({
   onDismiss: () => void;
 }) {
   const icon = CATEGORY_ICONS[notification.category] ?? '🔔';
-  const priorityClass =
-    PRIORITY_COLORS[notification.priority] ?? PRIORITY_COLORS['low']!;
+  const priorityClass = PRIORITY_COLORS[notification.priority] ?? PRIORITY_COLORS['low']!;
 
   return (
     <div
       className={`flex items-start gap-4 rounded-xl border px-4 py-3 transition-colors ${
-        notification.status !== 'read' ? 'border-brand-200 bg-brand-50/30' : 'border-gray-100 bg-white'
+        notification.status !== 'read'
+          ? 'border-brand-200 bg-brand-50/30'
+          : 'border-gray-100 bg-white'
       }`}
     >
       {/* Icon */}
@@ -106,7 +107,9 @@ function NotificationRow({
             {notification.title}
           </p>
           <div className="flex shrink-0 items-center gap-2">
-            <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${priorityClass}`}>
+            <span
+              className={`rounded-full border px-2 py-0.5 text-xs font-medium ${priorityClass}`}
+            >
               {notification.priority}
             </span>
             <span className="text-xs text-gray-400">
@@ -114,9 +117,7 @@ function NotificationRow({
             </span>
           </div>
         </div>
-        {notification.body && (
-          <p className="mt-1 text-sm text-gray-500">{notification.body}</p>
-        )}
+        {notification.body && <p className="mt-1 text-sm text-gray-500">{notification.body}</p>}
         <div className="mt-2 flex items-center gap-3">
           {notification.status !== 'read' && (
             <button
@@ -146,7 +147,11 @@ function PreferencesPanel() {
   const [digestEnabled, setDigestEnabled] = useState(prefs?.digestModeEnabled ?? true);
 
   function handleSave() {
-    update.mutate({ quietHoursStart: quietStart, quietHoursEnd: quietEnd, digestModeEnabled: digestEnabled });
+    update.mutate({
+      quietHoursStart: quietStart,
+      quietHoursEnd: quietEnd,
+      digestModeEnabled: digestEnabled,
+    });
   }
 
   return (
@@ -208,8 +213,8 @@ export function NotificationsClient() {
     filter.value === 'unread'
       ? { status: 'unread' }
       : filter.value
-      ? { category: filter.value }
-      : undefined,
+        ? { category: filter.value }
+        : undefined,
   );
   const markRead = useMarkNotificationRead();
   const dismiss = useDismissNotification();

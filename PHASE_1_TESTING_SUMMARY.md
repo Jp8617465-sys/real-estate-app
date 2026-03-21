@@ -20,6 +20,7 @@
 ```
 
 **Test Coverage:**
+
 - ✅ Settled → settled-nurture (terminal stage)
 - ✅ Under contract → under-contract (preservation)
 - ✅ Accepted offer → under-contract (awaiting exchange)
@@ -40,6 +41,7 @@
 - ✅ Migration context aggregation
 
 **Key Test Methods:**
+
 ```typescript
 PipelineMigrationEngine.determineTargetStage(context)
 PipelineMigrationEngine.generateBriefFromBuyerProfile(...)
@@ -53,6 +55,7 @@ PipelineMigrationEngine.generateBriefCompletionWarnings(...)
 **Command:** `npm run build`
 
 **Fixes Applied:**
+
 1. **Portal tsconfig ES2018 upgrade**
    - File: `apps/portal/tsconfig.json`
    - Changed: `"target": "ES2017"` → `"target": "ES2018"`
@@ -76,6 +79,7 @@ PipelineMigrationEngine.generateBriefCompletionWarnings(...)
    - Matches API route implementation
 
 **Build Results:**
+
 ```
 ✓ @realflow/shared: compiled successfully
 ✓ @realflow/ui: compiled successfully
@@ -96,6 +100,7 @@ Zero TypeScript errors
 **Location:** `apps/api/src/routes/pipeline-migration.test.ts` (NEW FILE - 561 lines)
 
 **Test Structure:**
+
 ```typescript
 // 4 endpoint test suites
 describe('POST /api/v1/pipeline-migration/preview')
@@ -109,6 +114,7 @@ describe('POST /api/v1/pipeline-migration/rollback')
 ```
 
 **Tests Passing:**
+
 - ✅ Preview endpoint returns 500 on database error
 - ✅ Execute endpoint requires transactionIds in payload
 - ✅ Execute endpoint requires userId in payload
@@ -116,6 +122,7 @@ describe('POST /api/v1/pipeline-migration/rollback')
 - ✅ Rollback endpoint requires migrationBatchId in payload
 
 **Tests Needing Mock Adjustment:**
+
 - ⚠️ Preview endpoint with full context mocking
 - ⚠️ Execute endpoint with SQL function call mocking
 - ⚠️ History endpoint data structure
@@ -130,6 +137,7 @@ describe('POST /api/v1/pipeline-migration/rollback')
 ### 4. Database Migrations ✅ READY FOR DEPLOYMENT
 
 **Migration Files:**
+
 1. `supabase/migrations/00006_pipeline_migration_tracking.sql` (5,066 bytes)
    - Creates `pipeline_migration_history` table
    - 5 strategic indexes
@@ -144,6 +152,7 @@ describe('POST /api/v1/pipeline-migration/rollback')
    - Full error handling
 
 **Verification Commands:**
+
 ```bash
 # Check migrations are recognized
 supabase migration list --local
@@ -165,6 +174,7 @@ psql supabase -c "\df migrate_transaction_to_buyers_agent"
 **Location:** `apps/web/src/app/admin/pipeline-migration/page.tsx` (606 lines)
 
 **Features Implemented:**
+
 - Overview statistics cards (total, by confidence, brief creation required)
 - Transaction list with checkbox selection
 - Color-coded confidence badges (green/yellow/orange)
@@ -176,11 +186,12 @@ psql supabase -c "\df migrate_transaction_to_buyers_agent"
 - Real-time loading states
 
 **API Integration:**
+
 ```typescript
 // React Query hooks implemented
-const { data: preview } = useQuery(['migration-preview'])
-const executeMutation = useMutation(executeMigration)
-const { data: history } = useQuery(['migration-history'])
+const { data: preview } = useQuery(['migration-preview']);
+const executeMutation = useMutation(executeMigration);
+const { data: history } = useQuery(['migration-history']);
 ```
 
 **Route:** `http://localhost:3000/admin/pipeline-migration`
@@ -192,6 +203,7 @@ const { data: history } = useQuery(['migration-history'])
 ## Files Created/Modified
 
 ### New Files (10)
+
 1. `supabase/migrations/00006_pipeline_migration_tracking.sql` (5,066 bytes)
 2. `supabase/migrations/00007_pipeline_migration_function.sql` (8,551 bytes)
 3. `packages/business-logic/src/pipeline-migration.ts` (462 lines)
@@ -204,6 +216,7 @@ const { data: history } = useQuery(['migration-history'])
 10. `PHASE_1_TESTING_SUMMARY.md` (this file)
 
 ### Modified Files (5)
+
 1. `packages/business-logic/src/index.ts` - Added pipeline migration exports
 2. `apps/api/src/index.ts` - Registered pipeline migration routes
 3. `apps/portal/tsconfig.json` - Upgraded to ES2018 target
@@ -217,12 +230,14 @@ const { data: history } = useQuery(['migration-history'])
 ## Testing Checklist
 
 ### Automated Testing
+
 - [x] Business logic unit tests (18/18 passing)
 - [x] TypeScript compilation (all packages)
 - [x] Build verification (web + portal + api)
 - [x] API integration test structure created
 
 ### Manual Testing Required
+
 - [ ] Apply database migrations to local Supabase
 - [ ] Start API server (`npm run dev` in apps/api)
 - [ ] Start web server (`npm run dev` in apps/web)
@@ -234,6 +249,7 @@ const { data: history } = useQuery(['migration-history'])
 - [ ] Test rollback functionality
 
 ### Database Verification
+
 - [ ] Check `pipeline_migration_history` table populated
 - [ ] Verify `stage_transitions` logged
 - [ ] Verify `activities` created
@@ -256,6 +272,7 @@ const { data: history } = useQuery(['migration-history'])
 ## Known Issues
 
 ### 1. API Integration Test Mocks ⚠️ Low Priority
+
 **Issue:** 7/12 integration tests failing due to mock setup complexity
 **Impact:** Core business logic tests pass (18/18), functionality validated
 **Workaround:** Manual testing with running servers more effective
@@ -263,23 +280,25 @@ const { data: history } = useQuery(['migration-history'])
 **Estimated:** 1-2 hours to fix all mocks
 
 **Example Fix Needed:**
+
 ```typescript
 // Current: Simple mock
 mockFrom.mockReturnValue({
-  select: vi.fn().mockResolvedValue({ data: [], error: null })
+  select: vi.fn().mockResolvedValue({ data: [], error: null }),
 });
 
 // Needed: Chained mock
 mockFrom.mockReturnValue({
   select: vi.fn().mockReturnValue({
     eq: vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ data: [], error: null })
-    })
-  })
+      eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+    }),
+  }),
 });
 ```
 
 ### 2. Database Migrations Not Yet Applied
+
 **Issue:** Migrations exist but not applied to local Supabase
 **Impact:** API endpoints will fail until migrations applied
 **Fix Required:** Run `supabase db push --local`
@@ -290,8 +309,10 @@ mockFrom.mockReturnValue({
 ## Next Steps
 
 ### Immediate (Before Manual Testing)
+
 1. Apply database migrations: `supabase db push --local`
 2. Start development servers:
+
    ```bash
    # Terminal 1: API
    cd apps/api && npm run dev
@@ -299,10 +320,12 @@ mockFrom.mockReturnValue({
    # Terminal 2: Web
    cd apps/web && npm run dev
    ```
+
 3. Navigate to `http://localhost:3000/admin/pipeline-migration`
 4. Test full workflow: Preview → Execute → History → Rollback
 
 ### Phase 1 Completion Criteria
+
 - [x] Database infrastructure created (migrations 00006, 00007)
 - [x] Business logic implemented and tested (18/18 tests)
 - [x] API endpoints created (4 routes with Zod validation)
@@ -312,19 +335,23 @@ mockFrom.mockReturnValue({
 - [ ] Documentation complete (✅ this summary + Phase 1 completion doc)
 
 ### Staged Rollout (Post-Testing)
+
 **Week 1: Staging Environment**
+
 - Deploy all infrastructure to staging
 - Test with 5-10 sample transactions
 - Validate brief generation quality
 - Performance test with 100+ transactions
 
 **Week 2: Production Dry-Run**
+
 - Enable preview mode in production admin UI
 - Review all migration decisions with stakeholders
 - Refine mapping rules if needed
 - User training sessions
 
 **Week 3: Production Execution**
+
 - Full database backup: `pg_dump realflow > backup-before-migration.sql`
 - Batch 1: High confidence transactions (50-100 at a time)
 - Batch 2: Medium confidence transactions
@@ -346,6 +373,7 @@ mockFrom.mockReturnValue({
 - ✅ Production-ready admin UI
 
 **Minor polish needed:**
+
 - Integration test mocks (doesn't block deployment)
 - Manual testing with running servers (5-10 minutes setup)
 
@@ -360,6 +388,7 @@ mockFrom.mockReturnValue({
 **Efficiency:** 6.8x faster than estimated (due to parallel agents and automation)
 
 **Time Breakdown:**
+
 - Database migrations: 4 hours (estimated) / ~1 hour (actual)
 - Business logic: 8 hours / ~2 hours
 - API endpoints: 8 hours / ~2 hours
@@ -368,6 +397,7 @@ mockFrom.mockReturnValue({
 - Documentation: 4 hours / ~1 hour
 
 **Key Success Factors:**
+
 1. Parallel agent teams for implementation
 2. Comprehensive planning phase reduced rework
 3. Following established patterns (transformation layer from Phase 0)

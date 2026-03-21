@@ -44,7 +44,11 @@ const RESULT_STYLES: Record<AuctionOutcome, { label: string; className: string }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const aud = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 });
+const aud = new Intl.NumberFormat('en-AU', {
+  style: 'currency',
+  currency: 'AUD',
+  maximumFractionDigits: 0,
+});
 
 function formatAUD(value: number | null): string {
   if (value === null) return '—';
@@ -104,37 +108,33 @@ export default function AuctionResultsClient() {
   const [suburbFilter, setSuburbFilter] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchResults = useCallback(
-    async (page: number, suburb: string) => {
-      setIsLoading(true);
-      setError(null);
+  const fetchResults = useCallback(async (page: number, suburb: string) => {
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const params = new URLSearchParams({
-          limit: String(PAGE_SIZE),
-          offset: String(page * PAGE_SIZE),
-        });
-        if (suburb.trim()) params.set('suburb', suburb.trim());
+    try {
+      const params = new URLSearchParams({
+        limit: String(PAGE_SIZE),
+        offset: String(page * PAGE_SIZE),
+      });
+      if (suburb.trim()) params.set('suburb', suburb.trim());
 
-        const res = await fetch(
-          `${API_BASE}/api/v1/domain/auction-results?${params.toString()}`,
-          { credentials: 'include' },
-        );
+      const res = await fetch(`${API_BASE}/api/v1/domain/auction-results?${params.toString()}`, {
+        credentials: 'include',
+      });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-        const json = (await res.json()) as AuctionResultsResponse;
-        setRows(json.data ?? []);
-        setTotal(json.total);
-        setOffset(page * PAGE_SIZE);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load auction results');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [],
-  );
+      const json = (await res.json()) as AuctionResultsResponse;
+      setRows(json.data ?? []);
+      setTotal(json.total);
+      setOffset(page * PAGE_SIZE);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load auction results');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Initial fetch
   useEffect(() => {

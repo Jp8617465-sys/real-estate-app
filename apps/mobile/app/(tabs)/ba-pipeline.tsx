@@ -1,16 +1,20 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
 import {
-  BUYERS_AGENT_STAGE_LABELS,
-  type BuyersAgentStage,
-} from '@realflow/shared';
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { BUYERS_AGENT_STAGE_LABELS, type BuyersAgentStage } from '@realflow/shared';
 import { usePipeline } from '../../src/hooks/use-pipeline';
 
 function getStageColor(stage: BuyersAgentStage): string {
   const colors: Record<BuyersAgentStage, string> = {
-    'enquiry': '#6b7280',
+    enquiry: '#6b7280',
     'consult-qualify': '#8b5cf6',
-    'engaged': '#2563eb',
+    engaged: '#2563eb',
     'strategy-brief': '#0891b2',
     'active-search': '#16a34a',
     'offer-negotiate': '#ca8a04',
@@ -59,18 +63,22 @@ export default function BAPipelineScreen() {
           <View key={key} style={styles.column}>
             <View style={styles.columnHeader}>
               <View style={[styles.stageIndicator, { backgroundColor: color }]} />
-              <Text style={styles.columnTitle} numberOfLines={1}>{label}</Text>
+              <Text style={styles.columnTitle} numberOfLines={1}>
+                {label}
+              </Text>
               <View style={styles.countBadge}>
                 <Text style={styles.countText}>{cards.length}</Text>
               </View>
             </View>
             {cards.map((card) => {
               const contact = (card as Record<string, unknown>).contact as
-                | { first_name: string; last_name: string; buyer_profile: Record<string, unknown> | null }
+                | {
+                    first_name: string;
+                    last_name: string;
+                    buyer_profile: Record<string, unknown> | null;
+                  }
                 | undefined;
-              const clientName = contact
-                ? `${contact.first_name} ${contact.last_name}`
-                : 'Unknown';
+              const clientName = contact ? `${contact.first_name} ${contact.last_name}` : 'Unknown';
               const budget = contact?.buyer_profile
                 ? `$${((contact.buyer_profile.budgetMin as number) / 1000).toFixed(0)}K-$${((contact.buyer_profile.budgetMax as number) / 1000).toFixed(0)}K`
                 : '';
@@ -87,9 +95,7 @@ export default function BAPipelineScreen() {
                 </TouchableOpacity>
               );
             })}
-            {cards.length === 0 && (
-              <Text style={styles.emptyText}>No clients</Text>
-            )}
+            {cards.length === 0 && <Text style={styles.emptyText}>No clients</Text>}
           </View>
         );
       })}
@@ -100,7 +106,12 @@ export default function BAPipelineScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
   column: {
     width: 260,
     backgroundColor: '#f3f4f6',

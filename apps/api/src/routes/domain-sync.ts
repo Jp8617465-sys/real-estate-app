@@ -69,7 +69,10 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
     const supabase = createSupabaseClient(request);
 
     // Get the current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -109,8 +112,7 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
 
     const typedSettings = settings as { domain_sync_frequency?: string } | null;
     const connected =
-      Boolean(process.env['DOMAIN_CLIENT_ID']) &&
-      Boolean(process.env['DOMAIN_CLIENT_SECRET']);
+      Boolean(process.env['DOMAIN_CLIENT_ID']) && Boolean(process.env['DOMAIN_CLIENT_SECRET']);
 
     const data = {
       connected,
@@ -136,7 +138,10 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
   fastify.post('/sync', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -182,7 +187,10 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/listings', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -235,7 +243,10 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const supabase = createSupabaseClient(request);
 
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
       if (authError || !user) {
         return reply.status(401).send({ error: 'Unauthorized' });
       }
@@ -267,9 +278,7 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
       if (property) {
         const { data: matchRows } = await supabase
           .from('property_matches')
-          .select(
-            'id, brief_id, status, overall_score, score_breakdown, flags, created_at',
-          )
+          .select('id, brief_id, status, overall_score, score_breakdown, flags, created_at')
           .eq('property_id', (property as { id: string }).id)
           .eq('is_deleted', false)
           .order('overall_score', { ascending: false });
@@ -290,21 +299,27 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
    * Returns 200 immediately; processing is async.
    */
   fastify.post('/webhooks', async (request, reply) => {
+    const secret = process.env['DOMAIN_WEBHOOK_SECRET'];
+    if (!secret) {
+      fastify.log.error('DOMAIN_WEBHOOK_SECRET is not configured — rejecting webhook');
+      return reply.status(500).send({ error: 'Webhook signature verification not configured' });
+    }
+
     const signature = request.headers['x-domain-signature'];
-    const secret = process.env['DOMAIN_WEBHOOK_SECRET'] ?? '';
 
     if (!signature || typeof signature !== 'string') {
       return reply.status(401).send({ error: 'Missing signature' });
     }
 
     // Compute expected HMAC-SHA256 over the original raw request bytes
-    const rawBody =
-      (request as FastifyRequest & { rawBody?: Buffer }).rawBody ??
-      Buffer.from(JSON.stringify(request.body));
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(rawBody)
-      .digest('hex');
+    const rawBody = (request as FastifyRequest & { rawBody?: Buffer }).rawBody;
+    if (!rawBody) {
+      request.log.error('rawBody unavailable — cannot verify Domain webhook signature');
+      return reply
+        .status(500)
+        .send({ error: 'Raw body not available for signature verification' });
+    }
+    const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
 
     const signatureBuffer = Buffer.from(signature, 'hex');
     const expectedBuffer = Buffer.from(expected, 'hex');
@@ -325,9 +340,7 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
 
         if (event.type === 'listing.priceUpdated' && event.listingId) {
           // Price update webhook — re-run price change detection can be targeted
-          fastify.log.info(
-            `[domain/webhook] Price update for listing ${event.listingId}`,
-          );
+          fastify.log.info(`[domain/webhook] Price update for listing ${event.listingId}`);
         }
       } catch (err) {
         fastify.log.error(
@@ -348,7 +361,10 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/price-changes', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -402,7 +418,10 @@ export async function domainSyncRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/auction-results', async (request, reply) => {
     const supabase = createSupabaseClient(request);
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -479,13 +498,13 @@ export async function runSyncJob(
 
     // Fire alerts for genuinely new matches (ignoreDuplicates prevents re-alerts on re-sync)
     for (const matchId of syncResult.newMatchIds) {
-      void alertEngine.handleNewMatch(matchId);  // fire-and-forget
+      void alertEngine.handleNewMatch(matchId); // fire-and-forget
     }
 
     // Detect price changes and fire price-drop alerts
     const priceChanges = await syncEngine.detectPriceChanges(agentId, supabase);
     for (const change of priceChanges) {
-      void alertEngine.handlePriceChange(change.id);  // fire-and-forget
+      void alertEngine.handlePriceChange(change.id); // fire-and-forget
     }
 
     await supabase

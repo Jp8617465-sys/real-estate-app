@@ -55,10 +55,7 @@ describe('useInspections', () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useInspections('prop-1'),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useInspections('prop-1'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 

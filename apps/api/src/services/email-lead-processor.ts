@@ -34,8 +34,14 @@ export interface SupabaseServiceClient {
       };
     };
     update: (data: Record<string, unknown>) => {
-      eq: (field: string, value: unknown) => {
-        eq?: (field: string, value: unknown) => Promise<{
+      eq: (
+        field: string,
+        value: unknown,
+      ) => {
+        eq?: (
+          field: string,
+          value: unknown,
+        ) => Promise<{
           data: Record<string, unknown> | null;
           error: { message: string } | null;
         }>;
@@ -51,8 +57,14 @@ export interface SupabaseServiceClient {
       }>;
     };
     select: (columns?: string) => {
-      eq: (field: string, value: unknown) => {
-        eq: (field: string, value: unknown) => {
+      eq: (
+        field: string,
+        value: unknown,
+      ) => {
+        eq: (
+          field: string,
+          value: unknown,
+        ) => {
           single: () => Promise<{
             data: Record<string, unknown> | null;
             error: { message: string } | null;
@@ -64,7 +76,10 @@ export interface SupabaseServiceClient {
           data: Record<string, unknown> | null;
           error: { message: string } | null;
         }>;
-        contains?: (field: string, value: unknown) => {
+        contains?: (
+          field: string,
+          value: unknown,
+        ) => {
           data?: Array<Record<string, unknown>> | null;
           error?: { message: string } | null;
         } & Promise<{
@@ -72,7 +87,10 @@ export interface SupabaseServiceClient {
           error: { message: string } | null;
         }>;
       };
-      contains: (field: string, value: unknown) => Promise<{
+      contains: (
+        field: string,
+        value: unknown,
+      ) => Promise<{
         data: Array<Record<string, unknown>> | null;
         error: { message: string } | null;
       }>;
@@ -163,9 +181,7 @@ const SELLER_PATTERNS = [
  *  - +15 for urgency language
  *  - +15 for pre-approval mention
  */
-export function calculateLeadScore(
-  signals: LeadScoreSignals,
-): number {
+export function calculateLeadScore(signals: LeadScoreSignals): number {
   let score = 10; // base score for any inbound email
 
   if (signals.isPortalEnquiry) score += 20;
@@ -199,10 +215,7 @@ export function extractLeadSignals(
 /**
  * Determine the lead type from the email classification.
  */
-export function classifyLeadType(
-  classification: string,
-  textBody: string,
-): LeadType {
+export function classifyLeadType(classification: string, textBody: string): LeadType {
   if (classification === 'domain_enquiry' || classification === 'rea_enquiry') {
     return 'buyer_inquiry';
   }
@@ -318,17 +331,16 @@ export class EmailLeadProcessor {
    */
   async process(payload: InboundEmailPayload): Promise<EmailLeadProcessingResult> {
     // Step 1: Parse email with EmailParser
-    const { classification, normalisedMessage, portalEnquiry } =
-      EmailParser.processInboundEmail({
-        from: payload.from,
-        to: payload.to,
-        subject: payload.subject,
-        textBody: payload.textBody,
-        htmlBody: payload.htmlBody,
-        messageId: payload.messageId,
-        threadId: payload.threadId,
-        receivedAt: payload.receivedAt,
-      });
+    const { classification, normalisedMessage, portalEnquiry } = EmailParser.processInboundEmail({
+      from: payload.from,
+      to: payload.to,
+      subject: payload.subject,
+      textBody: payload.textBody,
+      htmlBody: payload.htmlBody,
+      messageId: payload.messageId,
+      threadId: payload.threadId,
+      receivedAt: payload.receivedAt,
+    });
 
     // Step 2: Determine lead type
     const leadType = classifyLeadType(classification, payload.textBody);
@@ -338,19 +350,11 @@ export class EmailLeadProcessor {
     const senderPhone = portalEnquiry?.enquirerPhone ?? normalisedMessage.senderPhone;
     const senderEmail = portalEnquiry?.enquirerEmail ?? normalisedMessage.senderEmail;
 
-    const signals = extractLeadSignals(
-      payload.textBody,
-      !!senderPhone,
-      isPortalEnquiry,
-    );
+    const signals = extractLeadSignals(payload.textBody, !!senderPhone, isPortalEnquiry);
     const leadScore = calculateLeadScore(signals);
 
     // Step 4: Deduplicate against existing contacts
-    const existingContact = await findExistingContact(
-      this.supabase,
-      senderEmail,
-      senderPhone,
-    );
+    const existingContact = await findExistingContact(this.supabase, senderEmail, senderPhone);
 
     let contactId: string;
     let isNewContact = false;
@@ -427,8 +431,8 @@ export class EmailLeadProcessor {
       .eq('id', contactId)
       .single();
 
-    const agentId = (contactRecord?.['assigned_agent_id'] as string)
-      ?? '00000000-0000-0000-0000-000000000000';
+    const agentId =
+      (contactRecord?.['assigned_agent_id'] as string) ?? '00000000-0000-0000-0000-000000000000';
 
     // Step 7: Store conversation message
     const { data: message, error: msgError } = await this.supabase
@@ -461,7 +465,9 @@ export class EmailLeadProcessor {
           workflowEvents: [],
         };
       }
-      throw new Error(`Failed to store conversation message: ${msgError?.message ?? 'Unknown error'}`);
+      throw new Error(
+        `Failed to store conversation message: ${msgError?.message ?? 'Unknown error'}`,
+      );
     }
 
     const messageId = message['id'] as string;
@@ -478,8 +484,8 @@ export class EmailLeadProcessor {
         contact_id: contactId,
         type: activityType,
         title: activityTitle,
-        description: normalisedMessage.content.subject
-          ?? normalisedMessage.content.text?.slice(0, 200),
+        description:
+          normalisedMessage.content.subject ?? normalisedMessage.content.text?.slice(0, 200),
         created_by: agentId,
         metadata: {
           messageId,

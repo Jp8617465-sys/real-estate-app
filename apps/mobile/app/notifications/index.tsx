@@ -7,7 +7,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useNotifications, useMarkNotificationRead, useDismissNotification } from '../../src/hooks/use-notifications';
+import {
+  useNotifications,
+  useMarkNotificationRead,
+  useDismissNotification,
+} from '../../src/hooks/use-notifications';
 import type { Notification } from '@realflow/shared';
 
 function getCategoryIcon(category: string): string {
@@ -101,13 +105,17 @@ export default function NotificationsScreen() {
                   <Text style={[styles.title, isUnread && styles.titleUnread]} numberOfLines={1}>
                     {item.title}
                   </Text>
-                  <View style={[styles.priorityBadge, { backgroundColor: badgeStyle.backgroundColor }]}>
+                  <View
+                    style={[styles.priorityBadge, { backgroundColor: badgeStyle.backgroundColor }]}
+                  >
                     <Text style={[styles.priorityBadgeText, { color: badgeStyle.color }]}>
                       {item.priority}
                     </Text>
                   </View>
                 </View>
-                <Text style={styles.body} numberOfLines={2}>{item.body}</Text>
+                <Text style={styles.body} numberOfLines={2}>
+                  {item.body}
+                </Text>
                 <Text style={styles.time}>{formatTimeAgo(item.createdAt)}</Text>
               </View>
 
@@ -142,7 +150,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cardUnread: { borderColor: '#bfdbfe', backgroundColor: '#eff6ff' },
-  iconContainer: { position: 'relative', width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  iconContainer: {
+    position: 'relative',
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   icon: { fontSize: 20 },
   unreadDot: {
     position: 'absolute',
@@ -158,7 +172,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 14, fontWeight: '500', color: '#374151', flex: 1 },
   titleUnread: { fontWeight: '700', color: '#111827' },
   priorityBadge: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
-  priorityBadgeText: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+  priorityBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   body: { fontSize: 12, color: '#6b7280', lineHeight: 16 },
   time: { fontSize: 11, color: '#9ca3af', marginTop: 2 },
   dismissBtn: { paddingHorizontal: 4 },

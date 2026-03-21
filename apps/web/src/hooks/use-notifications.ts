@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import type { Notification, NotificationPreferences, UpdateNotificationPreferences } from '@realflow/shared';
+import type {
+  Notification,
+  NotificationPreferences,
+  UpdateNotificationPreferences,
+} from '@realflow/shared';
 
 const supabase = createClient();
 
@@ -88,6 +92,9 @@ export function useMarkNotificationRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -139,6 +146,9 @@ export function useSnoozeNotification() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -158,6 +168,9 @@ export function useUpdateNotificationPreferences() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'preferences'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

@@ -29,51 +29,61 @@ Orchestrator gate: Verify returned content: (a) no shorthand ID strings like `'c
 ## ⚠️ MANDATORY VITEST RULES (NEVER violate these — from MEMORY.md)
 
 ### Rule 1: UUID Fixtures
+
 **WRONG:** `const contactId = 'contact-1';`
 **CORRECT:** `const contactId = '00000000-0000-0000-0000-000000000001';`
 
 Zod's `z.string().uuid()` validates format. Shorthand strings throw `ZodError`. Always use proper UUID v4 format in every test fixture.
 
 ### Rule 2: vi.hoisted() for Shared Mocks
+
 **WRONG:**
+
 ```typescript
 const mockFn = vi.fn();
 vi.mock('./module', () => ({ fn: mockFn })); // ❌ Cannot reference const in factory
 ```
 
 **CORRECT:**
+
 ```typescript
 const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
 vi.mock('./module', () => ({ fn: mockFn })); // ✅ hoisted() runs before imports
 ```
 
 ### Rule 3: Class Constructor Mocks
+
 **WRONG:**
+
 ```typescript
 vi.mock('./engine', () => ({ FeatureEngine: vi.fn(() => ({ create: vi.fn() })) }));
 // Arrow functions cannot be used as class constructors
 ```
 
 **CORRECT:**
+
 ```typescript
 // Option A: Dependency injection (preferred)
 const mockEngine = { create: vi.fn(), list: vi.fn() };
 const route = new FeatureRoute(mockEngine); // Pass mock as constructor arg
 
 // Option B: Mock the class correctly
-const MockEngine = vi.fn().mockImplementation(function() {
+const MockEngine = vi.fn().mockImplementation(function () {
   this.create = vi.fn();
   this.list = vi.fn();
 });
 ```
 
 ### Rule 4: Supabase Chain Termination
+
 **WRONG when chain ends at .select():**
+
 ```typescript
 select: vi.fn().mockReturnThis(), // ❌ Returns mock, not a Promise
 ```
 
 **CORRECT when .select() is the final call:**
+
 ```typescript
 select: vi.fn().mockResolvedValue({ data: [...], error: null }), // ✅ Returns Promise
 ```
@@ -93,7 +103,7 @@ const { mockMethod } = vi.hoisted(() => ({
 
 // Mock external dependencies
 vi.mock('./external-dependency', () => ({
-  ExternalClass: vi.fn().mockImplementation(function() {
+  ExternalClass: vi.fn().mockImplementation(function () {
     this.method = mockMethod;
   }),
 }));
@@ -163,14 +173,15 @@ describe('SubjectUnderTest', () => {
 
 For the file being tested, ensure tests cover:
 
-| Type | Target |
-|------|--------|
-| Business logic engine | 80%+ line coverage |
-| API route handler | 70%+ line coverage |
-| Zod schema | 90%+ (test all enum values, required fields, optional fields) |
-| Utility function | 90%+ |
+| Type                  | Target                                                        |
+| --------------------- | ------------------------------------------------------------- |
+| Business logic engine | 80%+ line coverage                                            |
+| API route handler     | 70%+ line coverage                                            |
+| Zod schema            | 90%+ (test all enum values, required fields, optional fields) |
+| Utility function      | 90%+                                                          |
 
 Every public method must have at minimum:
+
 - ✅ Happy path (returns expected result)
 - ✅ Not found / empty (returns null or [])
 - ✅ Validation error (Zod throws on bad input)

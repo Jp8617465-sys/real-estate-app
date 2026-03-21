@@ -118,9 +118,7 @@ export function usePipelineOverview() {
   return useQuery({
     queryKey: ['pipeline-overview'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('current_stage');
+      const { data, error } = await supabase.from('transactions').select('current_stage');
 
       if (error) throw error;
 
@@ -206,9 +204,7 @@ export function useUpcomingTasks() {
 
       return (data ?? []).map((row: Record<string, unknown>) => {
         const contact = row.contacts as Record<string, string> | null;
-        const contactName = contact
-          ? `${contact.first_name} ${contact.last_name}`
-          : undefined;
+        const contactName = contact ? `${contact.first_name} ${contact.last_name}` : undefined;
 
         return {
           id: row.id as string,

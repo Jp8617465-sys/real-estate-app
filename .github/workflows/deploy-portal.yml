@@ -4,17 +4,17 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/portal/**"
-      - "packages/**"
-      - "package.json"
-      - "turbo.json"
+      - 'apps/portal/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'turbo.json'
 
 concurrency:
   group: deploy-portal-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: '20'
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci

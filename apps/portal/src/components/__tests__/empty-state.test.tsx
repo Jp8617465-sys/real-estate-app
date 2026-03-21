@@ -20,23 +20,13 @@ describe('EmptyState (portal)', () => {
   });
 
   it('renders icon with aria-hidden', () => {
-    render(
-      <EmptyState
-        icon={MockIcon}
-        heading="Empty"
-        description="Nothing here."
-      />,
-    );
+    render(<EmptyState icon={MockIcon} heading="Empty" description="Nothing here." />);
     expect(screen.getByTestId('mock-icon')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('has role="status" with accessible label', () => {
     render(
-      <EmptyState
-        icon={MockIcon}
-        heading="No messages"
-        description="Start a conversation."
-      />,
+      <EmptyState icon={MockIcon} heading="No messages" description="Start a conversation." />,
     );
     const region = screen.getByRole('status');
     expect(region).toHaveAttribute('aria-label', 'No messages');
@@ -58,13 +48,7 @@ describe('EmptyState (portal)', () => {
   });
 
   it('does not render action slot when omitted', () => {
-    render(
-      <EmptyState
-        icon={MockIcon}
-        heading="Empty"
-        description="Nothing."
-      />,
-    );
+    render(<EmptyState icon={MockIcon} heading="Empty" description="Nothing." />);
     expect(screen.queryByRole('button')).toBeNull();
   });
 });

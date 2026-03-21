@@ -43,25 +43,16 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           </svg>
         </div>
 
-        <h1 className="mb-2 text-2xl font-bold text-gray-900">
-          Something went wrong
-        </h1>
+        <h1 className="mb-2 text-2xl font-bold text-gray-900">Something went wrong</h1>
 
         <p className="mb-8 text-gray-600">
-          We encountered an unexpected error. Our team has been notified
-          and is looking into it.
+          We encountered an unexpected error. Our team has been notified and is looking into it.
         </p>
 
         {process.env.NODE_ENV === 'development' && (
           <div className="mb-6 rounded-md bg-red-50 p-4 text-left">
-            <p className="text-sm font-medium text-red-800">
-              {error.message}
-            </p>
-            {error.digest && (
-              <p className="mt-1 text-xs text-red-600">
-                Digest: {error.digest}
-              </p>
-            )}
+            <p className="text-sm font-medium text-red-800">{error.message}</p>
+            {error.digest && <p className="mt-1 text-xs text-red-600">Digest: {error.digest}</p>}
           </div>
         )}
 

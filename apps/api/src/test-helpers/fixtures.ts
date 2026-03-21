@@ -89,7 +89,8 @@ export const PROPERTIES = {
     listing_status: 'active',
     list_price: 2100000,
     price_guide: '$2,000,000 - $2,200,000',
-    listing_description: 'Stunning beachside home with ocean views, renovated kitchen, and heated pool.',
+    listing_description:
+      'Stunning beachside home with ocean views, renovated kitchen, and heated pool.',
     sale_type: 'auction',
     auction_date: '2026-03-15T10:00:00.000Z',
     domain_listing_id: 'DOM-2045678',
@@ -173,14 +174,7 @@ export const PIPELINE_STAGES = {
     'settled',
     'settled-nurture',
   ],
-  seller: [
-    'appraisal-booked',
-    'listed',
-    'under-offer',
-    'exchanged',
-    'settled',
-    'post-settlement',
-  ],
+  seller: ['appraisal-booked', 'listed', 'under-offer', 'exchanged', 'settled', 'post-settlement'],
 } as const;
 
 // ─── Client Brief Fixtures ──────────────────────────────────────────
@@ -376,7 +370,8 @@ export const CONSOLIDATION_REPORTS = {
     title: 'client brief summary - 04/03/2026',
     status: 'ready',
     content: {
-      executive_summary: 'Search for Bondi, Coogee: 2 properties reviewed, 1 strong match identified.',
+      executive_summary:
+        'Search for Bondi, Coogee: 2 properties reviewed, 1 strong match identified.',
       property_rankings: [],
       risks: [],
       recommended_actions: [],

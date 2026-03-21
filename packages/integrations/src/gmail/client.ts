@@ -94,29 +94,33 @@ export class GmailClient {
     this.config = GmailConfigSchema.parse(config);
   }
 
-  private async request<T>(
-    path: string,
-    options: RequestInit = {},
-  ): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${this.config.accessToken}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+  private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${this.config.accessToken}`,
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
 
-    if (response.status === 401) {
-      throw new Error('Gmail token expired — needs refresh');
+      if (response.status === 401) {
+        throw new Error('Gmail token expired — needs refresh');
+      }
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Gmail API error: ${response.status} ${errorBody}`);
+      }
+
+      return response.json() as Promise<T>;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Gmail API error: ${response.status} ${errorBody}`);
-    }
-
-    return response.json() as Promise<T>;
   }
 
   /**
@@ -208,10 +212,7 @@ export class GmailClient {
    * Get history of changes since a given historyId.
    * Used to process push notification callbacks.
    */
-  async getHistory(
-    startHistoryId: string,
-    historyTypes?: string[],
-  ): Promise<GmailHistoryList> {
+  async getHistory(startHistoryId: string, historyTypes?: string[]): Promise<GmailHistoryList> {
     const params = new URLSearchParams({ startHistoryId });
     if (historyTypes) {
       for (const type of historyTypes) {
@@ -254,8 +255,14 @@ export class GmailClient {
       headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? '';
 
     const from = getHeader('From');
-    const to = getHeader('To').split(',').map((s) => s.trim()).filter(Boolean);
-    const cc = getHeader('Cc').split(',').map((s) => s.trim()).filter(Boolean);
+    const to = getHeader('To')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const cc = getHeader('Cc')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     const subject = getHeader('Subject');
     const messageId = getHeader('Message-ID') || msg.id;
 

@@ -10,7 +10,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { usePropertyMatch, useUpdatePropertyMatchStatus } from '../../src/hooks/use-property-matches';
+import {
+  usePropertyMatch,
+  useUpdatePropertyMatchStatus,
+} from '../../src/hooks/use-property-matches';
 import type { PropertyMatchStatus } from '@realflow/shared';
 
 const ALL_STATUSES: PropertyMatchStatus[] = [
@@ -24,12 +27,12 @@ const ALL_STATUSES: PropertyMatchStatus[] = [
 
 function getStatusLabel(status: PropertyMatchStatus): string {
   const labels: Record<PropertyMatchStatus, string> = {
-    'new': 'New',
-    'sent_to_client': 'Sent to Client',
-    'client_interested': 'Interested',
-    'inspection_booked': 'Inspection Booked',
-    'rejected': 'Rejected',
-    'under_review': 'Under Review',
+    new: 'New',
+    sent_to_client: 'Sent to Client',
+    client_interested: 'Interested',
+    inspection_booked: 'Inspection Booked',
+    rejected: 'Rejected',
+    under_review: 'Under Review',
   };
   return labels[status];
 }
@@ -90,7 +93,9 @@ export default function MatchDetailScreen() {
   const currentStatus = selectedStatus ?? match.status;
   const currentNotes = agentNotes || (match.agentNotes ?? '');
   const clientBrief = match.client_brief as Record<string, unknown> | undefined;
-  const clientContact = clientBrief?.contact as { first_name: string; last_name: string } | undefined;
+  const clientContact = clientBrief?.contact as
+    | { first_name: string; last_name: string }
+    | undefined;
   const clientName = clientContact ? `${clientContact.first_name} ${clientContact.last_name}` : '';
 
   const overallColor = getScoreColor(match.overallScore);
@@ -144,14 +149,15 @@ export default function MatchDetailScreen() {
       {/* Status Selector */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Status</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statusRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.statusRow}
+        >
           {ALL_STATUSES.map((status) => (
             <TouchableOpacity
               key={status}
-              style={[
-                styles.statusChip,
-                currentStatus === status && styles.statusChipActive,
-              ]}
+              style={[styles.statusChip, currentStatus === status && styles.statusChipActive]}
               onPress={() => handleStatusChange(status)}
               activeOpacity={0.7}
             >
@@ -201,11 +207,7 @@ export default function MatchDetailScreen() {
           <Text style={styles.actionSecondaryText}>Book Inspection</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.actionDanger}
-          onPress={handleReject}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity style={styles.actionDanger} onPress={handleReject} activeOpacity={0.8}>
           <Text style={styles.actionDangerText}>Reject</Text>
         </TouchableOpacity>
       </View>
@@ -218,7 +220,12 @@ export default function MatchDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
   errorText: { fontSize: 16, color: '#dc2626' },
 
   overallScoreCard: {
@@ -229,7 +236,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: 'center',
   },
-  overallScoreLabel: { fontSize: 13, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 },
+  overallScoreLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   overallScoreValue: { fontSize: 48, fontWeight: '800', marginVertical: 4 },
   overallScoreClient: { fontSize: 13, color: '#6b7280' },
 

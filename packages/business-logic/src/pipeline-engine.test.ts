@@ -9,7 +9,9 @@ describe('PipelineEngine.isValidTransition (buying)', () => {
   });
 
   it('allows qualified-lead → active-search', () => {
-    expect(PipelineEngine.isValidTransition('buying', 'qualified-lead', 'active-search')).toBe(true);
+    expect(PipelineEngine.isValidTransition('buying', 'qualified-lead', 'active-search')).toBe(
+      true,
+    );
   });
 
   it('allows qualified-lead → new-enquiry (backward)', () => {
@@ -17,11 +19,15 @@ describe('PipelineEngine.isValidTransition (buying)', () => {
   });
 
   it('allows active-search → property-shortlisted', () => {
-    expect(PipelineEngine.isValidTransition('buying', 'active-search', 'property-shortlisted')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('buying', 'active-search', 'property-shortlisted'),
+    ).toBe(true);
   });
 
   it('allows property-shortlisted → due-diligence', () => {
-    expect(PipelineEngine.isValidTransition('buying', 'property-shortlisted', 'due-diligence')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('buying', 'property-shortlisted', 'due-diligence'),
+    ).toBe(true);
   });
 
   it('allows due-diligence → offer-made', () => {
@@ -63,19 +69,27 @@ describe('PipelineEngine.isValidTransition (buying)', () => {
 
 describe('PipelineEngine.isValidTransition (selling)', () => {
   it('allows appraisal-request → listing-preparation', () => {
-    expect(PipelineEngine.isValidTransition('selling', 'appraisal-request', 'listing-preparation')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('selling', 'appraisal-request', 'listing-preparation'),
+    ).toBe(true);
   });
 
   it('allows listing-preparation → on-market', () => {
-    expect(PipelineEngine.isValidTransition('selling', 'listing-preparation', 'on-market')).toBe(true);
+    expect(PipelineEngine.isValidTransition('selling', 'listing-preparation', 'on-market')).toBe(
+      true,
+    );
   });
 
   it('allows on-market → offers-negotiation', () => {
-    expect(PipelineEngine.isValidTransition('selling', 'on-market', 'offers-negotiation')).toBe(true);
+    expect(PipelineEngine.isValidTransition('selling', 'on-market', 'offers-negotiation')).toBe(
+      true,
+    );
   });
 
   it('allows offers-negotiation → under-contract', () => {
-    expect(PipelineEngine.isValidTransition('selling', 'offers-negotiation', 'under-contract')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('selling', 'offers-negotiation', 'under-contract'),
+    ).toBe(true);
   });
 
   it('allows under-contract → settled', () => {
@@ -83,7 +97,9 @@ describe('PipelineEngine.isValidTransition (selling)', () => {
   });
 
   it('allows backward transitions (on-market → listing-preparation)', () => {
-    expect(PipelineEngine.isValidTransition('selling', 'on-market', 'listing-preparation')).toBe(true);
+    expect(PipelineEngine.isValidTransition('selling', 'on-market', 'listing-preparation')).toBe(
+      true,
+    );
   });
 
   it('rejects transitions from settled (terminal)', () => {
@@ -91,7 +107,9 @@ describe('PipelineEngine.isValidTransition (selling)', () => {
   });
 
   it('rejects skipping stages (appraisal-request → on-market)', () => {
-    expect(PipelineEngine.isValidTransition('selling', 'appraisal-request', 'on-market')).toBe(false);
+    expect(PipelineEngine.isValidTransition('selling', 'appraisal-request', 'on-market')).toBe(
+      false,
+    );
   });
 });
 
@@ -115,7 +133,9 @@ describe('PipelineEngine.getValidNextStages', () => {
   });
 
   it('returns correct next stages for seller appraisal-request', () => {
-    expect(PipelineEngine.getValidNextStages('selling', 'appraisal-request')).toEqual(['listing-preparation']);
+    expect(PipelineEngine.getValidNextStages('selling', 'appraisal-request')).toEqual([
+      'listing-preparation',
+    ]);
   });
 
   it('returns empty for settled (terminal seller stage)', () => {
@@ -133,24 +153,24 @@ describe('PipelineEngine.getStageRequirements', () => {
   it('returns requirements for buyer qualified-lead', () => {
     const reqs = PipelineEngine.getStageRequirements('buying', 'qualified-lead');
     expect(reqs.length).toBe(3);
-    expect(reqs.map(r => r.field)).toContain('buyerProfile.budgetMin');
-    expect(reqs.map(r => r.field)).toContain('buyerProfile.budgetMax');
-    expect(reqs.map(r => r.field)).toContain('buyerProfile.suburbs');
+    expect(reqs.map((r) => r.field)).toContain('buyerProfile.budgetMin');
+    expect(reqs.map((r) => r.field)).toContain('buyerProfile.budgetMax');
+    expect(reqs.map((r) => r.field)).toContain('buyerProfile.suburbs');
   });
 
   it('returns requirements for buyer offer-made', () => {
     const reqs = PipelineEngine.getStageRequirements('buying', 'offer-made');
     expect(reqs.length).toBe(2);
-    expect(reqs.map(r => r.field)).toContain('offerAmount');
-    expect(reqs.map(r => r.field)).toContain('propertyId');
+    expect(reqs.map((r) => r.field)).toContain('offerAmount');
+    expect(reqs.map((r) => r.field)).toContain('propertyId');
   });
 
   it('returns requirements for buyer under-contract', () => {
     const reqs = PipelineEngine.getStageRequirements('buying', 'under-contract');
     expect(reqs.length).toBe(3);
-    expect(reqs.map(r => r.field)).toContain('contractPrice');
-    expect(reqs.map(r => r.field)).toContain('exchangeDate');
-    expect(reqs.map(r => r.field)).toContain('settlementDate');
+    expect(reqs.map((r) => r.field)).toContain('contractPrice');
+    expect(reqs.map((r) => r.field)).toContain('exchangeDate');
+    expect(reqs.map((r) => r.field)).toContain('settlementDate');
   });
 
   it('returns empty for stages without requirements', () => {
@@ -229,8 +249,13 @@ describe('PipelineEngine.isTerminalStage', () => {
 
   it('returns false for non-terminal buyer stages', () => {
     const nonTerminal = [
-      'new-enquiry', 'qualified-lead', 'active-search',
-      'property-shortlisted', 'due-diligence', 'offer-made', 'under-contract',
+      'new-enquiry',
+      'qualified-lead',
+      'active-search',
+      'property-shortlisted',
+      'due-diligence',
+      'offer-made',
+      'under-contract',
     ];
     for (const stage of nonTerminal) {
       expect(PipelineEngine.isTerminalStage('buying', stage)).toBe(false);
@@ -239,8 +264,11 @@ describe('PipelineEngine.isTerminalStage', () => {
 
   it('returns false for non-terminal seller stages', () => {
     const nonTerminal = [
-      'appraisal-request', 'listing-preparation', 'on-market',
-      'offers-negotiation', 'under-contract',
+      'appraisal-request',
+      'listing-preparation',
+      'on-market',
+      'offers-negotiation',
+      'under-contract',
     ];
     for (const stage of nonTerminal) {
       expect(PipelineEngine.isTerminalStage('selling', stage)).toBe(false);
@@ -268,52 +296,78 @@ describe('PipelineEngine.getInitialStage', () => {
 
 describe('PipelineEngine.isValidTransition (buyers-agent)', () => {
   it('allows enquiry → consult-qualify', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'enquiry', 'consult-qualify')).toBe(true);
+    expect(PipelineEngine.isValidTransition('buyers-agent', 'enquiry', 'consult-qualify')).toBe(
+      true,
+    );
   });
 
   it('allows consult-qualify → engaged', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'consult-qualify', 'engaged')).toBe(true);
+    expect(PipelineEngine.isValidTransition('buyers-agent', 'consult-qualify', 'engaged')).toBe(
+      true,
+    );
   });
 
   it('allows engaged → strategy-brief', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'engaged', 'strategy-brief')).toBe(true);
+    expect(PipelineEngine.isValidTransition('buyers-agent', 'engaged', 'strategy-brief')).toBe(
+      true,
+    );
   });
 
   it('allows strategy-brief → active-search', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'strategy-brief', 'active-search')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('buyers-agent', 'strategy-brief', 'active-search'),
+    ).toBe(true);
   });
 
   it('allows active-search → offer-negotiate', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'active-search', 'offer-negotiate')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('buyers-agent', 'active-search', 'offer-negotiate'),
+    ).toBe(true);
   });
 
   it('allows offer-negotiate → under-contract', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'offer-negotiate', 'under-contract')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('buyers-agent', 'offer-negotiate', 'under-contract'),
+    ).toBe(true);
   });
 
   it('allows under-contract → settled-nurture', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'under-contract', 'settled-nurture')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('buyers-agent', 'under-contract', 'settled-nurture'),
+    ).toBe(true);
   });
 
   it('allows backward transition consult-qualify → enquiry', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'consult-qualify', 'enquiry')).toBe(true);
+    expect(PipelineEngine.isValidTransition('buyers-agent', 'consult-qualify', 'enquiry')).toBe(
+      true,
+    );
   });
 
   it('allows backward transition engaged → consult-qualify', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'engaged', 'consult-qualify')).toBe(true);
+    expect(PipelineEngine.isValidTransition('buyers-agent', 'engaged', 'consult-qualify')).toBe(
+      true,
+    );
   });
 
   it('allows backward transition offer-negotiate → active-search', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'offer-negotiate', 'active-search')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('buyers-agent', 'offer-negotiate', 'active-search'),
+    ).toBe(true);
   });
 
   it('allows backward transition under-contract → offer-negotiate', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'under-contract', 'offer-negotiate')).toBe(true);
+    expect(
+      PipelineEngine.isValidTransition('buyers-agent', 'under-contract', 'offer-negotiate'),
+    ).toBe(true);
   });
 
   it('rejects transitions from settled-nurture (terminal)', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'settled-nurture', 'under-contract')).toBe(false);
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'settled-nurture', 'enquiry')).toBe(false);
+    expect(
+      PipelineEngine.isValidTransition('buyers-agent', 'settled-nurture', 'under-contract'),
+    ).toBe(false);
+    expect(PipelineEngine.isValidTransition('buyers-agent', 'settled-nurture', 'enquiry')).toBe(
+      false,
+    );
   });
 
   it('rejects skipping stages (enquiry → engaged)', () => {
@@ -321,11 +375,15 @@ describe('PipelineEngine.isValidTransition (buyers-agent)', () => {
   });
 
   it('rejects skipping stages (enquiry → active-search)', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'enquiry', 'active-search')).toBe(false);
+    expect(PipelineEngine.isValidTransition('buyers-agent', 'enquiry', 'active-search')).toBe(
+      false,
+    );
   });
 
   it('rejects invalid stage names', () => {
-    expect(PipelineEngine.isValidTransition('buyers-agent', 'invalid', 'consult-qualify')).toBe(false);
+    expect(PipelineEngine.isValidTransition('buyers-agent', 'invalid', 'consult-qualify')).toBe(
+      false,
+    );
     expect(PipelineEngine.isValidTransition('buyers-agent', 'enquiry', 'invalid')).toBe(false);
   });
 });
@@ -334,7 +392,9 @@ describe('PipelineEngine.isValidTransition (buyers-agent)', () => {
 
 describe('PipelineEngine.getValidNextStages (buyers-agent)', () => {
   it('returns [consult-qualify] for enquiry (initial stage)', () => {
-    expect(PipelineEngine.getValidNextStages('buyers-agent', 'enquiry')).toEqual(['consult-qualify']);
+    expect(PipelineEngine.getValidNextStages('buyers-agent', 'enquiry')).toEqual([
+      'consult-qualify',
+    ]);
   });
 
   it('returns [offer-negotiate, strategy-brief] for active-search', () => {
@@ -361,30 +421,30 @@ describe('PipelineEngine.getStageRequirements (buyers-agent)', () => {
   it('returns 2 requirements for engaged (agreementSigned, retainerPaid)', () => {
     const reqs = PipelineEngine.getStageRequirements('buyers-agent', 'engaged');
     expect(reqs).toHaveLength(2);
-    expect(reqs.map(r => r.field)).toContain('agreementSigned');
-    expect(reqs.map(r => r.field)).toContain('retainerPaid');
+    expect(reqs.map((r) => r.field)).toContain('agreementSigned');
+    expect(reqs.map((r) => r.field)).toContain('retainerPaid');
   });
 
   it('returns 2 requirements for strategy-brief (clientBriefId, financeVerified)', () => {
     const reqs = PipelineEngine.getStageRequirements('buyers-agent', 'strategy-brief');
     expect(reqs).toHaveLength(2);
-    expect(reqs.map(r => r.field)).toContain('clientBriefId');
-    expect(reqs.map(r => r.field)).toContain('financeVerified');
+    expect(reqs.map((r) => r.field)).toContain('clientBriefId');
+    expect(reqs.map((r) => r.field)).toContain('financeVerified');
   });
 
   it('returns 2 requirements for offer-negotiate', () => {
     const reqs = PipelineEngine.getStageRequirements('buyers-agent', 'offer-negotiate');
     expect(reqs).toHaveLength(2);
-    expect(reqs.map(r => r.field)).toContain('propertyId');
-    expect(reqs.map(r => r.field)).toContain('offerAmount');
+    expect(reqs.map((r) => r.field)).toContain('propertyId');
+    expect(reqs.map((r) => r.field)).toContain('offerAmount');
   });
 
   it('returns 3 requirements for under-contract', () => {
     const reqs = PipelineEngine.getStageRequirements('buyers-agent', 'under-contract');
     expect(reqs).toHaveLength(3);
-    expect(reqs.map(r => r.field)).toContain('contractPrice');
-    expect(reqs.map(r => r.field)).toContain('exchangeDate');
-    expect(reqs.map(r => r.field)).toContain('settlementDate');
+    expect(reqs.map((r) => r.field)).toContain('contractPrice');
+    expect(reqs.map((r) => r.field)).toContain('exchangeDate');
+    expect(reqs.map((r) => r.field)).toContain('settlementDate');
   });
 
   it('returns empty for enquiry (no requirements)', () => {
@@ -392,7 +452,13 @@ describe('PipelineEngine.getStageRequirements (buyers-agent)', () => {
   });
 
   it('all requirements have required=true', () => {
-    const stages = ['consult-qualify', 'engaged', 'strategy-brief', 'offer-negotiate', 'under-contract'];
+    const stages = [
+      'consult-qualify',
+      'engaged',
+      'strategy-brief',
+      'offer-negotiate',
+      'under-contract',
+    ];
     for (const stage of stages) {
       const reqs = PipelineEngine.getStageRequirements('buyers-agent', stage);
       for (const req of reqs) {
@@ -430,8 +496,13 @@ describe('PipelineEngine.isTerminalStage (buyers-agent)', () => {
 
   it('returns false for all non-terminal buyers-agent stages', () => {
     const nonTerminal = [
-      'enquiry', 'consult-qualify', 'engaged', 'strategy-brief',
-      'active-search', 'offer-negotiate', 'under-contract',
+      'enquiry',
+      'consult-qualify',
+      'engaged',
+      'strategy-brief',
+      'active-search',
+      'offer-negotiate',
+      'under-contract',
     ];
     for (const stage of nonTerminal) {
       expect(PipelineEngine.isTerminalStage('buyers-agent', stage)).toBe(false);

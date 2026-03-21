@@ -7,8 +7,19 @@ import type { AnalyticsPeriod } from '@realflow/shared';
 function makeChain(resolvedValue: unknown) {
   const chain: Record<string, unknown> = {};
   const methods = [
-    'select', 'eq', 'neq', 'gte', 'lte', 'in', 'not',
-    'order', 'limit', 'single', 'upsert', 'insert', 'update',
+    'select',
+    'eq',
+    'neq',
+    'gte',
+    'lte',
+    'in',
+    'not',
+    'order',
+    'limit',
+    'single',
+    'upsert',
+    'insert',
+    'update',
   ];
   for (const method of methods) {
     chain[method] = vi.fn().mockReturnValue(chain);
@@ -505,7 +516,12 @@ describe('AnalyticsEngine.getRevenueForecast', () => {
         { id: '1', type: 'success_fee', amount: 10000, status: 'paid', paid_date: '2026-01-01' },
       ],
       feeStructures: [
-        { id: 'fs1', success_fee_type: 'flat', success_fee_flat_amount: 20000, success_fee_percentage: null },
+        {
+          id: 'fs1',
+          success_fee_type: 'flat',
+          success_fee_flat_amount: 20000,
+          success_fee_percentage: null,
+        },
       ],
     });
 
@@ -824,5 +840,370 @@ describe('AnalyticsEngine edge cases', () => {
     const suburbs = result.map((r) => r.suburb);
     expect(suburbs).toContain('Bondi');
     expect(suburbs).toContain('Manly');
+  });
+
+  it('maps unknown property_type to house', async () => {
+    const rows = [
+      {
+        suburb: 'Pyrmont',
+        postcode: '2009',
+        state: 'NSW',
+        property_type: 'rural', // not house/unit/townhouse
+        median_sale_price: 900000,
+        median_days_on_market: 25,
+        clearance_rate: 65,
+        price_change_1y_percent: 2.5,
+        snapshot_date: '2026-02-01',
+      },
+    ];
+
+    const supabase = makeSupabase(() => ({
+      select: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: rows, error: null }),
+    }));
+
+    const result = await AnalyticsEngine.getMarketInsights(['Pyrmont'], supabase as never);
+    expect(result[0].propertyType).toBe('house');
+  });
+});
+
+// ─── generateDailySnapshot ────────────────────────────────────────────────────
+
+describe('AnalyticsEngine.generateDailySnapshot', () => {
+  const agentId = '00000000-0000-0000-0000-000000000008';
+
+  function buildDailySnapshotSupabase(opts: {
+    activeClients?: number;
+    newLeads?: number;
+    leadsContacted?: number;
+    briefsCreated?: number;
+    inspections?: number;
+    offers?: number;
+    contracts?: number;
+    settlements?: number;
+    revenue?: number;
+    messages?: number;
+  } = {}) {
+    // Build a supabase mock where every query returns reasonable counts/data
+    const supabase = {
+      from: vi.fn().mockImplementation((table: string) => {
+        const base = {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          lte: vi.fn().mockReturnThis(),
+          not: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockReturnThis(),
+          upsert: vi.fn().mockResolvedValue({ error: null }),
+        };
+
+        if (table === 'client_briefs') {
+          // count query
+          const countResult = { data: null, count: opts.activeClients ?? 3, error: null };
+          base.lte = vi.fn().mockResolvedValue(countResult);
+          base.eq = vi.fn().mockReturnThis();
+          // head count query resolves via lte
+          return {
+            ...base,
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            gte: vi.fn().mockReturnThis(),
+            lte: vi.fn().mockResolvedValue(countResult),
+          };
+        }
+
+        if (table === 'contacts') {
+          return {
+            ...base,
+            select: vi.fn().mockReturnThis(),
+            gte: vi.fn().mockReturnThis(),
+            lte: vi.fn().mockResolvedValue({ count: opts.newLeads ?? 2, data: null, error: null }),
+          };
+        }
+
+        if (table === 'messages') {
+          return {
+            ...base,
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            gte: vi.fn().mockReturnThis(),
+            lte: vi.fn().mockResolvedValue({ count: opts.leadsContacted ?? 5, data: null, error: null }),
+          };
+        }
+
+        if (table === 'inspections') {
+          return {
+            ...base,
+            select: vi.fn().mockReturnThis(),
+            gte: vi.fn().mockReturnThis(),
+            lte: vi.fn().mockResolvedValue({ count: opts.inspections ?? 1, data: null, error: null }),
+          };
+        }
+
+        if (table === 'offers') {
+          return {
+            ...base,
+            select: vi.fn().mockReturnThis(),
+            gte: vi.fn().mockReturnThis(),
+            lte: vi.fn().mockResolvedValue({ count: opts.offers ?? 0, data: null, error: null }),
+          };
+        }
+
+        if (table === 'transactions') {
+          return {
+            ...base,
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            gte: vi.fn().mockReturnThis(),
+            lte: vi.fn().mockResolvedValue({ count: opts.settlements ?? 0, data: null, error: null }),
+          };
+        }
+
+        if (table === 'invoices') {
+          return {
+            ...base,
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            gte: vi.fn().mockReturnThis(),
+            lte: vi.fn().mockResolvedValue({ data: [], error: null }),
+          };
+        }
+
+        if (table === 'fee_structures') {
+          return {
+            select: vi.fn().mockResolvedValue({ data: [], error: null }),
+          };
+        }
+
+        if (table === 'pipeline_funnel_stats') {
+          return {
+            ...base,
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+          };
+        }
+
+        if (table === 'analytics_daily_snapshots') {
+          return { upsert: vi.fn().mockResolvedValue({ error: null }) };
+        }
+
+        return base;
+      }),
+    };
+
+    return supabase;
+  }
+
+  it('completes without throwing for a standard date', async () => {
+    const supabase = buildDailySnapshotSupabase();
+    const testDate = new Date('2026-03-01');
+
+    await expect(
+      AnalyticsEngine.generateDailySnapshot(agentId, testDate, supabase as never)
+    ).resolves.toBeUndefined();
+  });
+
+  it('handles fee structures with flat fee type', async () => {
+    const supabase = {
+      from: vi.fn().mockImplementation((table: string) => {
+        const base = {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          lte: vi.fn().mockResolvedValue({ count: 0, data: null, error: null }),
+          not: vi.fn().mockReturnThis(),
+        };
+
+        if (table === 'fee_structures') {
+          return {
+            select: vi.fn().mockResolvedValue({
+              data: [
+                { id: 'fs1', success_fee_type: 'flat', success_fee_flat_amount: 15000, success_fee_percentage: null },
+              ],
+              error: null,
+            }),
+          };
+        }
+
+        if (table === 'invoices') {
+          return {
+            ...base,
+            lte: vi.fn().mockResolvedValue({ data: [{ amount: 5000 }], error: null }),
+          };
+        }
+
+        if (table === 'analytics_daily_snapshots') {
+          return { upsert: vi.fn().mockResolvedValue({ error: null }) };
+        }
+
+        if (table === 'pipeline_funnel_stats') {
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockResolvedValue({ data: [], error: null }) };
+        }
+
+        return base;
+      }),
+    };
+
+    await expect(
+      AnalyticsEngine.generateDailySnapshot(agentId, new Date('2026-03-01'), supabase as never)
+    ).resolves.toBeUndefined();
+  });
+
+  it('handles fee structures with percentage fee type', async () => {
+    const supabase = {
+      from: vi.fn().mockImplementation((table: string) => {
+        const base = {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          lte: vi.fn().mockResolvedValue({ count: 0, data: null, error: null }),
+        };
+
+        if (table === 'fee_structures') {
+          return {
+            select: vi.fn().mockResolvedValue({
+              data: [
+                { id: 'fs2', success_fee_type: 'percentage', success_fee_flat_amount: null, success_fee_percentage: 2.0 },
+              ],
+              error: null,
+            }),
+          };
+        }
+
+        if (table === 'invoices') {
+          return { ...base, lte: vi.fn().mockResolvedValue({ data: [], error: null }) };
+        }
+
+        if (table === 'analytics_daily_snapshots') {
+          return { upsert: vi.fn().mockResolvedValue({ error: null }) };
+        }
+
+        if (table === 'pipeline_funnel_stats') {
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockResolvedValue({ data: [], error: null }) };
+        }
+
+        return base;
+      }),
+    };
+
+    await expect(
+      AnalyticsEngine.generateDailySnapshot(agentId, new Date('2026-03-01'), supabase as never)
+    ).resolves.toBeUndefined();
+  });
+});
+
+// ─── getPipelineVelocity with seller/buyer pipeline types ─────────────────────
+
+describe('AnalyticsEngine.getPipelineVelocity — pipeline type mapping', () => {
+  const agentId = '00000000-0000-0000-0000-000000000009';
+
+  it('accepts "seller" pipeline type', async () => {
+    const rows = [
+      {
+        agent_id: agentId,
+        pipeline_type: 'seller',
+        stage: 'appraisal',
+        active_count: 5,
+        avg_days_in_stage: 3,
+        new_30d: 2,
+      },
+    ];
+
+    const supabase = makeSupabase(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ data: rows, error: null }),
+    }));
+
+    const result = await AnalyticsEngine.getPipelineVelocity(agentId, supabase as never);
+    expect(result[0].pipelineType).toBe('seller');
+  });
+
+  it('accepts "buyer" pipeline type', async () => {
+    const rows = [
+      {
+        agent_id: agentId,
+        pipeline_type: 'buyer',
+        stage: 'searching',
+        active_count: 8,
+        avg_days_in_stage: 14,
+        new_30d: 3,
+      },
+    ];
+
+    const supabase = makeSupabase(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ data: rows, error: null }),
+    }));
+
+    const result = await AnalyticsEngine.getPipelineVelocity(agentId, supabase as never);
+    expect(result[0].pipelineType).toBe('buyer');
+  });
+
+  it('handles stages not in BUYERS_AGENT_STAGE_ORDER sorted alphabetically', async () => {
+    const rows = [
+      {
+        agent_id: agentId,
+        pipeline_type: 'seller',
+        stage: 'zzz_custom',
+        active_count: 3,
+        avg_days_in_stage: null,
+        new_30d: 1,
+      },
+      {
+        agent_id: agentId,
+        pipeline_type: 'seller',
+        stage: 'aaa_stage',
+        active_count: 7,
+        avg_days_in_stage: 2,
+        new_30d: 0,
+      },
+    ];
+
+    const supabase = makeSupabase(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ data: rows, error: null }),
+    }));
+
+    const result = await AnalyticsEngine.getPipelineVelocity(agentId, supabase as never);
+    expect(result).toHaveLength(2);
+    // Alphabetically sorted: aaa_stage comes before zzz_custom
+    expect(result[0].stage).toBe('aaa_stage');
+    expect(result[1].stage).toBe('zzz_custom');
+    // Last stage has 0 conversionRate, zero avgDaysInStage when null
+    expect(result[1].avgDaysInStage).toBe(0);
+  });
+
+  it('handles mixed ordered/unordered stages in buyers_agent pipeline', async () => {
+    const rows = [
+      {
+        agent_id: agentId,
+        pipeline_type: 'buyers_agent',
+        stage: 'custom_unknown_stage',
+        active_count: 2,
+        avg_days_in_stage: 1,
+        new_30d: 0,
+      },
+      {
+        agent_id: agentId,
+        pipeline_type: 'buyers_agent',
+        stage: 'lead',
+        active_count: 10,
+        avg_days_in_stage: 3,
+        new_30d: 5,
+      },
+    ];
+
+    const supabase = makeSupabase(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ data: rows, error: null }),
+    }));
+
+    const result = await AnalyticsEngine.getPipelineVelocity(agentId, supabase as never);
+    // 'lead' is at index 0 in BUYERS_AGENT_STAGE_ORDER, 'custom_unknown_stage' is -1 so goes last
+    expect(result[0].stage).toBe('lead');
+    expect(result[1].stage).toBe('custom_unknown_stage');
   });
 });

@@ -26,7 +26,6 @@ const CreateWorkflowBodySchema = z.object({
   conditions: z.array(WorkflowConditionSchema),
   actions: z.array(WorkflowActionSchema).min(1),
   isActive: z.boolean().default(true),
-  createdBy: z.string().uuid(),
 });
 
 const UpdateWorkflowBodySchema = z.object({
@@ -40,7 +39,6 @@ const UpdateWorkflowBodySchema = z.object({
 
 const CreateFromTemplateBodySchema = z.object({
   templateId: z.number().int().nonnegative(),
-  createdBy: z.string().uuid(),
 });
 
 const DispatchEventBodySchema = z.object({
@@ -56,11 +54,21 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // GET / - List workflows
   fastify.get('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const query = request.query as Record<string, string | undefined>;
 
     let dbQuery = supabase
       .from('workflows')
       .select('*')
+      .eq('created_by', user.id)
       .eq('is_deleted', false)
       .order('updated_at', { ascending: false });
 
@@ -87,13 +95,22 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // POST /from-template - Create workflow from template
   fastify.post('/from-template', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const parsed = CreateFromTemplateBodySchema.safeParse(request.body);
 
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten() });
     }
 
-    const { templateId, createdBy } = parsed.data;
+    const { templateId } = parsed.data;
     const template = BUYERS_AGENT_WORKFLOW_TEMPLATES[templateId];
 
     if (!template) {
@@ -109,7 +126,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         conditions: template.conditions,
         actions: template.actions,
         is_active: true,
-        created_by: createdBy,
+        created_by: user.id,
       })
       .select()
       .single();
@@ -121,12 +138,22 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // GET /:id - Single workflow
   fastify.get<{ Params: { id: string } }>('/:id', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const { id } = request.params;
 
     const { data, error } = await supabase
       .from('workflows')
       .select('*')
       .eq('id', id)
+      .eq('created_by', user.id)
       .eq('is_deleted', false)
       .single();
 
@@ -137,6 +164,15 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // POST / - Create custom workflow
   fastify.post('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const parsed = CreateWorkflowBodySchema.safeParse(request.body);
 
     if (!parsed.success) {
@@ -154,7 +190,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         conditions: body.conditions,
         actions: body.actions,
         is_active: body.isActive,
-        created_by: body.createdBy,
+        created_by: user.id,
       })
       .select()
       .single();
@@ -166,6 +202,15 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // PATCH /:id - Update workflow
   fastify.patch<{ Params: { id: string } }>('/:id', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const { id } = request.params;
     const parsed = UpdateWorkflowBodySchema.safeParse(request.body);
 
@@ -189,6 +234,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       .from('workflows')
       .update(updatePayload)
       .eq('id', id)
+      .eq('created_by', user.id)
       .eq('is_deleted', false)
       .select()
       .single();
@@ -200,12 +246,22 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // DELETE /:id - Soft delete
   fastify.delete<{ Params: { id: string } }>('/:id', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const { id } = request.params;
 
     const { error } = await supabase
       .from('workflows')
       .update({ is_deleted: true, deleted_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('created_by', user.id);
 
     if (error) return reply.status(500).send({ error: error.message });
     return { success: true };
@@ -214,6 +270,15 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // GET /:id/runs - List runs for a workflow
   fastify.get<{ Params: { id: string } }>('/:id/runs', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const { id } = request.params;
 
     const { data, error } = await supabase
@@ -229,6 +294,15 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // POST /runs/:runId/pause - Pause a running workflow execution
   fastify.post<{ Params: { runId: string } }>('/runs/:runId/pause', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const { runId } = request.params;
 
     const context: WorkflowContext = {
@@ -246,6 +320,15 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // POST /runs/:runId/resume - Resume a paused workflow execution
   fastify.post<{ Params: { runId: string } }>('/runs/:runId/resume', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const { runId } = request.params;
 
     const context: WorkflowContext = {
@@ -265,30 +348,51 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     resumeAt: z.string().datetime(),
   });
 
-  fastify.post<{ Params: { runId: string } }>('/runs/:runId/schedule-resume', async (request, reply) => {
-    const supabase = createSupabaseClient(request);
-    const { runId } = request.params;
-    const parsed = ScheduleResumeBodySchema.safeParse(request.body);
+  fastify.post<{ Params: { runId: string } }>(
+    '/runs/:runId/schedule-resume',
+    async (request, reply) => {
+      const supabase = createSupabaseClient(request);
 
-    if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
-    }
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) {
+        return reply.status(401).send({ error: 'Unauthorized' });
+      }
 
-    const context: WorkflowContext = {
-      entityData: {},
-      supabase: supabase as unknown as WorkflowContext['supabase'],
-    };
+      const { runId } = request.params;
+      const parsed = ScheduleResumeBodySchema.safeParse(request.body);
 
-    const result = await scheduleResume(runId, new Date(parsed.data.resumeAt), context);
-    if (!result.success) {
-      return reply.status(400).send({ error: result.error });
-    }
-    return { success: true };
-  });
+      if (!parsed.success) {
+        return reply.status(400).send({ error: parsed.error.flatten() });
+      }
+
+      const context: WorkflowContext = {
+        entityData: {},
+        supabase: supabase as unknown as WorkflowContext['supabase'],
+      };
+
+      const result = await scheduleResume(runId, new Date(parsed.data.resumeAt), context);
+      if (!result.success) {
+        return reply.status(400).send({ error: result.error });
+      }
+      return { success: true };
+    },
+  );
 
   // GET /dead-letters - List dead letter queue entries
   fastify.get('/dead-letters', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const query = request.query as Record<string, string | undefined>;
 
     let dbQuery = supabase
@@ -308,6 +412,15 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // GET /runs/:runId/log - Get detailed execution log for a run
   fastify.get<{ Params: { runId: string } }>('/runs/:runId/log', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     const { runId } = request.params;
 
     const { data, error } = await supabase
@@ -338,6 +451,14 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   fastify.post('/evaluate', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
     // Get all active workflows with scheduler-based triggers
     const { data: workflows, error } = await supabase
       .from('workflows')
@@ -351,12 +472,10 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     }
 
     // Filter to time-based, no_activity, and date_approaching triggers
-    const schedulerWorkflows = workflows.filter(
-      (wf: Record<string, unknown>) => {
-        const trigger = wf.trigger as Record<string, unknown>;
-        return ['time_based', 'no_activity', 'date_approaching'].includes(trigger.type as string);
-      },
-    );
+    const schedulerWorkflows = workflows.filter((wf: Record<string, unknown>) => {
+      const trigger = wf.trigger as Record<string, unknown>;
+      return ['time_based', 'no_activity', 'date_approaching'].includes(trigger.type as string);
+    });
 
     return {
       evaluated: schedulerWorkflows.length,
@@ -368,6 +487,14 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   // POST /dispatch - Event endpoint: find and run matching workflows
   fastify.post('/dispatch', async (request, reply) => {
     const supabase = createSupabaseClient(request);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
     const parsed = DispatchEventBodySchema.safeParse(request.body);
 
     if (!parsed.success) {
@@ -394,6 +521,18 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       return { dispatched: 0, results: [] };
     }
 
+    // PERF: Hoist contact fetch above the workflow loop to avoid N+1 queries.
+    // The contactId is the same for every workflow iteration, so fetch once.
+    let entityData: Record<string, unknown> = {};
+    if (event.contactId) {
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('id', event.contactId)
+        .single();
+      if (contact) entityData = contact as Record<string, unknown>;
+    }
+
     // Find matching workflows and execute them
     const results = [];
     for (const wf of workflows) {
@@ -402,7 +541,18 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         name: wf.name as string,
         description: wf.description as string | undefined,
         trigger: wf.trigger as WorkflowEvent['type'] extends string ? typeof wf.trigger : never,
-        conditions: wf.conditions as { field: string; operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'is_empty' | 'is_not_empty'; value?: unknown }[],
+        conditions: wf.conditions as {
+          field: string;
+          operator:
+            | 'equals'
+            | 'not_equals'
+            | 'contains'
+            | 'greater_than'
+            | 'less_than'
+            | 'is_empty'
+            | 'is_not_empty';
+          value?: unknown;
+        }[],
         actions: wf.actions as { type: string }[],
         isActive: wf.is_active as boolean,
         createdBy: wf.created_by as string,
@@ -412,17 +562,6 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
       // Check if trigger matches
       if (!evaluateTrigger(workflow.trigger, event)) continue;
-
-      // Fetch entity data for condition evaluation
-      let entityData: Record<string, unknown> = {};
-      if (event.contactId) {
-        const { data: contact } = await supabase
-          .from('contacts')
-          .select('*')
-          .eq('id', event.contactId)
-          .single();
-        if (contact) entityData = contact as Record<string, unknown>;
-      }
 
       const context: WorkflowContext = {
         contactId: event.contactId,

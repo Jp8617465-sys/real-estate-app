@@ -110,9 +110,9 @@ describe('MetaSocialClient.postToFacebook', () => {
       statusText: 'Forbidden',
     });
 
-    await expect(
-      client.postToFacebook({ message: 'test' }),
-    ).rejects.toThrow('Meta API error: 403 Forbidden');
+    await expect(client.postToFacebook({ message: 'test' })).rejects.toThrow(
+      'Meta API error: 403 Forbidden',
+    );
   });
 });
 

@@ -20,9 +20,16 @@ interface QueryBuilder {
   eq: (col: string, val: unknown) => QueryBuilder;
   lte: (col: string, val: unknown) => QueryBuilder;
   update: (data: Record<string, unknown>) => QueryBuilder;
-  insert: (data: Record<string, unknown>) => { select: () => { single: () => Promise<QueryResult> } };
+  insert: (data: Record<string, unknown>) => {
+    select: () => { single: () => Promise<QueryResult> };
+  };
   single: () => Promise<QueryResult>;
-  then: (resolve: (result: { data: Record<string, unknown>[] | null; error: { message: string } | null }) => void) => void;
+  then: (
+    resolve: (result: {
+      data: Record<string, unknown>[] | null;
+      error: { message: string } | null;
+    }) => void,
+  ) => void;
 }
 
 export interface FSESupabaseClient {
@@ -131,19 +138,29 @@ export interface ProcessStepResult {
  * Execute the current step for an enrollment.
  * After success, advance to the next step or mark complete.
  */
-export async function processEnrollmentStep(opts: ProcessEnrollmentOptions): Promise<ProcessStepResult> {
+export async function processEnrollmentStep(
+  opts: ProcessEnrollmentOptions,
+): Promise<ProcessStepResult> {
   const { enrollmentId, supabase, aiClient } = opts;
 
   // Fetch enrollment + sequence
   const enrollResult = await supabase
     .from('sequence_enrollments')
-    .select('id, sequence_id, contact_id, transaction_id, current_step_index, status, ai_content_overrides')
+    .select(
+      'id, sequence_id, contact_id, transaction_id, current_step_index, status, ai_content_overrides',
+    )
     .eq('id', enrollmentId)
     .eq('status', 'active')
     .single();
 
   if (enrollResult.error || !enrollResult.data) {
-    return { enrollmentId, stepIndex: 0, actionType: 'unknown', success: false, error: 'Enrollment not found or not active' };
+    return {
+      enrollmentId,
+      stepIndex: 0,
+      actionType: 'unknown',
+      success: false,
+      error: 'Enrollment not found or not active',
+    };
   }
 
   const enrollment = enrollResult.data;
@@ -156,7 +173,13 @@ export async function processEnrollmentStep(opts: ProcessEnrollmentOptions): Pro
     .single();
 
   if (seqResult.error || !seqResult.data) {
-    return { enrollmentId, stepIndex: currentIndex, actionType: 'unknown', success: false, error: 'Sequence not found' };
+    return {
+      enrollmentId,
+      stepIndex: currentIndex,
+      actionType: 'unknown',
+      success: false,
+      error: 'Sequence not found',
+    };
   }
 
   const steps = (seqResult.data.steps ?? []) as SequenceStep[];
@@ -166,9 +189,19 @@ export async function processEnrollmentStep(opts: ProcessEnrollmentOptions): Pro
     // No more steps — mark complete
     await supabase
       .from('sequence_enrollments')
-      .update({ status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .update({
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', enrollmentId);
-    return { enrollmentId, stepIndex: currentIndex, actionType: 'none', success: true, completed: true };
+    return {
+      enrollmentId,
+      stepIndex: currentIndex,
+      actionType: 'none',
+      success: true,
+      completed: true,
+    };
   }
 
   // ─── AI content override for email/sms steps ──────────────────────────────
@@ -204,7 +237,10 @@ export async function processEnrollmentStep(opts: ProcessEnrollmentOptions): Pro
         .update({ ai_content_overrides: overrides, updated_at: new Date().toISOString() })
         .eq('id', enrollmentId);
     } catch (error: unknown) {
-      console.error('[SequenceEngine] AI content generation failed, using template as-is:', error instanceof Error ? error.message : String(error));
+      console.error(
+        '[SequenceEngine] AI content generation failed, using template as-is:',
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 
@@ -216,7 +252,10 @@ export async function processEnrollmentStep(opts: ProcessEnrollmentOptions): Pro
     supabase: supabase as unknown as WorkflowContext['supabase'],
   };
 
-  const result = await executeAction(currentStep.action as Parameters<typeof executeAction>[0], context);
+  const result = await executeAction(
+    currentStep.action as Parameters<typeof executeAction>[0],
+    context,
+  );
 
   if (!result.success) {
     return {
@@ -245,11 +284,20 @@ export async function processEnrollmentStep(opts: ProcessEnrollmentOptions): Pro
       })
       .eq('id', enrollmentId);
 
-    return { enrollmentId, stepIndex: currentIndex, actionType: currentStep.action.type, success: true, completed: true };
+    return {
+      enrollmentId,
+      stepIndex: currentIndex,
+      actionType: currentStep.action.type,
+      success: true,
+      completed: true,
+    };
   }
 
   // Schedule next step
-  const nextStepDueAt = addDays(new Date(), nextStep.dayOffset - currentStep.dayOffset).toISOString();
+  const nextStepDueAt = addDays(
+    new Date(),
+    nextStep.dayOffset - currentStep.dayOffset,
+  ).toISOString();
 
   await supabase
     .from('sequence_enrollments')
@@ -287,19 +335,22 @@ export interface BulkProcessResult {
 /**
  * Query all active enrollments with next_step_due_at <= now() and process each.
  */
-export async function processDueEnrollments(opts: ProcessDueEnrollmentsOptions): Promise<BulkProcessResult> {
+export async function processDueEnrollments(
+  opts: ProcessDueEnrollmentsOptions,
+): Promise<BulkProcessResult> {
   const { supabase, aiClient } = opts;
 
-  const result = await new Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>(
-    (resolve) => {
-      supabase
-        .from('sequence_enrollments')
-        .select('id')
-        .eq('status', 'active')
-        .lte('next_step_due_at', new Date().toISOString())
-        .then(resolve as Parameters<QueryBuilder['then']>[0]);
-    },
-  );
+  const result = await new Promise<{
+    data: Record<string, unknown>[] | null;
+    error: { message: string } | null;
+  }>((resolve) => {
+    supabase
+      .from('sequence_enrollments')
+      .select('id')
+      .eq('status', 'active')
+      .lte('next_step_due_at', new Date().toISOString())
+      .then(resolve as Parameters<QueryBuilder['then']>[0]);
+  });
 
   if (!result.data || result.data.length === 0) {
     return { processed: 0, succeeded: 0, failed: 0, errors: [] };

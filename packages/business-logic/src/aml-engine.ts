@@ -310,7 +310,7 @@ export class AmlEngine {
       .lte('created_at', periodTo.toISOString())
       .order('created_at', { ascending: false });
 
-    const checks = checkError ? [] : (checkRows as AmlCheckRow[]) ?? [];
+    const checks = checkError ? [] : ((checkRows as AmlCheckRow[]) ?? []);
     const mappedChecks = checks.map(mapCheckRowToAmlCheck);
 
     // Count by status

@@ -65,9 +65,7 @@ const leadSourceColumns: Column<LeadSourceStat>[] = [
     header: 'Source',
     sortable: true,
     sortValue: (row) => row.source,
-    render: (row) => (
-      <span className="font-medium text-gray-900">{row.source}</span>
-    ),
+    render: (row) => <span className="font-medium text-gray-900">{row.source}</span>,
   },
   {
     key: 'count',
@@ -222,20 +220,14 @@ export function PerformanceClient() {
       >
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={leadSources ?? []}
-              margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
-            >
+            <BarChart data={leadSources ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis
                 dataKey="source"
                 tick={{ fontSize: 11, fill: '#6b7280' }}
                 axisLine={{ stroke: '#e5e7eb' }}
               />
-              <YAxis
-                tick={{ fontSize: 12, fill: '#6b7280' }}
-                axisLine={{ stroke: '#e5e7eb' }}
-              />
+              <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={{ stroke: '#e5e7eb' }} />
               <Tooltip content={<SourceTooltip />} />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                 {(leadSources ?? []).map((_, idx) => (

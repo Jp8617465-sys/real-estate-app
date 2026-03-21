@@ -25,9 +25,7 @@ export function ToastContextProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const dismiss = useCallback((toastId: string) => {
-    setToasts((prev) =>
-      prev.map((t) => (t.id === toastId ? { ...t, open: false } : t)),
-    );
+    setToasts((prev) => prev.map((t) => (t.id === toastId ? { ...t, open: false } : t)));
   }, []);
 
   const dismissAll = useCallback(() => {

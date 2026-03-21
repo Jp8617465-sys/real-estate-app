@@ -240,10 +240,7 @@ describe('POST /api/v1/pipeline-migration/execute', () => {
     expect(body.migrationBatchId).toBeDefined();
     expect(body.successful).toBe(1);
     expect(body.failed).toBe(0);
-    expect(mockRpc).toHaveBeenCalledWith(
-      'migrate_transaction_to_buyers_agent',
-      expect.any(Object)
-    );
+    expect(mockRpc).toHaveBeenCalledWith('migrate_transaction_to_buyers_agent', expect.any(Object));
   });
 
   it('requires transactionIds in payload', async () => {
@@ -483,6 +480,5 @@ describe('POST /api/v1/pipeline-migration/rollback', () => {
     });
 
     expect(response.statusCode).toBe(404);
-
   });
 });

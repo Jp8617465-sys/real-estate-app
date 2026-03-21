@@ -1,4 +1,12 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useContact } from '../../src/hooks/use-contacts';
 import { supabase } from '../../src/lib/supabase';
@@ -125,7 +133,8 @@ export default function ContactDetailScreen() {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Budget</Text>
             <Text style={styles.infoValue}>
-              ${contact.buyerProfile.budgetMin.toLocaleString()} - ${contact.buyerProfile.budgetMax.toLocaleString()}
+              ${contact.buyerProfile.budgetMin.toLocaleString()} - $
+              {contact.buyerProfile.budgetMax.toLocaleString()}
             </Text>
           </View>
           {contact.buyerProfile.preApproved && (
@@ -145,7 +154,8 @@ export default function ContactDetailScreen() {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Beds / Bath / Car</Text>
             <Text style={styles.infoValue}>
-              {contact.buyerProfile.bedrooms.min}+ / {contact.buyerProfile.bathrooms.min}+ / {contact.buyerProfile.carSpaces.min}+
+              {contact.buyerProfile.bedrooms.min}+ / {contact.buyerProfile.bathrooms.min}+ /{' '}
+              {contact.buyerProfile.carSpaces.min}+
             </Text>
           </View>
         </View>
@@ -171,7 +181,12 @@ export default function ContactDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
   errorText: { fontSize: 16, color: '#dc2626' },
   header: { alignItems: 'center', marginBottom: 20 },
   avatar: {
@@ -186,7 +201,12 @@ const styles = StyleSheet.create({
   avatarText: { fontSize: 22, fontWeight: '700', color: '#1d4ed8' },
   name: { fontSize: 22, fontWeight: '700', color: '#111827' },
   badges: { flexDirection: 'row', gap: 8, marginTop: 8 },
-  typeBadge: { backgroundColor: '#dcfce7', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
+  typeBadge: {
+    backgroundColor: '#dcfce7',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
   typeBadgeText: { fontSize: 12, fontWeight: '600', color: '#15803d' },
   actions: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
   actionButton: { alignItems: 'center' },
@@ -200,11 +220,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
-  cardTitle: { fontSize: 13, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 },
+  cardTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   infoLabel: { fontSize: 13, color: '#6b7280' },
   infoValue: { fontSize: 13, color: '#111827', fontWeight: '500' },
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  tagBadge: { backgroundColor: '#dbeafe', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  tagBadge: {
+    backgroundColor: '#dbeafe',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
   tagText: { fontSize: 12, fontWeight: '600', color: '#2563eb' },
 });

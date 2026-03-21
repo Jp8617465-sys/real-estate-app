@@ -48,13 +48,7 @@ export type BuyerProfile = z.infer<typeof BuyerProfileSchema>;
 // ─── Seller Profile ─────────────────────────────────────────────────
 export const SellerProfileSchema = z.object({
   propertyIds: z.array(z.string().uuid()),
-  motivationLevel: z.union([
-    z.literal(1),
-    z.literal(2),
-    z.literal(3),
-    z.literal(4),
-    z.literal(5),
-  ]),
+  motivationLevel: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
   timeframe: z.string(),
   reason: z.string().optional(),
 });

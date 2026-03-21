@@ -28,11 +28,7 @@ const metricLabels: Record<string, { label: string; color: string }> = {
   comments: { label: 'Comments', color: 'bg-indigo-500' },
 };
 
-export function EngagementChart({
-  data,
-  metric = 'engagement',
-  platform,
-}: EngagementChartProps) {
+export function EngagementChart({ data, metric = 'engagement', platform }: EngagementChartProps) {
   const metricConfig = metricLabels[metric] ?? metricLabels.engagement!;
   const values = data.map((d) => d[metric]);
   const maxValue = Math.max(...values, 1);
@@ -40,9 +36,10 @@ export function EngagementChart({
   // Calculate totals
   const total = values.reduce((sum, v) => sum + v, 0);
   const average = data.length > 0 ? Math.round(total / data.length) : 0;
-  const trend = data.length >= 2
-    ? ((values[values.length - 1]! - values[0]!) / Math.max(values[0]!, 1)) * 100
-    : 0;
+  const trend =
+    data.length >= 2
+      ? ((values[values.length - 1]! - values[0]!) / Math.max(values[0]!, 1)) * 100
+      : 0;
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -58,11 +55,11 @@ export function EngagementChart({
               {total.toLocaleString('en-AU')}
             </span>
             <span className="text-sm text-gray-500">total</span>
-            <span className={cn(
-              'text-xs font-medium',
-              trend >= 0 ? 'text-green-600' : 'text-red-600',
-            )}>
-              {trend >= 0 ? '+' : ''}{trend.toFixed(1)}%
+            <span
+              className={cn('text-xs font-medium', trend >= 0 ? 'text-green-600' : 'text-red-600')}
+            >
+              {trend >= 0 ? '+' : ''}
+              {trend.toFixed(1)}%
             </span>
           </div>
         </div>
@@ -119,10 +116,16 @@ export function EngagementChart({
       {data.length > 1 && (
         <div className="mt-1 flex justify-between text-[10px] text-gray-400">
           <span>
-            {new Date(data[0]!.date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
+            {new Date(data[0]!.date).toLocaleDateString('en-AU', {
+              day: 'numeric',
+              month: 'short',
+            })}
           </span>
           <span>
-            {new Date(data[data.length - 1]!.date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
+            {new Date(data[data.length - 1]!.date).toLocaleDateString('en-AU', {
+              day: 'numeric',
+              month: 'short',
+            })}
           </span>
         </div>
       )}

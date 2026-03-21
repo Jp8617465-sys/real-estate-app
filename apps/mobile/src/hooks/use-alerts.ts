@@ -18,12 +18,11 @@ export function useAlertEvents(limit = 20) {
   return useQuery({
     queryKey: ['alert-events', limit],
     queryFn: async () => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/alerts/events?limit=${limit}`,
-        { headers: { Authorization: `Bearer ${await getToken()}` } },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/alerts/events?limit=${limit}`, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to fetch alert events');
-      const json = await res.json() as { data: PropertyAlertEvent[] };
+      const json = (await res.json()) as { data: PropertyAlertEvent[] };
       return json.data;
     },
     staleTime: 60_000,
@@ -39,12 +38,11 @@ export function useAlertSubscriptions() {
   return useQuery({
     queryKey: ['alert-subscriptions'],
     queryFn: async () => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/alerts/subscriptions`,
-        { headers: { Authorization: `Bearer ${await getToken()}` } },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/alerts/subscriptions`, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to fetch alert subscriptions');
-      const json = await res.json() as { data: PropertyAlertSubscription[] };
+      const json = (await res.json()) as { data: PropertyAlertSubscription[] };
       return json.data;
     },
     staleTime: 60_000,
@@ -62,13 +60,10 @@ export function useSendMatchToClient() {
 
   return useMutation({
     mutationFn: async (matchId: string) => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/alerts/matches/${matchId}/send-to-client`,
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${await getToken()}` },
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/alerts/matches/${matchId}/send-to-client`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) throw new Error('Failed to send match to client');
       return res.json() as Promise<{ data: { matchId: string; status: string } }>;
     },

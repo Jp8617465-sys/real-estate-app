@@ -12,6 +12,7 @@ $ARGUMENTS
 ## Supabase Edge Functions Overview
 
 Edge Functions run on Deno Deploy (not Node.js):
+
 - TypeScript/JavaScript support
 - Run globally at the edge
 - Access to Supabase client
@@ -30,13 +31,13 @@ npx supabase functions new function-name
 
 ```typescript
 // supabase/functions/function-name/index.ts
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 serve(async (req: Request) => {
   try {
     // 1. Parse request
-    const { data } = await req.json()
+    const { data } = await req.json();
 
     // 2. Create Supabase client
     const supabaseClient = createClient(
@@ -45,84 +46,81 @@ serve(async (req: Request) => {
       {
         global: {
           headers: {
-            Authorization: req.headers.get('Authorization')!
-          }
-        }
-      }
-    )
+            Authorization: req.headers.get('Authorization')!,
+          },
+        },
+      },
+    );
 
     // 3. Verify user (if needed)
     const {
       data: { user },
-      error: authError
-    } = await supabaseClient.auth.getUser()
+      error: authError,
+    } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // 4. Business logic
-    const result = await processData(data, user)
+    const result = await processData(data, user);
 
     // 5. Return response
-    return new Response(
-      JSON.stringify({ data: result }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      }
-    )
+    return new Response(JSON.stringify({ data: result }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
-})
+});
 ```
 
 ### 3. **Common Use Cases**
 
 **Webhook Handler**
+
 ```typescript
 serve(async (req) => {
-  const signature = req.headers.get('stripe-signature')
+  const signature = req.headers.get('stripe-signature');
   // Verify webhook signature
   // Process event
-  return new Response('OK', { status: 200 })
-})
+  return new Response('OK', { status: 200 });
+});
 ```
 
 **Scheduled Function** (with pg_cron)
+
 ```typescript
 serve(async () => {
   // Run daily cleanup, send emails, etc.
-  const supabase = createClient(url, serviceKey)
-  await supabase.from('old_records').delete().lt('created_at', oldDate)
-  return new Response('Done', { status: 200 })
-})
+  const supabase = createClient(url, serviceKey);
+  await supabase.from('old_records').delete().lt('created_at', oldDate);
+  return new Response('Done', { status: 200 });
+});
 ```
 
 **API Proxy/Transform**
+
 ```typescript
 serve(async (req) => {
-  const apiKey = Deno.env.get('THIRD_PARTY_API_KEY')
+  const apiKey = Deno.env.get('THIRD_PARTY_API_KEY');
   const response = await fetch('https://api.example.com/data', {
-    headers: { 'Authorization': `Bearer ${apiKey}` }
-  })
-  const data = await response.json()
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+  const data = await response.json();
   // Transform and return
-  return new Response(JSON.stringify(data), { status: 200 })
-})
+  return new Response(JSON.stringify(data), { status: 200 });
+});
 ```
 
 ### 4. **Testing Locally**
@@ -159,26 +157,24 @@ npx supabase functions logs function-name
 ```typescript
 // Using Supabase client
 const { data, error } = await supabase.functions.invoke('function-name', {
-  body: { key: 'value' }
-})
+  body: { key: 'value' },
+});
 
 // Direct fetch
-const response = await fetch(
-  `${SUPABASE_URL}/functions/v1/function-name`,
-  {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ key: 'value' })
-  }
-)
+const response = await fetch(`${SUPABASE_URL}/functions/v1/function-name`, {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ key: 'value' }),
+});
 ```
 
 ### 7. **Best Practices**
 
 **Security**
+
 -  Verify user authentication
 -  Use RLS policies
 -  Validate all inputs
@@ -186,18 +182,21 @@ const response = await fetch(
 -  Set CORS headers correctly
 
 **Performance**
+
 -  Keep functions small and focused
 -  Use streaming for large responses
 -  Cache when possible
 -  Handle timeouts (max 150s)
 
 **Error Handling**
+
 -  Proper HTTP status codes
 -  Consistent error format
 -  Log errors for debugging
 -  Don't expose sensitive info
 
 **Code Organization**
+
 -  One function per file
 -  Extract utilities to shared folder
 -  Use TypeScript for type safety
@@ -219,6 +218,7 @@ const apiKey = Deno.env.get('API_KEY')
 ### 9. **Common Patterns**
 
 **CORS Handling**
+
 ```typescript
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -226,26 +226,23 @@ serve(async (req) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'authorization, content-type'
-      }
-    })
+        'Access-Control-Allow-Headers': 'authorization, content-type',
+      },
+    });
   }
   // Handle request
-})
+});
 ```
 
 **Database Access**
+
 ```typescript
 // Read with RLS (uses user's token)
-const { data } = await supabaseClient
-  .from('posts')
-  .select('*')
+const { data } = await supabaseClient.from('posts').select('*');
 
 // Admin access (bypasses RLS)
-const supabaseAdmin = createClient(url, serviceRoleKey)
-const { data } = await supabaseAdmin
-  .from('posts')
-  .select('*')
+const supabaseAdmin = createClient(url, serviceRoleKey);
+const { data } = await supabaseAdmin.from('posts').select('*');
 ```
 
 Generate production-ready Edge Functions with proper error handling, authentication, and type safety.

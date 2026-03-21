@@ -4,7 +4,14 @@ import { EmptyState } from '../empty-state';
 import type { EmptyStateIllustration } from '@realflow/ui';
 
 const ILLUSTRATIONS: EmptyStateIllustration[] = [
-  'contacts', 'properties', 'pipeline', 'alerts', 'matches', 'documents', 'messages', 'generic',
+  'contacts',
+  'properties',
+  'pipeline',
+  'alerts',
+  'matches',
+  'documents',
+  'messages',
+  'generic',
 ];
 
 describe('EmptyState', () => {
@@ -46,9 +53,7 @@ describe('EmptyState', () => {
   });
 
   it('does not render button when no onAction', () => {
-    render(
-      <EmptyState illustration="generic" heading="Empty" actionLabel="Action" />,
-    );
+    render(<EmptyState illustration="generic" heading="Empty" actionLabel="Action" />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 

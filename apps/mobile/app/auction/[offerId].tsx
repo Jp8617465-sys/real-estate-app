@@ -85,7 +85,7 @@ export default function AuctionDayScreen() {
               confirmBid(amount, isOurs);
             },
           },
-        ]
+        ],
       );
       return;
     }
@@ -98,7 +98,11 @@ export default function AuctionDayScreen() {
       id: `bid-${Date.now()}`,
       amount,
       isOurBid: isOurs,
-      timestamp: new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString('en-AU', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
     };
     setBids((prev) => [...prev, bid]);
     setNewBidAmount('');
@@ -121,24 +125,20 @@ export default function AuctionDayScreen() {
       passed_in: 'Passed In',
       outbid: 'Outbid',
     };
-    Alert.alert(
-      `Mark as ${labels[selectedResult]}?`,
-      'This will record the auction result.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () => {
-            setResult(selectedResult);
-            updateAuctionResult.mutate({
-              result: selectedResult,
-              finalPrice: lastBid?.amount,
-              numberOfBidders: numberOfBidders ? parseInt(numberOfBidders, 10) : undefined,
-            });
-          },
+    Alert.alert(`Mark as ${labels[selectedResult]}?`, 'This will record the auction result.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Confirm',
+        onPress: () => {
+          setResult(selectedResult);
+          updateAuctionResult.mutate({
+            result: selectedResult,
+            finalPrice: lastBid?.amount,
+            numberOfBidders: numberOfBidders ? parseInt(numberOfBidders, 10) : undefined,
+          });
         },
-      ]
-    );
+      },
+    ]);
   }
 
   return (
@@ -146,9 +146,7 @@ export default function AuctionDayScreen() {
       {/* Property Address */}
       <View style={styles.headerCard}>
         <Text style={styles.headerClient}>Offer #{offer.id.substring(0, 8)}</Text>
-        {registrationNumber ? (
-          <Text style={styles.headerRego}>{registrationNumber}</Text>
-        ) : null}
+        {registrationNumber ? <Text style={styles.headerRego}>{registrationNumber}</Text> : null}
       </View>
 
       {/* Price Limits -- Most Prominent */}
@@ -190,9 +188,7 @@ export default function AuctionDayScreen() {
           <Text style={styles.bidCount}>{bids.length} bids</Text>
         </View>
 
-        {bids.length === 0 && (
-          <Text style={styles.emptyText}>No bids recorded yet</Text>
-        )}
+        {bids.length === 0 && <Text style={styles.emptyText}>No bids recorded yet</Text>}
 
         {bids.map((bid) => (
           <View
@@ -329,9 +325,7 @@ export default function AuctionDayScreen() {
             {result === 'won' ? 'WON' : result === 'passed_in' ? 'PASSED IN' : 'OUTBID'}
           </Text>
           {lastBid && (
-            <Text style={styles.resultFinalPrice}>
-              Final: {formatCurrency(lastBid.amount)}
-            </Text>
+            <Text style={styles.resultFinalPrice}>Final: {formatCurrency(lastBid.amount)}</Text>
           )}
         </View>
       )}
@@ -344,7 +338,12 @@ export default function AuctionDayScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
   content: { padding: 16 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0f172a',
+  },
   errorText: { fontSize: 16, color: '#f87171' },
 
   // Header
@@ -401,7 +400,14 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#2563eb',
   },
-  strategyTitle: { fontSize: 13, fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  strategyTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
   strategyText: { fontSize: 15, color: '#e2e8f0', lineHeight: 22 },
 
   // Bid Log
@@ -419,7 +425,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 12,
   },
-  bidLogHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  bidLogHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   bidCount: { fontSize: 12, color: '#64748b', fontWeight: '500' },
   emptyText: { textAlign: 'center', color: '#475569', fontSize: 13, padding: 16 },
 

@@ -121,7 +121,10 @@ export default function SettingsPage() {
               </div>
             ) : (
               (integrations ?? []).map((integration) => (
-                <div key={integration.provider} className="flex items-center justify-between rounded-lg border border-gray-200 p-3">
+                <div
+                  key={integration.provider}
+                  className="flex items-center justify-between rounded-lg border border-gray-200 p-3"
+                >
                   <div>
                     <p className="text-sm font-medium text-gray-900">{integration.name}</p>
                     <p className="text-xs text-gray-500">

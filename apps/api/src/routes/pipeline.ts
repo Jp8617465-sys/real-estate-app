@@ -11,11 +11,13 @@ export async function pipelineRoutes(fastify: FastifyInstance) {
 
     const { data, error } = await supabase
       .from('transactions')
-      .select(`
+      .select(
+        `
         *,
         contact:contacts(id, first_name, last_name, phone, email, buyer_profile, lead_score),
         property:properties(id, address_street_number, address_street_name, address_suburb, address_state)
-      `)
+      `,
+      )
       .eq('pipeline_type', pipelineType)
       .eq('is_deleted', false)
       .order('updated_at', { ascending: false });

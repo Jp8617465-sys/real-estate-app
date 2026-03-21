@@ -4,16 +4,16 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/mobile/**"
-      - "packages/shared/**"
-      - "packages/business-logic/**"
+      - 'apps/mobile/**'
+      - 'packages/shared/**'
+      - 'packages/business-logic/**'
 
 concurrency:
   group: mobile-build-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: '20'
 
 jobs:
   eas-build:
@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
 
       - name: Setup Expo CLI
         uses: expo/expo-github-action@v8
@@ -63,7 +63,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
 
       - name: Setup Expo CLI
         uses: expo/expo-github-action@v8

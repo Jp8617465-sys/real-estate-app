@@ -1,9 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type {
-  SocialDmLead,
-  SocialDmWebhook,
-  SocialLeadStats,
-} from '@realflow/shared';
+import type { SocialDmLead, SocialDmWebhook, SocialLeadStats } from '@realflow/shared';
 
 // ─── Internal DB Row Shape ────────────────────────────────────────────────────
 
@@ -90,6 +86,7 @@ export class SocialLeadEngine {
     overrides?: { firstName?: string; lastName?: string; email?: string; phone?: string },
   ): Promise<string> {
     const lead = await this.getById(leadId);
+    if (!lead) throw new Error('Lead not found');
     if (lead.status === 'converted') {
       if (!lead.contactId) throw new Error('Lead marked converted but has no contactId');
       return lead.contactId;
@@ -170,14 +167,14 @@ export class SocialLeadEngine {
 
     const rows = data as { channel: string; status: string }[];
     const total = rows.length;
-    const pending = rows.filter(r => r.status === 'pending').length;
-    const converted = rows.filter(r => r.status === 'converted').length;
-    const dismissed = rows.filter(r => r.status === 'dismissed').length;
+    const pending = rows.filter((r) => r.status === 'pending').length;
+    const converted = rows.filter((r) => r.status === 'converted').length;
+    const dismissed = rows.filter((r) => r.status === 'dismissed').length;
 
     const byChannel = {
-      facebook_dm: rows.filter(r => r.channel === 'facebook_dm').length,
-      instagram_dm: rows.filter(r => r.channel === 'instagram_dm').length,
-      linkedin_dm: rows.filter(r => r.channel === 'linkedin_dm').length,
+      facebook_dm: rows.filter((r) => r.channel === 'facebook_dm').length,
+      instagram_dm: rows.filter((r) => r.channel === 'instagram_dm').length,
+      linkedin_dm: rows.filter((r) => r.channel === 'linkedin_dm').length,
     };
 
     return {
@@ -216,8 +213,9 @@ export class SocialLeadEngine {
 
   /**
    * Get a single lead by ID.
+   * Returns null if the lead does not exist (PGRST116).
    */
-  async getById(leadId: string): Promise<SocialDmLead> {
+  async getById(leadId: string): Promise<SocialDmLead | null> {
     const { data, error } = await this.db
       .from('social_dm_leads')
       .select('*')
@@ -225,7 +223,10 @@ export class SocialLeadEngine {
       .is('deleted_at', null)
       .single();
 
-    if (error) throw new Error(`Lead not found: ${error.message}`);
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw new Error(`Failed to fetch lead: ${error.message}`);
+    }
     return mapRow(data as SocialDmLeadRow);
   }
 

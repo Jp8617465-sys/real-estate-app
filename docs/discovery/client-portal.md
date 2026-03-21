@@ -31,20 +31,20 @@ The strategic roadmap (Section 3, Decision 3) explicitly ranks the client portal
 
 The portal scaffold is significantly more advanced than a blank slate. The following is already built and partially functional in `apps/portal/`:
 
-| Component | Location | Status |
-|-----------|----------|--------|
-| Magic link auth + middleware | `apps/portal/src/app/auth/`, `middleware.ts` | Working |
-| Auth callback route | `apps/portal/src/app/auth/callback/route.ts` | Working |
-| Dashboard with pipeline progress | `apps/portal/src/app/page.tsx` | Working |
-| Brief read-only view | `apps/portal/src/app/brief/page.tsx` | Working |
-| Property shortlist with match scores | `apps/portal/src/app/properties/page.tsx` | Working |
-| Key dates / timeline | `apps/portal/src/app/timeline/page.tsx` | Working |
-| Documents list + upload + download | `apps/portal/src/app/documents/page.tsx` | Working |
-| Due diligence progress view | `apps/portal/src/app/due-diligence/page.tsx` | Exists |
-| Messages thread | `apps/portal/src/app/messages/page.tsx` | Exists |
-| Portal API routes (3 endpoints) | `apps/api/src/routes/portal.ts` | Partial |
-| `portal_clients` DB table + RLS | Migration `00005` | Done |
-| Documents RLS (portal read) | Migration `00005` | Done |
+| Component                            | Location                                     | Status  |
+| ------------------------------------ | -------------------------------------------- | ------- |
+| Magic link auth + middleware         | `apps/portal/src/app/auth/`, `middleware.ts` | Working |
+| Auth callback route                  | `apps/portal/src/app/auth/callback/route.ts` | Working |
+| Dashboard with pipeline progress     | `apps/portal/src/app/page.tsx`               | Working |
+| Brief read-only view                 | `apps/portal/src/app/brief/page.tsx`         | Working |
+| Property shortlist with match scores | `apps/portal/src/app/properties/page.tsx`    | Working |
+| Key dates / timeline                 | `apps/portal/src/app/timeline/page.tsx`      | Working |
+| Documents list + upload + download   | `apps/portal/src/app/documents/page.tsx`     | Working |
+| Due diligence progress view          | `apps/portal/src/app/due-diligence/page.tsx` | Exists  |
+| Messages thread                      | `apps/portal/src/app/messages/page.tsx`      | Exists  |
+| Portal API routes (3 endpoints)      | `apps/api/src/routes/portal.ts`              | Partial |
+| `portal_clients` DB table + RLS      | Migration `00005`                            | Done    |
+| Documents RLS (portal read)          | Migration `00005`                            | Done    |
 
 Sprint 5 is about **completing and hardening** the portal, not starting from scratch. The gaps are: brief sign-off flow, inspection feedback forms, agent visibility controls, deeper API coverage, and production-grade RLS for all relevant tables.
 
@@ -57,12 +57,14 @@ Sprint 5 is about **completing and hardening** the portal, not starting from scr
 **Name:** Sarah, 38, first-home buyer
 **Situation:** Has engaged a buyers agent after six months of unsuccessful searching alone. She is not a real estate expert. She has paid an engagement fee and wants to feel that money is working for her.
 **Behaviours:**
+
 - Checks the portal on her phone during lunch breaks and evenings
 - Forwards the portal link to her partner who wants to stay informed
 - Gets anxious when she has not heard from her agent in 3+ days
 - Does not understand industry jargon (vendor, settlement, cooling off)
 
 **Portal needs:**
+
 - See where she is in the process in plain language
 - Know which properties her agent is considering
 - Be able to sign off on her brief so the search can formally begin
@@ -70,6 +72,7 @@ Sprint 5 is about **completing and hardening** the portal, not starting from scr
 - Send a quick message without calling
 
 **Pain points if portal is poorly designed:**
+
 - Confusion about what each pipeline stage means
 - Inability to find documents she has been told were shared
 - No way to give feedback on a property she has inspected
@@ -81,18 +84,21 @@ Sprint 5 is about **completing and hardening** the portal, not starting from scr
 **Name:** Michael, 45, boutique buyers agent with 30 active clients
 **Situation:** Manages the full lifecycle for each client using RealFlow's web and mobile apps. The portal is his primary tool for reducing inbound client queries.
 **Behaviours:**
+
 - Controls what each client sees (may want to hide speculative matches)
 - Updates property match statuses to reflect client decisions
 - Shares documents via the documents section rather than email attachments
 - Uses inspection notes to inform the brief
 
 **Portal needs:**
+
 - Toggle which property matches are visible to the client
 - Know whether a client has viewed a document or match
 - Write agent notes on matches that the client can see
 - Trigger a brief sign-off request from inside RealFlow web
 
 **Pain points if controls are absent:**
+
 - A client sees a speculative match and calls immediately — wasted conversation
 - A client sees an internal note not intended for them
 - No way to know if the client has actually read their brief before escalating to the next stage
@@ -104,11 +110,13 @@ Sprint 5 is about **completing and hardening** the portal, not starting from scr
 **Name:** Lisa, principal of a 4-agent boutique buyers agency
 **Situation:** Oversees agents and is responsible for compliance and client satisfaction.
 **Behaviours:**
+
 - Reviews portal usage in aggregate to assess agent adoption
 - Wants confirmation that AML/KYC documents are being collected
 - May access the portal on behalf of a client if an agent is unavailable
 
 **Portal needs (Sprint 5 scope: limited):**
+
 - Confidence that data isolation is correct (client A cannot see client B's data)
 - Audit trail of brief sign-offs
 - (Sprint 6) Multi-agent oversight dashboard
@@ -305,6 +313,7 @@ And document downloads open correctly in the mobile browser
 ## 4. Acceptance Criteria
 
 ### Story 1 — Login
+
 - [ ] Magic link is sent when client submits their email address
 - [ ] Clicking the link within 1 hour authenticates and redirects to dashboard
 - [ ] Clicking an expired link shows a clear error with a re-request option
@@ -313,6 +322,7 @@ And document downloads open correctly in the mobile browser
 - [ ] Signing out clears all local state and redirects to `/auth`
 
 ### Story 2 — Brief Review
+
 - [ ] All brief fields with data are rendered; empty optional fields are omitted
 - [ ] Budget is formatted in AUD with appropriate locale formatting (`en-AU`)
 - [ ] Suburb list shows suburbs in rank order with state and postcode
@@ -321,6 +331,7 @@ And document downloads open correctly in the mobile browser
 - [ ] If no brief exists, a friendly empty state is shown (not a raw error)
 
 ### Story 3 — Brief Sign-Off
+
 - [ ] The sign-off button is only shown when the brief is in "Draft" status
 - [ ] A confirmation modal summarises the key criteria before committing
 - [ ] On confirmation, `client_signed_off` is set to `true` and `signed_off_at` is recorded
@@ -330,6 +341,7 @@ And document downloads open correctly in the mobile browser
 - [ ] Sign-off on a version-bumped brief creates a fresh acknowledgement requirement
 
 ### Story 4 — Property Shortlist
+
 - [ ] Only properties with status `sent_to_client`, `client_interested`, `inspection_booked`, or `rejected` are shown
 - [ ] Properties with status `new` or `under_review` are not visible to the client
 - [ ] Match score is displayed as a percentage with colour coding (green 90+, amber 75–89, orange 60–74)
@@ -340,6 +352,7 @@ And document downloads open correctly in the mobile browser
 - [ ] Empty state is shown when no properties have been sent
 
 ### Story 5 — Inspection Feedback
+
 - [ ] Upcoming and past inspections are listed, sorted by date
 - [ ] Past inspections show a "Submit Feedback" button
 - [ ] Feedback form accepts a star rating (1–5) and free-text comment (max 500 characters)
@@ -349,6 +362,7 @@ And document downloads open correctly in the mobile browser
 - [ ] Inspections with `is_deleted = true` are not shown
 
 ### Story 6 — Documents
+
 - [ ] Documents are fetched filtered by `contact_id` and `is_deleted = false`
 - [ ] Documents are grouped by category with clear headings
 - [ ] Download uses a 1-hour signed URL (Supabase Storage)
@@ -358,6 +372,7 @@ And document downloads open correctly in the mobile browser
 - [ ] No document from another client's contact record is accessible, enforced by RLS
 
 ### Story 7 — Progress Tracker
+
 - [ ] All 8 pipeline stages are shown in order
 - [ ] Completed stages are visually distinct (tick mark, green)
 - [ ] Current stage is highlighted with a ring or badge
@@ -367,6 +382,7 @@ And document downloads open correctly in the mobile browser
 - [ ] Unread message count badge is shown when there are unread messages
 
 ### Story 8 — Agent Controls
+
 - [ ] Property match statuses `new` and `under_review` are hidden from the portal at the RLS or query level
 - [ ] `portal_visible` boolean on documents is respected — only `portal_visible = true` documents appear
 - [ ] Agent notes on property matches are readable by the portal client
@@ -374,6 +390,7 @@ And document downloads open correctly in the mobile browser
 - [ ] Agent receives a notification when client signs off on their brief
 
 ### Story 9 — Mobile
+
 - [ ] All pages pass a basic mobile usability audit (Chrome DevTools device emulation, iPhone SE viewport)
 - [ ] No horizontal scroll on any page
 - [ ] All interactive elements have a minimum tap target of 44x44pt
@@ -386,22 +403,22 @@ And document downloads open correctly in the mobile browser
 
 The following are explicitly excluded from Sprint 5 to prevent scope creep. They belong in Sprint 6 or later.
 
-| Excluded Item | Reason | Future Sprint |
-|---------------|--------|--------------|
-| Client self-registration | Agents must create portal invitations; open registration creates data isolation risk | Sprint 6 |
-| Two-factor authentication (TOTP/SMS) | Magic link is sufficient security for v1; 2FA adds friction | Post-GA |
-| Real-time notifications (push) | Polling at 30s intervals is acceptable for v1 | Sprint 6 |
-| Chat with file attachment support | Basic text messaging is sufficient for Sprint 5 | Sprint 6 |
-| Offer management in portal | Clients view offer status only; strategy and negotiation are agent-only | Sprint 6 |
-| Client-editable brief fields | Brief is created and edited by the agent; client can only acknowledge | Sprint 6 |
-| Multi-property comparison view | Nice to have, but not essential for core portal value | Sprint 6 |
-| Portal white-labelling (agency branding) | Important for agency adoption but requires theme engine work | Sprint 6 (existing theme groundwork) |
-| Client referral tracking | Marketing feature, not client experience | Sprint 6 |
-| Offline mode (PWA) | Service worker scope is significant; not needed for v1 | Post-GA |
-| Agency principal oversight view | Multi-agent visibility requires additional RLS complexity | Sprint 6 |
-| Brief version history / diff view | Full version history UI is complex; current version only for Sprint 5 | Sprint 6 |
-| Electronic signature with legal force | Acknowledgement flow is sufficient; formal e-sig integration (DocuSign, Adobe Sign) deferred | Post-GA |
-| AML/KYC document collection via portal | AML docs are agent-collected; portal is not a verification channel in v1 | v1.5 |
+| Excluded Item                            | Reason                                                                                       | Future Sprint                        |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
+| Client self-registration                 | Agents must create portal invitations; open registration creates data isolation risk         | Sprint 6                             |
+| Two-factor authentication (TOTP/SMS)     | Magic link is sufficient security for v1; 2FA adds friction                                  | Post-GA                              |
+| Real-time notifications (push)           | Polling at 30s intervals is acceptable for v1                                                | Sprint 6                             |
+| Chat with file attachment support        | Basic text messaging is sufficient for Sprint 5                                              | Sprint 6                             |
+| Offer management in portal               | Clients view offer status only; strategy and negotiation are agent-only                      | Sprint 6                             |
+| Client-editable brief fields             | Brief is created and edited by the agent; client can only acknowledge                        | Sprint 6                             |
+| Multi-property comparison view           | Nice to have, but not essential for core portal value                                        | Sprint 6                             |
+| Portal white-labelling (agency branding) | Important for agency adoption but requires theme engine work                                 | Sprint 6 (existing theme groundwork) |
+| Client referral tracking                 | Marketing feature, not client experience                                                     | Sprint 6                             |
+| Offline mode (PWA)                       | Service worker scope is significant; not needed for v1                                       | Post-GA                              |
+| Agency principal oversight view          | Multi-agent visibility requires additional RLS complexity                                    | Sprint 6                             |
+| Brief version history / diff view        | Full version history UI is complex; current version only for Sprint 5                        | Sprint 6                             |
+| Electronic signature with legal force    | Acknowledgement flow is sufficient; formal e-sig integration (DocuSign, Adobe Sign) deferred | Post-GA                              |
+| AML/KYC document collection via portal   | AML docs are agent-collected; portal is not a verification channel in v1                     | v1.5                                 |
 
 ---
 
@@ -411,26 +428,26 @@ The following are explicitly excluded from Sprint 5 to prevent scope creep. They
 
 Everything in the client portal must be fully functional on mobile browsers. Clients are predominantly phone users.
 
-| Feature | Mobile Requirement |
-|---------|-------------------|
-| Authentication (magic link) | Email opens on phone; clicking the link launches the mobile browser and authenticates |
-| Dashboard + pipeline tracker | Single-column layout; current stage shown as text below the tracker on small screens |
-| Brief read-only view | All section cards stack vertically; label/value pairs stack on top of each other on narrow screens |
-| Brief sign-off button | Full-width button; confirmation modal is scrollable if brief summary is long |
-| Property shortlist | Single-column card layout on mobile (`grid-cols-1`); two-column on tablet (`sm:grid-cols-2`) |
-| Property interest/pass actions | Tap targets minimum 44pt; clear visual state after tapping |
-| Inspection list + feedback form | Inline form; avoids modal overlays where possible on small screens |
-| Key dates timeline | Vertical layout (already implemented); no horizontal scroll |
-| Documents list | Full-width rows; file type icon + name truncated with ellipsis; download button right-aligned |
-| Document upload | Native file picker works on iOS/Android; no drag-and-drop required on mobile |
-| Messages | Full-screen chat view on mobile; send button is prominent |
+| Feature                         | Mobile Requirement                                                                                 |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Authentication (magic link)     | Email opens on phone; clicking the link launches the mobile browser and authenticates              |
+| Dashboard + pipeline tracker    | Single-column layout; current stage shown as text below the tracker on small screens               |
+| Brief read-only view            | All section cards stack vertically; label/value pairs stack on top of each other on narrow screens |
+| Brief sign-off button           | Full-width button; confirmation modal is scrollable if brief summary is long                       |
+| Property shortlist              | Single-column card layout on mobile (`grid-cols-1`); two-column on tablet (`sm:grid-cols-2`)       |
+| Property interest/pass actions  | Tap targets minimum 44pt; clear visual state after tapping                                         |
+| Inspection list + feedback form | Inline form; avoids modal overlays where possible on small screens                                 |
+| Key dates timeline              | Vertical layout (already implemented); no horizontal scroll                                        |
+| Documents list                  | Full-width rows; file type icon + name truncated with ellipsis; download button right-aligned      |
+| Document upload                 | Native file picker works on iOS/Android; no drag-and-drop required on mobile                       |
+| Messages                        | Full-screen chat view on mobile; send button is prominent                                          |
 
 ### Desktop-Only Acceptable (Sprint 5)
 
-| Feature | Rationale |
-|---------|-----------|
-| Multi-column document grid | List view is cleaner on mobile and sufficient |
-| Side-by-side property comparison | Out of scope entirely for Sprint 5 |
+| Feature                          | Rationale                                       |
+| -------------------------------- | ----------------------------------------------- |
+| Multi-column document grid       | List view is cleaner on mobile and sufficient   |
+| Side-by-side property comparison | Out of scope entirely for Sprint 5              |
 | Detailed inspection photo viewer | Out of scope; photos are agent-only in Sprint 5 |
 
 ### Mobile Browser Targets
@@ -442,6 +459,7 @@ Everything in the client portal must be fully functional on mobile browsers. Cli
 ### Mobile Testing Checklist (Per Page)
 
 Before any page ships, it must pass:
+
 1. Chrome DevTools device emulation at 375px (iPhone SE) and 390px (iPhone 14)
 2. Real-device smoke test on iOS Safari (most common AU mobile browser)
 3. No horizontal overflow (`overflow-x: hidden` on root is not a fix — find the cause)
@@ -457,16 +475,16 @@ Before any page ships, it must pass:
 
 **What client data is stored and displayed in the portal:**
 
-| Data Category | Where Stored | Portal Displays |
-|---------------|-------------|-----------------|
-| Name, email, phone | `contacts` table | Name shown in welcome message |
-| Property search criteria (budget, suburbs, requirements) | `client_briefs` table | Full brief read-only view |
-| Financial information (budget, pre-approval amount, lender) | `client_briefs` table | Budget range displayed; pre-approval details visible |
-| Property match decisions and notes | `property_matches` table | Match scores, agent notes, status |
-| Inspection records and agent observations | `inspections` table | Inspection dates and agent impression |
-| Documents (contracts, valuations, ID scans) | Supabase Storage + `documents` table | Document list and download |
-| Key dates and transaction milestones | `key_dates` table | Full timeline |
-| Messages between client and agent | `conversation_messages` table | Full message thread |
+| Data Category                                               | Where Stored                         | Portal Displays                                      |
+| ----------------------------------------------------------- | ------------------------------------ | ---------------------------------------------------- |
+| Name, email, phone                                          | `contacts` table                     | Name shown in welcome message                        |
+| Property search criteria (budget, suburbs, requirements)    | `client_briefs` table                | Full brief read-only view                            |
+| Financial information (budget, pre-approval amount, lender) | `client_briefs` table                | Budget range displayed; pre-approval details visible |
+| Property match decisions and notes                          | `property_matches` table             | Match scores, agent notes, status                    |
+| Inspection records and agent observations                   | `inspections` table                  | Inspection dates and agent impression                |
+| Documents (contracts, valuations, ID scans)                 | Supabase Storage + `documents` table | Document list and download                           |
+| Key dates and transaction milestones                        | `key_dates` table                    | Full timeline                                        |
+| Messages between client and agent                           | `conversation_messages` table        | Full message thread                                  |
 
 **APP obligations:**
 
@@ -486,12 +504,12 @@ Before any page ships, it must pass:
 
 **Applicable legislation:** Real estate agent licensing and conduct obligations vary by state.
 
-| State | Legislation | Relevant Obligation |
-|-------|-------------|---------------------|
-| NSW | Property and Stock Agents Act 2002 | Agents must act in the client's best interests; documents forming part of a transaction must be provided to clients |
-| VIC | Estate Agents Act 1980 | Agent must not withhold information material to the client's decision |
-| QLD | Property Occupations Act 2014 | Similar general obligations to NSW and VIC |
-| WA | Real Estate and Business Agents Act 1978 | Client entitled to copies of documents relevant to their transaction |
+| State | Legislation                              | Relevant Obligation                                                                                                 |
+| ----- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| NSW   | Property and Stock Agents Act 2002       | Agents must act in the client's best interests; documents forming part of a transaction must be provided to clients |
+| VIC   | Estate Agents Act 1980                   | Agent must not withhold information material to the client's decision                                               |
+| QLD   | Property Occupations Act 2014            | Similar general obligations to NSW and VIC                                                                          |
+| WA    | Real Estate and Business Agents Act 1978 | Client entitled to copies of documents relevant to their transaction                                                |
 
 **Portal implication:** The portal satisfies the agent's obligation to provide documents to the client in a structured, auditable way. The `documents` table records the upload timestamp and the `uploaded_by` user ID. This creates a basic audit trail of what was shared and when.
 
@@ -540,12 +558,12 @@ This is a critical security property: **portal clients cannot accidentally see a
 
 ### 8.2 Existing RLS Policies (Portal-Relevant)
 
-| Table | Existing Policy | Assessment |
-|-------|----------------|------------|
-| `portal_clients` | `portal_clients_own_select`: `auth.uid() = auth_id` | Correct. Client sees only their own record. |
-| `portal_clients` | `portal_clients_agent_all`: `auth.uid() = agent_id` | Correct. But `agent_id` in `portal_clients` is the `users.id` UUID, not the `users.auth_id`. This policy will fail for agents unless `agent_id` is compared to `auth.uid()` via a join. Needs verification. |
-| `documents` | `documents_portal_read`: Client sees docs where their `contact_id` matches | Correct but incomplete — no filter on `portal_visible`. Sprint 5 adds this column. |
-| `documents` | `documents_own`: Uploader sees all docs they uploaded | Correct. Client-uploaded docs are covered. |
+| Table            | Existing Policy                                                            | Assessment                                                                                                                                                                                                  |
+| ---------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `portal_clients` | `portal_clients_own_select`: `auth.uid() = auth_id`                        | Correct. Client sees only their own record.                                                                                                                                                                 |
+| `portal_clients` | `portal_clients_agent_all`: `auth.uid() = agent_id`                        | Correct. But `agent_id` in `portal_clients` is the `users.id` UUID, not the `users.auth_id`. This policy will fail for agents unless `agent_id` is compared to `auth.uid()` via a join. Needs verification. |
+| `documents`      | `documents_portal_read`: Client sees docs where their `contact_id` matches | Correct but incomplete — no filter on `portal_visible`. Sprint 5 adds this column.                                                                                                                          |
+| `documents`      | `documents_own`: Uploader sees all docs they uploaded                      | Correct. Client-uploaded docs are covered.                                                                                                                                                                  |
 
 ### 8.3 Missing RLS Policies (Must Be Created in Sprint 5 Migration)
 
@@ -720,21 +738,21 @@ CREATE POLICY conversation_messages_portal_insert ON conversation_messages
 
 ### 8.4 What Must Remain Agent-Only (No Portal Access)
 
-| Table | Reason |
-|-------|--------|
-| `aml_checks` | Identity verification records — client must never see or modify |
-| `aml_identity_documents` | Raw identity document references — agent-only |
-| `aml_suspicious_matter_reports` | Regulatory filings — strictly agent/compliance team |
-| `contacts` (other clients) | Data isolation; portal client can only see their own contact data via `portal_clients` linkage |
-| `users` | Agent profiles; portal clients have no need to access agent account data directly (agent name/email exposed via `portal_clients` join only) |
-| `workflows` / `workflow_runs` | Internal automation — not relevant to client |
-| `activities` | Agent CRM activity log — internal only |
-| `notes` | Agent-to-agent notes — internal only |
-| `tasks` | Agent task management — internal only |
-| `analytics_daily_snapshots` | Business intelligence — agent/principal only |
-| `market_data_snapshots` | Market data — agent use only in Sprint 5 |
-| `domain_sync_jobs` | Internal sync plumbing — irrelevant to client |
-| `fee_structures` / `invoices` | Financial data — agent-only; clients see fee summaries via brief if included |
+| Table                           | Reason                                                                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `aml_checks`                    | Identity verification records — client must never see or modify                                                                             |
+| `aml_identity_documents`        | Raw identity document references — agent-only                                                                                               |
+| `aml_suspicious_matter_reports` | Regulatory filings — strictly agent/compliance team                                                                                         |
+| `contacts` (other clients)      | Data isolation; portal client can only see their own contact data via `portal_clients` linkage                                              |
+| `users`                         | Agent profiles; portal clients have no need to access agent account data directly (agent name/email exposed via `portal_clients` join only) |
+| `workflows` / `workflow_runs`   | Internal automation — not relevant to client                                                                                                |
+| `activities`                    | Agent CRM activity log — internal only                                                                                                      |
+| `notes`                         | Agent-to-agent notes — internal only                                                                                                        |
+| `tasks`                         | Agent task management — internal only                                                                                                       |
+| `analytics_daily_snapshots`     | Business intelligence — agent/principal only                                                                                                |
+| `market_data_snapshots`         | Market data — agent use only in Sprint 5                                                                                                    |
+| `domain_sync_jobs`              | Internal sync plumbing — irrelevant to client                                                                                               |
+| `fee_structures` / `invoices`   | Financial data — agent-only; clients see fee summaries via brief if included                                                                |
 
 ### 8.5 Documents — New `portal_visible` Column
 
@@ -774,37 +792,38 @@ These are the endpoints needed to fully support the client portal. Endpoints mar
 
 ### Portal Namespace (`/api/v1/portal/`)
 
-| Method | Path | Description | Status |
-|--------|------|-------------|--------|
-| `GET` | `/portal/me` | Authenticated portal client profile + agent details | Existing |
-| `GET` | `/portal/transaction` | Active transaction for the portal client | Existing |
-| `GET` | `/portal/agent` | Assigned agent contact details | Existing |
-| `GET` | `/portal/dashboard` | Aggregated dashboard stats (stage, counts) | New (currently Supabase-direct in hook) |
-| `POST` | `/portal/brief/sign-off` | Client acknowledges/signs off their brief | New |
-| `POST` | `/portal/properties/:matchId/feedback` | Client marks interest or pass on a property match | New |
-| `GET` | `/portal/inspections` | List inspections for the client | New |
-| `POST` | `/portal/inspections/:id/feedback` | Client submits inspection feedback | New |
-| `GET` | `/portal/documents` | List documents visible to the client | New (currently Supabase-direct) |
-| `POST` | `/portal/documents/upload` | Client uploads a document | New (currently Supabase-direct) |
-| `GET` | `/portal/documents/:id/download-url` | Generate signed download URL | New (currently Supabase-direct) |
-| `GET` | `/portal/key-dates` | List key dates for the client's transaction | New (currently Supabase-direct) |
-| `GET` | `/portal/due-diligence` | DD checklist and items for the client | New (currently Supabase-direct) |
-| `GET` | `/portal/messages` | Message thread between client and agent | New (currently Supabase-direct) |
-| `POST` | `/portal/messages` | Client sends a message to the agent | New (currently Supabase-direct) |
+| Method | Path                                   | Description                                         | Status                                  |
+| ------ | -------------------------------------- | --------------------------------------------------- | --------------------------------------- |
+| `GET`  | `/portal/me`                           | Authenticated portal client profile + agent details | Existing                                |
+| `GET`  | `/portal/transaction`                  | Active transaction for the portal client            | Existing                                |
+| `GET`  | `/portal/agent`                        | Assigned agent contact details                      | Existing                                |
+| `GET`  | `/portal/dashboard`                    | Aggregated dashboard stats (stage, counts)          | New (currently Supabase-direct in hook) |
+| `POST` | `/portal/brief/sign-off`               | Client acknowledges/signs off their brief           | New                                     |
+| `POST` | `/portal/properties/:matchId/feedback` | Client marks interest or pass on a property match   | New                                     |
+| `GET`  | `/portal/inspections`                  | List inspections for the client                     | New                                     |
+| `POST` | `/portal/inspections/:id/feedback`     | Client submits inspection feedback                  | New                                     |
+| `GET`  | `/portal/documents`                    | List documents visible to the client                | New (currently Supabase-direct)         |
+| `POST` | `/portal/documents/upload`             | Client uploads a document                           | New (currently Supabase-direct)         |
+| `GET`  | `/portal/documents/:id/download-url`   | Generate signed download URL                        | New (currently Supabase-direct)         |
+| `GET`  | `/portal/key-dates`                    | List key dates for the client's transaction         | New (currently Supabase-direct)         |
+| `GET`  | `/portal/due-diligence`                | DD checklist and items for the client               | New (currently Supabase-direct)         |
+| `GET`  | `/portal/messages`                     | Message thread between client and agent             | New (currently Supabase-direct)         |
+| `POST` | `/portal/messages`                     | Client sends a message to the agent                 | New (currently Supabase-direct)         |
 
 ### Agent-Side Controls (in existing route files)
 
-| Method | Path | Description | Status |
-|--------|------|-------------|--------|
-| `POST` | `/portal-clients` | Agent creates a portal client record and sends magic link invitation | New |
-| `PATCH` | `/portal-clients/:id` | Agent deactivates or reactivates a portal client | New |
-| `PATCH` | `/property-matches/:id` | Update match status (controls portal visibility) | Existing (check portal visibility filter) |
-| `PATCH` | `/documents/:id` | Set `portal_visible` flag on a document | New field, new endpoint behaviour |
-| `POST` | `/client-briefs/:id/request-sign-off` | Agent triggers sign-off invitation email to client | New |
+| Method  | Path                                  | Description                                                          | Status                                    |
+| ------- | ------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------- |
+| `POST`  | `/portal-clients`                     | Agent creates a portal client record and sends magic link invitation | New                                       |
+| `PATCH` | `/portal-clients/:id`                 | Agent deactivates or reactivates a portal client                     | New                                       |
+| `PATCH` | `/property-matches/:id`               | Update match status (controls portal visibility)                     | Existing (check portal visibility filter) |
+| `PATCH` | `/documents/:id`                      | Set `portal_visible` flag on a document                              | New field, new endpoint behaviour         |
+| `POST`  | `/client-briefs/:id/request-sign-off` | Agent triggers sign-off invitation email to client                   | New                                       |
 
 ### Notes on Direct Supabase Queries in Portal Hooks
 
 The current portal hooks (e.g., `use-portal-dashboard.ts`, `use-portal-properties.ts`) query Supabase directly from the browser using the anon key. This is acceptable for Sprint 5 given:
+
 - RLS policies enforce data isolation
 - The anon key is safe to expose in a browser client
 

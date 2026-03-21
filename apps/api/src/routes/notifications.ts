@@ -7,7 +7,10 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   fastify.get('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
     const userId = user.id;
 
@@ -43,7 +46,10 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   fastify.get('/unread-count', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
     const userId = user.id;
 
@@ -128,7 +134,10 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   fastify.get('/preferences', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
     const userId = user.id;
 
@@ -166,7 +175,10 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   fastify.patch('/preferences', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
     const userId = user.id;
 
@@ -177,18 +189,28 @@ export async function notificationRoutes(fastify: FastifyInstance) {
 
     const updates = parsed.data;
     const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    if (updates.quietHoursStart !== undefined) updatePayload.quiet_hours_start = updates.quietHoursStart;
+    if (updates.quietHoursStart !== undefined)
+      updatePayload.quiet_hours_start = updates.quietHoursStart;
     if (updates.quietHoursEnd !== undefined) updatePayload.quiet_hours_end = updates.quietHoursEnd;
-    if (updates.digestModeEnabled !== undefined) updatePayload.digest_mode_enabled = updates.digestModeEnabled;
-    if (updates.digestSendTime !== undefined) updatePayload.digest_send_time = updates.digestSendTime;
+    if (updates.digestModeEnabled !== undefined)
+      updatePayload.digest_mode_enabled = updates.digestModeEnabled;
+    if (updates.digestSendTime !== undefined)
+      updatePayload.digest_send_time = updates.digestSendTime;
     if (updates.notifyNewLead !== undefined) updatePayload.notify_new_lead = updates.notifyNewLead;
-    if (updates.notifyPropertyMatch !== undefined) updatePayload.notify_property_match = updates.notifyPropertyMatch;
-    if (updates.notifyKeyDateReminder !== undefined) updatePayload.notify_key_date_reminder = updates.notifyKeyDateReminder;
-    if (updates.notifyPipelineUpdate !== undefined) updatePayload.notify_pipeline_update = updates.notifyPipelineUpdate;
-    if (updates.notifyFollowUpDue !== undefined) updatePayload.notify_follow_up_due = updates.notifyFollowUpDue;
-    if (updates.notifyLowPriority !== undefined) updatePayload.notify_low_priority = updates.notifyLowPriority;
-    if (updates.dailyActionListEnabled !== undefined) updatePayload.daily_action_list_enabled = updates.dailyActionListEnabled;
-    if (updates.dailyActionListTime !== undefined) updatePayload.daily_action_list_time = updates.dailyActionListTime;
+    if (updates.notifyPropertyMatch !== undefined)
+      updatePayload.notify_property_match = updates.notifyPropertyMatch;
+    if (updates.notifyKeyDateReminder !== undefined)
+      updatePayload.notify_key_date_reminder = updates.notifyKeyDateReminder;
+    if (updates.notifyPipelineUpdate !== undefined)
+      updatePayload.notify_pipeline_update = updates.notifyPipelineUpdate;
+    if (updates.notifyFollowUpDue !== undefined)
+      updatePayload.notify_follow_up_due = updates.notifyFollowUpDue;
+    if (updates.notifyLowPriority !== undefined)
+      updatePayload.notify_low_priority = updates.notifyLowPriority;
+    if (updates.dailyActionListEnabled !== undefined)
+      updatePayload.daily_action_list_enabled = updates.dailyActionListEnabled;
+    if (updates.dailyActionListTime !== undefined)
+      updatePayload.daily_action_list_time = updates.dailyActionListTime;
 
     // Try update first, insert if not exists
     const { data: existing } = await supabase

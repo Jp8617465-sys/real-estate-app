@@ -65,12 +65,7 @@ interface LinkedInImageUploadResponse {
 
 // ─── Scopes ──────────────────────────────────────────────────────────
 
-const LINKEDIN_SCOPES = [
-  'openid',
-  'profile',
-  'email',
-  'w_member_social',
-] as const;
+const LINKEDIN_SCOPES = ['openid', 'profile', 'email', 'w_member_social'] as const;
 
 const LINKEDIN_ORG_SCOPES = [
   ...LINKEDIN_SCOPES,
@@ -232,9 +227,10 @@ export class LinkedInClient {
 
     // Step 1: Register image upload
     const uploadResponse = await this.registerImageUpload(authorUrn);
-    const uploadUrl = uploadResponse.value.uploadMechanism[
-      'com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'
-    ].uploadUrl;
+    const uploadUrl =
+      uploadResponse.value.uploadMechanism[
+        'com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'
+      ].uploadUrl;
     const asset = uploadResponse.value.asset;
 
     // Step 2: Download the image and upload to LinkedIn
@@ -251,7 +247,7 @@ export class LinkedInClient {
     const uploadResult = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${this.config.accessToken}`,
+        Authorization: `Bearer ${this.config.accessToken}`,
         'Content-Type': 'application/octet-stream',
       },
       body: imageBuffer,
@@ -319,9 +315,7 @@ export class LinkedInClient {
                 originalUrl: params.articleUrl,
                 title: { text: params.title ?? '' },
                 description: { text: params.description ?? '' },
-                thumbnails: params.thumbnailUrl
-                  ? [{ resolvedUrl: params.thumbnailUrl }]
-                  : [],
+                thumbnails: params.thumbnailUrl ? [{ resolvedUrl: params.thumbnailUrl }] : [],
               },
             ],
           },
@@ -352,9 +346,10 @@ export class LinkedInClient {
     if (params.imageUrl) {
       // Register upload for organisation
       const uploadResponse = await this.registerImageUpload(authorUrn);
-      const uploadUrl = uploadResponse.value.uploadMechanism[
-        'com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'
-      ].uploadUrl;
+      const uploadUrl =
+        uploadResponse.value.uploadMechanism[
+          'com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'
+        ].uploadUrl;
       const asset = uploadResponse.value.asset;
 
       const imageResponse = await fetch(params.imageUrl);
@@ -370,7 +365,7 @@ export class LinkedInClient {
       await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${this.config.accessToken}`,
+          Authorization: `Bearer ${this.config.accessToken}`,
           'Content-Type': 'application/octet-stream',
         },
         body: imageBuffer,
@@ -474,18 +469,14 @@ export class LinkedInClient {
   ): Promise<T> {
     // Rate limit check
     if (this.rateLimit.remaining <= 0 && Date.now() < this.rateLimit.resetAt) {
-      throw new LinkedInAPIError(
-        'LinkedIn API rate limit exceeded',
-        429,
-        'Too Many Requests',
-      );
+      throw new LinkedInAPIError('LinkedIn API rate limit exceeded', 429, 'Too Many Requests');
     }
 
     const baseUrl = options.baseUrlOverride ?? this.baseUrl;
     const url = `${baseUrl}${path}`;
 
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${this.config.accessToken}`,
+      Authorization: `Bearer ${this.config.accessToken}`,
       'LinkedIn-Version': this.config.apiVersion,
       'X-Restli-Protocol-Version': '2.0.0',
     };

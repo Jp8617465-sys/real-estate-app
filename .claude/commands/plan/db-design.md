@@ -31,6 +31,7 @@ Orchestrator gate: Verify migration has `deleted_at TIMESTAMPTZ`, `ENABLE ROW LE
 ## Reference Files
 
 Read these files before designing:
+
 - `supabase/migrations/00011_aml_kyc.sql` — canonical migration pattern to follow
 - `packages/shared/src/types/ai.ts` — Zod schema pattern to follow
 - `packages/shared/src/database.types.ts` — existing generated types (to avoid conflicts)

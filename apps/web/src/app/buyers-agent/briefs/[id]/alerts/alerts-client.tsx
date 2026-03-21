@@ -125,7 +125,8 @@ export function BriefAlertsClient({ briefId }: { briefId: string }) {
           {/* Score threshold */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
-              Minimum match score: <span className="font-bold text-brand-700">{form.scoreThreshold}%</span>
+              Minimum match score:{' '}
+              <span className="font-bold text-brand-700">{form.scoreThreshold}%</span>
             </label>
             <input
               type="range"
@@ -146,7 +147,10 @@ export function BriefAlertsClient({ briefId }: { briefId: string }) {
             <p className="mb-2 text-sm font-medium text-gray-700">Notification channels</p>
             <div className="flex gap-4">
               {(['push', 'email', 'sms'] as const).map((ch) => (
-                <label key={ch} className="flex items-center gap-2 text-sm text-gray-700 capitalize">
+                <label
+                  key={ch}
+                  className="flex items-center gap-2 text-sm text-gray-700 capitalize"
+                >
                   <input
                     type="checkbox"
                     checked={form[ch]}

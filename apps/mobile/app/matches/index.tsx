@@ -9,7 +9,10 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { usePropertyMatches, useUpdatePropertyMatchStatus } from '../../src/hooks/use-property-matches';
+import {
+  usePropertyMatches,
+  useUpdatePropertyMatchStatus,
+} from '../../src/hooks/use-property-matches';
 import type { PropertyMatch, PropertyMatchStatus } from '@realflow/shared';
 
 function getScoreColor(score: number): string {
@@ -26,24 +29,24 @@ function getScoreBgColor(score: number): string {
 
 function getStatusLabel(status: PropertyMatchStatus): string {
   const labels: Record<PropertyMatchStatus, string> = {
-    'new': 'New',
-    'sent_to_client': 'Sent to Client',
-    'client_interested': 'Interested',
-    'inspection_booked': 'Inspection Booked',
-    'rejected': 'Rejected',
-    'under_review': 'Under Review',
+    new: 'New',
+    sent_to_client: 'Sent to Client',
+    client_interested: 'Interested',
+    inspection_booked: 'Inspection Booked',
+    rejected: 'Rejected',
+    under_review: 'Under Review',
   };
   return labels[status];
 }
 
 function getStatusColor(status: PropertyMatchStatus): string {
   const colors: Record<PropertyMatchStatus, string> = {
-    'new': '#2563eb',
-    'sent_to_client': '#8b5cf6',
-    'client_interested': '#16a34a',
-    'inspection_booked': '#0891b2',
-    'rejected': '#6b7280',
-    'under_review': '#ca8a04',
+    new: '#2563eb',
+    sent_to_client: '#8b5cf6',
+    client_interested: '#16a34a',
+    inspection_booked: '#0891b2',
+    rejected: '#6b7280',
+    under_review: '#ca8a04',
   };
   return colors[status];
 }
@@ -65,15 +68,13 @@ function MatchQuickActions({ matchId, status }: { matchId: string; status: Prope
   const updateStatus = useUpdatePropertyMatchStatus(matchId);
 
   function handleAction(action: 'interested' | 'rejected') {
-    const newStatus: PropertyMatchStatus = action === 'interested' ? 'client_interested' : 'rejected';
+    const newStatus: PropertyMatchStatus =
+      action === 'interested' ? 'client_interested' : 'rejected';
     updateStatus.mutate(
       { status: newStatus },
       {
         onSuccess: () => {
-          Alert.alert(
-            action === 'interested' ? 'Marked Interested' : 'Rejected',
-            `Match updated.`
-          );
+          Alert.alert(action === 'interested' ? 'Marked Interested' : 'Rejected', `Match updated.`);
         },
       },
     );
@@ -121,12 +122,8 @@ export default function MatchesListScreen() {
         data={matches ?? []}
         keyExtractor={(item: MatchWithProperty) => item.id}
         contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
-        }
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No property matches found</Text>
-        }
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+        ListEmptyComponent={<Text style={styles.emptyText}>No property matches found</Text>}
         renderItem={({ item }: { item: MatchWithProperty }) => {
           const scoreColor = getScoreColor(item.overallScore);
           const scoreBgColor = getScoreBgColor(item.overallScore);
@@ -137,7 +134,9 @@ export default function MatchesListScreen() {
           const address = property?.address
             ? `${(property.address as Record<string, string>).streetNumber ?? ''} ${(property.address as Record<string, string>).streetName ?? ''}, ${(property.address as Record<string, string>).suburb ?? ''}`
             : 'Unknown address';
-          const price = property?.price_guide ?? (property?.list_price ? `$${property.list_price.toLocaleString()}` : '');
+          const price =
+            property?.price_guide ??
+            (property?.list_price ? `$${property.list_price.toLocaleString()}` : '');
 
           return (
             <TouchableOpacity
@@ -147,7 +146,9 @@ export default function MatchesListScreen() {
             >
               <View style={styles.matchContent}>
                 <View style={styles.matchTop}>
-                  <Text style={styles.matchAddress} numberOfLines={1}>{address}</Text>
+                  <Text style={styles.matchAddress} numberOfLines={1}>
+                    {address}
+                  </Text>
                   <View style={[styles.scoreBadge, { backgroundColor: scoreBgColor }]}>
                     <Text style={[styles.scoreText, { color: scoreColor }]}>
                       {item.overallScore}%
@@ -160,7 +161,8 @@ export default function MatchesListScreen() {
                 <View style={styles.matchMeta}>
                   {property && (
                     <Text style={styles.matchSpecs}>
-                      {property.bedrooms} bed {'\u00B7'} {property.bathrooms} bath {'\u00B7'} {property.car_spaces} car
+                      {property.bedrooms} bed {'\u00B7'} {property.bathrooms} bath {'\u00B7'}{' '}
+                      {property.car_spaces} car
                     </Text>
                   )}
                   <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
@@ -182,7 +184,12 @@ export default function MatchesListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
   list: { padding: 16 },
   emptyText: { fontSize: 14, color: '#9ca3af', textAlign: 'center', padding: 40 },
 

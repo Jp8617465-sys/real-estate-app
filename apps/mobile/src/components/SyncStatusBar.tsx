@@ -1,17 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  subscribeSyncQueue,
-  processQueue,
-  type SyncQueueStatus,
-} from '../lib/sync-queue';
+import { subscribeSyncQueue, processQueue, type SyncQueueStatus } from '../lib/sync-queue';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -119,25 +109,16 @@ export function SyncStatusBar({ showTimestamp = true }: SyncStatusBarProps) {
         ) : (
           <Ionicons name={iconName} size={16} color={statusColor} />
         )}
-        <Text style={[styles.statusText, { color: statusColor }]}>
-          {statusText}
-        </Text>
+        <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
       </View>
 
       <View style={styles.rightSection}>
         {showTimestamp && status.lastProcessedAt ? (
-          <Text style={styles.timestamp}>
-            Last sync: {formatTimestamp(status.lastProcessedAt)}
-          </Text>
+          <Text style={styles.timestamp}>Last sync: {formatTimestamp(status.lastProcessedAt)}</Text>
         ) : null}
 
         {hasPending && isOnline && !isSyncing ? (
-          <Ionicons
-            name="refresh-outline"
-            size={14}
-            color="#9ca3af"
-            style={styles.refreshIcon}
-          />
+          <Ionicons name="refresh-outline" size={14} color="#9ca3af" style={styles.refreshIcon} />
         ) : null}
       </View>
     </TouchableOpacity>

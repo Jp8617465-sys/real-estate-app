@@ -165,9 +165,7 @@ describe('PropertySchema', () => {
   });
 
   it('rejects negative bedrooms', () => {
-    expect(() =>
-      PropertySchema.parse({ ...validProperty, bedrooms: -1 }),
-    ).toThrow();
+    expect(() => PropertySchema.parse({ ...validProperty, bedrooms: -1 })).toThrow();
   });
 });
 

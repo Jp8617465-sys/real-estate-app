@@ -65,7 +65,11 @@ function CompletionBar({ percentage }: { percentage: number }) {
         <div
           className={cn(
             'h-2 rounded-full transition-all',
-            percentage === 100 ? 'bg-green-500' : percentage >= 50 ? 'bg-blue-500' : 'bg-yellow-500',
+            percentage === 100
+              ? 'bg-green-500'
+              : percentage >= 50
+                ? 'bg-blue-500'
+                : 'bg-yellow-500',
           )}
           style={{ width: `${percentage}%` }}
         />
@@ -95,7 +99,9 @@ export function DDChecklist({ transactionId }: DDChecklistProps) {
   if (!checklist) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-6 text-center">
-        <p className="text-sm text-gray-500">No due diligence checklist found for this transaction.</p>
+        <p className="text-sm text-gray-500">
+          No due diligence checklist found for this transaction.
+        </p>
       </div>
     );
   }
@@ -166,13 +172,33 @@ export function DDChecklist({ transactionId }: DDChecklistProps) {
                       )}
                     >
                       {item.status === 'completed' && (
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="h-3 w-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       )}
                       {item.status === 'issue_found' && (
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01" />
+                        <svg
+                          className="h-3 w-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M12 9v2m0 4h.01"
+                          />
                         </svg>
                       )}
                     </div>
@@ -181,17 +207,26 @@ export function DDChecklist({ transactionId }: DDChecklistProps) {
                       <span className="text-sm text-gray-900">{item.name}</span>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         {item.isBlocking && (
-                          <span className="text-[10px] font-semibold uppercase text-red-600">Blocking</span>
+                          <span className="text-[10px] font-semibold uppercase text-red-600">
+                            Blocking
+                          </span>
                         )}
                         {item.isCritical && !item.isBlocking && (
-                          <span className="text-[10px] font-semibold uppercase text-amber-600">Critical</span>
+                          <span className="text-[10px] font-semibold uppercase text-amber-600">
+                            Critical
+                          </span>
                         )}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium', STATUS_COLORS[item.status])}>
+                    <span
+                      className={cn(
+                        'rounded-full px-2 py-0.5 text-[10px] font-medium',
+                        STATUS_COLORS[item.status],
+                      )}
+                    >
                       {STATUS_LABELS[item.status]}
                     </span>
                     <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500">

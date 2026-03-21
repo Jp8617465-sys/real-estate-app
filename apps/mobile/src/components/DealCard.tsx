@@ -57,18 +57,12 @@ export function DealCard({ transaction, onPress }: DealCardProps) {
       </View>
 
       {price ? (
-        <Text className="text-[13px] font-semibold text-blue-600 mt-1">
-          {formatPrice(price)}
-        </Text>
+        <Text className="text-[13px] font-semibold text-blue-600 mt-1">{formatPrice(price)}</Text>
       ) : null}
 
       <View className="flex-row justify-between items-center mt-1.5">
         <View className="flex-row items-center gap-0.5">
-          <Ionicons
-            name="time-outline"
-            size={12}
-            color={isStale ? '#f59e0b' : '#9ca3af'}
-          />
+          <Ionicons name="time-outline" size={12} color={isStale ? '#f59e0b' : '#9ca3af'} />
           <Text
             className={[
               'text-[11px]',

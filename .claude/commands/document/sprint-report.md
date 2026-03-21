@@ -25,19 +25,21 @@ Produce `docs/sprints/SPRINT_N_REPORT.md`. Create the directory if it doesn't ex
 
 From `SPRINT_N_PLAN.md`:
 
-| Feature | Team | Est. Days | Status |
-|---------|------|-----------|--------|
-| Feature A | Team A | 5 | ✅ Delivered |
-| Feature B | Team B | 4 | ✅ Delivered |
-| Feature C | Team C | 3 | ⚠️ Partial (70%) |
+| Feature   | Team   | Est. Days | Status           |
+| --------- | ------ | --------- | ---------------- |
+| Feature A | Team A | 5         | ✅ Delivered     |
+| Feature B | Team B | 4         | ✅ Delivered     |
+| Feature C | Team C | 3         | ⚠️ Partial (70%) |
 
 ---
 
 ## What Was Delivered
 
 ### Feature A — [Name]
+
 **Status:** ✅ Complete
 **Key files added:**
+
 - `packages/business-logic/src/feature-a-engine.ts` (N methods)
 - `apps/api/src/routes/feature-a.ts` (N endpoints)
 - `supabase/migrations/000XX_feature_a.sql`
@@ -47,18 +49,19 @@ From `SPRINT_N_PLAN.md`:
 **Tests:** N new tests added. All passing.
 
 ### Feature B — [Name]
+
 [same structure]
 
 ---
 
 ## Test Count
 
-| Metric | Sprint Start | Sprint End | Delta |
-|--------|-------------|-----------|-------|
-| Total tests | 606 | 721 | +115 |
-| Passing | 606 | 721 | +115 |
-| Failing (pre-existing) | 10 | 10 | 0 |
-| New regressions | — | 0 | — |
+| Metric                 | Sprint Start | Sprint End | Delta |
+| ---------------------- | ------------ | ---------- | ----- |
+| Total tests            | 606          | 721        | +115  |
+| Passing                | 606          | 721        | +115  |
+| Failing (pre-existing) | 10           | 10         | 0     |
+| New regressions        | —            | 0          | —     |
 
 ---
 
@@ -66,10 +69,10 @@ From `SPRINT_N_PLAN.md`:
 
 New tables created this sprint:
 
-| Table | Migration | Columns | RLS |
-|-------|-----------|---------|-----|
-| `feature_a_table` | 000XX | 12 | ✅ |
-| `feature_b_events` | 000XY | 8 | ✅ |
+| Table              | Migration | Columns | RLS |
+| ------------------ | --------- | ------- | --- |
+| `feature_a_table`  | 000XX     | 12      | ✅  |
+| `feature_b_events` | 000XY     | 8       | ✅  |
 
 ---
 
@@ -77,10 +80,10 @@ New tables created this sprint:
 
 Document decisions made during the sprint that future engineers need to know:
 
-| Decision | Rationale | Alternatives Rejected |
-|----------|-----------|----------------------|
-| Use Supabase join for property-contact query | Eliminated N+1 from 50 queries to 2 | Separate queries with Promise.all |
-| Cache Domain API responses for 15min | Rate limit is 1000/day — caching extends capacity | No cache (would hit limit with 10 users) |
+| Decision                                     | Rationale                                         | Alternatives Rejected                    |
+| -------------------------------------------- | ------------------------------------------------- | ---------------------------------------- |
+| Use Supabase join for property-contact query | Eliminated N+1 from 50 queries to 2               | Separate queries with Promise.all        |
+| Cache Domain API responses for 15min         | Rate limit is 1000/day — caching extends capacity | No cache (would hit limit with 10 users) |
 
 ---
 
@@ -88,10 +91,10 @@ Document decisions made during the sprint that future engineers need to know:
 
 Items deliberately deferred for speed:
 
-| Item | File | Severity | Planned Sprint |
-|------|------|----------|---------------|
-| Missing useMemo on FeatureList filter | `apps/web/src/components/feature/FeatureList.tsx:23` | Low | Sprint N+1 |
-| Domain webhook signature verification | `apps/api/src/routes/domain-sync.ts:89` | Medium | Sprint N+1 |
+| Item                                  | File                                                 | Severity | Planned Sprint |
+| ------------------------------------- | ---------------------------------------------------- | -------- | -------------- |
+| Missing useMemo on FeatureList filter | `apps/web/src/components/feature/FeatureList.tsx:23` | Low      | Sprint N+1     |
+| Domain webhook signature verification | `apps/api/src/routes/domain-sync.ts:89`              | Medium   | Sprint N+1     |
 
 ---
 
@@ -99,34 +102,31 @@ Items deliberately deferred for speed:
 
 Issues discovered during the sprint that were not fixed:
 
-| Issue | Severity | Owner | Next Sprint? |
-|-------|----------|-------|-------------|
-| Analytics dashboard slow on mobile Safari | Medium | — | Yes |
-| Client brief PDF export incomplete | Low | — | Sprint N+2 |
+| Issue                                     | Severity | Owner | Next Sprint? |
+| ----------------------------------------- | -------- | ----- | ------------ |
+| Analytics dashboard slow on mobile Safari | Medium   | —     | Yes          |
+| Client brief PDF export incomplete        | Low      | —     | Sprint N+2   |
 
 ---
 
 ## Retrospective Prompts
 
-*(Fill in manually after sprint close meeting)*
+_(Fill in manually after sprint close meeting)_
 
-**What went well?**
--
+## **What went well?**
 
-**What should change?**
--
+## **What should change?**
 
-**What tech debt are we carrying that's slowing us down?**
--
+## **What tech debt are we carrying that's slowing us down?**
 
-**Is the WORKFLOW.md process working? What phases are being skipped?**
--
+## **Is the WORKFLOW.md process working? What phases are being skipped?**
 
 ---
 
 ## Sprint N+1 Preparation
 
 Based on this sprint's learnings, recommended focus areas for Sprint N+1:
+
 - [item]
 - [item]
 ```

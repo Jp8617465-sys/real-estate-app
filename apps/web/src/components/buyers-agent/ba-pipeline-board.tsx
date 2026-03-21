@@ -80,13 +80,20 @@ function StageTooltip({ description }: { description: string }) {
 
 function ScoreIndicator({ score }: { score: number }) {
   const color =
-    score >= 75 ? 'bg-red-500' : score >= 50 ? 'bg-yellow-500' : score >= 25 ? 'bg-blue-500' : 'bg-gray-300';
+    score >= 75
+      ? 'bg-red-500'
+      : score >= 50
+        ? 'bg-yellow-500'
+        : score >= 25
+          ? 'bg-blue-500'
+          : 'bg-gray-300';
   return <span className={cn('inline-block h-2 w-2 rounded-full', color)} aria-hidden="true" />;
 }
 
 function DraggableCard({ card }: { card: TransactionCard }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: card.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: card.id,
+  });
 
   const contactName = card.contact
     ? `${card.contact.first_name} ${card.contact.last_name}`
@@ -110,9 +117,7 @@ function DraggableCard({ card }: { card: TransactionCard }) {
     >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-gray-900 dark:text-white">{contactName}</span>
-        {card.contact?.lead_score != null && (
-          <ScoreIndicator score={card.contact.lead_score} />
-        )}
+        {card.contact?.lead_score != null && <ScoreIndicator score={card.contact.lead_score} />}
       </div>
       {propertyAddress && (
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{propertyAddress}</p>
@@ -136,7 +141,10 @@ function LoadingSkeleton({ stageCount }: { stageCount: number }) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
       {Array.from({ length: stageCount }).map((_, i) => (
-        <div key={i} className="w-72 shrink-0 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
+        <div
+          key={i}
+          className="w-72 shrink-0 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50"
+        >
           <Skeleton className="mb-4 h-4 w-32" />
           <div className="space-y-3">
             <Skeleton className="h-16 rounded-lg" />
@@ -210,10 +218,18 @@ export function BaPipelineBoard() {
 
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         const userId = user?.id ?? 'system';
 
-        await transitionStage({ transactionId, fromStage, toStage: targetStage, pipelineType: 'buyers-agent', userId });
+        await transitionStage({
+          transactionId,
+          fromStage,
+          toStage: targetStage,
+          pipelineType: 'buyers-agent',
+          userId,
+        });
 
         // Clear optimistic override (server data will reflect via query invalidation)
         setOptimisticStages((prev) => {
@@ -222,7 +238,10 @@ export function BaPipelineBoard() {
           return next;
         });
 
-        toast({ message: `Moved to ${BUYERS_AGENT_STAGE_LABELS[targetStage as BuyersAgentStage]}`, variant: 'success' });
+        toast({
+          message: `Moved to ${BUYERS_AGENT_STAGE_LABELS[targetStage as BuyersAgentStage]}`,
+          variant: 'success',
+        });
       } catch (err) {
         // Rollback optimistic update
         setOptimisticStages((prev) => {
@@ -248,7 +267,11 @@ export function BaPipelineBoard() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4" role="region" aria-label="Buyers agent pipeline">
+      <div
+        className="flex gap-4 overflow-x-auto pb-4"
+        role="region"
+        aria-label="Buyers agent pipeline"
+      >
         {stages.map(([key, label]) => {
           const cards = cardsByStage[key] ?? [];
           const description = BUYERS_AGENT_STAGE_DESCRIPTIONS[key];

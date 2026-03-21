@@ -18,5 +18,8 @@ export function useDraftMessage() {
       const json = await response.json();
       return json.data as AIMessageDraftResult;
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }

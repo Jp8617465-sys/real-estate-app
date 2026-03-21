@@ -19,7 +19,7 @@ export class FeeCalculator {
       flatAmount?: number;
       percentage?: number;
       tiers?: Array<{ upTo: number; fee: number }>;
-    }
+    },
   ): number {
     switch (feeType) {
       case 'flat':
@@ -68,17 +68,13 @@ export class FeeCalculator {
       successFeePercentage?: number;
       successFeeTiers?: Array<{ upTo: number; fee: number }>;
       gstIncluded: boolean;
-    }
+    },
   ): FeeCalculation {
-    const successFee = this.calculateSuccessFee(
-      purchasePrice,
-      feeStructure.successFeeType,
-      {
-        flatAmount: feeStructure.successFeeFlatAmount,
-        percentage: feeStructure.successFeePercentage,
-        tiers: feeStructure.successFeeTiers,
-      }
-    );
+    const successFee = this.calculateSuccessFee(purchasePrice, feeStructure.successFeeType, {
+      flatAmount: feeStructure.successFeeFlatAmount,
+      percentage: feeStructure.successFeePercentage,
+      tiers: feeStructure.successFeeTiers,
+    });
 
     const totalFee = feeStructure.retainerFee + successFee;
     const gstAmount = this.calculateGst(totalFee, feeStructure.gstIncluded);
@@ -103,17 +99,16 @@ export class FeeCalculator {
       flatAmount?: number;
       percentage?: number;
       tiers?: Array<{ upTo: number; fee: number }>;
-    }>
+    }>,
   ): number {
     return activeClients.reduce((total, client) => {
-      return total + this.calculateSuccessFee(
-        client.estimatedPurchasePrice,
-        client.feeType,
-        {
+      return (
+        total +
+        this.calculateSuccessFee(client.estimatedPurchasePrice, client.feeType, {
           flatAmount: client.flatAmount,
           percentage: client.percentage,
           tiers: client.tiers,
-        }
+        })
       );
     }, 0);
   }
@@ -125,7 +120,7 @@ export class FeeCalculator {
   static estimateStampDuty(
     purchasePrice: number,
     state: string,
-    firstHomeBuyer: boolean = false
+    firstHomeBuyer: boolean = false,
   ): number {
     // Simplified QLD stamp duty brackets (2024)
     if (state === 'QLD') {

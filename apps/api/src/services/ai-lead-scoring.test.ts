@@ -36,13 +36,15 @@ const emptyActivities: Activity[] = [];
 
 // ─── Mock Anthropic Client ─────────────────────────────────────────
 
-function makeAnthropicMock(overrides?: Partial<{
-  signals: unknown[];
-  urgencyLevel: string;
-  estimatedTimeline: string | null;
-  budgetConfidence: string;
-  suggestedScore: number;
-}>) {
+function makeAnthropicMock(
+  overrides?: Partial<{
+    signals: unknown[];
+    urgencyLevel: string;
+    estimatedTimeline: string | null;
+    budgetConfidence: string;
+    suggestedScore: number;
+  }>,
+) {
   return {
     analyzeLeadEnquiry: vi.fn().mockResolvedValue({
       signals: overrides?.signals ?? [],
@@ -166,7 +168,9 @@ describe('AILeadScoringService', () => {
 
   it('returns signals, urgencyLevel, estimatedTimeline and budgetConfidence from AI', async () => {
     const anthropic = makeAnthropicMock({
-      signals: [{ signal: 'Pre-approved', impact: 'positive', weight: 9, explanation: 'Finance ready' }],
+      signals: [
+        { signal: 'Pre-approved', impact: 'positive', weight: 9, explanation: 'Finance ready' },
+      ],
       urgencyLevel: 'immediate',
       estimatedTimeline: '2 weeks',
       budgetConfidence: 'high',

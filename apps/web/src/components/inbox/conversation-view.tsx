@@ -11,10 +11,7 @@ interface ConversationViewProps {
   messages: ConversationMessage[];
   totalMessages: number;
   isLoading: boolean;
-  onSendMessage: (params: {
-    channel: MessageChannel;
-    content: MessageContent;
-  }) => void;
+  onSendMessage: (params: { channel: MessageChannel; content: MessageContent }) => void;
   isSending: boolean;
 }
 
@@ -49,9 +46,7 @@ export function ConversationView({
   // Auto-select the channel the contact last used
   useEffect(() => {
     if (messages.length > 0) {
-      const lastInbound = [...messages]
-        .reverse()
-        .find((m) => m.direction === 'inbound');
+      const lastInbound = [...messages].reverse().find((m) => m.direction === 'inbound');
       if (lastInbound && REPLY_CHANNELS.includes(lastInbound.channel)) {
         setSelectedChannel(lastInbound.channel);
       }
@@ -97,8 +92,8 @@ export function ConversationView({
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{contactName}</h2>
             <p className="text-xs text-gray-500">
-              {totalMessages} messages across{' '}
-              {new Set(messages.map((m) => m.channel)).size} channels
+              {totalMessages} messages across {new Set(messages.map((m) => m.channel)).size}{' '}
+              channels
             </p>
           </div>
           <div className="flex gap-2">
@@ -227,7 +222,9 @@ function MessageBubble({ message }: { message: ConversationMessage }) {
         <div className="flex items-center gap-1.5">
           <ChannelIcon channel="internal_note" />
           <span className="text-xs font-medium text-yellow-700">Internal Note</span>
-          <span className="text-xs text-yellow-500">{time} - {date}</span>
+          <span className="text-xs text-yellow-500">
+            {time} - {date}
+          </span>
         </div>
         <p className="mt-1 text-sm text-yellow-800">{message.content.text}</p>
       </div>
@@ -286,9 +283,7 @@ function MessageBubble({ message }: { message: ConversationMessage }) {
         >
           <ChannelIcon channel={message.channel} className="opacity-60" />
           <span>{time}</span>
-          {message.status === 'failed' && (
-            <span className="font-medium text-red-400">Failed</span>
-          )}
+          {message.status === 'failed' && <span className="font-medium text-red-400">Failed</span>}
         </div>
       </div>
     </div>

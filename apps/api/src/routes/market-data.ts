@@ -31,37 +31,37 @@ export async function marketDataRoutes(fastify: FastifyInstance) {
    * Get the latest market data for a suburb.
    * Query params: state (default NSW), propertyType (optional)
    */
-  fastify.get<{ Params: { suburb: string }; Querystring: { state?: string; propertyType?: string } }>(
-    '/:suburb',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
+  fastify.get<{
+    Params: { suburb: string };
+    Querystring: { state?: string; propertyType?: string };
+  }>('/:suburb', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
 
-      const paramParse = SuburbParamSchema.safeParse(request.params);
-      if (!paramParse.success) {
-        return reply.status(400).send({ error: 'Invalid suburb parameter' });
-      }
+    const paramParse = SuburbParamSchema.safeParse(request.params);
+    if (!paramParse.success) {
+      return reply.status(400).send({ error: 'Invalid suburb parameter' });
+    }
 
-      const queryParse = SuburbQueryParamsSchema.safeParse(request.query);
-      if (!queryParse.success) {
-        return reply.status(400).send({
-          error: 'Invalid query parameters',
-          details: queryParse.error.flatten().fieldErrors,
-        });
-      }
+    const queryParse = SuburbQueryParamsSchema.safeParse(request.query);
+    if (!queryParse.success) {
+      return reply.status(400).send({
+        error: 'Invalid query parameters',
+        details: queryParse.error.flatten().fieldErrors,
+      });
+    }
 
-      const { suburb } = paramParse.data;
-      const { state, propertyType } = queryParse.data;
+    const { suburb } = paramParse.data;
+    const { state, propertyType } = queryParse.data;
 
-      const service = new MarketDataService(supabase);
-      const snapshot = await service.getLatestSnapshot(suburb, state, propertyType);
+    const service = new MarketDataService(supabase);
+    const snapshot = await service.getLatestSnapshot(suburb, state, propertyType);
 
-      if (!snapshot) {
-        return reply.status(404).send({ error: 'No market data found for this suburb' });
-      }
+    if (!snapshot) {
+      return reply.status(404).send({ error: 'No market data found for this suburb' });
+    }
 
-      return { data: snapshot };
-    },
-  );
+    return { data: snapshot };
+  });
 
   /**
    * GET /api/market-data/snapshot/:suburbId
@@ -72,48 +72,45 @@ export async function marketDataRoutes(fastify: FastifyInstance) {
   fastify.get<{
     Params: { suburbId: string };
     Querystring: { propertyType?: string; limit?: number };
-  }>(
-    '/snapshot/:suburbId',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
+  }>('/snapshot/:suburbId', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
 
-      const paramParse = SuburbIdParamSchema.safeParse(request.params);
-      if (!paramParse.success) {
-        return reply.status(400).send({ error: 'Invalid suburbId parameter' });
-      }
+    const paramParse = SuburbIdParamSchema.safeParse(request.params);
+    if (!paramParse.success) {
+      return reply.status(400).send({ error: 'Invalid suburbId parameter' });
+    }
 
-      const { suburbId } = paramParse.data;
+    const { suburbId } = paramParse.data;
 
-      // Parse suburbId format: "suburb-state" e.g. "mosman-nsw"
-      const lastDash = suburbId.lastIndexOf('-');
-      if (lastDash <= 0) {
-        return reply.status(400).send({
-          error: 'suburbId must be in "suburb-state" format, e.g. "mosman-nsw"',
-        });
-      }
-
-      const suburb = suburbId.substring(0, lastDash);
-      const state = suburbId.substring(lastDash + 1).toUpperCase();
-
-      const queryParse = SuburbQueryParamsSchema.safeParse(request.query);
-      if (!queryParse.success) {
-        return reply.status(400).send({
-          error: 'Invalid query parameters',
-          details: queryParse.error.flatten().fieldErrors,
-        });
-      }
-
-      const { propertyType, limit } = queryParse.data;
-
-      const service = new MarketDataService(supabase);
-      const snapshots = await service.getHistoricalSnapshots(suburb, state, {
-        propertyType,
-        limit,
+    // Parse suburbId format: "suburb-state" e.g. "mosman-nsw"
+    const lastDash = suburbId.lastIndexOf('-');
+    if (lastDash <= 0) {
+      return reply.status(400).send({
+        error: 'suburbId must be in "suburb-state" format, e.g. "mosman-nsw"',
       });
+    }
 
-      return { data: snapshots, total: snapshots.length };
-    },
-  );
+    const suburb = suburbId.substring(0, lastDash);
+    const state = suburbId.substring(lastDash + 1).toUpperCase();
+
+    const queryParse = SuburbQueryParamsSchema.safeParse(request.query);
+    if (!queryParse.success) {
+      return reply.status(400).send({
+        error: 'Invalid query parameters',
+        details: queryParse.error.flatten().fieldErrors,
+      });
+    }
+
+    const { propertyType, limit } = queryParse.data;
+
+    const service = new MarketDataService(supabase);
+    const snapshots = await service.getHistoricalSnapshots(suburb, state, {
+      propertyType,
+      limit,
+    });
+
+    return { data: snapshots, total: snapshots.length };
+  });
 
   /**
    * POST /api/market-data/refresh
@@ -124,7 +121,10 @@ export async function marketDataRoutes(fastify: FastifyInstance) {
     const supabase = createSupabaseClient(request);
 
     // Verify authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -162,7 +162,10 @@ export async function marketDataRoutes(fastify: FastifyInstance) {
     const supabase = createSupabaseClient(request);
 
     // Verify authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }

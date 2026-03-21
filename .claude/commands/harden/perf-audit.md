@@ -35,21 +35,20 @@ $ARGUMENTS
 An N+1 query is a database call inside a loop — it multiplies load with data size.
 
 **Pattern to find:**
+
 ```typescript
 // ❌ N+1: database call inside forEach/map/for
 const contacts = await engine.list();
 const enriched = await Promise.all(
-  contacts.map(c => supabase.from('properties').select('*').eq('contact_id', c.id))
+  contacts.map((c) => supabase.from('properties').select('*').eq('contact_id', c.id)),
 );
 
 // ✅ Single query with join
-const enriched = await supabase
-  .from('contacts')
-  .select('*, properties(*)')
-  .is('deleted_at', null);
+const enriched = await supabase.from('contacts').select('*, properties(*)').is('deleted_at', null);
 ```
 
 Scan all new engine files and routes for:
+
 ```bash
 grep -n "\.map\|\.forEach\|for.*of\|for.*in" \
   packages/business-logic/src/ apps/api/src/routes/ --include="*.ts" -r
@@ -60,6 +59,7 @@ Review each loop for Supabase calls inside. Any confirmed N+1 = HIGH severity.
 ### 2. Unindexed Queries
 
 For each new `supabase.from('table').eq('field', value)` call:
+
 - Check if `field` has an index in the migration
 - Common fields that need indexes: `user_id`, `contact_id`, `status`, `created_at`, `deleted_at`
 - Compound queries need composite indexes: `(user_id, status) WHERE deleted_at IS NULL`
@@ -77,6 +77,7 @@ grep -n "\.filter\|\.map\|\.sort\|\.reduce" apps/web/src/components/ --include="
 ```
 
 Check for:
+
 - Array operations (filter/map/sort) inside render that aren't wrapped in `useMemo`
 - Event handlers not wrapped in `useCallback` on list items
 - Context consumers that re-render on every parent update
@@ -84,6 +85,7 @@ Check for:
 ### 4. API Response Time Check
 
 For new endpoints, estimate response time:
+
 - Single table query with index: ~10-20ms
 - Single table query without index: ~50-200ms
 - Join across 2 tables: ~20-50ms
@@ -91,6 +93,7 @@ For new endpoints, estimate response time:
 - External API call (Domain, Anthropic): ~200-2000ms
 
 Flag any route that calls:
+
 - An external API synchronously (Domain, Anthropic, Twilio) without timeout
 - Multiple unindexed queries in sequence
 - AI generation in a GET request (should be async/cached)
@@ -98,6 +101,7 @@ Flag any route that calls:
 ### 5. Next.js Bundle Analysis
 
 For new pages in `apps/web/src/app/`:
+
 ```bash
 # Check for heavy imports that should be dynamic
 grep -n "import.*from" apps/web/src/app/ --include="*.tsx" -r | \
@@ -110,6 +114,7 @@ Large libraries should use `next/dynamic` with `{ ssr: false }` to avoid bloatin
 ### 6. Mobile List Performance
 
 For new FlatList screens in `apps/mobile/`:
+
 - Lists rendering >20 items must use `FlatList` (never `ScrollView` + `.map()`)
 - `keyExtractor` must return a stable unique key (item.id, not index)
 - `getItemLayout` should be set for lists with fixed-height items
@@ -118,18 +123,19 @@ For new FlatList screens in `apps/mobile/`:
 ### 7. Supabase Realtime Subscriptions
 
 For new realtime subscriptions:
+
 - Every subscription must have a `.unsubscribe()` in cleanup
 - Don't subscribe to entire tables — use `filter: 'user_id=eq.${userId}'`
 - Mobile screens must unsubscribe in `useEffect` cleanup
 
 ## Severity Scale
 
-| Level | Criteria |
-|-------|---------|
-| 🚨 CRITICAL | N+1 on a high-traffic endpoint, query with no index on 100k+ row table |
-| ⚠️ HIGH | N+1 on any endpoint, unindexed query on growing table, AI call without timeout |
-| 🔶 MEDIUM | Missing useMemo on expensive computation, ScrollView with >20 items |
-| 💡 LOW | Bundle optimisation opportunity, minor re-render issue |
+| Level       | Criteria                                                                       |
+| ----------- | ------------------------------------------------------------------------------ |
+| 🚨 CRITICAL | N+1 on a high-traffic endpoint, query with no index on 100k+ row table         |
+| ⚠️ HIGH     | N+1 on any endpoint, unindexed query on growing table, AI call without timeout |
+| 🔶 MEDIUM   | Missing useMemo on expensive computation, ScrollView with >20 items            |
+| 💡 LOW      | Bundle optimisation opportunity, minor re-render issue                         |
 
 ## Output Format
 

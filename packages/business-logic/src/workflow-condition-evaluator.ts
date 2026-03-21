@@ -55,14 +55,11 @@ const OPERATOR_EVALUATORS: Record<ConditionOperator, OperatorEvaluator> = {
   starts_with: (fieldValue, conditionValue) =>
     String(fieldValue ?? '').startsWith(String(conditionValue ?? '')),
 
-  greater_than: (fieldValue, conditionValue) =>
-    toNumber(fieldValue) > toNumber(conditionValue),
+  greater_than: (fieldValue, conditionValue) => toNumber(fieldValue) > toNumber(conditionValue),
 
-  less_than: (fieldValue, conditionValue) =>
-    toNumber(fieldValue) < toNumber(conditionValue),
+  less_than: (fieldValue, conditionValue) => toNumber(fieldValue) < toNumber(conditionValue),
 
-  is_empty: (fieldValue) =>
-    fieldValue === null || fieldValue === undefined || fieldValue === '',
+  is_empty: (fieldValue) => fieldValue === null || fieldValue === undefined || fieldValue === '',
 
   is_not_empty: (fieldValue) =>
     fieldValue !== null && fieldValue !== undefined && fieldValue !== '',
@@ -110,8 +107,7 @@ const OPERATOR_EVALUATORS: Record<ConditionOperator, OperatorEvaluator> = {
     return false;
   },
 
-  lead_score_above: (fieldValue, conditionValue) =>
-    toNumber(fieldValue) > toNumber(conditionValue),
+  lead_score_above: (fieldValue, conditionValue) => toNumber(fieldValue) > toNumber(conditionValue),
 
   // ─── Property-Specific Operators ─────────────────────────────────
 
@@ -131,14 +127,14 @@ const OPERATOR_EVALUATORS: Record<ConditionOperator, OperatorEvaluator> = {
   },
 
   suburb_match: (fieldValue, conditionValue) => {
-    const fieldSuburb = String(fieldValue ?? '').toLowerCase().trim();
+    const fieldSuburb = String(fieldValue ?? '')
+      .toLowerCase()
+      .trim();
     if (typeof conditionValue === 'string') {
       return fieldSuburb === conditionValue.toLowerCase().trim();
     }
     if (Array.isArray(conditionValue)) {
-      return conditionValue.some(
-        (s) => String(s).toLowerCase().trim() === fieldSuburb,
-      );
+      return conditionValue.some((s) => String(s).toLowerCase().trim() === fieldSuburb);
     }
     return false;
   },
@@ -187,24 +183,17 @@ export function evaluateFieldCondition(
  * Evaluate a condition node which may be a simple condition or a compound
  * (AND/OR/NOT) expression tree.
  */
-export function evaluateConditionNode(
-  node: ConditionNode,
-  context: WorkflowContext,
-): boolean {
+export function evaluateConditionNode(node: ConditionNode, context: WorkflowContext): boolean {
   if (!isCompoundCondition(node)) {
     return evaluateFieldCondition(node, context);
   }
 
   switch (node.logic) {
     case 'AND':
-      return node.conditions.every((child) =>
-        evaluateConditionNode(child, context),
-      );
+      return node.conditions.every((child) => evaluateConditionNode(child, context));
 
     case 'OR':
-      return node.conditions.some((child) =>
-        evaluateConditionNode(child, context),
-      );
+      return node.conditions.some((child) => evaluateConditionNode(child, context));
 
     case 'NOT':
       return !evaluateConditionNode(node.condition, context);
@@ -223,7 +212,5 @@ export function evaluateConditionNodes(
   context: WorkflowContext,
 ): boolean {
   if (conditions.length === 0) return true;
-  return conditions.every((condition) =>
-    evaluateConditionNode(condition, context),
-  );
+  return conditions.every((condition) => evaluateConditionNode(condition, context));
 }

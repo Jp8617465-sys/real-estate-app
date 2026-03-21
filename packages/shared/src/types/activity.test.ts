@@ -14,11 +14,25 @@ const now = () => new Date().toISOString();
 
 describe('ActivityTypeSchema', () => {
   const validTypes = [
-    'call', 'email-sent', 'email-received', 'sms-sent', 'sms-received',
-    'meeting', 'inspection', 'open-home', 'property-sent', 'note-added',
-    'stage-change', 'task-completed', 'document-uploaded',
-    'offer-submitted', 'contract-exchanged', 'settlement-completed',
-    'social-dm-sent', 'social-dm-received', 'system',
+    'call',
+    'email-sent',
+    'email-received',
+    'sms-sent',
+    'sms-received',
+    'meeting',
+    'inspection',
+    'open-home',
+    'property-sent',
+    'note-added',
+    'stage-change',
+    'task-completed',
+    'document-uploaded',
+    'offer-submitted',
+    'contract-exchanged',
+    'settlement-completed',
+    'social-dm-sent',
+    'social-dm-received',
+    'system',
   ];
 
   it('accepts all valid activity types', () => {
@@ -110,9 +124,7 @@ describe('NoteSchema', () => {
   });
 
   it('rejects empty content', () => {
-    expect(() =>
-      NoteSchema.parse({ ...validNote, content: '' }),
-    ).toThrow();
+    expect(() => NoteSchema.parse({ ...validNote, content: '' })).toThrow();
   });
 
   it('accepts optional property and transaction IDs', () => {

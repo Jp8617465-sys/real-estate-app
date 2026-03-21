@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import { use } from 'react';
-import { useFollowUpSequences, useSequenceEnrollments, usePauseEnrollment, useResumeEnrollment, useCancelEnrollment } from '@/hooks/use-follow-up-sequences';
+import {
+  useFollowUpSequences,
+  useSequenceEnrollments,
+  usePauseEnrollment,
+  useResumeEnrollment,
+  useCancelEnrollment,
+} from '@/hooks/use-follow-up-sequences';
 import { SequenceStepList } from '@/components/workflows/sequence-step-list';
 import type { FollowUpSequence, SequenceEnrollment } from '@realflow/shared';
 
@@ -25,7 +31,9 @@ function formatDate(dateStr: string | null | undefined): string {
 function EnrollmentRow({
   enrollment,
 }: {
-  enrollment: SequenceEnrollment & { contacts?: { first_name: string; last_name: string; email: string } };
+  enrollment: SequenceEnrollment & {
+    contacts?: { first_name: string; last_name: string; email: string };
+  };
 }) {
   const pauseEnrollment = usePauseEnrollment();
   const resumeEnrollment = useResumeEnrollment();
@@ -59,9 +67,7 @@ function EnrollmentRow({
           {enrollment.status}
         </span>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-500">
-        {formatDate(enrollment.nextStepDueAt)}
-      </td>
+      <td className="px-4 py-3 text-sm text-gray-500">{formatDate(enrollment.nextStepDueAt)}</td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           {enrollment.status === 'active' && (
@@ -157,9 +163,7 @@ export default function SequenceDetailPage({ params }: { params: Promise<{ id: s
             <span className="font-medium text-gray-900">{stepCount}</span> steps
           </p>
           <p className="mt-0.5">
-            <span className="font-medium text-gray-900">
-              {(enrollments ?? []).length}
-            </span>{' '}
+            <span className="font-medium text-gray-900">{(enrollments ?? []).length}</span>{' '}
             enrollments
           </p>
         </div>
@@ -179,11 +183,13 @@ export default function SequenceDetailPage({ params }: { params: Promise<{ id: s
             {(['all', 'active', 'paused', 'completed'] as const).map((status) => (
               <button
                 key={status}
-                onClick={() =>
-                  setEnrollmentStatusFilter(status === 'all' ? undefined : status)
-                }
+                onClick={() => setEnrollmentStatusFilter(status === 'all' ? undefined : status)}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
-                  (status === 'all' ? enrollmentStatusFilter === undefined : enrollmentStatusFilter === status)
+                  (
+                    status === 'all'
+                      ? enrollmentStatusFilter === undefined
+                      : enrollmentStatusFilter === status
+                  )
                     ? 'bg-brand-100 text-brand-700'
                     : 'text-gray-500 hover:bg-gray-100'
                 }`}
@@ -209,9 +215,7 @@ export default function SequenceDetailPage({ params }: { params: Promise<{ id: s
         )}
 
         {!enrollLoading && (enrollments ?? []).length === 0 && (
-          <p className="px-6 py-8 text-center text-sm text-gray-400">
-            No enrollments yet.
-          </p>
+          <p className="px-6 py-8 text-center text-sm text-gray-400">No enrollments yet.</p>
         )}
 
         {!enrollLoading && (enrollments ?? []).length > 0 && (

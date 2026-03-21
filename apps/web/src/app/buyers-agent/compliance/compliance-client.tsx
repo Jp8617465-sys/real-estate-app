@@ -81,15 +81,7 @@ function StatusBadge({ status }: { status: AmlCheckStatus }) {
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-function KpiCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number;
-  accent?: string;
-}) {
+function KpiCard({ label, value, accent }: { label: string; value: number; accent?: string }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
       <p className="text-sm text-gray-500">{label}</p>
@@ -171,11 +163,16 @@ function NewCheckForm({ onSuccess, onCancel }: { onSuccess: () => void; onCancel
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Verification Method</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Verification Method
+          </label>
           <select
             value={form.verificationMethod}
             onChange={(e) =>
-              setForm((f) => ({ ...f, verificationMethod: e.target.value as AmlVerificationMethod }))
+              setForm((f) => ({
+                ...f,
+                verificationMethod: e.target.value as AmlVerificationMethod,
+              }))
             }
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           >
@@ -211,7 +208,9 @@ function NewCheckForm({ onSuccess, onCancel }: { onSuccess: () => void; onCancel
         </div>
 
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700">Residential Address</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Residential Address
+          </label>
           <input
             type="text"
             required
@@ -312,9 +311,7 @@ function ChecksTable({ checks }: { checks: AmlCheck[] }) {
                 {check.verificationMethod?.replace('_', ' ') ?? '—'}
               </td>
               <td className="px-6 py-4 text-sm text-gray-600">
-                {check.completedAt
-                  ? new Date(check.completedAt).toLocaleDateString('en-AU')
-                  : '—'}
+                {check.completedAt ? new Date(check.completedAt).toLocaleDateString('en-AU') : '—'}
               </td>
               <td className="px-6 py-4 text-right">
                 <Link
@@ -362,10 +359,7 @@ export default function ComplianceClient() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('');
 
-  const {
-    data: checks,
-    isLoading: checksLoading,
-  } = useQuery({
+  const { data: checks, isLoading: checksLoading } = useQuery({
     queryKey: ['aml-checks', statusFilter],
     queryFn: () => fetchChecks(statusFilter ? { status: statusFilter } : undefined),
   });
@@ -409,7 +403,10 @@ export default function ComplianceClient() {
           </p>
           <ul className="space-y-1">
             {expiring.map((check) => (
-              <li key={check.id} className="flex items-center justify-between text-sm text-orange-700">
+              <li
+                key={check.id}
+                className="flex items-center justify-between text-sm text-orange-700"
+              >
                 <span>{check.fullLegalName ?? check.contactId}</span>
                 <span className="text-xs text-orange-500">
                   Expires:{' '}
@@ -458,11 +455,7 @@ export default function ComplianceClient() {
       </div>
 
       {/* ─── Checks Table ─── */}
-      {checksLoading ? (
-        <TableSkeleton />
-      ) : (
-        <ChecksTable checks={allChecks} />
-      )}
+      {checksLoading ? <TableSkeleton /> : <ChecksTable checks={allChecks} />}
     </div>
   );
 }

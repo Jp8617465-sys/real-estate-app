@@ -46,8 +46,13 @@ const validContact = {
 
 describe('ContactTypeSchema', () => {
   const validTypes = [
-    'buyer', 'seller', 'investor', 'landlord',
-    'tenant', 'referral-source', 'past-client',
+    'buyer',
+    'seller',
+    'investor',
+    'landlord',
+    'tenant',
+    'referral-source',
+    'past-client',
   ];
 
   it('accepts all valid contact types', () => {
@@ -87,9 +92,7 @@ describe('BuyerProfileSchema', () => {
   });
 
   it('rejects negative budget', () => {
-    expect(() =>
-      BuyerProfileSchema.parse({ ...validBuyerProfile, budgetMin: -1 }),
-    ).toThrow();
+    expect(() => BuyerProfileSchema.parse({ ...validBuyerProfile, budgetMin: -1 })).toThrow();
   });
 
   it('accepts bedroom max as optional', () => {
@@ -184,27 +187,19 @@ describe('ContactSchema', () => {
   });
 
   it('rejects invalid email format', () => {
-    expect(() =>
-      ContactSchema.parse({ ...validContact, email: 'not-an-email' }),
-    ).toThrow();
+    expect(() => ContactSchema.parse({ ...validContact, email: 'not-an-email' })).toThrow();
   });
 
   it('rejects empty firstName', () => {
-    expect(() =>
-      ContactSchema.parse({ ...validContact, firstName: '' }),
-    ).toThrow();
+    expect(() => ContactSchema.parse({ ...validContact, firstName: '' })).toThrow();
   });
 
   it('rejects empty types array', () => {
-    expect(() =>
-      ContactSchema.parse({ ...validContact, types: [] }),
-    ).toThrow();
+    expect(() => ContactSchema.parse({ ...validContact, types: [] })).toThrow();
   });
 
   it('rejects phone shorter than 8 characters', () => {
-    expect(() =>
-      ContactSchema.parse({ ...validContact, phone: '1234567' }),
-    ).toThrow();
+    expect(() => ContactSchema.parse({ ...validContact, phone: '1234567' })).toThrow();
   });
 
   it('defaults communicationPreference to any', () => {

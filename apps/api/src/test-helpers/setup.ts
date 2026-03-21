@@ -107,9 +107,7 @@ export function noAuthHeaders(): Record<string, string> {
 /**
  * Parse a Fastify inject response payload as JSON.
  */
-export function parseResponse<T = Record<string, unknown>>(
-  response: { payload: string },
-): T {
+export function parseResponse<T = Record<string, unknown>>(response: { payload: string }): T {
   return JSON.parse(response.payload) as T;
 }
 
@@ -124,7 +122,7 @@ export function expectStatus<T = Record<string, unknown>>(
     const body = JSON.parse(response.payload);
     throw new Error(
       `Expected status ${expectedStatus}, got ${response.statusCode}. ` +
-      `Body: ${JSON.stringify(body, null, 2)}`,
+        `Body: ${JSON.stringify(body, null, 2)}`,
     );
   }
   return JSON.parse(response.payload) as T;

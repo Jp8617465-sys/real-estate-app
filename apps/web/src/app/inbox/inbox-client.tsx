@@ -77,9 +77,7 @@ export default function InboxClient() {
       <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Inbox</h1>
-          <p className="text-sm text-gray-500">
-            All conversations across every channel
-          </p>
+          <p className="text-sm text-gray-500">All conversations across every channel</p>
         </div>
         {unreadData && unreadData.total > 0 && (
           <span className="rounded-full bg-brand-600 px-3 py-1 text-sm font-semibold text-white">

@@ -116,9 +116,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
     const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = `documents/${folder}/${timestamp}_${safeName}`;
 
-    const { data, error } = await supabase.storage
-      .from('documents')
-      .createSignedUploadUrl(path);
+    const { data, error } = await supabase.storage.from('documents').createSignedUploadUrl(path);
 
     if (error) return reply.status(500).send({ error: error.message });
 

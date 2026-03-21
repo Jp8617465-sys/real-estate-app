@@ -52,16 +52,16 @@ The consequence is that buyers agents evaluating RealFlow against Linear, Pipedr
 
 All metrics measured at Sprint 8 close (eight weeks after first phase ships).
 
-| Metric | Baseline (Sprint 6 close) | Target |
-|---|---|---|
-| Agent-reported NPS on frontend polish (1–10 survey) | Not yet measured (assumed 5–6) | 8+ |
-| Client portal session duration (median, minutes) | Not yet measured | +40% vs baseline |
-| Portal bounce rate (sessions ending on dashboard without navigation) | Not yet measured | Reduce by 30% |
-| Pipeline board interactions per session (card moves + stage opens) | Not yet measured | +60% vs baseline |
-| Accessibility audit score (axe-core automated) | Not yet measured | Zero critical violations |
-| Mobile app crash rate (from animation-related layout thrash) | Not yet measured | 0 new crashes introduced |
-| Page load LCP (web, 4G throttle, Lighthouse) | Not yet measured | Below 2.5 s on all primary routes |
-| Time-to-interactive on portal dashboard | Not yet measured | Below 3.0 s on mid-range Android |
+| Metric                                                               | Baseline (Sprint 6 close)      | Target                            |
+| -------------------------------------------------------------------- | ------------------------------ | --------------------------------- |
+| Agent-reported NPS on frontend polish (1–10 survey)                  | Not yet measured (assumed 5–6) | 8+                                |
+| Client portal session duration (median, minutes)                     | Not yet measured               | +40% vs baseline                  |
+| Portal bounce rate (sessions ending on dashboard without navigation) | Not yet measured               | Reduce by 30%                     |
+| Pipeline board interactions per session (card moves + stage opens)   | Not yet measured               | +60% vs baseline                  |
+| Accessibility audit score (axe-core automated)                       | Not yet measured               | Zero critical violations          |
+| Mobile app crash rate (from animation-related layout thrash)         | Not yet measured               | 0 new crashes introduced          |
+| Page load LCP (web, 4G throttle, Lighthouse)                         | Not yet measured               | Below 2.5 s on all primary routes |
+| Time-to-interactive on portal dashboard                              | Not yet measured               | Below 3.0 s on mid-range Android  |
 
 ---
 
@@ -75,12 +75,14 @@ All metrics measured at Sprint 8 close (eight weeks after first phase ships).
 **Practice:** Sole operator, 2 part-time staff, 12–18 active buyer clients at any time
 **Tech literacy:** High; uses iPhone 16, MacBook Pro, Notion, Xero, Domain Pro
 **Pain points with current UI:**
+
 - Dashboard data loads but offers no at-a-glance priority signal. All KPI cards feel equal weight.
 - Pipeline board is static seed data — cannot drag a client card between stages.
 - No visual signal when a workflow fires or a message is sent.
 - When showing the product to a client, the portal feels "like a Google Form."
 
 **Jobs to be done:**
+
 - In 90 seconds of opening the app, understand which clients need attention today.
 - During a client demo, present the portal without embarrassment.
 - On mobile while on-site at an inspection, log a note and move a deal stage without breaking flow.
@@ -93,11 +95,13 @@ All metrics measured at Sprint 8 close (eight weeks after first phase ships).
 **Practice:** Runs a 6-agent buyers agency; manages team performance from the Team dashboard (Sprint 6)
 **Tech literacy:** Medium-high; relies on dashboards to spot underperformance
 **Pain points:**
+
 - Team performance tables load all rows simultaneously with no priority sorting visible at a glance.
 - No chart animations — the revenue breakdown appears instantaneously, making it feel like a static mockup.
 - Cannot easily distinguish which metric is most urgent (low conversion rate vs. stale pipeline deals).
 
 **Jobs to be done:**
+
 - Start each Monday morning by scanning the Team dashboard for anything requiring intervention.
 - Share performance reports with agents via the portal link with confidence in the product's appearance.
 
@@ -109,11 +113,13 @@ All metrics measured at Sprint 8 close (eight weeks after first phase ships).
 **Context:** First-time buyer; working with a buyers agent for the first time; anxious about the process
 **Tech literacy:** High consumer; uses Instagram, ANZ app, Netflix
 **Pain points:**
+
 - The portal progress tracker is a row of numbered circles with no animation when she advances a stage. It feels like nothing happened.
 - The document list is a plain unordered list. No file type icons, no upload date, no preview.
 - Messages section has no typing indicator and no read receipts.
 
 **Jobs to be done:**
+
 - At least once daily, confirm her search is progressing without having to call her agent.
 - Feel confident and informed, not anxious and uncertain.
 
@@ -125,11 +131,13 @@ All metrics measured at Sprint 8 close (eight weeks after first phase ships).
 **Context:** Part-time admin for a small agency; manages contacts, compliance checks, and document uploads
 **Tech literacy:** Medium; comfortable with web apps, not a developer
 **Pain points:**
+
 - Contacts table is dense with no visual differentiation between lead scores, contact types, or recency.
 - Compliance dashboard is a wall of rows with no colour-coding on AML risk levels.
 - When uploading documents to a client record, there is no progress indicator.
 
 **Jobs to be done:**
+
 - Process 20+ contact records in a single session without losing track of where she is.
 - Identify which compliance checks are overdue without reading every row.
 
@@ -318,19 +326,19 @@ All acceptance criteria use Given/When/Then format. "Pass" means automated test 
 
 The following items are explicitly excluded from this feature. Each exclusion has a rationale.
 
-| Item | Rationale |
-|---|---|
-| New backend API endpoints | The frontend modernisation must consume existing API contracts. Any data gaps are surfaced as follow-on tickets. |
-| Real-time property alert animations (cron wiring) | Deferred in Sprint 5; the wiring is a backend task outside this feature boundary. |
-| White-label / per-client theming | `docs/CLIENT_THEMES.md` tracks this separately. The CSS variable architecture enables it but the theming toggle UI is not part of this feature. |
-| Recharts replacement or new charting library | Recharts is already installed in `apps/web`. Chart visual improvements (colours, animation on draw) are in scope; replacing Recharts with a different library is not. |
-| New page routes or navigation items | No new routes. The modernisation applies to existing pages only. |
-| Native iOS / Android gesture navigation rewrites | Standard React Navigation / Expo Router navigation remains. Only micro-interactions on existing components are in scope. |
-| Storybook setup | Storybook is useful but represents a standalone infrastructure lift. This feature produces components that can be added to Storybook if it is set up separately. |
-| i18n / multi-language support | RealFlow is Australian-market only. All copy remains in English. |
-| Video or audio elements | No media player or recording UI is introduced. |
-| Offline-first syncing improvements | NetInfo offline detection (`OfflineBanner.tsx`) already exists. Architecture changes to sync are out of scope. |
-| Backend AML/KYC process changes | Compliance *display* improvements (colour-coded risk levels) are in scope. The underlying workflow is not changed. |
+| Item                                              | Rationale                                                                                                                                                             |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New backend API endpoints                         | The frontend modernisation must consume existing API contracts. Any data gaps are surfaced as follow-on tickets.                                                      |
+| Real-time property alert animations (cron wiring) | Deferred in Sprint 5; the wiring is a backend task outside this feature boundary.                                                                                     |
+| White-label / per-client theming                  | `docs/CLIENT_THEMES.md` tracks this separately. The CSS variable architecture enables it but the theming toggle UI is not part of this feature.                       |
+| Recharts replacement or new charting library      | Recharts is already installed in `apps/web`. Chart visual improvements (colours, animation on draw) are in scope; replacing Recharts with a different library is not. |
+| New page routes or navigation items               | No new routes. The modernisation applies to existing pages only.                                                                                                      |
+| Native iOS / Android gesture navigation rewrites  | Standard React Navigation / Expo Router navigation remains. Only micro-interactions on existing components are in scope.                                              |
+| Storybook setup                                   | Storybook is useful but represents a standalone infrastructure lift. This feature produces components that can be added to Storybook if it is set up separately.      |
+| i18n / multi-language support                     | RealFlow is Australian-market only. All copy remains in English.                                                                                                      |
+| Video or audio elements                           | No media player or recording UI is introduced.                                                                                                                        |
+| Offline-first syncing improvements                | NetInfo offline detection (`OfflineBanner.tsx`) already exists. Architecture changes to sync are out of scope.                                                        |
+| Backend AML/KYC process changes                   | Compliance _display_ improvements (colour-coded risk levels) are in scope. The underlying workflow is not changed.                                                    |
 
 ---
 
@@ -338,10 +346,10 @@ The following items are explicitly excluded from this feature. Each exclusion ha
 
 ### 5.1 Platform Targets
 
-| Platform | Minimum OS | Test devices |
-|---|---|---|
-| iOS | iOS 16 | iPhone 14 (physical), iPhone SE 3rd gen (simulator) |
-| Android | Android 13 | Pixel 7 (physical), Samsung Galaxy A54 (simulator) |
+| Platform | Minimum OS | Test devices                                        |
+| -------- | ---------- | --------------------------------------------------- |
+| iOS      | iOS 16     | iPhone 14 (physical), iPhone SE 3rd gen (simulator) |
+| Android  | Android 13 | Pixel 7 (physical), Samsung Galaxy A54 (simulator)  |
 
 ### 5.2 Performance Constraints
 
@@ -410,15 +418,15 @@ Real estate agent licensing is governed by state-specific legislation (e.g., Pro
 
 The frontend modernisation reads data from the following tables. No new tables are introduced. The RLS analysis confirms that the existing policies are sufficient for the UI changes described.
 
-| UI Surface | Tables read | RLS policy | Modernisation impact |
-|---|---|---|---|
-| Analytics Dashboard KPI cards | `analytics_daily_snapshots`, `transactions`, `contacts` | Agent sees only their own records (`auth.uid() = agent_id`) | None — display-only changes |
-| Pipeline board (drag-and-drop) | `transactions` | Agent RLS on `transactions.agent_id` | The PUT stage update must pass through `apps/api` — direct Supabase client writes from the frontend are not permitted. RLS would block a direct frontend write anyway since the token is agent-scoped. |
-| Compliance dashboard risk colours | `aml_checks` | Agent sees checks for their contacts only | None — display-only changes |
-| Portal progress tracker | `portal_clients`, `transactions` | `portal_clients.contact_id` matched to authenticated portal user | Stage animation reads `currentStage` from the existing `usePortalDashboard` hook — no new queries |
-| Portal document list | `documents` | Documents with `contact_id` matching portal client's contact | Document metadata exposure is unchanged; only the display components are updated |
-| Mobile alerts | `property_alert_subscriptions`, `property_alert_events` | Subscription belongs to contact, contact belongs to agent | None — display-only changes |
-| Team dashboard (Sprint 6) | `team_performance_snapshots`, `lead_assignment_rules` | Team lead sees own team members only | None — display-only changes |
+| UI Surface                        | Tables read                                             | RLS policy                                                       | Modernisation impact                                                                                                                                                                                   |
+| --------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Analytics Dashboard KPI cards     | `analytics_daily_snapshots`, `transactions`, `contacts` | Agent sees only their own records (`auth.uid() = agent_id`)      | None — display-only changes                                                                                                                                                                            |
+| Pipeline board (drag-and-drop)    | `transactions`                                          | Agent RLS on `transactions.agent_id`                             | The PUT stage update must pass through `apps/api` — direct Supabase client writes from the frontend are not permitted. RLS would block a direct frontend write anyway since the token is agent-scoped. |
+| Compliance dashboard risk colours | `aml_checks`                                            | Agent sees checks for their contacts only                        | None — display-only changes                                                                                                                                                                            |
+| Portal progress tracker           | `portal_clients`, `transactions`                        | `portal_clients.contact_id` matched to authenticated portal user | Stage animation reads `currentStage` from the existing `usePortalDashboard` hook — no new queries                                                                                                      |
+| Portal document list              | `documents`                                             | Documents with `contact_id` matching portal client's contact     | Document metadata exposure is unchanged; only the display components are updated                                                                                                                       |
+| Mobile alerts                     | `property_alert_subscriptions`, `property_alert_events` | Subscription belongs to contact, contact belongs to agent        | None — display-only changes                                                                                                                                                                            |
+| Team dashboard (Sprint 6)         | `team_performance_snapshots`, `lead_assignment_rules`   | Team lead sees own team members only                             | None — display-only changes                                                                                                                                                                            |
 
 ### 7.2 New Write Path: Pipeline Stage Update from Drag-and-Drop
 
@@ -447,33 +455,33 @@ Dark mode is a client-side CSS variable toggle stored in `localStorage`. No data
 
 ### 8.1 Internal Engine Dependencies
 
-| Feature | Engine dependency | Risk |
-|---|---|---|
-| FEAT-UI-003 (Pipeline drag-and-drop) | `PipelineEngine.validateTransition()` in `packages/business-logic` | Medium — invalid transitions must surface as 422 errors with readable messages; confirm error contract with API team |
-| FEAT-UI-005 (Compliance risk colours) | `AMLComplianceEngine` risk level field in API response | Low — the `risk_level` field is already returned; confirm enum values are `'low' | 'medium' | 'high'` |
-| FEAT-UI-006 (Portal stage animation) | `PortalEngine` current stage via `usePortalDashboard` hook | Low — hook already returns `currentStage`; need to add `previousStage` tracking in local state |
-| FEAT-UI-010 (Mobile alerts animation) | `PropertyAlertEngine`, Supabase Realtime channel `property_alert_events` | Medium — Realtime subscription must be stable; test with multiple devices subscribed simultaneously |
-| FEAT-UI-008 (Dark mode portal) | `portal-600` colour tokens in `apps/portal/tailwind.config.ts` | Low — currently hardcoded hex, must be converted to CSS variables before dark mode mapping can work |
+| Feature                               | Engine dependency                                                        | Risk                                                                                                                 |
+| ------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+| FEAT-UI-003 (Pipeline drag-and-drop)  | `PipelineEngine.validateTransition()` in `packages/business-logic`       | Medium — invalid transitions must surface as 422 errors with readable messages; confirm error contract with API team |
+| FEAT-UI-005 (Compliance risk colours) | `AMLComplianceEngine` risk level field in API response                   | Low — the `risk_level` field is already returned; confirm enum values are `'low'                                     | 'medium' | 'high'` |
+| FEAT-UI-006 (Portal stage animation)  | `PortalEngine` current stage via `usePortalDashboard` hook               | Low — hook already returns `currentStage`; need to add `previousStage` tracking in local state                       |
+| FEAT-UI-010 (Mobile alerts animation) | `PropertyAlertEngine`, Supabase Realtime channel `property_alert_events` | Medium — Realtime subscription must be stable; test with multiple devices subscribed simultaneously                  |
+| FEAT-UI-008 (Dark mode portal)        | `portal-600` colour tokens in `apps/portal/tailwind.config.ts`           | Low — currently hardcoded hex, must be converted to CSS variables before dark mode mapping can work                  |
 
 ### 8.2 External API Dependencies
 
-| External API | Affected feature | Risk |
-|---|---|---|
+| External API                 | Affected feature                                           | Risk                                                                                                                           |
+| ---------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Domain.com.au (DomainClient) | Property card images in off-market / portal property lists | Low — images are already fetched; the modernisation adds `loading="lazy"` and `next/image` blur-placeholder to property images |
-| Supabase Storage | Document list file type icon derivation | Low — file extension is already returned in `documents.file_path`; icon mapping is purely frontend |
-| Supabase Realtime | Mobile alert list live updates (FEAT-UI-010) | Medium — channel subscription stability under load; test with 50+ simultaneous connections before sprint close |
+| Supabase Storage             | Document list file type icon derivation                    | Low — file extension is already returned in `documents.file_path`; icon mapping is purely frontend                             |
+| Supabase Realtime            | Mobile alert list live updates (FEAT-UI-010)               | Medium — channel subscription stability under load; test with 50+ simultaneous connections before sprint close                 |
 
 ### 8.3 Package-Level Dependencies to be Added
 
-| Package | Version | App | Purpose | Build impact |
-|---|---|---|---|---|
-| `framer-motion` | `^11.x` | `apps/web`, `apps/portal` | Entrance animations, layout animations, gesture-driven interactions | Adds ~40 KB gzip to the web bundle; must be tree-shaken; verify with `webpack-bundle-analyzer` (already installed) |
-| `@radix-ui/react-toast` | `^1.x` | `apps/web`, `apps/portal` | Accessible toast notifications (FEAT-UI-004) | ~8 KB gzip |
-| `@radix-ui/react-dialog` | `^1.x` | `apps/web`, `apps/portal` | Accessible modal for confirmation dialogs (FEAT-UI-003 error state) | ~6 KB gzip |
-| `@dnd-kit/core` | `^6.x` | `apps/web` | Drag-and-drop pipeline board (FEAT-UI-003) | ~12 KB gzip; chosen over `react-beautiful-dnd` (unmaintained) and `react-dnd` (heavier) |
-| `@dnd-kit/sortable` | `^8.x` | `apps/web` | Sortable list abstraction used by dnd-kit | ~4 KB gzip |
-| `react-native-reanimated` | `~3.16.x` (Expo SDK 54 compatible) | `apps/mobile` | GPU-accelerated animations (FEAT-UI-010) | Must be in `babel.config.js` plugins |
-| `expo-haptics` | `~14.x` (Expo SDK 54 compatible) | `apps/mobile` | Haptic feedback (FEAT-UI-010) | Requires `app.json` Android permission |
+| Package                   | Version                            | App                       | Purpose                                                             | Build impact                                                                                                       |
+| ------------------------- | ---------------------------------- | ------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `framer-motion`           | `^11.x`                            | `apps/web`, `apps/portal` | Entrance animations, layout animations, gesture-driven interactions | Adds ~40 KB gzip to the web bundle; must be tree-shaken; verify with `webpack-bundle-analyzer` (already installed) |
+| `@radix-ui/react-toast`   | `^1.x`                             | `apps/web`, `apps/portal` | Accessible toast notifications (FEAT-UI-004)                        | ~8 KB gzip                                                                                                         |
+| `@radix-ui/react-dialog`  | `^1.x`                             | `apps/web`, `apps/portal` | Accessible modal for confirmation dialogs (FEAT-UI-003 error state) | ~6 KB gzip                                                                                                         |
+| `@dnd-kit/core`           | `^6.x`                             | `apps/web`                | Drag-and-drop pipeline board (FEAT-UI-003)                          | ~12 KB gzip; chosen over `react-beautiful-dnd` (unmaintained) and `react-dnd` (heavier)                            |
+| `@dnd-kit/sortable`       | `^8.x`                             | `apps/web`                | Sortable list abstraction used by dnd-kit                           | ~4 KB gzip                                                                                                         |
+| `react-native-reanimated` | `~3.16.x` (Expo SDK 54 compatible) | `apps/mobile`             | GPU-accelerated animations (FEAT-UI-010)                            | Must be in `babel.config.js` plugins                                                                               |
+| `expo-haptics`            | `~14.x` (Expo SDK 54 compatible)   | `apps/mobile`             | Haptic feedback (FEAT-UI-010)                                       | Requires `app.json` Android permission                                                                             |
 
 All packages must be added to the correct `package.json` (app-level, not root). Turbo's dependency graph must be respected — no implicit imports.
 
@@ -486,6 +494,7 @@ All packages must be added to the correct `package.json` (app-level, not root). 
 **Recommendation:** Adopt Framer Motion (`framer-motion ^11.x`) for all web and portal animations.
 
 **Rationale:**
+
 - The existing codebase uses CSS `transition-*` and `animate-pulse` utilities. These are sufficient for hover states but inadequate for orchestrated entrance sequences, layout animations when list items are added/removed, and drag-and-drop spring physics.
 - Framer Motion's `motion.div` component accepts `initial`, `animate`, and `exit` props that map naturally to the stagger patterns described in FEAT-UI-001. Variants allow a parent to orchestrate child animations with `staggerChildren` without prop-drilling.
 - Framer Motion's `AnimatePresence` solves the toast unmount animation problem (FEAT-UI-004) without a custom solution.
@@ -494,6 +503,7 @@ All packages must be added to the correct `package.json` (app-level, not root). 
 - Bundle cost: ~40 KB gzip. Given RealFlow's web app already ships Recharts (~90 KB gzip), this is acceptable. Must verify with `webpack-bundle-analyzer` that tree-shaking is effective.
 
 **Rejected alternatives:**
+
 - **GSAP:** Licence cost for the club plugins; overkill for this feature set.
 - **CSS animations only:** Cannot orchestrate complex, data-dependent sequences or handle layout animations for list item additions.
 - **React Spring:** Comparable API to Framer Motion but smaller ecosystem and less documentation for Next.js App Router Server Components interop.
@@ -503,12 +513,14 @@ All packages must be added to the correct `package.json` (app-level, not root). 
 **Recommendation:** Add `@radix-ui/react-toast` and `@radix-ui/react-dialog` (and `@radix-ui/react-dropdown-menu` if not already present) as the accessible primitive layer.
 
 **Rationale:**
+
 - The web app currently has no modal system and no toast system. Rolling bespoke accessible implementations is high-effort and error-prone (focus trap, aria-live region, scroll lock, portal rendering).
 - Radix UI provides unstyled, WAI-ARIA-compliant primitives. Styling is done entirely with Tailwind classes, matching the existing codebase pattern.
 - `@radix-ui/react-toast` handles the aria-live announcement, auto-dismiss timer, and stacking logic for FEAT-UI-004.
 - The existing `packages/ui/src/components/` already has `button.ts`, `input.ts`, `card.ts`, and `badge.ts`. Radix primitives extend this layer rather than replacing it.
 
 **Rejected alternative:**
+
 - **shadcn/ui:** This is a code-generation tool that copies component source files into the repository. It produces excellent output but represents a significant surface area of owned code. Given the team is actively building features, owning generated component code adds maintenance burden. Adopting Radix UI primitives directly and styling them in-house gives the same outcome with explicit control.
 
 ### 9.3 Drag and Drop: @dnd-kit
@@ -516,6 +528,7 @@ All packages must be added to the correct `package.json` (app-level, not root). 
 **Recommendation:** Use `@dnd-kit/core` and `@dnd-kit/sortable` for the pipeline Kanban board.
 
 **Rationale:**
+
 - `react-beautiful-dnd` is unmaintained (last release 2022) and has open issues with React 18+ and concurrent mode.
 - `react-dnd` is heavier and has a more complex context setup.
 - `@dnd-kit` is actively maintained, supports touch devices natively (critical for FEAT-UI-003's touch requirement), integrates cleanly with Framer Motion layout animations, and has first-class TypeScript support.
@@ -530,6 +543,7 @@ The recommended approach is to extend the existing `packages/ui` shared package 
 **Recommendation:** Use `react-native-reanimated ~3.16.x` (Expo SDK 54 compatible) for all mobile animations. Migrate all components to NativeWind v4 classes.
 
 **Rationale:**
+
 - Reanimated runs animations on the UI thread, bypassing the JS bridge entirely. This is the only way to achieve 60 fps animations on mid-range Android devices.
 - NativeWind v4 with its JSX transform approach generates styles at build time, eliminating the `StyleSheet.create` overhead at runtime.
 - Consistency: agents use both the web app (desktop) and the mobile app (on-site). A consistent visual language between the two requires a shared token system, which NativeWind v4 + the existing web Tailwind config enables.
@@ -539,6 +553,7 @@ The recommended approach is to extend the existing `packages/ui` shared package 
 **Recommendation:** Build a single `<Skeleton />` primitive in `packages/ui/src/components/skeleton.ts` using a CSS `@keyframes` shimmer animation. Do not introduce a third-party skeleton library.
 
 **Rationale:**
+
 - The component is simple enough (a div with a shimmer gradient overlay) that a third-party library adds dependency weight with no benefit.
 - Keeping it in `packages/ui` ensures it is shared between `apps/web` and `apps/portal` without duplication.
 
@@ -553,6 +568,7 @@ Phases are ordered by visible impact-per-effort ratio. Each phase is independent
 **Goal:** Every page feels alive. Zero hard cuts on data load.
 
 **Deliverables:**
+
 - FEAT-UI-002: `<Skeleton />` primitive with directional shimmer, replacing all `animate-pulse` instances across `apps/web` and `apps/portal`.
 - FEAT-UI-004: Toast notification system using `@radix-ui/react-toast`, wired to all existing mutations (send message, create workflow, mark as read, invite portal client).
 - FEAT-UI-005: Typographic scale applied across all primary pages in `apps/web` (Dashboard, Contacts, Pipeline, Workflows, Inbox, Compliance).
@@ -567,6 +583,7 @@ Phases are ordered by visible impact-per-effort ratio. Each phase is independent
 **Goal:** Data arriving on screen feels intentional and prioritised.
 
 **Deliverables:**
+
 - FEAT-UI-001: Staggered entrance animations on KPI cards, pipeline columns, and table rows using Framer Motion.
 - FEAT-UI-005 extension: Compliance dashboard risk-level colour coding (HIGH/MEDIUM/LOW row backgrounds and label colours).
 - FEAT-UI-008: Dark mode implementation — CSS variable dark palette, `theme-switcher.tsx` full implementation, localStorage persistence.
@@ -580,6 +597,7 @@ Phases are ordered by visible impact-per-effort ratio. Each phase is independent
 **Goal:** The pipeline board becomes the primary daily working surface for agents. The portal earns client trust.
 
 **Deliverables:**
+
 - FEAT-UI-003: Drag-and-drop pipeline board (full implementation including keyboard accessibility, API write, error revert animation).
 - FEAT-UI-006: Portal progress stage animation (fill animation on stage advance, scroll-to-current on mobile).
 - FEAT-UI-011: Full keyboard navigation and focus management audit + axe-core CI gate.
@@ -593,6 +611,7 @@ Phases are ordered by visible impact-per-effort ratio. Each phase is independent
 **Goal:** The mobile app matches the quality of the web app.
 
 **Deliverables:**
+
 - FEAT-UI-009: Full NativeWind migration of all 9 mobile components.
 - FEAT-UI-010: Reanimated micro-interactions (press scale, stale card haptic, alert list entrance, tab fade).
 - `expo-haptics` integration and Android permission.
@@ -650,4 +669,4 @@ All items below must be checked before this discovery document is promoted to a 
 
 ---
 
-*Document produced by RealFlow Requirements Analyst agent. All file paths in this document are absolute. Implementation should not begin until the sign-off checklist is complete.*
+_Document produced by RealFlow Requirements Analyst agent. All file paths in this document are absolute. Implementation should not begin until the sign-off checklist is complete._

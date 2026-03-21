@@ -6,11 +6,7 @@ export function useInspection(id: string) {
   return useQuery({
     queryKey: ['inspections', id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('inspections')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await supabase.from('inspections').select('*').eq('id', id).single();
       if (error) throw error;
       return data as Inspection;
     },

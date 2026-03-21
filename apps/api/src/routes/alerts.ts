@@ -1,8 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import {
-  CreateAlertSubscriptionSchema,
-  UpdateAlertSubscriptionSchema,
-} from '@realflow/shared';
+import { CreateAlertSubscriptionSchema, UpdateAlertSubscriptionSchema } from '@realflow/shared';
 import { createSupabaseClient } from '../middleware/supabase';
 import { makeAlertEngine } from '../lib/make-alert-engine';
 
@@ -24,7 +21,10 @@ export async function alertsRoutes(fastify: FastifyInstance) {
       const subs = await engine.getSubscriptions(user.id);
       return { data: subs };
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
@@ -50,7 +50,10 @@ export async function alertsRoutes(fastify: FastifyInstance) {
       const sub = await engine.createSubscription(user.id, parsed.data);
       return reply.status(201).send({ data: sub });
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 
@@ -80,35 +83,40 @@ export async function alertsRoutes(fastify: FastifyInstance) {
       const msg = err instanceof Error ? err.message : 'Internal error';
       if (msg.includes('not found')) return reply.status(404).send({ error: msg });
       if (msg.includes('Unauthorised')) return reply.status(403).send({ error: msg });
+      request.log.error(err, 'handler failed');
       return reply.status(500).send({ error: msg });
     }
   });
 
   // ─── DELETE /alerts/subscriptions/:id ────────────────────────────────────
   // Soft-delete an alert subscription. Only the owning agent may delete.
-  fastify.delete<{ Params: { id: string } }>('/alerts/subscriptions/:id', async (request, reply) => {
-    const supabase = createSupabaseClient(request);
+  fastify.delete<{ Params: { id: string } }>(
+    '/alerts/subscriptions/:id',
+    async (request, reply) => {
+      const supabase = createSupabaseClient(request);
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) return reply.status(401).send({ error: 'Unauthorised' });
 
-    const { id } = request.params;
+      const { id } = request.params;
 
-    const engine = makeAlertEngine(supabase);
+      const engine = makeAlertEngine(supabase);
 
-    try {
-      await engine.deleteSubscription(id, user.id);
-      return reply.status(204).send();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Internal error';
-      if (msg.includes('not found')) return reply.status(404).send({ error: msg });
-      if (msg.includes('Unauthorised')) return reply.status(403).send({ error: msg });
-      return reply.status(500).send({ error: msg });
-    }
-  });
+      try {
+        await engine.deleteSubscription(id, user.id);
+        return reply.status(204).send();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Internal error';
+        if (msg.includes('not found')) return reply.status(404).send({ error: msg });
+        if (msg.includes('Unauthorised')) return reply.status(403).send({ error: msg });
+        request.log.error(err, 'handler failed');
+        return reply.status(500).send({ error: msg });
+      }
+    },
+  );
 
   // ─── POST /alerts/matches/:matchId/send-to-client ─────────────────────────
   // Mark a property match as sent to the portal client.
@@ -134,6 +142,7 @@ export async function alertsRoutes(fastify: FastifyInstance) {
         const msg = err instanceof Error ? err.message : 'Internal error';
         if (msg.includes('not found')) return reply.status(404).send({ error: msg });
         if (msg.includes('Unauthorised')) return reply.status(403).send({ error: msg });
+        request.log.error(err, 'handler failed');
         return reply.status(500).send({ error: msg });
       }
     },
@@ -189,6 +198,7 @@ export async function alertsRoutes(fastify: FastifyInstance) {
         .eq('id', matchId);
 
       if (updateError) {
+        request.log.error(updateError, 'handler failed');
         return reply.status(500).send({ error: updateError.message });
       }
 
@@ -219,7 +229,10 @@ export async function alertsRoutes(fastify: FastifyInstance) {
       const events = await engine.getAlertEvents(user.id, limit);
       return { data: events };
     } catch (err) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Internal error' });
+      request.log.error(err, 'handler failed');
+      return reply
+        .status(500)
+        .send({ error: err instanceof Error ? err.message : 'Internal error' });
     }
   });
 }

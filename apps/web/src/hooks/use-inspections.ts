@@ -10,11 +10,13 @@ export function useInspections(filters?: { propertyId?: string; clientId?: strin
     queryFn: async () => {
       let query = supabase
         .from('inspections')
-        .select(`
+        .select(
+          `
           *,
           property:properties(id, address_street_number, address_street_name, address_suburb),
           client:contacts(id, first_name, last_name)
-        `)
+        `,
+        )
         .order('inspection_date', { ascending: false });
 
       if (filters?.propertyId) {
@@ -63,6 +65,9 @@ export function useCreateInspection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inspections'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -77,11 +82,15 @@ export function useUpdateInspection(id: string) {
       if (updates.transactionId) updatePayload.transaction_id = updates.transactionId;
       if (updates.sellingAgentId) updatePayload.selling_agent_id = updates.sellingAgentId;
       if (updates.inspectionDate) updatePayload.inspection_date = updates.inspectionDate;
-      if (updates.timeSpentMinutes !== undefined) updatePayload.time_spent_minutes = updates.timeSpentMinutes;
+      if (updates.timeSpentMinutes !== undefined)
+        updatePayload.time_spent_minutes = updates.timeSpentMinutes;
       if (updates.overallImpression) updatePayload.overall_impression = updates.overallImpression;
-      if (updates.conditionNotes !== undefined) updatePayload.condition_notes = updates.conditionNotes;
-      if (updates.areaFeelNotes !== undefined) updatePayload.area_feel_notes = updates.areaFeelNotes;
-      if (updates.clientSuitability !== undefined) updatePayload.client_suitability = updates.clientSuitability;
+      if (updates.conditionNotes !== undefined)
+        updatePayload.condition_notes = updates.conditionNotes;
+      if (updates.areaFeelNotes !== undefined)
+        updatePayload.area_feel_notes = updates.areaFeelNotes;
+      if (updates.clientSuitability !== undefined)
+        updatePayload.client_suitability = updates.clientSuitability;
       if (updates.photos) updatePayload.photos = updates.photos;
       if (updates.agentNotes !== undefined) updatePayload.agent_notes = updates.agentNotes;
 
@@ -96,6 +105,9 @@ export function useUpdateInspection(id: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inspections'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

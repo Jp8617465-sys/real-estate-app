@@ -8,10 +8,10 @@ export interface KeyDateInput {
 export interface ContractDetails {
   exchangeDate: Date;
   settlementDate: Date;
-  coolingOffDays?: number;  // varies by state
-  financeApprovalDays?: number;  // days from exchange
-  buildingPestDays?: number;  // days from exchange for building & pest
-  depositDueDays?: number;  // days from exchange
+  coolingOffDays?: number; // varies by state
+  financeApprovalDays?: number; // days from exchange
+  buildingPestDays?: number; // days from exchange for building & pest
+  depositDueDays?: number; // days from exchange
 }
 
 export class KeyDatesEngine {
@@ -91,14 +91,14 @@ export class KeyDatesEngine {
    */
   static getDefaultCoolingOff(state: string): number {
     const defaults: Record<string, number> = {
-      QLD: 5,    // 5 business days
-      NSW: 5,    // 5 business days
-      VIC: 3,    // 3 business days
-      SA: 2,     // 2 business days
-      WA: 0,     // No statutory cooling-off
-      TAS: 0,    // No statutory cooling-off (but common in contracts)
-      ACT: 5,    // 5 business days
-      NT: 4,     // 4 business days
+      QLD: 5, // 5 business days
+      NSW: 5, // 5 business days
+      VIC: 3, // 3 business days
+      SA: 2, // 2 business days
+      WA: 0, // No statutory cooling-off
+      TAS: 0, // No statutory cooling-off (but common in contracts)
+      ACT: 5, // 5 business days
+      NT: 4, // 4 business days
     };
     return defaults[state.toUpperCase()] ?? 0;
   }
@@ -108,11 +108,9 @@ export class KeyDatesEngine {
    */
   static getDateStatus(
     targetDate: Date,
-    today: Date = new Date()
+    today: Date = new Date(),
   ): 'upcoming' | 'due_soon' | 'overdue' | 'completed' {
-    const daysUntil = Math.ceil(
-      (targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const daysUntil = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     if (daysUntil < 0) return 'overdue';
     if (daysUntil <= 3) return 'due_soon';
@@ -126,11 +124,9 @@ export class KeyDatesEngine {
   static shouldSendReminder(
     targetDate: Date,
     reminderDaysBefore: number[],
-    today: Date = new Date()
+    today: Date = new Date(),
   ): number | null {
-    const daysUntil = Math.ceil(
-      (targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const daysUntil = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     // Check if today matches any reminder day
     for (const reminderDay of reminderDaysBefore) {

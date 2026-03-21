@@ -19,6 +19,7 @@
 ### Option A: Via Supabase Studio (Recommended)
 
 1. **Open Supabase Studio**
+
    ```
    http://127.0.0.1:54323
    ```
@@ -76,6 +77,7 @@ npm run dev
 ```
 
 **Expected output:**
+
 ```
 Server listening at http://127.0.0.1:3001
 Routes registered:
@@ -93,6 +95,7 @@ npm run dev
 ```
 
 **Expected output:**
+
 ```
 - Local:        http://localhost:3000
 - Network:      http://192.168.x.x:3000
@@ -198,6 +201,7 @@ ON CONFLICT (id) DO NOTHING;
 For the test transaction above (active-search stage):
 
 **Expected mapping:**
+
 - Current Stage: `active-search`
 - Target Stage: `active-search` (if brief exists) OR `strategy-brief` (if no brief)
 - Confidence: High
@@ -244,6 +248,7 @@ UPDATE transactions SET current_stage = 'new-enquiry' WHERE id = 'test-trans-123
 ### Verify Migration Success
 
 **In UI:**
+
 - Success toast: "Successfully migrated X transactions"
 - Transaction disappears from preview list
 - History section updates with new entry
@@ -424,6 +429,7 @@ curl -X POST http://localhost:3001/api/v1/pipeline-migration/rollback \
 ### 🚫 Issues to Report
 
 If you encounter:
+
 - TypeScript errors in browser console
 - API 500 errors
 - Database constraint violations
@@ -466,15 +472,18 @@ DELETE FROM offices WHERE id = 'test-office-123';
 ## Support
 
 **Documentation:**
+
 - [PHASE_1_COMPLETION_SUMMARY.md](PHASE_1_COMPLETION_SUMMARY.md) - Full implementation details
 - [PHASE_1_TESTING_SUMMARY.md](PHASE_1_TESTING_SUMMARY.md) - Automated test results
 
 **Quick References:**
+
 - Admin UI: http://localhost:3000/admin/pipeline-migration
 - Supabase Studio: http://127.0.0.1:54323
 - API Docs: See `apps/api/src/routes/pipeline-migration.ts` comments
 
 **Need Help?**
+
 - Check browser console for errors
 - Check API server logs in terminal
 - Query database directly via Supabase Studio

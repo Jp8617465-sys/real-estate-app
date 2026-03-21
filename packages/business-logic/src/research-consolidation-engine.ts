@@ -162,9 +162,7 @@ export class ResearchConsolidationEngine {
         pros,
         cons,
         recommendation: this.generatePropertyRecommendation(match, pros, cons),
-        inspectionSummary: inspection
-          ? this.summarizeInspection(inspection)
-          : undefined,
+        inspectionSummary: inspection ? this.summarizeInspection(inspection) : undefined,
       };
     });
   }
@@ -250,9 +248,7 @@ export class ResearchConsolidationEngine {
     // Pre-approval expiry
     if (data.clientBrief.finance.preApprovalExpiry) {
       const expiry = new Date(data.clientBrief.finance.preApprovalExpiry);
-      const daysUntilExpiry = Math.floor(
-        (expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-      );
+      const daysUntilExpiry = Math.floor((expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       if (daysUntilExpiry <= 30) {
         risks.push({
           category: 'financial',
@@ -328,9 +324,7 @@ export class ResearchConsolidationEngine {
     }
 
     // Properties with inspection_booked status
-    const inspectionBooked = data.propertyMatches.filter(
-      (m) => m.status === 'inspection_booked',
-    );
+    const inspectionBooked = data.propertyMatches.filter((m) => m.status === 'inspection_booked');
     if (inspectionBooked.length > 0) {
       actions.push({
         action: `${inspectionBooked.length} inspections to attend`,
@@ -341,9 +335,7 @@ export class ResearchConsolidationEngine {
     }
 
     // Client-interested properties needing offers
-    const clientInterested = data.propertyMatches.filter(
-      (m) => m.status === 'client_interested',
-    );
+    const clientInterested = data.propertyMatches.filter((m) => m.status === 'client_interested');
     if (clientInterested.length > 0) {
       actions.push({
         action: `Prepare offer strategy for ${clientInterested.length} client-approved properties`,
@@ -404,11 +396,11 @@ export class ResearchConsolidationEngine {
     return actions;
   }
 
-  private static buildSearchProgress(data: ConsolidationDataInput): ConsolidationReportContent['searchProgress'] {
+  private static buildSearchProgress(
+    data: ConsolidationDataInput,
+  ): ConsolidationReportContent['searchProgress'] {
     const briefCreated = new Date(data.clientBrief.createdAt);
-    const daysInSearch = Math.floor(
-      (Date.now() - briefCreated.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const daysInSearch = Math.floor((Date.now() - briefCreated.getTime()) / (1000 * 60 * 60 * 24));
 
     return {
       propertiesReviewed: data.propertyMatches.length,
@@ -458,7 +450,7 @@ export class ResearchConsolidationEngine {
 
     parts.push(
       `Search for ${data.clientBrief.requirements.suburbs.map((s) => s.suburb).join(', ') || 'target suburbs'}: ` +
-      `${matches.length} properties reviewed, ${topMatches} strong matches identified.`,
+        `${matches.length} properties reviewed, ${topMatches} strong matches identified.`,
     );
 
     if (inspected > 0) {

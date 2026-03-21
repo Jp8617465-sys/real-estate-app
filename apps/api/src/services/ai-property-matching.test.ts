@@ -64,12 +64,14 @@ const baseBrief: ClientBrief = {
 
 // ─── Mock Anthropic Client ─────────────────────────────────────────
 
-function makeAnthropicMock(overrides?: Partial<{
-  featureScore: number;
-  features: unknown[];
-  dealBreakerFlags: string[];
-  summary: string;
-}>) {
+function makeAnthropicMock(
+  overrides?: Partial<{
+    featureScore: number;
+    features: unknown[];
+    dealBreakerFlags: string[];
+    summary: string;
+  }>,
+) {
   return {
     analyzePropertyMatch: vi.fn().mockResolvedValue({
       featureScore: overrides?.featureScore ?? 80,
@@ -136,7 +138,10 @@ describe('AIPropertyMatchingService', () => {
   it('replaces featureMatch score with AI score when description present', async () => {
     const anthropic = makeAnthropicMock({ featureScore: 90 });
     const service = new AIPropertyMatchingService(anthropic as never, cache);
-    const property = { ...baseProperty, listingDescription: 'Stunning home with heated pool and modern kitchen.' };
+    const property = {
+      ...baseProperty,
+      listingDescription: 'Stunning home with heated pool and modern kitchen.',
+    };
 
     const result = await service.scoreProperty(property, baseBrief);
 
@@ -183,7 +188,7 @@ describe('AIPropertyMatchingService', () => {
 
     const result = await service.scoreProperty(property, baseBrief);
 
-    const dupeCheck = result.flags.filter(f => f === 'ai_dealbreaker:main road frontage');
+    const dupeCheck = result.flags.filter((f) => f === 'ai_dealbreaker:main road frontage');
     expect(dupeCheck).toHaveLength(1);
   });
 
@@ -220,7 +225,7 @@ describe('AIPropertyMatchingService', () => {
       analyzePropertyMatch: vi.fn().mockImplementation(() => {
         callCount++;
         return Promise.resolve({
-          featureScore: callCount === 1 ? 20 : 90,  // first prop gets low score, second gets high
+          featureScore: callCount === 1 ? 20 : 90, // first prop gets low score, second gets high
           features: [],
           dealBreakerFlags: [],
           summary: 'Test',

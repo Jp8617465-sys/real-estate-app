@@ -43,11 +43,7 @@ export function useTask(id: string) {
   return useQuery({
     queryKey: ['tasks', id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await supabase.from('tasks').select('*').eq('id', id).single();
       if (error) throw error;
       return data as Task;
     },
@@ -112,14 +108,12 @@ export function useCompleteTask(id: string) {
       await queryClient.cancelQueries({ queryKey: ['tasks'] });
       const previousTasks = queryClient.getQueryData<Task[]>(['tasks']);
 
-      queryClient.setQueriesData<Task[]>(
-        { queryKey: ['tasks'] },
-        (old) =>
-          old?.map((task) =>
-            task.id === id
-              ? { ...task, status: 'completed' as const, completedAt: new Date().toISOString() }
-              : task,
-          ),
+      queryClient.setQueriesData<Task[]>({ queryKey: ['tasks'] }, (old) =>
+        old?.map((task) =>
+          task.id === id
+            ? { ...task, status: 'completed' as const, completedAt: new Date().toISOString() }
+            : task,
+        ),
       );
 
       return { previousTasks };

@@ -14,12 +14,14 @@ $ARGUMENTS
 Create practical, maintainable tests using modern tools:
 
 ### 1. **Testing Approach**
+
 - Unit tests for validation logic
 - Integration tests for full API flow
 - Edge case coverage
 - Error scenario testing
 
 ### 2. **Tools** (choose based on project)
+
 - **Vitest** - Fast, modern (recommended for new projects)
 - **Jest** - Established, widely used
 - **Supertest** - HTTP assertions
@@ -28,11 +30,13 @@ Create practical, maintainable tests using modern tools:
 ### 3. **Test Coverage**
 
 **Happy Paths**
+
 - Valid inputs return expected results
 - Proper status codes
 - Correct response structure
 
 **Error Paths**
+
 - Invalid input validation
 - Authentication failures
 - Rate limiting
@@ -40,6 +44,7 @@ Create practical, maintainable tests using modern tools:
 - Missing required fields
 
 **Edge Cases**
+
 - Empty requests
 - Malformed JSON
 - Large payloads
@@ -52,20 +57,20 @@ Create practical, maintainable tests using modern tools:
 ```typescript
 describe('API Endpoint', () => {
   describe('Success Cases', () => {
-    it('should handle valid request', () => {})
-    it('should return correct status code', () => {})
-  })
+    it('should handle valid request', () => {});
+    it('should return correct status code', () => {});
+  });
 
   describe('Validation', () => {
-    it('should reject invalid input', () => {})
-    it('should validate required fields', () => {})
-  })
+    it('should reject invalid input', () => {});
+    it('should validate required fields', () => {});
+  });
 
   describe('Error Handling', () => {
-    it('should handle server errors', () => {})
-    it('should return proper error format', () => {})
-  })
-})
+    it('should handle server errors', () => {});
+    it('should return proper error format', () => {});
+  });
+});
 ```
 
 ### 5. **What to Generate**

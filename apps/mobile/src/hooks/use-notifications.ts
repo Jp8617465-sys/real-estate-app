@@ -21,7 +21,7 @@ export function useNotifications(filter?: { category?: string; status?: string }
         headers: { Authorization: `Bearer ${await getToken()}` },
       });
       if (!res.ok) throw new Error('Failed to fetch notifications');
-      const json = await res.json() as { data: Notification[] };
+      const json = (await res.json()) as { data: Notification[] };
       return json.data;
     },
     refetchInterval: 30_000, // Poll every 30s
@@ -32,12 +32,11 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications-unread-count'],
     queryFn: async () => {
-      const res = await fetch(
-        `${API_BASE}/api/v1/notifications/unread-count`,
-        { headers: { Authorization: `Bearer ${await getToken()}` } },
-      );
+      const res = await fetch(`${API_BASE}/api/v1/notifications/unread-count`, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
       if (!res.ok) return 0;
-      const json = await res.json() as { count: number };
+      const json = (await res.json()) as { count: number };
       return json.count;
     },
     refetchInterval: 15_000,
@@ -76,8 +75,9 @@ export function useDismissNotification() {
     },
     onMutate: async (id) => {
       // Optimistic remove
-      queryClient.setQueriesData<Notification[]>({ queryKey: ['notifications'] }, (old) =>
-        old?.filter((n) => n.id !== id) ?? [],
+      queryClient.setQueriesData<Notification[]>(
+        { queryKey: ['notifications'] },
+        (old) => old?.filter((n) => n.id !== id) ?? [],
       );
     },
     onSettled: () => {
@@ -94,7 +94,10 @@ export function useSnoozeNotification() {
     mutationFn: async ({ id, minutes = 60 }: { id: string; minutes?: number }) => {
       const res = await fetch(`${API_BASE}/api/v1/notifications/${id}/snooze`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await getToken()}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await getToken()}`,
+        },
         body: JSON.stringify({ minutes }),
       });
       if (!res.ok) throw new Error('Failed to snooze');

@@ -1,8 +1,4 @@
-import {
-  type ClientBrief,
-  type Property,
-  type MatchScoreBreakdown,
-} from '@realflow/shared';
+import { type ClientBrief, type Property, type MatchScoreBreakdown } from '@realflow/shared';
 import { PropertyMatchEngine, type MatchResult } from './property-match-engine';
 
 // ─── Matcher Configuration ──────────────────────────────────────────────────
@@ -84,10 +80,7 @@ export class PropertyMatcher {
    * Returns results sorted by score, filtered by minimum threshold,
    * and excluding already-seen properties.
    */
-  matchProperties(
-    properties: Property[],
-    brief: ClientBrief,
-  ): EnhancedMatchResult[] {
+  matchProperties(properties: Property[], brief: ClientBrief): EnhancedMatchResult[] {
     return properties
       .filter((p) => !this.config.seenPropertyIds.has(p.id))
       .map((p) => this.enhancedScore(p, brief))
@@ -99,10 +92,7 @@ export class PropertyMatcher {
    * Match properties including already-seen ones (marked but not filtered).
    * Useful when agents want to review all potential matches.
    */
-  matchPropertiesIncludingSeen(
-    properties: Property[],
-    brief: ClientBrief,
-  ): EnhancedMatchResult[] {
+  matchPropertiesIncludingSeen(properties: Property[], brief: ClientBrief): EnhancedMatchResult[] {
     return properties
       .map((p) => this.enhancedScore(p, brief))
       .filter((r) => r.overallScore >= this.config.minimumScore)
@@ -215,7 +205,11 @@ export class PropertyMatcher {
         feature: mustHave,
         category: 'must_have',
         matched,
-        matchSource: structuredMatch ? 'structured_data' : descriptionMatch ? 'description' : 'none',
+        matchSource: structuredMatch
+          ? 'structured_data'
+          : descriptionMatch
+            ? 'description'
+            : 'none',
       });
 
       if (matched) {
@@ -233,7 +227,11 @@ export class PropertyMatcher {
         feature: niceToHave,
         category: 'nice_to_have',
         matched,
-        matchSource: structuredMatch ? 'structured_data' : descriptionMatch ? 'description' : 'none',
+        matchSource: structuredMatch
+          ? 'structured_data'
+          : descriptionMatch
+            ? 'description'
+            : 'none',
       });
 
       if (matched) {
@@ -251,7 +249,11 @@ export class PropertyMatcher {
         feature: dealBreaker,
         category: 'deal_breaker',
         matched,
-        matchSource: structuredMatch ? 'structured_data' : descriptionMatch ? 'description' : 'none',
+        matchSource: structuredMatch
+          ? 'structured_data'
+          : descriptionMatch
+            ? 'description'
+            : 'none',
       });
 
       if (matched) {
@@ -286,7 +288,11 @@ export class PropertyMatcher {
     const totalNiceToHaves = brief.requirements.niceToHaves.length;
 
     // If no preferences, return neutral
-    if (totalMustHaves === 0 && totalNiceToHaves === 0 && brief.requirements.dealBreakers.length === 0) {
+    if (
+      totalMustHaves === 0 &&
+      totalNiceToHaves === 0 &&
+      brief.requirements.dealBreakers.length === 0
+    ) {
       return 50;
     }
 
@@ -340,12 +346,20 @@ export class PropertyMatcher {
     }
 
     // Size-related
-    if (lower.includes('large block') || lower.includes('big block') || lower.includes('large land')) {
+    if (
+      lower.includes('large block') ||
+      lower.includes('big block') ||
+      lower.includes('large land')
+    ) {
       return (property.landSize ?? 0) >= 600;
     }
 
     // Year-related
-    if (lower.includes('new build') || lower.includes('newly built') || lower.includes('brand new')) {
+    if (
+      lower.includes('new build') ||
+      lower.includes('newly built') ||
+      lower.includes('brand new')
+    ) {
       return property.yearBuilt !== undefined && property.yearBuilt >= new Date().getFullYear() - 2;
     }
 
@@ -392,27 +406,52 @@ export class PropertyMatcher {
 
     // Common Australian real estate keyword expansions
     const expansions: Record<string, string[]> = {
-      'pool': ['pool', 'swimming pool', 'inground pool', 'plunge pool'],
-      'study': ['study', 'home office', 'office nook', 'study nook'],
-      'renovated kitchen': ['renovated kitchen', 'modern kitchen', 'new kitchen', 'designer kitchen', 'gourmet kitchen'],
-      'renovated bathroom': ['renovated bathroom', 'modern bathroom', 'new bathroom', 'designer bathroom'],
-      'renovated': ['renovated', 'updated', 'refurbished', 'modernised', 'modernized'],
+      pool: ['pool', 'swimming pool', 'inground pool', 'plunge pool'],
+      study: ['study', 'home office', 'office nook', 'study nook'],
+      'renovated kitchen': [
+        'renovated kitchen',
+        'modern kitchen',
+        'new kitchen',
+        'designer kitchen',
+        'gourmet kitchen',
+      ],
+      'renovated bathroom': [
+        'renovated bathroom',
+        'modern bathroom',
+        'new bathroom',
+        'designer bathroom',
+      ],
+      renovated: ['renovated', 'updated', 'refurbished', 'modernised', 'modernized'],
       'north-facing': ['north-facing', 'north facing', 'northern aspect', 'northerly'],
-      'backyard': ['backyard', 'back yard', 'rear yard', 'garden'],
+      backyard: ['backyard', 'back yard', 'rear yard', 'garden'],
       'air conditioning': ['air conditioning', 'air con', 'a/c', 'ducted air', 'split system'],
-      'solar': ['solar', 'solar panels', 'solar system'],
+      solar: ['solar', 'solar panels', 'solar system'],
       'granny flat': ['granny flat', 'secondary dwelling', 'dual occupancy'],
-      'water views': ['water views', 'water view', 'harbour view', 'harbor view', 'ocean view', 'bay view', 'river view'],
+      'water views': [
+        'water views',
+        'water view',
+        'harbour view',
+        'harbor view',
+        'ocean view',
+        'bay view',
+        'river view',
+      ],
       'city views': ['city views', 'city view', 'skyline view', 'cbd view'],
-      'balcony': ['balcony', 'terrace', 'verandah', 'veranda', 'deck'],
-      'courtyard': ['courtyard', 'court yard', 'private courtyard'],
-      'ensuite': ['ensuite', 'en-suite', 'en suite', 'master ensuite'],
-      'walk-in wardrobe': ['walk-in wardrobe', 'walk in wardrobe', 'walk-in robe', 'walk in robe', 'wir'],
+      balcony: ['balcony', 'terrace', 'verandah', 'veranda', 'deck'],
+      courtyard: ['courtyard', 'court yard', 'private courtyard'],
+      ensuite: ['ensuite', 'en-suite', 'en suite', 'master ensuite'],
+      'walk-in wardrobe': [
+        'walk-in wardrobe',
+        'walk in wardrobe',
+        'walk-in robe',
+        'walk in robe',
+        'wir',
+      ],
       'flood zone': ['flood zone', 'flood risk', 'flood prone', 'flood overlay', 'flooding'],
       'main road': ['main road', 'main road frontage', 'busy road', 'arterial road', 'highway'],
       'flight path': ['flight path', 'aircraft noise', 'plane noise', 'airport noise'],
-      'heritage': ['heritage', 'heritage listed', 'heritage overlay'],
-      'strata': ['strata', 'body corporate', 'owners corporation'],
+      heritage: ['heritage', 'heritage listed', 'heritage overlay'],
+      strata: ['strata', 'body corporate', 'owners corporation'],
       'pet friendly': ['pet friendly', 'pets allowed', 'pet-friendly'],
     };
 
@@ -430,11 +469,7 @@ export class PropertyMatcher {
   /**
    * Get the top N matches from a set of properties.
    */
-  getTopMatches(
-    properties: Property[],
-    brief: ClientBrief,
-    count: number,
-  ): EnhancedMatchResult[] {
+  getTopMatches(properties: Property[], brief: ClientBrief, count: number): EnhancedMatchResult[] {
     return this.matchProperties(properties, brief).slice(0, count);
   }
 

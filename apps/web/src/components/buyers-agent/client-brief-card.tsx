@@ -57,7 +57,9 @@ export function ClientBriefCard({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', URGENCY_COLORS[urgency])}>
+          <span
+            className={cn('rounded-full px-2 py-0.5 text-xs font-medium', URGENCY_COLORS[urgency])}
+          >
             {URGENCY_LABELS[urgency]}
           </span>
         </div>
@@ -67,10 +69,7 @@ export function ClientBriefCard({
       <div className="mt-3">
         <div className="flex flex-wrap gap-1">
           {suburbs.slice(0, 4).map((suburb) => (
-            <span
-              key={suburb}
-              className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
-            >
+            <span key={suburb} className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
               {suburb}
             </span>
           ))}
@@ -88,9 +87,7 @@ export function ClientBriefCard({
         <span
           className={cn(
             'rounded-full px-2 py-0.5 text-xs font-medium',
-            clientSignedOff
-              ? 'bg-green-100 text-green-700'
-              : 'bg-amber-100 text-amber-700',
+            clientSignedOff ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700',
           )}
         >
           {clientSignedOff ? 'Signed Off' : 'Pending Sign-off'}

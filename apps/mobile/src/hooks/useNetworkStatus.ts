@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import NetInfo, {
-  NetInfoState,
-  NetInfoStateType,
-} from '@react-native-community/netinfo';
+import NetInfo, { NetInfoState, NetInfoStateType } from '@react-native-community/netinfo';
 import { processQueue } from '../lib/sync-queue';
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -51,15 +48,8 @@ function mapConnectionType(state: NetInfoState): ConnectionType {
 
 // ─── Hook ──────────────────────────────────────────────────────────
 
-export function useNetworkStatus(
-  options: UseNetworkStatusOptions = {},
-): NetworkStatus {
-  const {
-    onOnline,
-    onOffline,
-    autoSync = true,
-    debounceMs = 1000,
-  } = options;
+export function useNetworkStatus(options: UseNetworkStatusOptions = {}): NetworkStatus {
+  const { onOnline, onOffline, autoSync = true, debounceMs = 1000 } = options;
 
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [connectionType, setConnectionType] = useState<ConnectionType>('unknown');

@@ -13,12 +13,7 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { useMarketSnapshots } from '@/hooks/use-analytics';
 import type { MarketSnapshotRow } from '@/hooks/use-analytics';
-import {
-  MetricCard,
-  MetricCardSkeleton,
-  ChartContainer,
-  DataTable,
-} from '@/components/analytics';
+import { MetricCard, MetricCardSkeleton, ChartContainer, DataTable } from '@/components/analytics';
 import type { Column } from '@/components/analytics';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -43,9 +38,7 @@ const marketColumns: Column<MarketSnapshotRow>[] = [
     render: (row) => (
       <span className="font-medium text-gray-900">
         {row.suburb}
-        {row.state && (
-          <span className="ml-1 text-xs text-gray-400">{row.state}</span>
-        )}
+        {row.state && <span className="ml-1 text-xs text-gray-400">{row.state}</span>}
       </span>
     ),
   },
@@ -54,9 +47,7 @@ const marketColumns: Column<MarketSnapshotRow>[] = [
     header: 'Type',
     sortable: true,
     sortValue: (row) => row.property_type,
-    render: (row) => (
-      <span className="capitalize text-gray-600">{row.property_type}</span>
-    ),
+    render: (row) => <span className="capitalize text-gray-600">{row.property_type}</span>,
   },
   {
     key: 'median_sale_price',
@@ -78,9 +69,7 @@ const marketColumns: Column<MarketSnapshotRow>[] = [
     sortValue: (row) => row.median_days_on_market ?? 0,
     render: (row) => (
       <span className="text-gray-600">
-        {row.median_days_on_market !== null
-          ? `${Math.round(row.median_days_on_market)}d`
-          : 'N/A'}
+        {row.median_days_on_market !== null ? `${Math.round(row.median_days_on_market)}d` : 'N/A'}
       </span>
     ),
   },
@@ -92,9 +81,7 @@ const marketColumns: Column<MarketSnapshotRow>[] = [
     sortValue: (row) => row.auction_clearance_rate ?? 0,
     render: (row) => (
       <span className="text-gray-600">
-        {row.auction_clearance_rate !== null
-          ? `${row.auction_clearance_rate.toFixed(1)}%`
-          : 'N/A'}
+        {row.auction_clearance_rate !== null ? `${row.auction_clearance_rate.toFixed(1)}%` : 'N/A'}
       </span>
     ),
   },
@@ -311,9 +298,7 @@ export function MarketClient() {
       {/* Suburb Performance Heatmap (visual representation) */}
       {!isLoading && latestBySuburb.length > 0 && (
         <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
-            Suburb Performance
-          </h2>
+          <h2 className="mb-4 text-base font-semibold text-gray-900">Suburb Performance</h2>
           <p className="mb-4 text-sm text-gray-500">
             Select a suburb to view its price trend over time.
           </p>
@@ -335,9 +320,7 @@ export function MarketClient() {
                   key={key}
                   onClick={() => setSelectedSuburb(isSelected ? null : key)}
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                    isSelected
-                      ? 'ring-2 ring-brand-500 ring-offset-1'
-                      : ''
+                    isSelected ? 'ring-2 ring-brand-500 ring-offset-1' : ''
                   } ${bgColor}`}
                   aria-pressed={isSelected}
                   aria-label={`${s.suburb} ${s.state}: ${change > 0 ? '+' : ''}${change.toFixed(1)}% yearly change`}
@@ -397,9 +380,7 @@ export function MarketClient() {
 
       {/* Market Data Table */}
       <section>
-        <h2 className="mb-4 text-base font-semibold text-gray-900">
-          Market Snapshot Data
-        </h2>
+        <h2 className="mb-4 text-base font-semibold text-gray-900">Market Snapshot Data</h2>
         <DataTable
           columns={marketColumns}
           data={filteredSnapshots}

@@ -18,10 +18,7 @@ const SIZE_MAP: Record<NonNullable<LoadingSpinnerProps['size']>, string> = {
 export function LoadingSpinner({ message, size = 'md' }: LoadingSpinnerProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20" role="status">
-      <Loader2
-        className={`animate-spin text-portal-500 ${SIZE_MAP[size]}`}
-        aria-hidden="true"
-      />
+      <Loader2 className={`animate-spin text-portal-500 ${SIZE_MAP[size]}`} aria-hidden="true" />
       {message ? (
         <p className="mt-3 text-sm text-gray-500">{message}</p>
       ) : (

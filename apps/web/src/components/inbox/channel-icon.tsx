@@ -24,7 +24,11 @@ const CHANNEL_CONFIG: Record<string, { icon: string; label: string; color: strin
 };
 
 export function ChannelIcon({ channel, className, showLabel }: ChannelIconProps) {
-  const config = CHANNEL_CONFIG[channel] ?? { icon: '?', label: channel, color: 'bg-gray-100 text-gray-700' };
+  const config = CHANNEL_CONFIG[channel] ?? {
+    icon: '?',
+    label: channel,
+    color: 'bg-gray-100 text-gray-700',
+  };
 
   return (
     <span className={cn('inline-flex items-center gap-1', className)}>
@@ -37,9 +41,7 @@ export function ChannelIcon({ channel, className, showLabel }: ChannelIconProps)
       >
         {config.icon}
       </span>
-      {showLabel && (
-        <span className="text-xs text-gray-500">{config.label}</span>
-      )}
+      {showLabel && <span className="text-xs text-gray-500">{config.label}</span>}
     </span>
   );
 }

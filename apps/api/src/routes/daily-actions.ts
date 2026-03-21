@@ -9,7 +9,10 @@ export async function dailyActionRoutes(fastify: FastifyInstance) {
   fastify.get('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
     const agentId = user.id;
 
@@ -101,7 +104,10 @@ export async function dailyActionRoutes(fastify: FastifyInstance) {
   fastify.post('/regenerate', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) return reply.status(401).send({ error: 'Unauthorized' });
     const agentId = user.id;
 

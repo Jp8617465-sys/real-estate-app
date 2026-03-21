@@ -19,29 +19,37 @@ import type { MarketSnapshot } from '@realflow/shared';
  * Zod schema for the Domain suburb performance statistics API response.
  * Only the fields we consume are validated; extra fields are stripped.
  */
-export const DomainSuburbPerformanceSchema = z.object({
-  header: z.object({
-    suburb: z.string(),
-    state: z.string(),
-    propertyCategory: z.string().optional(),
-  }),
-  series: z.object({
-    seriesInfo: z.array(
-      z.object({
-        year: z.number(),
-        month: z.number(),
-        values: z.object({
-          medianSoldPrice: z.number().optional(),
-          numberSold: z.number().optional(),
-          daysOnMarket: z.number().optional(),
-          auctionClearanceRate: z.number().optional(),
-          numberListed: z.number().optional(),
-          medianSoldPriceChange: z.number().optional(),
-        }).passthrough(),
-      }),
-    ).default([]),
-  }).optional(),
-}).passthrough();
+export const DomainSuburbPerformanceSchema = z
+  .object({
+    header: z.object({
+      suburb: z.string(),
+      state: z.string(),
+      propertyCategory: z.string().optional(),
+    }),
+    series: z
+      .object({
+        seriesInfo: z
+          .array(
+            z.object({
+              year: z.number(),
+              month: z.number(),
+              values: z
+                .object({
+                  medianSoldPrice: z.number().optional(),
+                  numberSold: z.number().optional(),
+                  daysOnMarket: z.number().optional(),
+                  auctionClearanceRate: z.number().optional(),
+                  numberListed: z.number().optional(),
+                  medianSoldPriceChange: z.number().optional(),
+                })
+                .passthrough(),
+            }),
+          )
+          .default([]),
+      })
+      .optional(),
+  })
+  .passthrough();
 
 export type DomainSuburbPerformance = z.infer<typeof DomainSuburbPerformanceSchema>;
 
@@ -384,31 +392,29 @@ export class MarketDataService {
    * Transform Domain API suburb performance response into a MarketSnapshot.
    * Extracts the most recent data point from the series.
    */
-  transformToSnapshot(
-    response: DomainSuburbPerformance,
-    postcode: string,
-  ): MarketSnapshot {
+  transformToSnapshot(response: DomainSuburbPerformance, postcode: string): MarketSnapshot {
     const { header, series } = response;
     const seriesData = series?.seriesInfo ?? [];
 
     // Get the most recent data point
-    const latest = seriesData.length > 0
-      ? seriesData.reduce((newest, current) => {
-          const newestDate = newest.year * 12 + newest.month;
-          const currentDate = current.year * 12 + current.month;
-          return currentDate > newestDate ? current : newest;
-        })
-      : null;
+    const latest =
+      seriesData.length > 0
+        ? seriesData.reduce((newest, current) => {
+            const newestDate = newest.year * 12 + newest.month;
+            const currentDate = current.year * 12 + current.month;
+            return currentDate > newestDate ? current : newest;
+          })
+        : null;
 
     // Compute 12-month price change if we have enough data
     let medianPriceChange12m: number | undefined;
     if (seriesData.length >= 2) {
       const sortedSeries = [...seriesData].sort(
-        (a, b) => (b.year * 12 + b.month) - (a.year * 12 + a.month),
+        (a, b) => b.year * 12 + b.month - (a.year * 12 + a.month),
       );
       const current = sortedSeries[0];
       // Find the entry closest to 12 months ago
-      const targetMonths = (current!.year * 12 + current!.month) - 12;
+      const targetMonths = current!.year * 12 + current!.month - 12;
       const yearAgo = sortedSeries.reduce((closest, entry) => {
         const entryMonths = entry.year * 12 + entry.month;
         const closestMonths = closest.year * 12 + closest.month;
@@ -423,8 +429,11 @@ export class MarketDataService {
         yearAgo.values.medianSoldPrice > 0
       ) {
         medianPriceChange12m = Number(
-          (((current.values.medianSoldPrice - yearAgo.values.medianSoldPrice) /
-            yearAgo.values.medianSoldPrice) * 100).toFixed(4),
+          (
+            ((current.values.medianSoldPrice - yearAgo.values.medianSoldPrice) /
+              yearAgo.values.medianSoldPrice) *
+            100
+          ).toFixed(4),
         );
       }
     }
@@ -451,10 +460,7 @@ export class MarketDataService {
    * Upsert a market snapshot into the database.
    * Uses the unique index on (suburb, state, property_type, data_source, data_as_of).
    */
-  private async upsertSnapshot(
-    snapshot: MarketSnapshot,
-    propertyType: string,
-  ): Promise<void> {
+  private async upsertSnapshot(snapshot: MarketSnapshot, propertyType: string): Promise<void> {
     const row = {
       suburb: snapshot.suburb,
       state: snapshot.state,
@@ -469,11 +475,9 @@ export class MarketDataService {
       data_as_of: snapshot.dataAsOf ?? new Date().toISOString(),
     };
 
-    const { error } = await this.supabase
-      .from('market_snapshots')
-      .upsert(row, {
-        onConflict: 'suburb,state,property_type,data_source,data_as_of',
-      });
+    const { error } = await this.supabase.from('market_snapshots').upsert(row, {
+      onConflict: 'suburb,state,property_type,data_source,data_as_of',
+    });
 
     if (error) {
       console.error('[MarketDataService] Upsert error:', error.message);

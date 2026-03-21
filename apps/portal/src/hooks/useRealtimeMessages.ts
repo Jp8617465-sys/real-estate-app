@@ -100,10 +100,7 @@ export function useRealtimeMessages(): RealtimeMessagesResult {
         if (subscriptionStatus === 'SUBSCRIBED') {
           setStatus('connected');
           retryCountRef.current = 0;
-        } else if (
-          subscriptionStatus === 'CHANNEL_ERROR' ||
-          subscriptionStatus === 'TIMED_OUT'
-        ) {
+        } else if (subscriptionStatus === 'CHANNEL_ERROR' || subscriptionStatus === 'TIMED_OUT') {
           setStatus('disconnected');
           const delay = getRetryDelay();
           retryCountRef.current += 1;

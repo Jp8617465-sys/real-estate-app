@@ -20,7 +20,10 @@ export function ComplianceDashboardClient() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-32 animate-pulse rounded-xl border border-gray-200 bg-gray-100" />
+            <div
+              key={i}
+              className="h-32 animate-pulse rounded-xl border border-gray-200 bg-gray-100"
+            />
           ))}
         </div>
       </div>
@@ -51,9 +54,7 @@ export function ComplianceDashboardClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Compliance</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            AML/KYC verification and AUSTRAC reporting
-          </p>
+          <p className="mt-1 text-sm text-gray-500">AML/KYC verification and AUSTRAC reporting</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -71,8 +72,19 @@ export function ComplianceDashboardClient() {
           title="Total Clients"
           value={stats?.totalClients ?? 0}
           icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+              />
             </svg>
           }
         />
@@ -81,8 +93,19 @@ export function ComplianceDashboardClient() {
           value={stats?.verified ?? 0}
           variant="success"
           icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
+              />
             </svg>
           }
         />
@@ -91,8 +114,19 @@ export function ComplianceDashboardClient() {
           value={stats?.pending ?? 0}
           variant="warning"
           icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           }
         />
@@ -106,8 +140,19 @@ export function ComplianceDashboardClient() {
               : undefined
           }
           icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+              />
             </svg>
           }
         />
@@ -116,8 +161,19 @@ export function ComplianceDashboardClient() {
           value={stats?.failed ?? 0}
           variant="danger"
           icon={
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+              />
             </svg>
           }
         />
@@ -140,12 +196,11 @@ export function ComplianceDashboardClient() {
               />
             </svg>
             <div>
-              <h3 className="text-sm font-semibold text-orange-800">
-                Upcoming Expiration Alerts
-              </h3>
+              <h3 className="text-sm font-semibold text-orange-800">Upcoming Expiration Alerts</h3>
               <p className="mt-1 text-sm text-orange-700">
-                {expiringChecks?.length} verification{(expiringChecks?.length ?? 0) !== 1 ? 's' : ''} expiring
-                within the next 90 days. Re-verification is required before expiry.
+                {expiringChecks?.length} verification
+                {(expiringChecks?.length ?? 0) !== 1 ? 's' : ''} expiring within the next 90 days.
+                Re-verification is required before expiry.
               </p>
               <ul className="mt-2 space-y-1" role="list">
                 {expiringChecks?.slice(0, 5).map((check: Record<string, unknown>) => {
@@ -176,15 +231,11 @@ export function ComplianceDashboardClient() {
         {/* Verification Queue */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="border-b border-gray-200 px-4 py-3">
-            <h2 className="text-sm font-semibold text-gray-900">
-              Verification Queue
-            </h2>
-            <p className="mt-0.5 text-xs text-gray-500">
-              Clients awaiting identity verification
-            </p>
+            <h2 className="text-sm font-semibold text-gray-900">Verification Queue</h2>
+            <p className="mt-0.5 text-xs text-gray-500">Clients awaiting identity verification</p>
           </div>
           <div className="divide-y divide-gray-100">
-            {(!stats?.pendingQueue || stats.pendingQueue.length === 0) ? (
+            {!stats?.pendingQueue || stats.pendingQueue.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <svg
                   className="mx-auto h-10 w-10 text-gray-300"
@@ -194,11 +245,13 @@ export function ComplianceDashboardClient() {
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
+                  />
                 </svg>
-                <p className="mt-2 text-sm text-gray-500">
-                  No clients pending verification
-                </p>
+                <p className="mt-2 text-sm text-gray-500">No clients pending verification</p>
               </div>
             ) : (
               stats.pendingQueue.map((item) => (
@@ -208,9 +261,7 @@ export function ComplianceDashboardClient() {
                   className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">
-                      {item.contactName}
-                    </p>
+                    <p className="truncate text-sm font-medium text-gray-900">{item.contactName}</p>
                     <p className="text-xs text-gray-500">
                       Added {formatRelativeTime(item.createdAt)}
                     </p>
@@ -225,15 +276,11 @@ export function ComplianceDashboardClient() {
         {/* Recent Verifications */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="border-b border-gray-200 px-4 py-3">
-            <h2 className="text-sm font-semibold text-gray-900">
-              Recent Verifications
-            </h2>
-            <p className="mt-0.5 text-xs text-gray-500">
-              Latest AML/KYC verification activity
-            </p>
+            <h2 className="text-sm font-semibold text-gray-900">Recent Verifications</h2>
+            <p className="mt-0.5 text-xs text-gray-500">Latest AML/KYC verification activity</p>
           </div>
           <div className="divide-y divide-gray-100">
-            {(!stats?.recentVerifications || stats.recentVerifications.length === 0) ? (
+            {!stats?.recentVerifications || stats.recentVerifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <svg
                   className="mx-auto h-10 w-10 text-gray-300"
@@ -243,11 +290,13 @@ export function ComplianceDashboardClient() {
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
-                <p className="mt-2 text-sm text-gray-500">
-                  No recent verification activity
-                </p>
+                <p className="mt-2 text-sm text-gray-500">No recent verification activity</p>
               </div>
             ) : (
               stats.recentVerifications.map((item) => (
@@ -257,12 +306,8 @@ export function ComplianceDashboardClient() {
                   className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">
-                      {item.contactName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatRelativeTime(item.createdAt)}
-                    </p>
+                    <p className="truncate text-sm font-medium text-gray-900">{item.contactName}</p>
+                    <p className="text-xs text-gray-500">{formatRelativeTime(item.createdAt)}</p>
                   </div>
                   <VerificationStatusBadge status={item.status} size="sm" />
                 </button>

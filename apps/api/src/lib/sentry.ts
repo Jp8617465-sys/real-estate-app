@@ -22,7 +22,13 @@ interface SentryConfig {
 let isInitialized = false;
 let SentryModule: {
   init: (options: Record<string, unknown>) => void;
-  withScope: (callback: (scope: { setTag: (k: string, v: string) => void; setUser: (u: { id: string }) => void; setExtra: (k: string, v: unknown) => void }) => void) => void;
+  withScope: (
+    callback: (scope: {
+      setTag: (k: string, v: string) => void;
+      setUser: (u: { id: string }) => void;
+      setExtra: (k: string, v: unknown) => void;
+    }) => void,
+  ) => void;
   captureException: (error: Error) => void;
   close: (timeout: number) => Promise<boolean>;
 } | null = null;

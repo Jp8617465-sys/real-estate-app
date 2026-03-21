@@ -73,12 +73,14 @@ describe('AnthropicClient constructor', () => {
 describe('AnthropicClient request format', () => {
   it('sends x-api-key header (not Bearer)', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 80,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Good match',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 80,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Good match',
+      }),
+    );
 
     await client.analyzePropertyMatch({
       listingDescription: 'Modern 4-bed house with pool',
@@ -96,12 +98,14 @@ describe('AnthropicClient request format', () => {
 
   it('sends correct model in request body', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 60,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Partial match',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 60,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Partial match',
+      }),
+    );
 
     await client.analyzePropertyMatch({
       listingDescription: 'Nice property',
@@ -118,12 +122,14 @@ describe('AnthropicClient request format', () => {
 
   it('posts to correct Anthropic endpoint', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 50,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Neutral',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 50,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Neutral',
+      }),
+    );
 
     await client.analyzePropertyMatch({
       listingDescription: 'Property',
@@ -142,12 +148,14 @@ describe('AnthropicClient request format', () => {
 describe('AnthropicClient.analyzePropertyMatch', () => {
   it('returns featureScore clamped 0-100', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 150, // out of range
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Test',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 150, // out of range
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Test',
+      }),
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'Test property',
@@ -161,20 +169,22 @@ describe('AnthropicClient.analyzePropertyMatch', () => {
 
   it('parses feature matches and deal breaker flags', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 75,
-      features: [
-        {
-          feature: 'pool',
-          status: 'matched',
-          confidence: 0.9,
-          explanation: 'Pool mentioned in listing',
-          source: 'must_have',
-        },
-      ],
-      dealBreakerFlags: [],
-      summary: 'Pool found in listing.',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 75,
+        features: [
+          {
+            feature: 'pool',
+            status: 'matched',
+            confidence: 0.9,
+            explanation: 'Pool mentioned in listing',
+            source: 'must_have',
+          },
+        ],
+        dealBreakerFlags: [],
+        summary: 'Pool found in listing.',
+      }),
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'Stunning home with heated pool',
@@ -192,12 +202,16 @@ describe('AnthropicClient.analyzePropertyMatch', () => {
 
   it('returns token usage with cost estimate', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 70,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Good',
-    }), 500, 200);
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 70,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Good',
+      }),
+      500,
+      200,
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'Nice property',
@@ -214,7 +228,9 @@ describe('AnthropicClient.analyzePropertyMatch', () => {
 
   it('strips markdown code fences from response', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse('```json\n{"featureScore":70,"features":[],"dealBreakerFlags":[],"summary":"Good"}\n```');
+    mockAnthropicResponse(
+      '```json\n{"featureScore":70,"features":[],"dealBreakerFlags":[],"summary":"Good"}\n```',
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'Nice property',
@@ -232,15 +248,22 @@ describe('AnthropicClient.analyzePropertyMatch', () => {
 describe('AnthropicClient.analyzeLeadEnquiry', () => {
   it('returns signals and urgency level', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      signals: [
-        { signal: 'Has pre-approval', impact: 'positive', weight: 8, explanation: 'Mentioned pre-approved' },
-      ],
-      urgencyLevel: 'high',
-      estimatedTimeline: '1-2 months',
-      budgetConfidence: 'high',
-      suggestedScore: 80,
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        signals: [
+          {
+            signal: 'Has pre-approval',
+            impact: 'positive',
+            weight: 8,
+            explanation: 'Mentioned pre-approved',
+          },
+        ],
+        urgencyLevel: 'high',
+        estimatedTimeline: '1-2 months',
+        budgetConfidence: 'high',
+        suggestedScore: 80,
+      }),
+    );
 
     const result = await client.analyzeLeadEnquiry({
       enquiryText: 'Hi, we are pre-approved to $1.2M and looking to buy in the next 6 weeks.',
@@ -255,13 +278,15 @@ describe('AnthropicClient.analyzeLeadEnquiry', () => {
 
   it('clamps suggestedScore to 0-100', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      signals: [],
-      urgencyLevel: 'none',
-      estimatedTimeline: null,
-      budgetConfidence: 'unknown',
-      suggestedScore: 999,
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        signals: [],
+        urgencyLevel: 'none',
+        estimatedTimeline: null,
+        budgetConfidence: 'unknown',
+        suggestedScore: 999,
+      }),
+    );
 
     const result = await client.analyzeLeadEnquiry({ enquiryText: 'Hello' });
     expect(result.suggestedScore).toBe(100);
@@ -315,12 +340,14 @@ describe('AnthropicClient error handling', () => {
     // First call: 429
     mockErrorResponse(429, 'Too Many Requests', 'rate_limit_error');
     // Second call: success
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 70,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Retried successfully',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 70,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Retried successfully',
+      }),
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'Test',
@@ -373,12 +400,16 @@ describe('AnthropicClient error handling', () => {
 describe('AnthropicClient cost calculation', () => {
   it('calculates non-zero cost for tokens used', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 60,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Test',
-    }), 1000, 500);
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 60,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Test',
+      }),
+      1000,
+      500,
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'Test',
@@ -398,15 +429,17 @@ describe('AnthropicClient cost calculation', () => {
 describe('AnthropicClient.draftMessage', () => {
   it('returns subject, body, tone, and alternative phrasings for email', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      subject: 'Following up on your inspection',
-      body: 'Hi Sarah, just wanted to follow up on your inspection yesterday.',
-      suggestedTone: 'friendly',
-      alternativePhrasing: [
-        'Hi Sarah, I hope the inspection met your expectations.',
-        'Dear Sarah, thank you for taking the time to inspect the property.',
-      ],
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        subject: 'Following up on your inspection',
+        body: 'Hi Sarah, just wanted to follow up on your inspection yesterday.',
+        suggestedTone: 'friendly',
+        alternativePhrasing: [
+          'Hi Sarah, I hope the inspection met your expectations.',
+          'Dear Sarah, thank you for taking the time to inspect the property.',
+        ],
+      }),
+    );
 
     const result = await client.draftMessage({
       channel: 'email',
@@ -438,11 +471,15 @@ describe('AnthropicClient.draftMessage', () => {
 
   it('includes token usage in result', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      body: 'Message body',
-      suggestedTone: 'formal',
-      alternativePhrasing: [],
-    }), 300, 150);
+    mockAnthropicResponse(
+      JSON.stringify({
+        body: 'Message body',
+        suggestedTone: 'formal',
+        alternativePhrasing: [],
+      }),
+      300,
+      150,
+    );
 
     const result = await client.draftMessage({ channel: 'whatsapp', intent: 'Send update' });
 
@@ -457,20 +494,22 @@ describe('AnthropicClient.draftMessage', () => {
 describe('AnthropicClient.extractEmailSignals', () => {
   it('returns full signal extraction from a buying enquiry', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      intent: 'buy',
-      urgency: 'high',
-      budgetMin: 800000,
-      budgetMax: 1100000,
-      financeStatus: 'pre_approved',
-      estimatedTimeline: '4-6 weeks',
-      propertyPreferences: ['Bondi', 'Coogee', '3 bedrooms'],
-      signals: [
-        { signal: 'Pre-approval mentioned', impact: 'positive', confidence: 0.95 },
-        { signal: 'Specific suburb preference', impact: 'positive', confidence: 0.9 },
-      ],
-      overallConfidence: 0.88,
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        intent: 'buy',
+        urgency: 'high',
+        budgetMin: 800000,
+        budgetMax: 1100000,
+        financeStatus: 'pre_approved',
+        estimatedTimeline: '4-6 weeks',
+        propertyPreferences: ['Bondi', 'Coogee', '3 bedrooms'],
+        signals: [
+          { signal: 'Pre-approval mentioned', impact: 'positive', confidence: 0.95 },
+          { signal: 'Specific suburb preference', impact: 'positive', confidence: 0.9 },
+        ],
+        overallConfidence: 0.88,
+      }),
+    );
 
     const result = await client.extractEmailSignals({
       subject: 'Enquiry about properties in Bondi',
@@ -512,14 +551,18 @@ describe('AnthropicClient.extractEmailSignals', () => {
 
   it('includes token usage and clamps confidence to 0-1', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      intent: 'invest',
-      urgency: 'medium',
-      estimatedTimeline: null,
-      propertyPreferences: [],
-      signals: [],
-      overallConfidence: 1.5, // out-of-range — should be clamped to 1
-    }), 250, 120);
+    mockAnthropicResponse(
+      JSON.stringify({
+        intent: 'invest',
+        urgency: 'medium',
+        estimatedTimeline: null,
+        propertyPreferences: [],
+        signals: [],
+        overallConfidence: 1.5, // out-of-range — should be clamped to 1
+      }),
+      250,
+      120,
+    );
 
     const result = await client.extractEmailSignals({
       subject: 'Investment query',
@@ -538,19 +581,21 @@ describe('AnthropicClient.extractEmailSignals', () => {
 describe('AnthropicClient.suggestBriefRefinements', () => {
   it('returns suggestions, completeness score, and missing fields', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      suggestions: [
-        {
-          field: 'suburbs',
-          currentValue: 'Bondi',
-          suggestedValue: 'Bondi, Coogee, Bronte',
-          reason: 'Expanding search to nearby beachside suburbs increases options',
-          confidence: 0.85,
-        },
-      ],
-      completenessScore: 72,
-      missingFields: ['investorCriteria', 'maxCommute'],
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        suggestions: [
+          {
+            field: 'suburbs',
+            currentValue: 'Bondi',
+            suggestedValue: 'Bondi, Coogee, Bronte',
+            reason: 'Expanding search to nearby beachside suburbs increases options',
+            confidence: 0.85,
+          },
+        ],
+        completenessScore: 72,
+        missingFields: ['investorCriteria', 'maxCommute'],
+      }),
+    );
 
     const result = await client.suggestBriefRefinements({
       brief: {
@@ -572,11 +617,13 @@ describe('AnthropicClient.suggestBriefRefinements', () => {
 
   it('clamps completeness score to 0-100', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      suggestions: [],
-      completenessScore: -20,
-      missingFields: [],
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        suggestions: [],
+        completenessScore: -20,
+        missingFields: [],
+      }),
+    );
 
     const result = await client.suggestBriefRefinements({
       brief: {
@@ -614,18 +661,20 @@ describe('AnthropicClient.suggestBriefRefinements', () => {
 
   it('includes search history context when provided', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      suggestions: [
-        {
-          field: 'budget.max',
-          suggestedValue: '2500000',
-          reason: 'Most rejections due to budget — consider increasing',
-          confidence: 0.9,
-        },
-      ],
-      completenessScore: 80,
-      missingFields: [],
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        suggestions: [
+          {
+            field: 'budget.max',
+            suggestedValue: '2500000',
+            reason: 'Most rejections due to budget — consider increasing',
+            confidence: 0.9,
+          },
+        ],
+        completenessScore: 80,
+        missingFields: [],
+      }),
+    );
 
     const result = await client.suggestBriefRefinements({
       brief: {
@@ -661,16 +710,30 @@ describe('AnthropicClient.generateDailyActionInsights', () => {
 
   it('returns indexed subtitles for candidates', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      items: [
-        { index: 0, subtitle: 'Pre-approval expiring in 5 days' },
-        { index: 1, subtitle: 'High-value lead waiting 3 days for callback' },
-      ],
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        items: [
+          { index: 0, subtitle: 'Pre-approval expiring in 5 days' },
+          { index: 1, subtitle: 'High-value lead waiting 3 days for callback' },
+        ],
+      }),
+    );
 
     const result = await client.generateDailyActionInsights([
-      { category: 'follow_up', title: 'Follow up', contactName: 'Sarah Smith', daysOverdue: 5, compositeScore: 85 },
-      { category: 'new_lead', title: 'Call back', contactName: 'Mike Jones', daysUntilDeadline: 1, compositeScore: 90 },
+      {
+        category: 'follow_up',
+        title: 'Follow up',
+        contactName: 'Sarah Smith',
+        daysOverdue: 5,
+        compositeScore: 85,
+      },
+      {
+        category: 'new_lead',
+        title: 'Call back',
+        contactName: 'Mike Jones',
+        daysUntilDeadline: 1,
+        compositeScore: 90,
+      },
     ]);
 
     expect(result).toHaveLength(2);
@@ -696,11 +759,13 @@ describe('AnthropicClient.generateDailyActionInsights', () => {
 describe('AnthropicClient.generateSequenceContent', () => {
   it('returns subject, body, and tone for email sequence', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      subject: 'Quick update on your property search',
-      body: 'Hi Sarah, just a quick update on properties matching your brief this week.',
-      suggestedTone: 'friendly',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        subject: 'Quick update on your property search',
+        body: 'Hi Sarah, just a quick update on properties matching your brief this week.',
+        suggestedTone: 'friendly',
+      }),
+    );
 
     const result = await client.generateSequenceContent({
       stepAction: 'send_email',
@@ -718,9 +783,11 @@ describe('AnthropicClient.generateSequenceContent', () => {
 
   it('defaults to professional tone when not specified in response', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      body: 'Update message',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        body: 'Update message',
+      }),
+    );
 
     const result = await client.generateSequenceContent({
       stepAction: 'send_sms',
@@ -740,7 +807,8 @@ describe('AnthropicClient.generateSequenceContent', () => {
 describe('AnthropicClient.generateSearchNarrative', () => {
   it('returns narrative text (not JSON) and token usage', async () => {
     const client = new AnthropicClient(validConfig);
-    const narrativeText = 'Over the past fortnight, we reviewed 8 new properties across Bondi and Coogee. Three properties scored above 80 and warrant your attention.';
+    const narrativeText =
+      'Over the past fortnight, we reviewed 8 new properties across Bondi and Coogee. Three properties scored above 80 and warrant your attention.';
     mockAnthropicResponse(narrativeText, 400, 200);
 
     const result = await client.generateSearchNarrative({
@@ -781,12 +849,14 @@ describe('AnthropicClient retry logic', () => {
     const client = new AnthropicClient({ ...validConfig, maxRetries: 2, retryBaseDelayMs: 0 });
 
     mockErrorResponse(529, 'Overloaded', 'overloaded_error');
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 65,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Recovered from overload',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 65,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Recovered from overload',
+      }),
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'Test',
@@ -821,12 +891,14 @@ describe('AnthropicClient retry logic', () => {
 describe('AnthropicClient.analyzePropertyMatch edge cases', () => {
   it('clamps negative featureScore to 0', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: -10,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'No match',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: -10,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'No match',
+      }),
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'Empty lot',
@@ -840,12 +912,14 @@ describe('AnthropicClient.analyzePropertyMatch edge cases', () => {
 
   it('rounds featureScore to integer', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 73.7,
-      features: [],
-      dealBreakerFlags: [],
-      summary: 'Partial match',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 73.7,
+        features: [],
+        dealBreakerFlags: [],
+        summary: 'Partial match',
+      }),
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'House with garden',
@@ -860,12 +934,14 @@ describe('AnthropicClient.analyzePropertyMatch edge cases', () => {
 
   it('handles deal breaker flags from response', async () => {
     const client = new AnthropicClient(validConfig);
-    mockAnthropicResponse(JSON.stringify({
-      featureScore: 20,
-      features: [],
-      dealBreakerFlags: ['On main road', 'Near flood zone'],
-      summary: 'Deal breakers identified',
-    }));
+    mockAnthropicResponse(
+      JSON.stringify({
+        featureScore: 20,
+        features: [],
+        dealBreakerFlags: ['On main road', 'Near flood zone'],
+        summary: 'Deal breakers identified',
+      }),
+    );
 
     const result = await client.analyzePropertyMatch({
       listingDescription: 'House on busy road near creek',

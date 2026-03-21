@@ -1,7 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Bed, Bath, Car, Star, Loader2, AlertCircle, ThumbsUp, ThumbsDown, MessageCircle, CheckCircle2 } from 'lucide-react';
+import {
+  MapPin,
+  Bed,
+  Bath,
+  Car,
+  Star,
+  Loader2,
+  AlertCircle,
+  ThumbsUp,
+  ThumbsDown,
+  MessageCircle,
+  CheckCircle2,
+} from 'lucide-react';
 import type { PropertyMatchStatus } from '@realflow/shared';
 import { usePortalProperties } from '@/hooks/use-portal-properties';
 import type { PortalProperty } from '@/hooks/use-portal-properties';
@@ -127,9 +139,7 @@ function PropertyFeedbackButtons({ matchId }: { matchId: string }) {
     <div className="space-y-2">
       {mutation.isError && (
         <p className="text-xs text-red-600">
-          {mutation.error instanceof Error
-            ? mutation.error.message
-            : 'Failed to submit'}
+          {mutation.error instanceof Error ? mutation.error.message : 'Failed to submit'}
         </p>
       )}
       <div className="flex flex-wrap gap-2">
@@ -228,7 +238,8 @@ export default function PropertiesPage() {
       {/* Active properties grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {activeProperties.map((match) => {
-          const statusStyle = STATUS_STYLES[match.status as PropertyMatchStatus] ?? STATUS_STYLES.new;
+          const statusStyle =
+            STATUS_STYLES[match.status as PropertyMatchStatus] ?? STATUS_STYLES.new;
           const addr = formatAddress(match);
           const prop = match.property;
           const showFeedback = match.status === 'sent_to_client';
@@ -267,9 +278,7 @@ export default function PropertiesPage() {
                   {addr.suburb}, {addr.state} {addr.postcode}
                 </p>
                 {prop?.price_guide && (
-                  <p className="mt-2 text-lg font-bold text-gray-900">
-                    {prop.price_guide}
-                  </p>
+                  <p className="mt-2 text-lg font-bold text-gray-900">{prop.price_guide}</p>
                 )}
 
                 {/* Features */}
@@ -304,9 +313,7 @@ export default function PropertiesPage() {
                 {/* Feedback buttons — shown for sent_to_client status */}
                 {showFeedback && (
                   <div className="mt-3 border-t border-gray-100 pt-3">
-                    <p className="mb-2 text-xs font-medium text-gray-500">
-                      What do you think?
-                    </p>
+                    <p className="mb-2 text-xs font-medium text-gray-500">What do you think?</p>
                     <PropertyFeedbackButtons matchId={match.id} />
                   </div>
                 )}

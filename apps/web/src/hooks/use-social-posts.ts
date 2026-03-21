@@ -55,10 +55,7 @@ export function useCreateSocialPost() {
 
   return useMutation({
     mutationFn: async (post: CreateSinglePlatformPost) => {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .single();
+      const { data: userData } = await supabase.from('users').select('id').single();
 
       if (!userData) throw new Error('User not found');
 
@@ -86,6 +83,9 @@ export function useCreateSocialPost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -120,6 +120,9 @@ export function useUpdateSocialPost(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -148,6 +151,9 @@ export function usePublishSocialPost(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -170,6 +176,9 @@ export function useDeleteSocialPost(id: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

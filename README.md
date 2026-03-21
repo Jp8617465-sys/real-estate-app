@@ -55,6 +55,7 @@ cp apps/web/.env.example apps/web/.env.local
 ```
 
 Required:
+
 - `NEXT_PUBLIC_SUPABASE_URL` — Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Your Supabase anon key
 

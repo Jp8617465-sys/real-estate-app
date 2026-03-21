@@ -29,39 +29,43 @@ RealFlow's backend is mature (Sprints 1–6: AI, communications, automation, dat
 
 ### Success Metrics
 
-| Metric | Baseline | Target | Measurement |
-|--------|----------|--------|-------------|
-| Agent NPS (self-reported) | Unknown | ≥ 50 | Quarterly survey |
-| Portal session duration | Unknown | +40% | Supabase analytics |
-| Mobile app demo close rate | Unknown | +25% | Sales tracking |
-| Largest Contentful Paint (web) | Unknown | < 1.5s | Lighthouse CI |
-| Total Blocking Time (web) | Unknown | < 200ms | Lighthouse CI |
-| axe-core accessibility violations | Unknown | 0 critical | CI gate |
-| Dark mode adoption | 0% | ≥ 30% within 30 days | localStorage analytics |
+| Metric                            | Baseline | Target               | Measurement            |
+| --------------------------------- | -------- | -------------------- | ---------------------- |
+| Agent NPS (self-reported)         | Unknown  | ≥ 50                 | Quarterly survey       |
+| Portal session duration           | Unknown  | +40%                 | Supabase analytics     |
+| Mobile app demo close rate        | Unknown  | +25%                 | Sales tracking         |
+| Largest Contentful Paint (web)    | Unknown  | < 1.5s               | Lighthouse CI          |
+| Total Blocking Time (web)         | Unknown  | < 200ms              | Lighthouse CI          |
+| axe-core accessibility violations | Unknown  | 0 critical           | CI gate                |
+| Dark mode adoption                | 0%       | ≥ 30% within 30 days | localStorage analytics |
 
 ---
 
 ## 2. User Personas
 
 ### Lachlan — Solo Buyers Agent Principal (Beachhead)
+
 - **Device:** iPhone 15 Pro + MacBook Pro M3
 - **Context:** Field-based, demos on phone during property inspections
 - **Jobs to be done:** Impress clients, move fast, never lose track of a deal
 - **Pain:** Pipeline board looks like a spreadsheet. No satisfaction when moving a deal forward.
 
 ### Sunita — Team Lead (5 agents under management)
+
 - **Device:** iPad Pro + Windows laptop
 - **Context:** Office-based, Sprint 6 Team engine user
 - **Jobs to be done:** See team performance at a glance, assign leads fairly
 - **Pain:** Dashboard stat cards feel flat. No visual hierarchy between urgent and routine items.
 
 ### Mei-Ling — Buyer Client on Portal
+
 - **Device:** Samsung Galaxy S24 (Android) + occasional iPad
 - **Context:** Remote, checks portal between work meetings
 - **Jobs to be done:** Know what's happening with her property search without calling her agent
 - **Pain:** Portal `/progress` page shows a static list with no sense of momentum or progress
 
 ### Grace — Admin / Office Manager
+
 - **Device:** Windows desktop, JAWS screen reader (accessibility requirement)
 - **Context:** High-volume data entry, compliance-focused
 - **Jobs to be done:** Log contacts quickly, run AML checks, generate reports
@@ -72,6 +76,7 @@ RealFlow's backend is mature (Sprints 1–6: AI, communications, automation, dat
 ## 3. User Stories & Acceptance Criteria
 
 ### FEAT-UI-001 — Animated Page Entrance (Web)
+
 **As Lachlan, I want page content to animate in smoothly when I navigate so that the app feels premium and alive.**
 
 ```
@@ -84,6 +89,7 @@ And: The animation is suppressed when prefers-reduced-motion is set
 ```
 
 ### FEAT-UI-002 — Dark Mode Toggle (Web + Portal)
+
 **As Lachlan, I want to switch to dark mode so that the app is comfortable to use at night inspections.**
 
 ```
@@ -96,6 +102,7 @@ And: All text meets WCAG AA contrast (4.5:1) in dark mode as verified by axe-cor
 ```
 
 ### FEAT-UI-003 — Pipeline Drag-and-Drop with Animation
+
 **As Lachlan, I want drag-and-drop on the pipeline board to feel satisfying with visual feedback so that moving deals forward is a moment of reward.**
 
 ```
@@ -111,6 +118,7 @@ And: The drag interaction is keyboard-accessible (Space to pick up, arrows to mo
 ```
 
 ### FEAT-UI-004 — Skeleton Loaders with Entry Animation
+
 **As Sunita, I want loading states to feel intentional so that the app doesn't feel broken during data fetch.**
 
 ```
@@ -122,6 +130,7 @@ And: No layout shift occurs during the skeleton → content transition (CLS = 0)
 ```
 
 ### FEAT-UI-005 — Toast Notification System
+
 **As any user, I want clear feedback after every action so that I know if my change was saved or failed.**
 
 ```
@@ -135,6 +144,7 @@ And: Each toast announces to screen readers via aria-live="polite"
 ```
 
 ### FEAT-UI-006 — Portal Progress Timeline Animation
+
 **As Mei-Ling, I want to see my buyer journey progress animate so that I feel the search is moving forward.**
 
 ```
@@ -147,6 +157,7 @@ And: Stages that changed since my last login animate; stages already completed o
 ```
 
 ### FEAT-UI-007 — Empty States with Illustration
+
 **As any user, I want meaningful empty states so that I know what to do when a list is empty.**
 
 ```
@@ -159,6 +170,7 @@ And: The empty state works at 320px viewport width (smallest supported)
 ```
 
 ### FEAT-UI-008 — Mobile Micro-interactions (Haptics + Spring)
+
 **As Lachlan on mobile, I want tapping primary actions to feel tactile so that the app feels native and responsive.**
 
 ```
@@ -171,6 +183,7 @@ And: The haptic is skipped if the device has vibration disabled in system settin
 ```
 
 ### FEAT-UI-009 — Consistent Typography Scale
+
 **As Grace, I want consistent heading and body text sizes so that information hierarchy is immediately clear.**
 
 ```
@@ -183,6 +196,7 @@ And: No raw pixel values appear in component files — all via Tailwind text-* u
 ```
 
 ### FEAT-UI-010 — Accessible Focus Rings
+
 **As Grace (screen reader user), I want visible focus indicators on every interactive element so that I can navigate the app by keyboard.**
 
 ```
@@ -195,6 +209,7 @@ And: axe-core reports zero "focus-visible" violations in CI
 ```
 
 ### FEAT-UI-011 — Pipeline Keyboard Navigation
+
 **As Grace, I want to move pipeline cards with keyboard alone so that the drag-and-drop feature is accessible.**
 
 ```
@@ -211,20 +226,20 @@ And: A live region announces "Card moved to [Stage Name]" on drop
 
 ## 4. Out-of-Scope (Explicit)
 
-| Item | Reason |
-|------|--------|
-| New routes or pages | This is a polish pass, not a feature sprint |
-| Recharts replacement | Recharts is adequate; charting library migration is a separate spike |
-| Storybook component docs | Valuable but a separate tooling sprint |
-| White-label / multi-theme for partners | ePlace theme exists; new partner themes are a commercial decision |
-| i18n / localisation | English-only for AU market v1 |
-| New Supabase tables or migrations | No schema changes needed |
-| Backend API changes | All changes are display-layer only |
-| A/B testing framework | Deferred to v1.5 |
-| Video backgrounds or complex canvas animations | Not appropriate for a B2B CRM |
-| Social sharing previews (OG images) | Separate sprint |
-| Push notification UI redesign | Part of mobile notifications sprint |
-| Native iOS/Android splash screen redesign | Handled by Expo managed workflow separately |
+| Item                                           | Reason                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| New routes or pages                            | This is a polish pass, not a feature sprint                          |
+| Recharts replacement                           | Recharts is adequate; charting library migration is a separate spike |
+| Storybook component docs                       | Valuable but a separate tooling sprint                               |
+| White-label / multi-theme for partners         | ePlace theme exists; new partner themes are a commercial decision    |
+| i18n / localisation                            | English-only for AU market v1                                        |
+| New Supabase tables or migrations              | No schema changes needed                                             |
+| Backend API changes                            | All changes are display-layer only                                   |
+| A/B testing framework                          | Deferred to v1.5                                                     |
+| Video backgrounds or complex canvas animations | Not appropriate for a B2B CRM                                        |
+| Social sharing previews (OG images)            | Separate sprint                                                      |
+| Push notification UI redesign                  | Part of mobile notifications sprint                                  |
+| Native iOS/Android splash screen redesign      | Handled by Expo managed workflow separately                          |
 
 ---
 
@@ -240,15 +255,15 @@ And: A live region announces "Card moved to [Stage Name]" on drop
 
 ### Screens Requiring Mobile Pass
 
-| Screen | Change |
-|--------|--------|
-| `(tabs)/index.tsx` — Dashboard | Stat card spring animations, skeleton shimmer |
-| `(tabs)/pipeline.tsx` — Seller Pipeline | Card press animation, haptic on stage change |
-| `(tabs)/ba-pipeline.tsx` — Buyers Agent Pipeline | Same as seller pipeline |
-| `(tabs)/contacts.tsx` | Empty state illustration, row entrance animation |
-| `contact/[id].tsx` | Activity timeline entrance animation |
-| `alerts/index.tsx` | Toast system, empty state |
-| `notifications/index.tsx` | Entry animation |
+| Screen                                           | Change                                           |
+| ------------------------------------------------ | ------------------------------------------------ |
+| `(tabs)/index.tsx` — Dashboard                   | Stat card spring animations, skeleton shimmer    |
+| `(tabs)/pipeline.tsx` — Seller Pipeline          | Card press animation, haptic on stage change     |
+| `(tabs)/ba-pipeline.tsx` — Buyers Agent Pipeline | Same as seller pipeline                          |
+| `(tabs)/contacts.tsx`                            | Empty state illustration, row entrance animation |
+| `contact/[id].tsx`                               | Activity timeline entrance animation             |
+| `alerts/index.tsx`                               | Toast system, empty state                        |
+| `notifications/index.tsx`                        | Entry animation                                  |
 
 ### Offline Behaviour
 
@@ -266,27 +281,33 @@ And: A live region announces "Card moved to [Stage Name]" on drop
 ## 6. Australian Regulatory Context
 
 ### Privacy Act 1988 (Cth)
+
 - No new PII fields introduced — no Privacy Act change required
 - Animation layer only touches display data already on screen
 - Masked fields (e.g. partial bank account numbers in fee screens) must not be revealed by animation transitions
 
 ### AML/CTF Act 2006 (AUSTRAC)
+
 - AML check records must display in chronological order — no re-ordering by animation stagger
 - Suspicious Matter Reports (SMR) form must not add playful micro-interactions that trivialise the compliance obligation
 - Animation suppression: `prefers-reduced-motion` respected at OS level (no regulatory implication, but good practice)
 
 ### Electronic Transactions Act 1999 (Cth)
+
 - Document metadata (upload date, uploader) must remain visible — no animation that obscures this data during transition
 
 ### Australian Consumer Law (ACL)
+
 - Empty state copy for "no properties found" must not imply properties exist — legal team to review copy
 
 ### Disability Discrimination Act 1992 (Cth)
+
 - All interactive elements must be keyboard-accessible (FEAT-UI-010, FEAT-UI-011)
 - axe-core CI gate (zero critical violations) is a legal risk mitigation, not just best practice
 - Screen reader announcements (aria-live regions) required for toast notifications and pipeline drag-and-drop
 
 ### State Variations
+
 - No state-specific UI differences introduced by this sprint
 
 ---
@@ -297,12 +318,12 @@ And: A live region announces "Card moved to [Stage Name]" on drop
 
 All changes in this feature are display-layer only. The only write paths are:
 
-| Operation | Route | RLS Impact |
-|-----------|-------|-----------|
+| Operation          | Route                                    | RLS Impact                                        |
+| ------------------ | ---------------------------------------- | ------------------------------------------------- |
 | Pipeline card move | `PUT /api/v1/transactions/:id` (Fastify) | Existing RLS via Fastify service role — no change |
-| Toast dismiss | Client-only state | No DB write |
-| Theme preference | `localStorage` | No DB write |
-| Dark mode | `localStorage` | No DB write |
+| Toast dismiss      | Client-only state                        | No DB write                                       |
+| Theme preference   | `localStorage`                           | No DB write                                       |
+| Dark mode          | `localStorage`                           | No DB write                                       |
 
 **Critical pattern to maintain:** Pipeline drag-and-drop writes must go through Fastify (`PUT /api/v1/transactions/:id`), **not** directly to Supabase from the browser. The existing RLS policy on `transactions` blocks browser-origin writes for non-owner rows. The Fastify service role is the correct write path.
 
@@ -314,24 +335,24 @@ All changes in this feature are display-layer only. The only write paths are:
 
 ### Existing Engines Touched (Display Only)
 
-| Engine | Touch Point |
-|--------|------------|
-| `pipeline-engine` | Card stage display — no logic change |
-| `portal-engine` | Progress stage data for timeline animation |
-| `property-alert-engine` | Alert list empty state |
-| None | All other engines untouched |
+| Engine                  | Touch Point                                |
+| ----------------------- | ------------------------------------------ |
+| `pipeline-engine`       | Card stage display — no logic change       |
+| `portal-engine`         | Progress stage data for timeline animation |
+| `property-alert-engine` | Alert list empty state                     |
+| None                    | All other engines untouched                |
 
 ### New Package Dependencies
 
 #### Web / Portal (Next.js)
 
-| Package | Version | Size | Purpose |
-|---------|---------|------|---------|
-| `framer-motion` | `^11.x` | ~75KB gzip | Page transitions, card animations, spring physics |
-| `@dnd-kit/core` | `^6.x` | ~20KB gzip | Pipeline drag-and-drop (replaces native HTML5 D&D) |
-| `@dnd-kit/sortable` | `^7.x` | ~5KB gzip | Sortable list within columns |
-| `@radix-ui/react-toast` | `^1.x` | ~8KB gzip | Accessible toast primitives |
-| `@radix-ui/react-dialog` | `^1.x` | ~10KB gzip | Accessible modal primitives |
+| Package                  | Version | Size       | Purpose                                            |
+| ------------------------ | ------- | ---------- | -------------------------------------------------- |
+| `framer-motion`          | `^11.x` | ~75KB gzip | Page transitions, card animations, spring physics  |
+| `@dnd-kit/core`          | `^6.x`  | ~20KB gzip | Pipeline drag-and-drop (replaces native HTML5 D&D) |
+| `@dnd-kit/sortable`      | `^7.x`  | ~5KB gzip  | Sortable list within columns                       |
+| `@radix-ui/react-toast`  | `^1.x`  | ~8KB gzip  | Accessible toast primitives                        |
+| `@radix-ui/react-dialog` | `^1.x`  | ~10KB gzip | Accessible modal primitives                        |
 
 **Rationale for Framer Motion:** GSAP requires a commercial licence for SaaS products. CSS-only transitions cannot orchestrate data-dependent sequences (e.g. stagger based on array index, spring physics on drag). React Spring is viable but Framer Motion has better Next.js App Router / RSC compatibility and a smaller learning curve.
 
@@ -341,10 +362,10 @@ All changes in this feature are display-layer only. The only write paths are:
 
 #### Mobile (Expo)
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `expo-haptics` | `~14.x` | Haptic feedback on iOS/Android |
-| `react-native-reanimated` | `~3.x` | UI-thread animations (already likely present via Expo) |
+| Package                   | Version | Purpose                                                |
+| ------------------------- | ------- | ------------------------------------------------------ |
+| `expo-haptics`            | `~14.x` | Haptic feedback on iOS/Android                         |
+| `react-native-reanimated` | `~3.x`  | UI-thread animations (already likely present via Expo) |
 
 ### External API Dependencies
 
@@ -360,26 +381,27 @@ None. This feature is display-layer only.
 
 ## 9. Tech Choices Summary
 
-| Decision | Choice | Rejected Alternatives |
-|----------|--------|----------------------|
-| Web animation library | Framer Motion 11 | GSAP (licence), CSS-only (insufficient), React Spring (worse RSC compat) |
-| Drag-and-drop | @dnd-kit/core | react-beautiful-dnd (unmaintained), react-dnd (heavier) |
-| Toast system | @radix-ui/react-toast | react-hot-toast (no a11y), sonner (evaluate in Phase 2) |
-| Component primitives | @radix-ui/* | shadcn/ui (code ownership), headlessui (Vue-first) |
-| Mobile animations | Reanimated 3 worklets | Animated API (JS thread, jank), CSS (not available in RN) |
-| Mobile haptics | expo-haptics | react-native-haptic-feedback (non-Expo managed) |
-| Dark mode storage | localStorage | Supabase user_preferences (over-engineered for v1) |
+| Decision              | Choice                | Rejected Alternatives                                                    |
+| --------------------- | --------------------- | ------------------------------------------------------------------------ |
+| Web animation library | Framer Motion 11      | GSAP (licence), CSS-only (insufficient), React Spring (worse RSC compat) |
+| Drag-and-drop         | @dnd-kit/core         | react-beautiful-dnd (unmaintained), react-dnd (heavier)                  |
+| Toast system          | @radix-ui/react-toast | react-hot-toast (no a11y), sonner (evaluate in Phase 2)                  |
+| Component primitives  | @radix-ui/\*          | shadcn/ui (code ownership), headlessui (Vue-first)                       |
+| Mobile animations     | Reanimated 3 worklets | Animated API (JS thread, jank), CSS (not available in RN)                |
+| Mobile haptics        | expo-haptics          | react-native-haptic-feedback (non-Expo managed)                          |
+| Dark mode storage     | localStorage          | Supabase user_preferences (over-engineered for v1)                       |
 
 ---
 
 ## 10. Phased Delivery Plan
 
 ### Phase 1 — Foundation (Week 1–2) — Highest Impact, Lowest Risk
+
 **Goal:** Eliminate the most visible dated elements without touching complex state.
 
 - [ ] Implement toast system (`@radix-ui/react-toast`) — web + portal
 - [ ] Implement skeleton shimmer animation (CSS keyframe, replaces `animate-pulse`)
-- [ ] Typography scale standardisation (enforce via Tailwind text-* utilities)
+- [ ] Typography scale standardisation (enforce via Tailwind text-\* utilities)
 - [ ] Empty state illustrations for all major lists (contacts, properties, matches, alerts, pipeline columns)
 - [ ] Accessible focus rings (`focus-visible:ring-2 ring-primary-500`)
 - [ ] `globals.css` CSS variable completion (remove all hardcoded Tailwind colours in shared components)
@@ -387,6 +409,7 @@ None. This feature is display-layer only.
 **Definition of Done:** axe-core zero critical violations. Lighthouse LCP < 1.5s. Toast fires on every mutation in web + portal.
 
 ### Phase 2 — Motion Layer (Week 3–4)
+
 **Goal:** Add Framer Motion entrance animations and dark mode.
 
 - [ ] Install `framer-motion` — web + portal
@@ -399,6 +422,7 @@ None. This feature is display-layer only.
 **Definition of Done:** No animation fires when `prefers-reduced-motion` is set. TBT < 200ms in Lighthouse. Dark mode passes WCAG AA.
 
 ### Phase 3 — Interaction Polish (Week 5–6)
+
 **Goal:** Pipeline drag-and-drop, keyboard accessibility, mobile NativeWind migration.
 
 - [ ] Install `@dnd-kit/core` + `@dnd-kit/sortable`
@@ -412,6 +436,7 @@ None. This feature is display-layer only.
 **Definition of Done:** Pipeline drag-and-drop keyboard accessible. Zero axe-core critical violations. Mobile components use theme tokens only.
 
 ### Phase 4 — Mobile Micro-interactions (Week 7–8)
+
 **Goal:** Native-feeling mobile experience.
 
 - [ ] `expo-haptics` install + `app.json` permissions
@@ -427,20 +452,21 @@ None. This feature is display-layer only.
 
 ## 11. Codebase Inventory Summary
 
-*From code exploration (2026-03-08):*
+_From code exploration (2026-03-08):_
 
-| Area | Files | Animation Status |
-|------|-------|-----------------|
-| Web Pages | 45 | CSS transitions only |
-| Web Components | 53 | `animate-pulse` skeletons only |
-| Portal Pages | 13 | No animation |
-| Portal Components | 11 | No animation |
-| Mobile Screens | 18 | No animation |
-| Mobile Components | 9 | Hardcoded hex styles |
-| Shared UI Components | 5 | Interfaces only |
-| Design Tokens | 2 themes | Half-implemented CSS vars |
+| Area                 | Files    | Animation Status               |
+| -------------------- | -------- | ------------------------------ |
+| Web Pages            | 45       | CSS transitions only           |
+| Web Components       | 53       | `animate-pulse` skeletons only |
+| Portal Pages         | 13       | No animation                   |
+| Portal Components    | 11       | No animation                   |
+| Mobile Screens       | 18       | No animation                   |
+| Mobile Components    | 9        | Hardcoded hex styles           |
+| Shared UI Components | 5        | Interfaces only                |
+| Design Tokens        | 2 themes | Half-implemented CSS vars      |
 
 **Critical files to touch in Phase 1:**
+
 - [apps/web/src/app/globals.css](apps/web/src/app/globals.css) — complete CSS variable system
 - [apps/web/src/components/layout/sidebar.tsx](apps/web/src/components/layout/sidebar.tsx) — add dark mode toggle
 - [apps/web/src/lib/theme-context.tsx](apps/web/src/lib/theme-context.tsx) — implement dark mode
@@ -473,4 +499,4 @@ None. This feature is display-layer only.
 
 ---
 
-*Document generated by RealFlow Discovery Agent — 2026-03-08*
+_Document generated by RealFlow Discovery Agent — 2026-03-08_

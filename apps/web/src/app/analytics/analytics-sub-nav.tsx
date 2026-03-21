@@ -20,16 +20,11 @@ export function AnalyticsSubNav() {
   const pathname = usePathname();
 
   return (
-    <nav
-      className="mb-6 border-b border-gray-200"
-      aria-label="Analytics sections"
-    >
+    <nav className="mb-6 border-b border-gray-200" aria-label="Analytics sections">
       <div className="-mb-px flex gap-1 overflow-x-auto">
         {SUB_NAV_ITEMS.map((item) => {
           const isActive =
-            item.href === '/analytics'
-              ? pathname === '/analytics'
-              : pathname.startsWith(item.href);
+            item.href === '/analytics' ? pathname === '/analytics' : pathname.startsWith(item.href);
 
           return (
             <Link

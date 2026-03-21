@@ -38,6 +38,9 @@ export function useTogglePortalVisibility() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['documents'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 

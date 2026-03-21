@@ -10,11 +10,13 @@ export function useOffers(transactionId?: string) {
     queryFn: async () => {
       let query = supabase
         .from('offers')
-        .select(`
+        .select(
+          `
           *,
           rounds:offer_rounds(*),
           auction_event:auction_events(*)
-        `)
+        `,
+        )
         .order('updated_at', { ascending: false });
 
       if (transactionId) {
@@ -34,13 +36,15 @@ export function useOffer(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('offers')
-        .select(`
+        .select(
+          `
           *,
           rounds:offer_rounds(*),
           auction_event:auction_events(*),
           property:properties(id, address_street_number, address_street_name, address_suburb),
           client:contacts(id, first_name, last_name)
-        `)
+        `,
+        )
         .eq('id', id)
         .single();
       if (error) throw error;
@@ -80,6 +84,9 @@ export function useCreateOffer() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['offers'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -106,6 +113,9 @@ export function useAddOfferRound(offerId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['offers'] });
       queryClient.invalidateQueries({ queryKey: ['offers', offerId] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

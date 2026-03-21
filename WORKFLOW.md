@@ -1,303 +1,621 @@
 # WORKFLOW.md — RealFlow Development Lifecycle
 
-> The operating manual for how features move from idea to production. Read alongside `CLAUDE.md` (coding standards) and `STRATEGIC_ROADMAP.md` (priorities).
+> The operating manual for how features move from idea to production.
+> Read alongside `CLAUDE.md` (coding standards + command reference) and `docs/pm/SPRINT_STATE.md` (current sprint state).
+> Last updated: 2026-03-09 (Sprint 8 — Hardening)
 
 ---
 
-## Overview
+## Core Principle: Automate Until Gate
 
-Every feature and sprint moves through 10 phases in sequence. Human sign-off is required at phase transitions marked **🔐 human gate**. Automated gates are marked **⚡ automated**.
+Claude chains phases automatically between human gates. No "shall I proceed?" prompts — just do the work. Stop only when:
+
+1. A **human gate** (🔐) is reached
+2. A **CRITICAL failure** is found
+3. The phase sequence is complete
 
 ```
 DISCOVER → PLAN → BUILD → TEST → QUALITY → HARDEN → DOCUMENT → DEPLOY → MONITOR → FINISH
-   🔐        🔐      ⚡       ⚡       ⚡         ⚡          ⚡         ⚡          ⚡       🔐
+   🔐        🔐      ⚡       ⚡       ⚡         ⚡          ⚡         🔐          ⚡       🔐
 ```
 
-The `/ship` command runs phases 5–8 (QUALITY → HARDEN → DOCUMENT → DEPLOY) automatically.
-The `/sprint-start` and `/sprint-close` commands manage phases 1–2 and 10 respectively.
+**Automation flow:** After PLAN is approved, Claude auto-runs BUILD → TEST → QUALITY → HARDEN → DOCUMENT without stopping. DEPLOY (staging) runs automatically; DEPLOY (production) requires explicit human command.
 
 ---
 
-## Phase Reference
+## Phase 1 — DISCOVER 🔐
 
-| # | Phase | Trigger | Primary Commands | Exit Criteria |
-|---|-------|---------|-----------------|---------------|
-| 1 | **DISCOVER** | New feature or sprint kickoff | `/discover`, `/user-stories` | `docs/discovery/FEATURE.md` signed off |
-| 2 | **PLAN** | Discovery doc exists | `/sprint-plan`, `/db-design`, `/api-design`, `/architect` | Migration SQL + API surface agreed |
-| 3 | **BUILD** | Plan + interface contracts exist | `/build-db`, `/build-engine`, `/build-mobile`, `/api-new`, `/component-new` | All routes return non-500, types generated |
-| 4 | **TEST** | BUILD complete | `/test-unit`, `/test-integration`, `/test-coverage`, `/test-mobile`, `/api-test` | 0 new test failures, engine at 80%+ coverage |
-| 5 | **QUALITY** | TEST passing | `/quality-check`, `/pr-review`, `/lint`, `/code-cleanup` | All gates green, PR review PASS |
-| 6 | **HARDEN** | QUALITY green | `/harden`, `/security-scan`, `/perf-audit`, `/error-boundaries` | 0 CRITICAL findings, all error paths handled |
-| 7 | **DOCUMENT** | HARDEN complete | `/api-docs`, `/changelog`, `/sprint-report`, `/docs-generate` | API docs updated, CHANGELOG entry written |
-| 8 | **DEPLOY** | DOCUMENT complete | `/deploy-check`, `/deploy-staging`, `/deploy-production`, `/smoke-test` | Smoke tests pass on staging + production |
-| 9 | **MONITOR** | 24–48h post deploy | `/health-check`, `/error-triage` | No CRITICAL errors for 24h, service live |
-| 10 | **FINISH** | MONITOR clean | `/sprint-close` | MEMORY.md updated, sprint tagged, retrospective done |
+**Entry:** New feature request or sprint kickoff.
+**Exit:** `docs/discovery/$FEATURE.md` signed off by human.
 
----
+### `/discover $FEATURE`
 
-## Quality Gates
+Agent: `requirements-analyst`
 
-| Gate | Command | Blocks Deploy? | Runs During |
-|------|---------|---------------|-------------|
-| ESLint (no-any:error) | `npm run lint` | Yes | QUALITY, pre-commit, CI |
-| TypeScript strict | `npm run type-check` | Yes | QUALITY, pre-commit, CI |
-| Prettier format | `npx prettier --check .` | No | QUALITY |
-| Test suite | `npm run test` | Yes | TEST, pre-commit, CI |
-| Full quality bundle | `npm run quality` | Yes | QUALITY (runs lint + type-check) |
-| Test coverage | `npm run test:coverage` | No (reports only) | TEST |
-| Security scan | `/security-scan` | Yes (CRITICAL) | HARDEN |
-| Perf audit | `/perf-audit` | No (reports N+1s) | HARDEN |
-| Full build | `npm run build` | Yes | DEPLOY |
-| Smoke tests | `/smoke-test $URL` | Yes | DEPLOY (staging + prod) |
-| Render health | `mcp__render__get_service` | No (monitoring) | MONITOR |
+Produces `docs/discovery/$FEATURE.md` containing:
+
+- User problem statement and goals
+- User journey map (happy path + edge cases)
+- Acceptance criteria (Given/When/Then)
+- Risks and open questions
+
+### `/user-stories $FEATURE`
+
+Agent: `requirements-analyst`
+
+Generates story map with persona, goal, acceptance criteria, priority.
+
+**🔐 GATE:** Human reviews discovery doc. Do not proceed to PLAN until approved.
 
 ---
 
-## The `/ship` Command
+## Phase 2 — PLAN 🔐
 
-`/ship $FEATURE` runs everything from QUALITY to DEPLOY in a single orchestrated sequence:
+**Entry:** Discovery doc signed off.
+**Exit:** Migration SQL + API contracts agreed by human.
 
-```
-/quality-check  →  /test-coverage  →  /security-scan  →  /perf-audit
-     →  /api-docs  →  /changelog  →  /deploy-check  →  /deploy-staging
-     →  /smoke-test staging-url
+### `/sprint-plan $N: features`
+
+Agent: `system-architect`
+
+Auto-runs:
+
+```bash
+npm run test 2>&1 | tail -1    # Record test baseline count
 ```
 
-Stops immediately on any CRITICAL failure. On success, outputs:
-> "Feature `$FEATURE` is ready for production. Run `/deploy-production` to complete."
+Produces `docs/sprints/SPRINT_$N_PLAN.md`:
 
-**Deliberately excludes:** DISCOVER + PLAN (human-gated). MONITOR + FINISH (time-deferred — run 24–48h later).
+- Feature breakdown with phase assignments
+- Interface contracts (API shapes, DB schema)
+- Dependency graph
+- Test baseline count
 
-Production deploy is a **separate explicit command** (`/deploy-production`) — never automated by `/ship`. This is intentional: production promotion requires a conscious human decision after reviewing staging results.
+### `/db-design $FEATURE`
+
+Agent: `backend-architect`
+
+Produces:
+
+- Migration SQL in `supabase/migrations/` (follows existing numbering)
+- Zod schema stubs in `packages/shared/src/types/`
+- RLS policy checklist
+
+### `/api-design $FEATURE`
+
+Agent: `backend-architect`
+
+Produces `docs/api/$FEATURE.md`:
+
+- Route shapes (method, path, auth, request, response)
+- Error cases and status codes
+- Rate limiting requirements
+
+### `/architect $FEATURE`
+
+Agent: `system-architect`
+
+Produces architecture doc with:
+
+- Cross-package dependencies
+- Data flow diagram
+- Trade-off analysis (≥2 alternatives)
+- ADR (Architecture Decision Record)
+
+**🔐 GATE:** Human agrees on migration SQL + API contracts. After this, Claude auto-chains BUILD → TEST → QUALITY → HARDEN → DOCUMENT.
 
 ---
 
-## Sprint Lifecycle
+## Phase 3 — BUILD ⚡
+
+**Entry:** Plan approved. Auto-starts immediately.
+**Exit:** All routes return non-500, types generated, tests skeleton in place.
+
+**Build order within a feature:**
 
 ```
-/sprint-start                          /sprint-close
-     │                                       │
-     ├─ Read MEMORY.md (current sprint)      ├─ Verify all features deployed
-     ├─ Read STRATEGIC_ROADMAP.md            ├─ Run npm run test (final count)
-     ├─ Check docs/discovery/ exists         ├─ Generate /sprint-report
-     ├─ Run /sprint-plan                     ├─ Produce MEMORY.md update block
-     ├─ Output interface contracts           ├─ Produce STRATEGIC_ROADMAP.md update
-     └─ Record test baseline                 ├─ Output retrospective prompts
-                                             └─ Output git tag command
+DB (migration + types) → Engine/service → API routes → Frontend hooks → UI components → Tests
 ```
 
-**Current sprint:** Sprint 5 (Client Experience) is next. Sprints 1–4 complete.
+### `/build-db $FEATURE`
 
-Branch convention: `sprint/sprint-N` for sprint branches, `feature/NAME` for feature branches.
+Agent: `backend-architect`
+
+Auto-runs:
+
+```bash
+# 1. Apply migration via Supabase MCP
+# 2. Regenerate TypeScript types
+npm run db:types
+# 3. Verify build still passes
+npm run build -- --filter=@realflow/shared
+```
+
+### `/build-engine $ENGINE`
+
+Agent: `backend-architect`
+
+Scaffolds in `packages/business-logic/src/`:
+
+- Engine class with typed methods
+- Vitest test skeleton with proper UUID fixtures
+
+### `/build-mobile $FEATURE`
+
+Agent: `frontend-architect`
+
+Scaffolds Expo Router screens with NativeWind styling.
+
+### Built-in Skills
+
+| Skill                  | What it produces                         |
+| ---------------------- | ---------------------------------------- |
+| `/api-new $ROUTE`      | Fastify route with Zod validation + auth |
+| `/component-new $SPEC` | React component with TypeScript          |
+| `/page-new $SPEC`      | Next.js App Router page                  |
+| `/supabase:types-gen`  | TypeScript types from live schema        |
+
+**Auto-transitions to TEST** when build is complete.
 
 ---
 
-## Pre-Commit Hook
+## Phase 4 — TEST ⚡
 
-Located at `.husky/pre-commit`. Runs on every `git commit`:
+**Entry:** BUILD complete. Auto-starts.
+**Exit:** 0 new failures, engine at 80%+ coverage.
 
-1. `npm run lint` — ESLint 9 (no-any:error blocks commit)
-2. `npm run type-check` — TypeScript strict (any error blocks commit)
-3. `npm run test` — Vitest (any failure blocks commit)
+Auto-runs:
 
-**Escape hatch:** `git commit --no-verify` is acceptable ONLY for WIP commits on feature branches that will never be merged directly to `main`. Merging to `main` always goes through CI which has no escape hatch.
+```bash
+npm run test                    # Full suite — must pass
+npm run test:coverage           # Coverage report
+```
+
+### `/api-test $ROUTE`
+
+Skill: generates API endpoint tests (happy path, 401, 400/422, edge cases).
+
+### `/test-unit $FILE`
+
+Agent: `qa-engineer`. Generates Vitest unit tests following MEMORY.md patterns.
+
+### `/test-integration $FEATURE`
+
+Agent: `qa-engineer`. Full route → engine → DB path tests.
+
+### `/test-coverage`
+
+Agent: `qa-engineer`
+
+Auto-runs:
+
+```bash
+npm run test:coverage
+```
+
+Compares against baseline from `docs/pm/SPRINT_STATE.md`. Reports delta.
+
+**Auto-transitions to QUALITY** when all tests pass.
 
 ---
 
-## Agent Reference
+## Phase 5 — QUALITY ⚡
 
-| Agent | When to Invoke | Produces |
-|-------|---------------|----------|
-| `@requirements-analyst` | DISCOVER phase, ambiguous specs | PRD, user stories, acceptance criteria |
-| `@system-architect` | PLAN phase, cross-package design | Architecture doc, dependency graph |
-| `@backend-architect` | PLAN + BUILD, engine + route design | DB schema, engine design, route shapes |
-| `@frontend-architect` | PLAN + BUILD, component design | Component hierarchy, state management plan |
-| `@qa-engineer` | TEST phase, coverage analysis | Test strategy, missing test cases |
-| `@security-engineer` | HARDEN phase | Security audit, OWASP findings |
-| `@performance-engineer` | HARDEN phase | Perf audit, N+1 queries, bundle analysis |
-| `@technical-writer` | DOCUMENT phase | API docs, user guides |
-| `@devops-engineer` | DEPLOY phase, CI/CD | Render deploy, GitHub Actions config |
-| `@sprint-manager` | Sprint lifecycle | Sprint plan, MEMORY.md updates |
-| `@refactoring-expert` | QUALITY phase | Code quality review, tech debt |
-| `@deep-research-agent` | DISCOVER, research tasks | Research synthesis, competitor analysis |
-| `@tech-stack-researcher` | PLAN, new technology decisions | Technology evaluation report |
-| `@learning-guide` | Anytime, teaching/explanation | Concept explanations, code walkthroughs |
+**Entry:** Tests passing. Auto-starts.
+**Exit:** All gates green.
+
+Auto-runs (in sequence, stops on first failure):
+
+```bash
+npm run lint                    # ESLint
+npm run type-check              # TypeScript strict
+npx prettier --check .          # Format check
+```
+
+If lint or format issues found, auto-fixes:
+
+```bash
+npm run lint -- --fix
+npx prettier --write .
+```
+
+Then re-runs checks to verify fix.
+
+### `/quality-check`
+
+Runs all gates above in sequence. Reports PASS/FAIL per gate.
+
+### `/pr-review $BRANCH`
+
+Agent: `refactoring-expert`
+
+Auto-runs:
+
+```bash
+git diff main...$BRANCH --stat
+```
+
+Reviews against:
+
+- Does implementation match API contract?
+- RLS on all new tables?
+- Rate limiting on mutating endpoints?
+- N+1 queries?
+- Test coverage meets baseline?
+- No hardcoded secrets?
+
+**Auto-transitions to HARDEN** when all gates green.
 
 ---
 
-## Command Reference
+## Phase 6 — HARDEN ⚡
 
-### DISCOVER
-| Command | Description |
-|---------|-------------|
-| `/discover $FEATURE` | Full discovery session → `docs/discovery/FEATURE.md` |
-| `/user-stories $FEATURE` | Generate user story map in buyers-agent context |
+**Entry:** Quality green. Auto-starts.
+**Exit:** 0 CRITICAL findings. Produces `docs/harden/$SPRINT.md`.
 
-### PLAN
-| Command | Description |
-|---------|-------------|
-| `/sprint-plan $N: features` | Generate `SPRINT_N_PLAN.md` (parallel teams, interface contracts) |
-| `/db-design $FEATURE` | Migration SQL + Zod schema stubs |
-| `/api-design $FEATURE` | API surface document (interface contract) |
-| `/architect $FEATURE` | Systems architecture review |
-| `/backend-architect $FEATURE` | Backend design review |
-| `/feature-plan $FEATURE` | Full feature implementation plan |
-| `/workflow-design $FEATURE` | Automation workflow design |
+### `/harden $SPRINT`
 
-### BUILD
-| Command | Description |
-|---------|-------------|
-| `/build-db $FEATURE` | Guide DB build: migrate → types → RLS checklist |
-| `/build-engine $ENGINE` | Scaffold business-logic engine + test file |
-| `/build-mobile $FEATURE` | Scaffold Expo Router screens |
-| `/api-new $ROUTE` | Generate Fastify route with validation |
-| `/component-new $SPEC` | Generate React component |
-| `/page-new $SPEC` | Generate Next.js page |
-| `/supabase:types-gen` | Regenerate TypeScript types from schema |
+Orchestrates two agents in sequence:
 
-### TEST
-| Command | Description |
-|---------|-------------|
-| `/test-unit $FILE` | Generate Vitest unit tests (encodes 4 MEMORY.md rules) |
-| `/test-integration $FEATURE` | Generate integration tests (route → engine → DB) |
-| `/test-coverage` | Run coverage, check vs baseline (606/616), report gaps |
-| `/test-mobile $SCREEN` | Generate React Native component tests |
-| `/api-test $ROUTE` | Generate API endpoint tests |
-| `/test-review $MODULE` | Review existing test quality and coverage |
+**Security check** (agent: `security-engineer`):
 
-### QUALITY
-| Command | Description |
-|---------|-------------|
-| `/quality-check` | Run all quality gates: lint → type-check → prettier → secret scan |
-| `/pr-review $BRANCH` | Structured review against 8 RealFlow criteria |
-| `/lint` | ESLint + Prettier fix |
-| `/code-cleanup $FILE` | Refactor and clean up |
-| `/code-optimize $FILE` | Performance optimisation |
+- OWASP Top 10 on new routes
+- JWT handling (Bearer + query param paths)
+- RLS policies on all new tables
+- Zod schema coverage on all inputs
+- Rate limiting on public endpoints
+- No secrets in source code
 
-### HARDEN
-| Command | Description |
-|---------|-------------|
-| `/harden $SPRINT` | Orchestrate security-scan + perf-audit + error-boundaries |
-| `/security-scan` | OWASP Top 10, RLS policies, Zod coverage, secrets hygiene |
-| `/perf-audit` | N+1 queries, bundle size, re-renders, <200ms target |
-| `/error-boundaries` | Audit and generate missing error handling |
+**Performance check** (agent: `performance-engineer`):
 
-### DOCUMENT
-| Command | Description |
-|---------|-------------|
-| `/api-docs $FEATURE` | Generate `docs/api/FEATURE.md` |
-| `/changelog $SPRINT` | Write Keep-a-Changelog entry from git log |
-| `/sprint-report $N` | Generate `docs/sprints/SPRINT_N_REPORT.md` |
-| `/docs-generate $FILE` | Generate JSDoc/TSDoc |
+- N+1 query detection in new routes
+- Bundle size impact of new components
+- Re-render analysis for new React components
+- Response time vs. <200ms p95 target
 
-### DEPLOY
-| Command | Description |
-|---------|-------------|
-| `/deploy-check` | Pre-deploy checklist (build, migrations, env vars, health) |
-| `/deploy-staging` | Deploy to staging via Render MCP + smoke test |
-| `/deploy-production` | Deploy to production (explicit human invocation only) |
-| `/smoke-test $URL` | 5 smoke tests: health, auth, 401 gate, DB query, Realtime |
+### `/security-scan`
 
-### MONITOR
-| Command | Description |
-|---------|-------------|
-| `/health-check` | Check Render service status + error patterns |
-| `/error-triage $ERROR` | Structured error root-cause analysis |
+Agent: `security-engineer`. Standalone security audit.
 
-### SPRINT LIFECYCLE
-| Command | Description |
-|---------|-------------|
-| `/sprint-start` | Kickoff: roadmap → discovery → plan → branch → baseline |
-| `/sprint-close` | Close: verify → report → MEMORY.md → tag → retro |
+### `/perf-audit`
 
-### META
-| Command | Description |
-|---------|-------------|
-| `/ship $FEATURE` | QUALITY → HARDEN → DOCUMENT → DEPLOY chain |
+Agent: `performance-engineer`. Standalone performance audit.
+
+### `/error-boundaries`
+
+Agent: `qa-engineer`. Audit missing error handling across routes, frontend, integrations.
+
+**CRITICAL findings BLOCK DOCUMENT phase.** Fix them first, then re-run harden.
+
+**Auto-transitions to DOCUMENT** when 0 CRITICALs.
+
+---
+
+## Phase 7 — DOCUMENT ⚡
+
+**Entry:** Harden complete, 0 CRITICAL findings. Auto-starts.
+**Exit:** API docs + changelog updated.
+
+### `/api-docs $FEATURE`
+
+Agent: `technical-writer`
+
+Produces `docs/api/$FEATURE.md`:
+
+- Route summary table
+- Request/response examples (curl)
+- Auth requirements
+- Error codes
+
+### `/changelog $SPRINT`
+
+Agent: `technical-writer`
+
+Auto-runs:
+
+```bash
+git log --oneline $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD
+```
+
+Produces Keep-a-Changelog entry: Added / Changed / Fixed / Security.
+
+### `/sprint-report $N`
+
+Agent: `technical-writer`
+
+Auto-runs:
+
+```bash
+npm run test 2>&1 | tail -1    # Final test count
+```
+
+Produces `docs/sprints/SPRINT_$N_REPORT.md`:
+
+- Features delivered vs. planned
+- Test count delta (baseline → final)
+- Decisions made with rationale
+- Retro: what went well / what to improve
+
+**Auto-transitions to DEPLOY** when docs complete.
+
+---
+
+## Phase 8 — DEPLOY 🔐 (production only)
+
+**Entry:** DOCUMENT complete.
+**Exit:** Smoke tests pass on staging + production.
+
+### `/deploy-check`
+
+Agent: `devops-engineer`
+
+Auto-runs:
+
+```bash
+npm run build                   # Build must pass
+npm run test                    # Tests must pass
+npm run quality                 # Quality must pass
+```
+
+Verifies:
+
+- [ ] Build passes
+- [ ] All migrations applied via Supabase MCP
+- [ ] No new env vars missing from Render config
+- [ ] `/health` returns 200
+- [ ] 0 CRITICAL harden findings open
+- [ ] PR merged with CI green
+
+### `/deploy-staging`
+
+Agent: `devops-engineer`
+
+Auto-runs:
+
+1. Render MCP: `trigger_deploy` on staging service
+2. Render MCP: `get_deploy_logs` to monitor progress
+3. Wait for deploy to complete
+4. `/smoke-test $STAGING_URL`
+
+### `/smoke-test $URL`
+
+5-point automated check:
+
+```bash
+# 1. Health
+curl -sf "$URL/health"
+# 2. Auth endpoint exists
+curl -s -o /dev/null -w "%{http_code}" -X POST "$URL/api/v1/auth/login"
+# 3. Protected route → 401
+curl -s -o /dev/null -w "%{http_code}" "$URL/api/v1/contacts"
+# 4. Invalid token → 401
+curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer invalid" "$URL/api/v1/contacts"
+# 5. Property route exists
+curl -s -o /dev/null -w "%{http_code}" "$URL/api/v1/properties"
+```
+
+Report PASS/FAIL per check.
+
+### `/deploy-production`
+
+**🔐 EXPLICIT HUMAN COMMAND ONLY.** Never auto-chained. Never triggered by `/ship`.
+
+Uses Render MCP to deploy to production. Always confirms:
+
+> "Deploy to production? This will affect live users at realflow-api.onrender.com."
+
+After deploy, auto-runs `/smoke-test https://realflow-api.onrender.com`.
+
+---
+
+## Phase 9 — MONITOR ⚡
+
+**Entry:** 24–48h after production deploy.
+**Exit:** No CRITICAL errors for 24h.
+
+### `/health-check`
+
+Agent: `devops-engineer`
+
+Auto-runs:
+
+```bash
+curl -sf https://realflow-api.onrender.com/health | jq .
+```
+
+Via Render MCP:
+
+- Service status and uptime
+- Recent error rate from logs
+- Deploy history
+
+### `/error-triage $ERROR`
+
+Agent: `backend-architect`
+
+Root-cause analysis:
+
+1. Search codebase for error origin
+2. Check Render MCP logs for frequency and context
+3. Identify root cause
+4. Propose fix with test
+
+---
+
+## Phase 10 — FINISH 🔐
+
+**Entry:** 24h of clean monitor logs.
+**Exit:** Sprint tagged, MEMORY.md updated.
+
+### `/sprint-close`
+
+Agent: `sprint-manager`
+
+Auto-runs:
+
+```bash
+npm run test 2>&1 | tail -1    # Final test count
+```
+
+1. Verify all sprint features deployed to production
+2. Run `/sprint-report $N`
+3. Update `docs/pm/SPRINT_STATE.md`:
+   - Move all features to PRODUCTION
+   - Clear "Last Session Handoff"
+   - Update velocity history
+   - Move current sprint to "Previous Sprint Summary"
+4. Update `memory/MEMORY.md` if any stable knowledge changed
+5. Output: `git tag sprint-$N && git push origin sprint-$N` for human to run
+
+**🔐 GATE:** Human runs the git tag command manually.
+
+---
+
+## The `/ship $FEATURE` Command
+
+Chains phases 5–8 in one shot. Most common use case: feature code is done, ready to ship.
+
+```
+Step 1:  npm run quality             ← QUALITY (auto)
+Step 2:  npx prettier --check .      ← QUALITY (auto)
+Step 3:  npm run test                ← TEST verification (auto)
+Step 4:  npm run test:coverage       ← Coverage vs baseline (auto)
+Step 5:  /security-scan              ← HARDEN (auto)
+Step 6:  /perf-audit                 ← HARDEN (auto)
+Step 7:  /api-docs $FEATURE          ← DOCUMENT (auto)
+Step 8:  /changelog                  ← DOCUMENT (auto)
+Step 9:  /deploy-check               ← DEPLOY (auto)
+Step 10: /deploy-staging             ← DEPLOY + smoke test (auto)
+```
+
+On success: _"$FEATURE is ready for production. Run `/deploy-production` to complete."_
+On failure: Stops immediately, reports which step failed and why.
+
+**Never** auto-deploys to production.
+
+---
+
+## Sprint Lifecycle Commands
+
+### `/sprint-start`
+
+1. Read `docs/pm/SPRINT_STATE.md` for current state
+2. Read `STRATEGIC_ROADMAP.md` for next sprint scope
+3. Run `/discover` for each planned feature
+4. **🔐 GATE:** Human reviews discovery docs
+5. Record current test count as baseline
+6. Output sprint plan doc
+7. Create `docs/pm/SPRINT_STATE.md` entry for new sprint
+
+### `/sprint-close`
+
+1. Verify all features deployed to production
+2. Run `/sprint-report $N`
+3. Update `docs/pm/SPRINT_STATE.md` (velocity, summary, clear handoff)
+4. Update `memory/MEMORY.md` if stable knowledge changed
+5. Output: `git tag sprint-$N` command for human to run
+6. **🔐 GATE:** Human runs tag command
+
+---
+
+## Typical Sprint — Start to Production
+
+```bash
+# === DISCOVER (human-gated) ===
+/sprint-start
+/discover feature-a
+/discover feature-b
+# 🔐 HUMAN: review docs/discovery/ ————————————————
+
+# === PLAN (human-gated) ===
+/sprint-plan 8: feature-a, feature-b
+/db-design feature-a
+/api-design feature-a
+# 🔐 HUMAN: agree on migration SQL + API contracts ——
+
+# === AUTO-CHAIN: BUILD → TEST → QUALITY → HARDEN → DOCUMENT ===
+# Claude runs all of these without stopping:
+/build-db feature-a
+/build-engine FeatureEngine
+/api-new /api/v1/feature
+/component-new FeatureComponent
+/api-test /api/v1/feature
+/test-coverage
+# Quality auto-runs: npm run quality + prettier
+# Harden auto-runs: /security-scan + /perf-audit
+# Document auto-runs: /api-docs + /changelog
+
+# === DEPLOY (staging auto, production human-gated) ===
+/ship feature-a              # Chains quality → staging
+# 🔐 HUMAN: review staging ————————————————————————
+
+/deploy-production            # Explicit human command
+
+# === MONITOR (24-48h later) ===
+/health-check
+/error-triage "TypeError: ..."
+
+# === FINISH ===
+/sprint-close
+# 🔐 HUMAN: run git tag command ———————————————————
+```
 
 ---
 
 ## Conventions
 
 ### Migration Naming
-- Format: `000XX_description.sql` where XX is zero-padded sequential number
-- **Anti-pattern:** Two files MUST NOT share the same prefix (the `00009_` duplicate in Sprint 3 must never recur)
-- Always review `supabase/migrations/` before numbering a new file
+
+- Format: `000XX_description.sql` (zero-padded sequential)
+- Never duplicate prefix numbers
+- Always check `supabase/migrations/` before numbering
 
 ### Test Fixtures
-- UUID fields: use `crypto.randomUUID()` or a proper UUID string (e.g. `'00000000-0000-0000-0000-000000000001'`)
-- **NEVER** use shorthand strings like `'contact-1'` or `'check-1'` — Zod uuid() validation will throw
-- `vi.mock()` factories cannot reference top-level `const` vars — use `vi.hoisted()` for shared mocks
-- Arrow function mocks cannot be used as class constructors — use dependency injection instead
-- When Supabase chain terminates at `.select()` (no chaining after), use `mockResolvedValue`, not `mockReturnThis`
+
+- UUID fields: `crypto.randomUUID()` or proper UUID string
+- Never `'contact-1'` or `'check-1'` — Zod throws
+- `vi.mock()` factories: use `vi.hoisted()` for shared mocks
+- Arrow mocks: can't be constructors — use DI
 
 ### Commit Messages
-Conventional commits required: `feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`, `perf:`
+
+`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`, `perf:`, `security:`
 
 ### Branch Names
+
 - Feature: `feature/descriptive-name`
 - Sprint: `sprint/sprint-N`
-- Chore/infra: `chore/descriptive-name`
 - Fix: `fix/descriptive-name`
 
 ### Soft Deletes
-**Never hard delete.** All tables use `deleted_at TIMESTAMPTZ` for soft deletes. Queries must filter `WHERE deleted_at IS NULL`.
 
-### Zod Schemas
-Define in `packages/shared/src/types/` — never duplicate across apps. Export from the relevant `index.ts`.
+`deleted_at TIMESTAMPTZ` — never hard delete. Filter `WHERE deleted_at IS NULL`.
 
----
+### Session End
 
-## CI/CD Pipeline
-
-```
-Push to any branch → ci.yml
-  ├─ npm ci
-  ├─ npm run build
-  ├─ npm run lint
-  ├─ npm run type-check
-  └─ npm run test
-
-Push to staging branch → deploy-staging.yml
-  ├─ CI gates (above)
-  ├─ npm run db:migrate (staging Supabase)
-  ├─ Render deploy (staging service)
-  └─ /smoke-test staging-url
-
-Push to main → deploy-production.yml
-  ├─ CI gates
-  ├─ Manual approval gate (GitHub environment protection)
-  ├─ npm run db:migrate (production Supabase)
-  ├─ Render deploy (production service)
-  ├─ /smoke-test production-url
-  └─ GitHub release (with changelog entry)
-```
+Always update `docs/pm/SPRINT_STATE.md` → "Last Session Handoff" before ending.
 
 ---
 
 ## Glossary
 
 ### Australian Real Estate Terms
-- **Buyers agent** — agent who acts exclusively for the buyer, not the vendor
-- **Vendor** — seller of a property (AU term for seller)
-- **Due diligence** — pre-purchase inspection, searches, and legal review (state-specific)
-- **Section 32 / Vendor Statement** — Victorian legal disclosure document
-- **Contract of Sale** — binding purchase agreement (varies by state)
-- **AUSTRAC** — Australian Transaction Reports and Analysis Centre (AML regulator)
-- **100-point ID check** — AU identity verification standard (passport = 70 pts, driver licence = 40 pts, etc.)
-- **AML/KYC** — Anti-Money Laundering / Know Your Customer (required for licensed agents)
-- **REA** — realestate.com.au (Australia's largest property portal)
-- **Domain** — domain.com.au (second-largest portal, our v1 data source)
+
+- **Buyers agent** — agent who acts exclusively for the buyer
+- **Vendor** — seller of a property (AU term)
+- **Due diligence** — pre-purchase inspection and legal review (state-specific)
+- **Section 32 / Vendor Statement** — Victorian legal disclosure
+- **AUSTRAC** — Australian AML regulator
+- **100-point ID check** — AU identity verification standard
+- **REA** — realestate.com.au (largest AU portal)
+- **Domain** — domain.com.au (second-largest, our v1 data source)
 
 ### RealFlow Terms
-- **Client brief** — structured 60+ field requirements document for a buyers agent engagement
-- **Property match** — AI-scored comparison of a listing against a client brief
-- **Buyer pipeline** — 8-stage workflow: Lead → Qualified → Brief → Searching → Shortlisted → Offer → Exchange → Settlement
-- **Seller pipeline** — 6-stage workflow: Appraisal → Listed → Under Offer → Exchanged → Settlement → Settled
-- **Sprint baseline** — test count at sprint start (currently 606/616 passing)
-- **Hard gate** — quality check that blocks the next phase on failure
-- **Soft gate** — quality check that reports findings but does not block
 
----
-
-*Last updated: Sprint 4 complete (2026-03-02). Sprint 5 (Client Experience) is next.*
+- **Client brief** — 60+ field structured requirements for buyers agent engagement
+- **Property match** — AI-scored comparison of listing against client brief
+- **Buyer pipeline** — 8 stages: Lead → Qualified → Brief → Searching → Shortlisted → Offer → Exchange → Settlement
+- **Seller pipeline** — 6 stages: Appraisal → Listed → Under Offer → Exchanged → Settlement → Settled
+- **Sprint baseline** — test count at sprint start (recorded in SPRINT_STATE.md)
+- **Hard gate** — quality check that blocks next phase on failure
+- **Feature lifecycle** — BACKLOG → DISCOVER → PLAN_APPROVED → BUILD → TEST → QUALITY → HARDEN → STAGED → PRODUCTION

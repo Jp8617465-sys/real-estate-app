@@ -329,17 +329,15 @@ export class PropertySyncService {
 
   // ─── Private Helpers ────────────────────────────────────────────────────────
 
-  private async fetchAllPages(
-    params: {
-      suburb: string;
-      state: string;
-      postcode: string;
-      minPrice?: number;
-      maxPrice?: number;
-      minBedrooms?: number;
-      propertyTypes?: string[];
-    },
-  ): Promise<DomainListing[]> {
+  private async fetchAllPages(params: {
+    suburb: string;
+    state: string;
+    postcode: string;
+    minPrice?: number;
+    maxPrice?: number;
+    minBedrooms?: number;
+    propertyTypes?: string[];
+  }): Promise<DomainListing[]> {
     const allListings: DomainListing[] = [];
     let pageNumber = 1;
     const pageSize = 50;
@@ -410,9 +408,7 @@ export class PropertySyncService {
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }
 
-  private mapFloorPlans(
-    floorplans?: Array<{ imageUrl: string }>,
-  ): string[] {
+  private mapFloorPlans(floorplans?: Array<{ imageUrl: string }>): string[] {
     if (!floorplans || floorplans.length === 0) return [];
     return floorplans.filter((f) => f.imageUrl).map((f) => f.imageUrl);
   }
@@ -461,8 +457,7 @@ export class PropertySyncService {
     // No change
     if (previousPrice === newPrice) return null;
 
-    const changePercent =
-      Math.round(((newPrice - previousPrice) / previousPrice) * 10000) / 100;
+    const changePercent = Math.round(((newPrice - previousPrice) / previousPrice) * 10000) / 100;
 
     return {
       domainListingId: listingId,

@@ -21,9 +21,14 @@ interface QueryBuilder {
   in: (col: string, vals: unknown[]) => QueryBuilder;
   order: (col: string, opts?: { ascending: boolean }) => QueryBuilder;
   limit: (n: number) => QueryBuilder;
-  upsert: (data: Record<string, unknown> | Record<string, unknown>[], opts?: { onConflict?: string }) => QueryBuilder;
+  upsert: (
+    data: Record<string, unknown> | Record<string, unknown>[],
+    opts?: { onConflict?: string },
+  ) => QueryBuilder;
   delete: () => QueryBuilder;
-  then: (resolve: (result: { data: unknown[] | null; error: { message: string } | null }) => void) => void;
+  then: (
+    resolve: (result: { data: unknown[] | null; error: { message: string } | null }) => void,
+  ) => void;
 }
 
 export interface DAESupabaseClient {
@@ -81,8 +86,15 @@ export interface DailyActionResult {
  * Score a candidate based on its signal components.
  * Pure function — no side effects.
  */
-export function scoreCandidate(candidate: Omit<DailyActionCandidate, 'compositeScore' | 'subtitle'>): number {
-  return candidate.urgencyScore + candidate.recencyPenalty + candidate.deadlineProximity + candidate.leadScore;
+export function scoreCandidate(
+  candidate: Omit<DailyActionCandidate, 'compositeScore' | 'subtitle'>,
+): number {
+  return (
+    candidate.urgencyScore +
+    candidate.recencyPenalty +
+    candidate.deadlineProximity +
+    candidate.leadScore
+  );
 }
 
 /**
@@ -94,7 +106,9 @@ export function scoreCandidate(candidate: Omit<DailyActionCandidate, 'compositeS
  * 3. Take top `maxItems` (default 20) to AI for subtitles
  * 4. Persist to daily_action_items (upsert by user_id + date + rank)
  */
-export async function generateDailyActions(opts: GenerateDailyActionsOptions): Promise<DailyActionResult> {
+export async function generateDailyActions(
+  opts: GenerateDailyActionsOptions,
+): Promise<DailyActionResult> {
   const { agentId, date, supabase, aiClient, maxItems = 20 } = opts;
   const candidates: DailyActionCandidate[] = [];
   const today = new Date(date);
@@ -152,9 +166,12 @@ export async function generateDailyActions(opts: GenerateDailyActionsOptions): P
     ),
   ]);
 
-  if (tasksResult.error) console.error('[DailyActionEngine] tasks query failed:', tasksResult.error.message);
-  if (keyDatesResult.error) console.error('[DailyActionEngine] key_dates query failed:', keyDatesResult.error.message);
-  if (staleResult.error) console.error('[DailyActionEngine] stale contacts query failed:', staleResult.error.message);
+  if (tasksResult.error)
+    console.error('[DailyActionEngine] tasks query failed:', tasksResult.error.message);
+  if (keyDatesResult.error)
+    console.error('[DailyActionEngine] key_dates query failed:', keyDatesResult.error.message);
+  if (staleResult.error)
+    console.error('[DailyActionEngine] stale contacts query failed:', staleResult.error.message);
 
   // ─── Process overdue & due-today tasks ───────────────────────────────────────
   if (tasksResult.data) {
@@ -271,7 +288,10 @@ export async function generateDailyActions(opts: GenerateDailyActionsOptions): P
         }
       }
     } catch (error: unknown) {
-      console.error('[DailyActionEngine] AI subtitle generation failed, using titles as fallback:', error instanceof Error ? error.message : String(error));
+      console.error(
+        '[DailyActionEngine] AI subtitle generation failed, using titles as fallback:',
+        error instanceof Error ? error.message : String(error),
+      );
       for (const candidate of topCandidates) {
         if (!candidate.subtitle) {
           candidate.subtitle = candidate.title;

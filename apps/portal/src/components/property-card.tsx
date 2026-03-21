@@ -77,7 +77,10 @@ export function PropertyCard({ match, compact = false }: PropertyCardProps) {
         </div>
         {/* Match score badge */}
         <div className="absolute right-2 top-2 flex items-center gap-1 rounded-lg bg-white/90 px-2 py-1 backdrop-blur">
-          <Star className={`h-3.5 w-3.5 ${getScoreColor(match.overall_score)}`} aria-hidden="true" />
+          <Star
+            className={`h-3.5 w-3.5 ${getScoreColor(match.overall_score)}`}
+            aria-hidden="true"
+          />
           <span className={`text-sm font-bold ${getScoreColor(match.overall_score)}`}>
             {match.overall_score}%
           </span>
@@ -110,11 +113,17 @@ export function PropertyCard({ match, compact = false }: PropertyCardProps) {
             <Bed className="h-3.5 w-3.5" aria-hidden="true" />
             {prop?.bedrooms ?? 0}
           </span>
-          <span className="flex items-center gap-1" aria-label={`${prop?.bathrooms ?? 0} bathrooms`}>
+          <span
+            className="flex items-center gap-1"
+            aria-label={`${prop?.bathrooms ?? 0} bathrooms`}
+          >
             <Bath className="h-3.5 w-3.5" aria-hidden="true" />
             {prop?.bathrooms ?? 0}
           </span>
-          <span className="flex items-center gap-1" aria-label={`${prop?.car_spaces ?? 0} car spaces`}>
+          <span
+            className="flex items-center gap-1"
+            aria-label={`${prop?.car_spaces ?? 0} car spaces`}
+          >
             <Car className="h-3.5 w-3.5" aria-hidden="true" />
             {prop?.car_spaces ?? 0}
           </span>

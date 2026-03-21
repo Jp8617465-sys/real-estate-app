@@ -539,9 +539,7 @@ describe('PropertyMatchEngine.filterByMinScore', () => {
   });
 
   it('returns empty array when no results meet threshold', () => {
-    const results: MatchResult[] = [
-      PropertyMatchEngine.scoreProperty(overAbsoluteMax, baseBrief),
-    ];
+    const results: MatchResult[] = [PropertyMatchEngine.scoreProperty(overAbsoluteMax, baseBrief)];
 
     const filtered = PropertyMatchEngine.filterByMinScore(results, 99);
     expect(filtered).toHaveLength(0);

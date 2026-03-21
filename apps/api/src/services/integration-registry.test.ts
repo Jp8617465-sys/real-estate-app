@@ -12,19 +12,22 @@ vi.mock('../middleware/supabase', () => ({
 // ─── Mock Integration Clients ──────────────────────────────────────
 
 vi.mock('@realflow/integrations', () => ({
-  GmailClient: vi.fn(function(this: Record<string, unknown>, config: Record<string, unknown>) {
+  GmailClient: vi.fn(function (this: Record<string, unknown>, config: Record<string, unknown>) {
     this.config = config;
     this.sendMessage = vi.fn();
   }),
-  TwilioClient: vi.fn(function(this: Record<string, unknown>, config: Record<string, unknown>) {
+  TwilioClient: vi.fn(function (this: Record<string, unknown>, config: Record<string, unknown>) {
     this.config = config;
     this.sendSms = vi.fn();
   }),
-  WhatsAppClient: vi.fn(function(this: Record<string, unknown>, config: Record<string, unknown>) {
+  WhatsAppClient: vi.fn(function (this: Record<string, unknown>, config: Record<string, unknown>) {
     this.config = config;
     this.sendTextMessage = vi.fn();
   }),
-  MetaSocialClient: vi.fn(function(this: Record<string, unknown>, config: Record<string, unknown>) {
+  MetaSocialClient: vi.fn(function (
+    this: Record<string, unknown>,
+    config: Record<string, unknown>,
+  ) {
     this.config = config;
     this.postToFacebook = vi.fn();
     this.postToInstagram = vi.fn();

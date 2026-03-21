@@ -251,7 +251,8 @@ export const AI_POWERED_WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       {
         type: 'ai_draft_message',
         recipient: 'selling_agent',
-        purpose: 'New buyer search notification — seeking off-market opportunities in target suburbs',
+        purpose:
+          'New buyer search notification — seeking off-market opportunities in target suburbs',
         channel: 'email',
         autoSend: false,
       },

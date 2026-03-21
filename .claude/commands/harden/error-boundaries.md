@@ -34,6 +34,7 @@ $ARGUMENTS
 For every new route handler in `apps/api/src/routes/`:
 
 **Pattern required:**
+
 ```typescript
 // ✅ Correct pattern
 fastify.get('/feature/:id', async (request, reply) => {
@@ -56,6 +57,7 @@ fastify.get('/feature/:id', async (request, reply) => {
 ```
 
 Check for:
+
 - [ ] `try/catch` wrapping the entire handler body
 - [ ] `ZodError` caught and returned as 400
 - [ ] Not-found handled as 404 (not 500)
@@ -85,6 +87,7 @@ done
 ```
 
 Every route segment that has a `page.tsx` should have an `error.tsx`. Template:
+
 ```tsx
 'use client';
 export default function Error({ error, reset }: { error: Error; reset: () => void }) {
@@ -109,10 +112,12 @@ grep -n "useMutation\|useQuery" apps/web/src/ apps/portal/src/ --include="*.ts" 
 ```
 
 For each `useMutation`:
+
 - [ ] `onError` handler defined (shows toast/alert to user)
 - [ ] Or a global error boundary catches the error
 
 For each `useQuery`:
+
 - [ ] `isError` state handled in the component that calls it
 - [ ] Error message displayed to user (not silent failure)
 
@@ -126,6 +131,7 @@ For new screens in `apps/mobile/app/`:
 - [ ] `try/catch` around `router.push()` calls that could fail
 
 Pattern:
+
 ```typescript
 // ✅ Correct mobile error handling
 const { isLoading, isError, error, data } = useFeatureList();
@@ -152,18 +158,19 @@ grep -n "DomainClient\|AnthropicClient\|TwilioClient\|MetaSocialClient" \
 ```
 
 Each call should have:
+
 - [ ] A timeout configured (or confirm the client has a default timeout)
 - [ ] Graceful degradation if the external API fails (don't crash the whole request)
 - [ ] Error logged but not exposed to the client in raw form
 
 ## Severity Scale
 
-| Level | Criteria |
-|-------|---------|
+| Level       | Criteria                                                                 |
+| ----------- | ------------------------------------------------------------------------ |
 | 🚨 CRITICAL | Route with no try/catch (crashes process), stack trace exposed to client |
-| ⚠️ HIGH | Missing try/catch on DB calls, unhandled promise rejection |
-| 🔶 MEDIUM | Missing error.tsx page, missing onError in mutation |
-| 💡 LOW | Verbose error message, missing retry button in UI |
+| ⚠️ HIGH     | Missing try/catch on DB calls, unhandled promise rejection               |
+| 🔶 MEDIUM   | Missing error.tsx page, missing onError in mutation                      |
+| 💡 LOW      | Verbose error message, missing retry button in UI                        |
 
 ## Output Format
 

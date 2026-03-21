@@ -70,7 +70,11 @@ export function useRealtimeInbox({
 
   // Request browser notification permission on mount
   useEffect(() => {
-    if (enableBrowserNotifications && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+    if (
+      enableBrowserNotifications &&
+      typeof Notification !== 'undefined' &&
+      Notification.permission === 'default'
+    ) {
       Notification.requestPermission();
     }
   }, [enableBrowserNotifications]);
@@ -142,7 +146,7 @@ export function useRealtimeInbox({
             if (!isViewingThisConversation) {
               const contentPreview =
                 typeof msg.content === 'object' && msg.content !== null
-                  ? ((msg.content as Record<string, unknown>).text as string) ?? ''
+                  ? (((msg.content as Record<string, unknown>).text as string) ?? '')
                   : '';
 
               playNotificationSound();

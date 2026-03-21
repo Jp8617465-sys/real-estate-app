@@ -54,10 +54,12 @@ export function PostCalendar({ posts, currentWeekStart, onPostClick }: PostCalen
                 )}
               >
                 <p className="text-xs font-medium text-gray-500">{DAY_LABELS[idx]}</p>
-                <p className={cn(
-                  'text-sm font-semibold',
-                  isToday(day) ? 'text-brand-700' : 'text-gray-900',
-                )}>
+                <p
+                  className={cn(
+                    'text-sm font-semibold',
+                    isToday(day) ? 'text-brand-700' : 'text-gray-900',
+                  )}
+                >
                   {day.getDate()}
                 </p>
               </div>
@@ -94,13 +96,17 @@ export function PostCalendar({ posts, currentWeekStart, onPostClick }: PostCalen
 
           return (
             <div key={idx} className="p-3">
-              <p className={cn(
-                'mb-2 text-sm font-semibold',
-                isToday(day) ? 'text-brand-700' : 'text-gray-900',
-              )}>
+              <p
+                className={cn(
+                  'mb-2 text-sm font-semibold',
+                  isToday(day) ? 'text-brand-700' : 'text-gray-900',
+                )}
+              >
                 {DAY_LABELS[idx]} {day.getDate()}{' '}
                 {day.toLocaleDateString('en-AU', { month: 'short' })}
-                {isToday(day) && <span className="ml-1 text-xs font-normal text-brand-500">(Today)</span>}
+                {isToday(day) && (
+                  <span className="ml-1 text-xs font-normal text-brand-500">(Today)</span>
+                )}
               </p>
               <div className="space-y-2">
                 {dayPosts.map((post) => (

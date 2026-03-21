@@ -106,9 +106,7 @@ export function useOfflinePipeline(
       queryClient.setQueryData(['pipeline', pipelineType], serverTransactions);
     } catch (err: unknown) {
       if (!mountedRef.current) return;
-      setError(
-        err instanceof Error ? err : new Error('Failed to fetch pipeline'),
-      );
+      setError(err instanceof Error ? err : new Error('Failed to fetch pipeline'));
     } finally {
       if (mountedRef.current) {
         setIsLoading(false);
@@ -134,10 +132,7 @@ export function useOfflinePipeline(
 
   // ─── Move deal to stage (works offline) ────────────────────────
   const moveToStage = useCallback(
-    async (
-      transactionId: string,
-      newStage: string,
-    ): Promise<TransactionWithContact> => {
+    async (transactionId: string, newStage: string): Promise<TransactionWithContact> => {
       const now = new Date().toISOString();
       let updatedTransaction: TransactionWithContact | null = null;
 
@@ -156,29 +151,19 @@ export function useOfflinePipeline(
       );
 
       if (!updatedTransaction) {
-        throw new Error(
-          `Transaction with id ${transactionId} not found in local state`,
-        );
+        throw new Error(`Transaction with id ${transactionId} not found in local state`);
       }
 
       // Persist to cache
-      const cached =
-        (await storageGet<TransactionWithContact[]>(cacheKey)) ?? [];
+      const cached = (await storageGet<TransactionWithContact[]>(cacheKey)) ?? [];
       await storageSet(
         cacheKey,
-        cached.map((t) =>
-          t.id === transactionId ? updatedTransaction : t,
-        ),
+        cached.map((t) => (t.id === transactionId ? updatedTransaction : t)),
         PIPELINE_TTL_MS,
       );
 
       // Queue for sync
-      await enqueue(
-        'update',
-        'transactions',
-        { current_stage: newStage },
-        transactionId,
-      );
+      await enqueue('update', 'transactions', { current_stage: newStage }, transactionId);
 
       // If online, try to sync immediately
       if (isOnline) {
@@ -195,18 +180,13 @@ export function useOfflinePipeline(
           const serverTransaction = serverData as TransactionWithContact;
 
           setTransactions((prev) =>
-            prev.map((t) =>
-              t.id === transactionId ? serverTransaction : t,
-            ),
+            prev.map((t) => (t.id === transactionId ? serverTransaction : t)),
           );
 
-          const currentCache =
-            (await storageGet<TransactionWithContact[]>(cacheKey)) ?? [];
+          const currentCache = (await storageGet<TransactionWithContact[]>(cacheKey)) ?? [];
           await storageSet(
             cacheKey,
-            currentCache.map((t) =>
-              t.id === transactionId ? serverTransaction : t,
-            ),
+            currentCache.map((t) => (t.id === transactionId ? serverTransaction : t)),
             PIPELINE_TTL_MS,
           );
 
@@ -224,10 +204,7 @@ export function useOfflinePipeline(
 
   // ─── Update transaction (works offline) ────────────────────────
   const updateTransaction = useCallback(
-    async (
-      transactionId: string,
-      data: Partial<Transaction>,
-    ): Promise<TransactionWithContact> => {
+    async (transactionId: string, data: Partial<Transaction>): Promise<TransactionWithContact> => {
       const now = new Date().toISOString();
       let updatedTransaction: TransactionWithContact | null = null;
 
@@ -259,19 +236,14 @@ export function useOfflinePipeline(
       );
 
       if (!updatedTransaction) {
-        throw new Error(
-          `Transaction with id ${transactionId} not found in local state`,
-        );
+        throw new Error(`Transaction with id ${transactionId} not found in local state`);
       }
 
       // Persist to cache
-      const cached =
-        (await storageGet<TransactionWithContact[]>(cacheKey)) ?? [];
+      const cached = (await storageGet<TransactionWithContact[]>(cacheKey)) ?? [];
       await storageSet(
         cacheKey,
-        cached.map((t) =>
-          t.id === transactionId ? updatedTransaction : t,
-        ),
+        cached.map((t) => (t.id === transactionId ? updatedTransaction : t)),
         PIPELINE_TTL_MS,
       );
 
@@ -293,18 +265,13 @@ export function useOfflinePipeline(
           const serverTransaction = serverData as TransactionWithContact;
 
           setTransactions((prev) =>
-            prev.map((t) =>
-              t.id === transactionId ? serverTransaction : t,
-            ),
+            prev.map((t) => (t.id === transactionId ? serverTransaction : t)),
           );
 
-          const currentCache =
-            (await storageGet<TransactionWithContact[]>(cacheKey)) ?? [];
+          const currentCache = (await storageGet<TransactionWithContact[]>(cacheKey)) ?? [];
           await storageSet(
             cacheKey,
-            currentCache.map((t) =>
-              t.id === transactionId ? serverTransaction : t,
-            ),
+            currentCache.map((t) => (t.id === transactionId ? serverTransaction : t)),
             PIPELINE_TTL_MS,
           );
 

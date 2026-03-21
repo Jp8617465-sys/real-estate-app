@@ -14,7 +14,7 @@ import type { DailyActionItem } from '@realflow/shared';
 function getPriorityColor(score: number): string {
   if (score >= 80) return '#ef4444'; // red — urgent
   if (score >= 50) return '#f97316'; // orange — high
-  return '#eab308';                  // yellow — medium
+  return '#eab308'; // yellow — medium
 }
 
 function getCategoryEmoji(category: string): string {
@@ -43,7 +43,9 @@ export default function DailyActionsScreen() {
   const meta = response?.meta;
 
   const urgentItems = items.filter((i) => (i.compositeScore ?? 0) >= 80 && !i.isCompleted);
-  const todayItems = items.filter((i) => (i.compositeScore ?? 0) < 80 && (i.compositeScore ?? 0) >= 40 && !i.isCompleted);
+  const todayItems = items.filter(
+    (i) => (i.compositeScore ?? 0) < 80 && (i.compositeScore ?? 0) >= 40 && !i.isCompleted,
+  );
   const suggestItems = items.filter((i) => (i.compositeScore ?? 0) < 40 && !i.isCompleted);
   const completedItems = items.filter((i) => i.isCompleted);
 
@@ -54,7 +56,11 @@ export default function DailyActionsScreen() {
     { title: '✓ Completed', color: '#f9fafb', data: completedItems },
   ].filter((s) => s.data.length > 0);
 
-  const today = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+  const today = new Date().toLocaleDateString('en-AU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
 
   if (isLoading && items.length === 0) {
     return (
@@ -80,9 +86,7 @@ export default function DailyActionsScreen() {
         keyExtractor={(s: DailySection) => s.title}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No actions for today 🎉</Text>
-        }
+        ListEmptyComponent={<Text style={styles.emptyText}>No actions for today 🎉</Text>}
         renderItem={({ item: section }: { item: DailySection }) => (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -117,9 +121,18 @@ function ActionCard({
   const isCompleted = item.isCompleted;
 
   return (
-    <TouchableOpacity style={[styles.card, isCompleted && styles.cardCompleted]} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={[styles.card, isCompleted && styles.cardCompleted]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       {/* Priority bar */}
-      <View style={[styles.priorityBar, { backgroundColor: isCompleted ? '#9ca3af' : getPriorityColor(item.compositeScore ?? 0) }]} />
+      <View
+        style={[
+          styles.priorityBar,
+          { backgroundColor: isCompleted ? '#9ca3af' : getPriorityColor(item.compositeScore ?? 0) },
+        ]}
+      />
 
       <View style={styles.cardContent}>
         {/* Title row */}
@@ -152,7 +165,13 @@ function ActionCard({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: '#f9fafb',
+  },
   loadingText: { fontSize: 14, color: '#6b7280' },
   header: {
     backgroundColor: '#1e3a8a',
@@ -165,7 +184,13 @@ const styles = StyleSheet.create({
   list: { padding: 16, gap: 16 },
   emptyText: { fontSize: 15, color: '#6b7280', textAlign: 'center', padding: 40 },
   section: { gap: 8 },
-  sectionTitle: { fontSize: 13, fontWeight: '700', color: '#374151', letterSpacing: 0.5, marginBottom: 2 },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#374151',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',

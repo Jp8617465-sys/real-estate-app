@@ -57,8 +57,8 @@ export function useComplianceDashboard() {
 
       const totalClients = new Set(checks.map((c: Record<string, unknown>) => c.contact_id)).size;
       const verified = checks.filter((c: Record<string, unknown>) => c.status === 'passed').length;
-      const pending = checks.filter((c: Record<string, unknown>) =>
-        c.status === 'pending' || c.status === 'in_progress'
+      const pending = checks.filter(
+        (c: Record<string, unknown>) => c.status === 'pending' || c.status === 'in_progress',
       ).length;
       const expired = checks.filter((c: Record<string, unknown>) => c.status === 'expired').length;
       const failed = checks.filter((c: Record<string, unknown>) => c.status === 'failed').length;
@@ -71,9 +71,7 @@ export function useComplianceDashboard() {
 
       const recentVerifications = checks.slice(0, 10).map((c: Record<string, unknown>) => {
         const contact = c.contacts as Record<string, string> | null;
-        const contactName = contact
-          ? `${contact.first_name} ${contact.last_name}`
-          : 'Unknown';
+        const contactName = contact ? `${contact.first_name} ${contact.last_name}` : 'Unknown';
         return {
           id: c.id as string,
           contactId: c.contact_id as string,
@@ -86,14 +84,12 @@ export function useComplianceDashboard() {
       });
 
       const pendingQueue = checks
-        .filter((c: Record<string, unknown>) =>
-          c.status === 'pending' || c.status === 'in_progress'
+        .filter(
+          (c: Record<string, unknown>) => c.status === 'pending' || c.status === 'in_progress',
         )
         .map((c: Record<string, unknown>) => {
           const contact = c.contacts as Record<string, string> | null;
-          const contactName = contact
-            ? `${contact.first_name} ${contact.last_name}`
-            : 'Unknown';
+          const contactName = contact ? `${contact.first_name} ${contact.last_name}` : 'Unknown';
           return {
             contactId: c.contact_id as string,
             contactName,
@@ -192,6 +188,9 @@ export function useCreateVerification() {
       queryClient.invalidateQueries({ queryKey: ['verifications'] });
       queryClient.invalidateQueries({ queryKey: ['compliance-dashboard'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -204,10 +203,12 @@ export function useUpdateVerification(checkId: string) {
         updated_at: new Date().toISOString(),
       };
 
-      if (updates.verificationMethod !== undefined) payload.verification_method = updates.verificationMethod;
+      if (updates.verificationMethod !== undefined)
+        payload.verification_method = updates.verificationMethod;
       if (updates.fullLegalName !== undefined) payload.full_legal_name = updates.fullLegalName;
       if (updates.dateOfBirth !== undefined) payload.date_of_birth = updates.dateOfBirth;
-      if (updates.residentialAddress !== undefined) payload.residential_address = updates.residentialAddress;
+      if (updates.residentialAddress !== undefined)
+        payload.residential_address = updates.residentialAddress;
       if (updates.addressVerified !== undefined) payload.address_verified = updates.addressVerified;
       if (updates.notes !== undefined) payload.notes = updates.notes;
 
@@ -224,6 +225,9 @@ export function useUpdateVerification(checkId: string) {
       queryClient.invalidateQueries({ queryKey: ['verifications'] });
       queryClient.invalidateQueries({ queryKey: ['verification', checkId] });
       queryClient.invalidateQueries({ queryKey: ['compliance-dashboard'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -264,6 +268,9 @@ export function useCompleteVerification(checkId: string) {
       queryClient.invalidateQueries({ queryKey: ['verification', checkId] });
       queryClient.invalidateQueries({ queryKey: ['compliance-dashboard'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -298,6 +305,9 @@ export function useAddDocument(checkId: string) {
       queryClient.invalidateQueries({ queryKey: ['verification', checkId] });
       queryClient.invalidateQueries({ queryKey: ['verifications'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -315,6 +325,9 @@ export function useRemoveDocument(checkId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verification', checkId] });
       queryClient.invalidateQueries({ queryKey: ['verifications'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -358,6 +371,9 @@ export function useGenerateReport() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compliance-reports'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -404,6 +420,9 @@ export function useCreateSmr() {
       queryClient.invalidateQueries({ queryKey: ['smr-reports'] });
       queryClient.invalidateQueries({ queryKey: ['compliance-reports'] });
       queryClient.invalidateQueries({ queryKey: ['compliance-dashboard'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

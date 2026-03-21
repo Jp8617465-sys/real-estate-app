@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useWorkflows, useWorkflowTemplates, useCreateWorkflowFromTemplate } from '@/hooks/use-workflows';
+import {
+  useWorkflows,
+  useWorkflowTemplates,
+  useCreateWorkflowFromTemplate,
+} from '@/hooks/use-workflows';
 import { WorkflowCard } from '@/components/workflows/workflow-card';
 import Link from 'next/link';
 
@@ -51,22 +55,26 @@ export default function WorkflowsPage() {
       {/* Template picker */}
       {showTemplates && templates && (
         <div className="rounded-xl border border-brand-200 bg-brand-50 p-4">
-          <h3 className="mb-3 text-sm font-semibold text-brand-900">Pre-built Workflow Templates</h3>
+          <h3 className="mb-3 text-sm font-semibold text-brand-900">
+            Pre-built Workflow Templates
+          </h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {templates.map((template: { id: number; name: string; description: string; category: string }) => (
-              <button
-                key={template.id}
-                onClick={() => handleCreateFromTemplate(template.id)}
-                disabled={isCreating}
-                className="rounded-lg border border-brand-200 bg-white p-3 text-left transition-colors hover:border-brand-400 disabled:opacity-50"
-              >
-                <p className="text-sm font-medium text-gray-900">{template.name}</p>
-                <p className="mt-1 line-clamp-2 text-xs text-gray-500">{template.description}</p>
-                <span className="mt-2 inline-flex rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700">
-                  {template.category}
-                </span>
-              </button>
-            ))}
+            {templates.map(
+              (template: { id: number; name: string; description: string; category: string }) => (
+                <button
+                  key={template.id}
+                  onClick={() => handleCreateFromTemplate(template.id)}
+                  disabled={isCreating}
+                  className="rounded-lg border border-brand-200 bg-white p-3 text-left transition-colors hover:border-brand-400 disabled:opacity-50"
+                >
+                  <p className="text-sm font-medium text-gray-900">{template.name}</p>
+                  <p className="mt-1 line-clamp-2 text-xs text-gray-500">{template.description}</p>
+                  <span className="mt-2 inline-flex rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700">
+                    {template.category}
+                  </span>
+                </button>
+              ),
+            )}
           </div>
         </div>
       )}

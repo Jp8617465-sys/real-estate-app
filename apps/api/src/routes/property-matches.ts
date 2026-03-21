@@ -92,7 +92,8 @@ export async function propertyMatchRoutes(fastify: FastifyInstance) {
     };
 
     if (updates.status !== undefined) updatePayload.status = updates.status;
-    if (updates.rejectionReason !== undefined) updatePayload.rejection_reason = updates.rejectionReason;
+    if (updates.rejectionReason !== undefined)
+      updatePayload.rejection_reason = updates.rejectionReason;
     if (updates.agentNotes !== undefined) updatePayload.agent_notes = updates.agentNotes;
 
     const { data, error } = await supabase

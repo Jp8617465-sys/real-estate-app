@@ -103,10 +103,7 @@ export async function keyDateRoutes(fastify: FastifyInstance) {
       status: 'upcoming',
     }));
 
-    const { data, error } = await supabase
-      .from('key_dates')
-      .insert(datesToInsert)
-      .select();
+    const { data, error } = await supabase.from('key_dates').insert(datesToInsert).select();
 
     if (error) return reply.status(500).send({ error: error.message });
     return reply.status(201).send({ data });
@@ -130,7 +127,8 @@ export async function keyDateRoutes(fastify: FastifyInstance) {
     if (updates.label !== undefined) updatePayload.label = updates.label;
     if (updates.date !== undefined) updatePayload.date = updates.date;
     if (updates.isCritical !== undefined) updatePayload.is_critical = updates.isCritical;
-    if (updates.reminderDaysBefore !== undefined) updatePayload.reminder_days_before = updates.reminderDaysBefore;
+    if (updates.reminderDaysBefore !== undefined)
+      updatePayload.reminder_days_before = updates.reminderDaysBefore;
     if (updates.status !== undefined) updatePayload.status = updates.status;
     if (updates.completedAt !== undefined) updatePayload.completed_at = updates.completedAt;
     if (updates.notes !== undefined) updatePayload.notes = updates.notes;

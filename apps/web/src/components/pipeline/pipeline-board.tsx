@@ -34,23 +34,72 @@ interface PipelineCard {
 }
 
 const INITIAL_CARDS: PipelineCard[] = [
-  { id: '1', name: 'Tom Richards', budget: '$600K–$800K', score: 20, lastActivity: '1h ago', stage: 'new-enquiry' },
-  { id: '2', name: 'Amy Foster', budget: '$900K–$1.1M', score: 15, lastActivity: '3h ago', stage: 'new-enquiry' },
-  { id: '3', name: 'Priya Patel', budget: '$500K–$750K', score: 45, lastActivity: '3d ago', stage: 'qualified-lead' },
-  { id: '4', name: 'Michael Johnson', budget: '$800K–$1.2M', score: 82, lastActivity: '2h ago', stage: 'active-search' },
-  { id: '5', name: 'Lisa Nguyen', budget: '$1.5M–$2M', score: 90, lastActivity: '1d ago', stage: 'property-shortlisted' },
-  { id: '6', name: 'Mark Stevens', budget: '$1.1M', score: 95, lastActivity: '2d ago', stage: 'under-contract' },
+  {
+    id: '1',
+    name: 'Tom Richards',
+    budget: '$600K–$800K',
+    score: 20,
+    lastActivity: '1h ago',
+    stage: 'new-enquiry',
+  },
+  {
+    id: '2',
+    name: 'Amy Foster',
+    budget: '$900K–$1.1M',
+    score: 15,
+    lastActivity: '3h ago',
+    stage: 'new-enquiry',
+  },
+  {
+    id: '3',
+    name: 'Priya Patel',
+    budget: '$500K–$750K',
+    score: 45,
+    lastActivity: '3d ago',
+    stage: 'qualified-lead',
+  },
+  {
+    id: '4',
+    name: 'Michael Johnson',
+    budget: '$800K–$1.2M',
+    score: 82,
+    lastActivity: '2h ago',
+    stage: 'active-search',
+  },
+  {
+    id: '5',
+    name: 'Lisa Nguyen',
+    budget: '$1.5M–$2M',
+    score: 90,
+    lastActivity: '1d ago',
+    stage: 'property-shortlisted',
+  },
+  {
+    id: '6',
+    name: 'Mark Stevens',
+    budget: '$1.1M',
+    score: 95,
+    lastActivity: '2d ago',
+    stage: 'under-contract',
+  },
 ];
 
 function ScoreIndicator({ score }: { score: number }) {
   const color =
-    score >= 75 ? 'bg-red-500' : score >= 50 ? 'bg-yellow-500' : score >= 25 ? 'bg-blue-500' : 'bg-gray-300';
+    score >= 75
+      ? 'bg-red-500'
+      : score >= 50
+        ? 'bg-yellow-500'
+        : score >= 25
+          ? 'bg-blue-500'
+          : 'bg-gray-300';
   return <span className={cn('inline-block h-2 w-2 rounded-full', color)} aria-hidden="true" />;
 }
 
 function DraggableCard({ card }: { card: PipelineCard }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: card.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: card.id,
+  });
 
   return (
     <div

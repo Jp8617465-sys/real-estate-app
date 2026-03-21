@@ -117,6 +117,9 @@ export function useCreateWorkflow() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -139,6 +142,9 @@ export function useCreateWorkflowFromTemplate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -169,6 +175,9 @@ export function useUpdateWorkflow(id: string) {
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
       queryClient.invalidateQueries({ queryKey: ['workflows', id] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -190,6 +199,9 @@ export function useToggleWorkflow(id: string) {
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
       queryClient.invalidateQueries({ queryKey: ['workflows', id] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -206,6 +218,9 @@ export function useDeleteWorkflow(id: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

@@ -7,6 +7,7 @@ const supabase = createClient();
 export function useContacts(search?: ContactSearch) {
   return useQuery({
     queryKey: ['contacts', search],
+    staleTime: 30_000,
     queryFn: async () => {
       let query = supabase
         .from('contacts')
@@ -43,11 +44,7 @@ export function useContact(id: string) {
   return useQuery({
     queryKey: ['contacts', id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('contacts')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await supabase.from('contacts').select('*').eq('id', id).single();
       if (error) throw error;
       return data;
     },
@@ -85,6 +82,9 @@ export function useCreateContact() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -104,7 +104,8 @@ export function useUpdateContact(id: string) {
       if (updates.buyerProfile) updatePayload.buyer_profile = updates.buyerProfile;
       if (updates.sellerProfile) updatePayload.seller_profile = updates.sellerProfile;
       if (updates.tags) updatePayload.tags = updates.tags;
-      if (updates.communicationPreference) updatePayload.communication_preference = updates.communicationPreference;
+      if (updates.communicationPreference)
+        updatePayload.communication_preference = updates.communicationPreference;
       if (updates.nextFollowUp !== undefined) updatePayload.next_follow_up = updates.nextFollowUp;
 
       const { data, error } = await supabase
@@ -119,6 +120,9 @@ export function useUpdateContact(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
       queryClient.invalidateQueries({ queryKey: ['contacts', id] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }
@@ -137,6 +141,9 @@ export function useDeleteContact(id: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

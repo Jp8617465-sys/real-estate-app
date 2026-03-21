@@ -30,9 +30,11 @@ $ARGUMENTS
 ## Checklist
 
 ### 1. Build Passes
+
 ```bash
 npm run build
 ```
+
 All 4 apps + 4 packages must compile. Zero build errors.
 
 If any fail, stop here. Do not proceed to deploy.
@@ -44,6 +46,7 @@ ls supabase/migrations/ | sort
 ```
 
 Check:
+
 - No duplicate numeric prefixes (the Sprint 3 `00009_` duplicate must never recur)
 - No gaps in the sequence
 - New migrations are higher than all existing numbers
@@ -53,12 +56,14 @@ If duplicates exist, stop. The migration runner may execute them in wrong order.
 ### 3. Environment Variables Documented
 
 For each new env var referenced in new/modified code:
+
 ```bash
 grep -rn "process\.env\.\|env\." apps/ packages/ --include="*.ts" | \
   grep -v "NODE_ENV\|NEXT_PUBLIC" | grep "env\." | sort -u
 ```
 
 Cross-reference against:
+
 - `apps/api/.env.example`
 - `apps/web/.env.example`
 - `apps/portal/.env.example`
@@ -75,6 +80,7 @@ curl -s https://realflow-api.onrender.com/health
 If the API is not yet deployed (first deploy), skip this check.
 
 ### 5. No console.log in New Production Code
+
 ```bash
 git diff main...HEAD -- "*.ts" "*.tsx" | grep "^\+" | grep "console\.log"
 ```
@@ -86,9 +92,11 @@ Zero matches expected. `console.warn` and `console.error` are permitted.
 Check `docs/harden/` for the latest report. If it contains any 🚨 CRITICAL findings marked as open, stop.
 
 ### 7. Tests Pass
+
 ```bash
 npm run test
 ```
+
 Passing count must be ≥ 606 (Sprint 4 baseline). Zero new failures.
 
 ## Output

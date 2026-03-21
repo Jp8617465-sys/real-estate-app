@@ -10,11 +10,13 @@ export function useFeeStructure(clientId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('fee_structures')
-        .select(`
+        .select(
+          `
           *,
           invoices:invoices(*),
           referral_fees:referral_fees(*)
-        `)
+        `,
+        )
         .eq('client_id', clientId)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -51,6 +53,9 @@ export function useCreateFeeStructure() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fee-structures'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

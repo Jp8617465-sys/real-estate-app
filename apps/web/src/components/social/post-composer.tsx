@@ -34,9 +34,8 @@ export function PostComposer({
   const [previewPlatform, setPreviewPlatform] = useState<SocialPlatform | undefined>(undefined);
   const [showPreview, setShowPreview] = useState(false);
 
-  const charLimit = platforms.length > 0
-    ? Math.min(...platforms.map((p) => PLATFORM_CHAR_LIMITS[p]))
-    : 3000;
+  const charLimit =
+    platforms.length > 0 ? Math.min(...platforms.map((p) => PLATFORM_CHAR_LIMITS[p])) : 3000;
 
   const isValid = platforms.length > 0 && content.trim().length > 0 && content.length <= charLimit;
 
@@ -60,9 +59,8 @@ export function PostComposer({
       content: content.trim(),
       mediaUrls,
       propertyId: initialPropertyId,
-      scheduledAt: mode === 'schedule' && scheduledAt
-        ? new Date(scheduledAt).toISOString()
-        : undefined,
+      scheduledAt:
+        mode === 'schedule' && scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
     };
 
     const result = await createPost.mutateAsync(postData);
@@ -89,7 +87,12 @@ export function PostComposer({
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -97,11 +100,7 @@ export function PostComposer({
         {/* Body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-6 py-4">
           {/* Platform Selector */}
-          <PlatformSelector
-            selected={platforms}
-            onChange={setPlatforms}
-            disabled={isPending}
-          />
+          <PlatformSelector selected={platforms} onChange={setPlatforms} disabled={isPending} />
 
           {/* Content Editor */}
           <div>
@@ -118,7 +117,11 @@ export function PostComposer({
               <span className="text-gray-400">
                 {platforms.length > 1 && 'Character limit based on most restrictive platform'}
               </span>
-              <span className={content.length > charLimit ? 'font-medium text-red-600' : 'text-gray-400'}>
+              <span
+                className={
+                  content.length > charLimit ? 'font-medium text-red-600' : 'text-gray-400'
+                }
+              >
                 {content.length} / {charLimit}
               </span>
             </div>
@@ -132,7 +135,12 @@ export function PostComposer({
                 type="url"
                 value={mediaInput}
                 onChange={(e) => setMediaInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMediaUrl(); } }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addMediaUrl();
+                  }
+                }}
                 disabled={isPending}
                 className="block flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:ring-brand-500"
                 placeholder="https://example.com/image.jpg"
@@ -158,8 +166,18 @@ export function PostComposer({
                       onClick={() => removeMediaUrl(url)}
                       className="ml-1 text-gray-400 hover:text-red-500"
                     >
-                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -177,11 +195,13 @@ export function PostComposer({
           <div>
             <label className="block text-sm font-medium text-gray-700">When to publish</label>
             <div className="mt-2 flex gap-2">
-              {([
-                { value: 'draft', label: 'Save as Draft' },
-                { value: 'schedule', label: 'Schedule' },
-                { value: 'publish', label: 'Publish Now' },
-              ] as const).map((option) => (
+              {(
+                [
+                  { value: 'draft', label: 'Save as Draft' },
+                  { value: 'schedule', label: 'Schedule' },
+                  { value: 'publish', label: 'Publish Now' },
+                ] as const
+              ).map((option) => (
                 <button
                   key={option.value}
                   type="button"

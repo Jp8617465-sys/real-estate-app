@@ -52,15 +52,13 @@ export default function PropertiesScreen() {
         data={properties ?? []}
         keyExtractor={(item: Property) => item.id}
         contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
-        }
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No properties found</Text>
-        }
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+        ListEmptyComponent={<Text style={styles.emptyText}>No properties found</Text>}
         renderItem={({ item }: { item: Property }) => {
           const statusStyle = getStatusStyle(item.listingStatus);
-          const displayPrice = item.priceGuide ?? (item.listPrice ? `$${item.listPrice.toLocaleString()}` : 'Price TBC');
+          const displayPrice =
+            item.priceGuide ??
+            (item.listPrice ? `$${item.listPrice.toLocaleString()}` : 'Price TBC');
 
           return (
             <TouchableOpacity
@@ -97,7 +95,12 @@ export default function PropertiesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
   list: { padding: 16 },
   emptyText: { fontSize: 14, color: '#9ca3af', textAlign: 'center', padding: 40 },
   card: {
@@ -120,7 +123,12 @@ const styles = StyleSheet.create({
   type: { fontSize: 12, color: '#6b7280', marginTop: 2 },
   features: { flexDirection: 'row', gap: 12, marginTop: 8 },
   feature: { fontSize: 12, color: '#6b7280' },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
   price: { fontSize: 15, fontWeight: '700', color: '#111827' },
   statusBadge: { borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3 },
   statusText: { fontSize: 11, fontWeight: '600' },

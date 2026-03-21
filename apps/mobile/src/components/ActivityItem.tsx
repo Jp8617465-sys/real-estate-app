@@ -109,9 +109,13 @@ export function ActivityItem({ activity }: ActivityItemProps) {
         <Ionicons name={icon} size={16} color={color} />
       </View>
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={2}>{activity.title}</Text>
+        <Text style={styles.title} numberOfLines={2}>
+          {activity.title}
+        </Text>
         {activity.description ? (
-          <Text style={styles.description} numberOfLines={1}>{activity.description}</Text>
+          <Text style={styles.description} numberOfLines={1}>
+            {activity.description}
+          </Text>
         ) : null}
       </View>
       <Text style={styles.time}>{timeAgo}</Text>

@@ -126,30 +126,25 @@ export function useRealtimeSubscription<T>(
         filter: subscriptionFilter.filter,
       };
 
-      channel.on<{ [key: string]: string }>(
-        'postgres_changes',
-        pgFilter,
-        (payload) => {
-          const typed: RealtimeChangePayload<T> = {
-            eventType: payload.eventType as RealtimeEventType,
-            new: (payload.new ?? {}) as Partial<T>,
-            old: (payload.old ?? {}) as Partial<T>,
-            table: subscriptionFilter.table,
-            schema: subscriptionFilter.schema ?? 'public',
-            commitTimestamp: (payload as unknown as { commit_timestamp?: string }).commit_timestamp ?? new Date().toISOString(),
-          };
-          callbackRef.current(typed);
-        },
-      );
+      channel.on<{ [key: string]: string }>('postgres_changes', pgFilter, (payload) => {
+        const typed: RealtimeChangePayload<T> = {
+          eventType: payload.eventType as RealtimeEventType,
+          new: (payload.new ?? {}) as Partial<T>,
+          old: (payload.old ?? {}) as Partial<T>,
+          table: subscriptionFilter.table,
+          schema: subscriptionFilter.schema ?? 'public',
+          commitTimestamp:
+            (payload as unknown as { commit_timestamp?: string }).commit_timestamp ??
+            new Date().toISOString(),
+        };
+        callbackRef.current(typed);
+      });
 
       channel.subscribe((subscriptionStatus) => {
         if (subscriptionStatus === 'SUBSCRIBED') {
           setStatus('connected');
           retryCountRef.current = 0;
-        } else if (
-          subscriptionStatus === 'CHANNEL_ERROR' ||
-          subscriptionStatus === 'TIMED_OUT'
-        ) {
+        } else if (subscriptionStatus === 'CHANNEL_ERROR' || subscriptionStatus === 'TIMED_OUT') {
           setStatus('disconnected');
           // Schedule reconnection with exponential backoff
           const delay = getRetryDelay();
@@ -178,7 +173,14 @@ export function useRealtimeSubscription<T>(
       }
       retryCountRef.current = 0;
     };
-  }, [channelName, subscriptionFilter.table, subscriptionFilter.filter, subscriptionFilter.event, subscriptionFilter.schema, enabled]);
+  }, [
+    channelName,
+    subscriptionFilter.table,
+    subscriptionFilter.filter,
+    subscriptionFilter.event,
+    subscriptionFilter.schema,
+    enabled,
+  ]);
 
   return { status };
 }
@@ -191,10 +193,6 @@ export function useRealtimeSubscription<T>(
  */
 export function useRealtimeStatus(channelName: string, filter: SubscriptionFilter) {
   const noop = useCallback(() => {}, []);
-  const { status } = useRealtimeSubscription<Record<string, never>>(
-    channelName,
-    filter,
-    noop,
-  );
+  const { status } = useRealtimeSubscription<Record<string, never>>(channelName, filter, noop);
   return status;
 }

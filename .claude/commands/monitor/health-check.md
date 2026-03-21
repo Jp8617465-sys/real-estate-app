@@ -16,6 +16,7 @@ mcp__render__get_service
 ```
 
 Check:
+
 - `status` = `live` (not `suspended`, `build_failed`, etc.)
 - `updatedAt` — when was the last deploy?
 - Current deploy hash
@@ -29,6 +30,7 @@ mcp__render__get_deploy_logs
 ```
 
 Scan the most recent deploy for:
+
 - `build_failed` or `update_failed` status
 - Error patterns in logs: `Error:`, `FATAL`, `Unhandled`, `ECONNREFUSED`
 
@@ -40,6 +42,7 @@ curl -s -w "\nHTTP %{http_code} - %{time_total}s" \
 ```
 
 Expected:
+
 - HTTP 200
 - Response time < 2s (cold start may take longer on free tier)
 - Body: `{"status":"ok","service":"realflow-api"}`
@@ -47,11 +50,14 @@ Expected:
 ### 4. Known Pre-Existing Issues (Do Not Flag)
 
 From MEMORY.md — these are known and not actionable:
+
 - TypeScript errors in `workflow-scheduler.ts`, `workflow-engine.ts` — pre-existing, not runtime errors
 - Occasional Render cold starts on free tier (15min inactivity) — upgrade to Starter plan to fix
 
 ### 5. Quick Smoke Test (Optional)
+
 If the health check shows any anomalies, run:
+
 ```
 /smoke-test https://realflow-api.onrender.com
 ```

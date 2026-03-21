@@ -2,7 +2,11 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { useContactDocuments, useTogglePortalVisibility, useSendPortalInvite } from '@/hooks/use-documents';
+import {
+  useContactDocuments,
+  useTogglePortalVisibility,
+  useSendPortalInvite,
+} from '@/hooks/use-documents';
 
 interface ContactDetailProps {
   contactId: string;
@@ -112,13 +116,35 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
   };
 
   const activities = [
-    { id: '1', type: 'inspection', title: 'Inspected 42 Ocean St, Bondi', time: '2 hours ago', description: 'Very interested. Wants to do second inspection.' },
-    { id: '2', type: 'property-sent', title: 'Sent 5 property matches', time: '2 days ago', description: 'Properties in Bondi, Coogee matching criteria' },
-    { id: '3', type: 'call', title: 'Initial discovery call', time: '5 days ago', description: 'Discussed budget, preferences. Pre-approved for $1.1M.' },
+    {
+      id: '1',
+      type: 'inspection',
+      title: 'Inspected 42 Ocean St, Bondi',
+      time: '2 hours ago',
+      description: 'Very interested. Wants to do second inspection.',
+    },
+    {
+      id: '2',
+      type: 'property-sent',
+      title: 'Sent 5 property matches',
+      time: '2 days ago',
+      description: 'Properties in Bondi, Coogee matching criteria',
+    },
+    {
+      id: '3',
+      type: 'call',
+      title: 'Initial discovery call',
+      time: '5 days ago',
+      description: 'Discussed budget, preferences. Pre-approved for $1.1M.',
+    },
   ];
 
   const formatCurrency = (n: number) =>
-    new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+      maximumFractionDigits: 0,
+    }).format(n);
 
   return (
     <div className="space-y-6">
@@ -126,7 +152,8 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-xl font-bold text-brand-700">
-            {contact.firstName[0]}{contact.lastName[0]}
+            {contact.firstName[0]}
+            {contact.lastName[0]}
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
@@ -167,7 +194,9 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
         {/* Contact Info */}
         <div className="space-y-6 lg:col-span-1">
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Contact Info</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+              Contact Info
+            </h2>
             <dl className="mt-4 space-y-3">
               <div>
                 <dt className="text-xs text-gray-500">Email</dt>
@@ -187,7 +216,9 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
               </div>
               <div>
                 <dt className="text-xs text-gray-500">Preference</dt>
-                <dd className="text-sm capitalize text-gray-900">{contact.communicationPreference}</dd>
+                <dd className="text-sm capitalize text-gray-900">
+                  {contact.communicationPreference}
+                </dd>
               </div>
             </dl>
             <div className="mt-4 flex flex-wrap gap-1.5">
@@ -205,18 +236,23 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
           {/* Buyer Profile */}
           {contact.buyerProfile && (
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Buyer Profile</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                Buyer Profile
+              </h2>
               <dl className="mt-4 space-y-3">
                 <div>
                   <dt className="text-xs text-gray-500">Budget</dt>
                   <dd className="text-sm text-gray-900">
-                    {formatCurrency(contact.buyerProfile.budgetMin)} – {formatCurrency(contact.buyerProfile.budgetMax)}
+                    {formatCurrency(contact.buyerProfile.budgetMin)} –{' '}
+                    {formatCurrency(contact.buyerProfile.budgetMax)}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500">Pre-Approval</dt>
                   <dd className="text-sm text-gray-900">
-                    {contact.buyerProfile.preApproved ? formatCurrency(contact.buyerProfile.preApprovalAmount) : 'Not pre-approved'}
+                    {contact.buyerProfile.preApproved
+                      ? formatCurrency(contact.buyerProfile.preApprovalAmount)
+                      : 'Not pre-approved'}
                   </dd>
                 </div>
                 <div>
@@ -231,15 +267,21 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500">Suburbs</dt>
-                  <dd className="text-sm text-gray-900">{contact.buyerProfile.suburbs.join(', ')}</dd>
+                  <dd className="text-sm text-gray-900">
+                    {contact.buyerProfile.suburbs.join(', ')}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500">Must Haves</dt>
-                  <dd className="text-sm text-gray-900">{contact.buyerProfile.mustHaves.join(', ')}</dd>
+                  <dd className="text-sm text-gray-900">
+                    {contact.buyerProfile.mustHaves.join(', ')}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500">Deal Breakers</dt>
-                  <dd className="text-sm text-red-600">{contact.buyerProfile.dealBreakers.join(', ')}</dd>
+                  <dd className="text-sm text-red-600">
+                    {contact.buyerProfile.dealBreakers.join(', ')}
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -247,7 +289,9 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
 
           {/* Documents */}
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Documents</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+              Documents
+            </h2>
             <DocumentsList contactId={contactId} />
           </div>
         </div>
@@ -255,7 +299,9 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
         {/* Activity Timeline */}
         <div className="lg:col-span-2">
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Activity Timeline</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+              Activity Timeline
+            </h2>
             <div className="mt-4 space-y-4">
               {activities.map((activity) => (
                 <div key={activity.id} className="flex gap-3 border-l-2 border-gray-200 pl-4">

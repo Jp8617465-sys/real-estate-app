@@ -96,9 +96,9 @@ export const DashboardSnapshotSchema = z.object({
 
 // ─── Inferred Types ───────────────────────────────────────────────────────────
 
-export type PipelineVelocity        = z.infer<typeof PipelineVelocitySchema>;
-export type AgentPerformance        = z.infer<typeof AgentPerformanceSchema>;
-export type MarketInsight           = z.infer<typeof MarketInsightSchema>;
-export type RevenueForecast         = z.infer<typeof RevenueForecastSchema>;
-export type AnalyticsDailySnapshot  = z.infer<typeof AnalyticsDailySnapshotSchema>;
-export type DashboardSnapshot       = z.infer<typeof DashboardSnapshotSchema>;
+export type PipelineVelocity = z.infer<typeof PipelineVelocitySchema>;
+export type AgentPerformance = z.infer<typeof AgentPerformanceSchema>;
+export type MarketInsight = z.infer<typeof MarketInsightSchema>;
+export type RevenueForecast = z.infer<typeof RevenueForecastSchema>;
+export type AnalyticsDailySnapshot = z.infer<typeof AnalyticsDailySnapshotSchema>;
+export type DashboardSnapshot = z.infer<typeof DashboardSnapshotSchema>;

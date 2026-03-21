@@ -40,9 +40,7 @@ beforeEach(() => {
 
 describe('useTasks', () => {
   it('fetches all tasks', async () => {
-    const tasks = [
-      { id: '1', title: 'Call John', status: 'pending', priority: 'high' },
-    ];
+    const tasks = [{ id: '1', title: 'Call John', status: 'pending', priority: 'high' }];
     const chain = createChainedQuery({ data: tasks, error: null });
     mockFrom.mockReturnValue(chain);
 
@@ -60,10 +58,9 @@ describe('useTasks', () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useTasks({ status: 'pending' }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useTasks({ status: 'pending' }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -74,10 +71,9 @@ describe('useTasks', () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useTasks({ priority: 'urgent' }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useTasks({ priority: 'urgent' }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -88,10 +84,9 @@ describe('useTasks', () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useTasks({ dueDate: '2026-02-10' }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useTasks({ dueDate: '2026-02-10' }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -139,9 +134,7 @@ describe('useCompleteTask', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(chain.update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'completed' }),
-    );
+    expect(chain.update).toHaveBeenCalledWith(expect.objectContaining({ status: 'completed' }));
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['tasks'] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['dashboard-stats'] });
   });

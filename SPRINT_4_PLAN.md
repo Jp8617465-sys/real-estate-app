@@ -12,11 +12,11 @@
 
 Sprint 4 has **zero inter-feature dependencies** — all three workstreams run in parallel from day 1.
 
-| Team | Feature | Backend | Frontend | Mobile | Est. Effort |
-|------|---------|---------|----------|--------|-------------|
-| **Team A** | Domain.com.au API Sync | 3 days | 2 days | 1 day | 6 dev-days |
-| **Team B** | Analytics Dashboard | 3 days | 3 days | 1 day | 7 dev-days |
-| **Team C** | AML/KYC Compliance | 2 days | 2 days | 0 days | 4 dev-days |
+| Team       | Feature                | Backend | Frontend | Mobile | Est. Effort |
+| ---------- | ---------------------- | ------- | -------- | ------ | ----------- |
+| **Team A** | Domain.com.au API Sync | 3 days  | 2 days   | 1 day  | 6 dev-days  |
+| **Team B** | Analytics Dashboard    | 3 days  | 3 days   | 1 day  | 7 dev-days  |
+| **Team C** | AML/KYC Compliance     | 2 days  | 2 days   | 0 days | 4 dev-days  |
 
 **Total:** ~17 dev-days across 3 parallel tracks = fits comfortably in a 3-week sprint.
 
@@ -27,6 +27,7 @@ Sprint 4 has **zero inter-feature dependencies** — all three workstreams run i
 Before teams start, agree on these API shapes so UIs can be built against mocks.
 
 ### Team A — Domain Sync API Surface
+
 ```
 GET  /api/v1/domain/status              → { connected, lastSync, listingsSynced }
 POST /api/v1/domain/sync                → triggers manual sync, returns jobId
@@ -38,6 +39,7 @@ GET  /api/v1/domain/auction-results     → auction result feed
 ```
 
 ### Team B — Analytics API Surface
+
 ```
 GET  /api/v1/analytics/pipeline-velocity    → stage conversion rates + avg days
 GET  /api/v1/analytics/agent-performance    → deals closed, response time, fees
@@ -47,6 +49,7 @@ GET  /api/v1/analytics/snapshot             → all metrics in one call (dashboa
 ```
 
 ### Team C — Compliance API Surface
+
 ```
 GET  /api/v1/compliance/checks              → list AML checks for agent's contacts
 GET  /api/v1/compliance/checks/:contactId   → check detail + documents
@@ -155,7 +158,7 @@ CREATE POLICY "all_agents_read_auctions" ON auction_results
 ### A.2 Shared Types — `packages/shared/src/types/domain-sync.ts`
 
 ```typescript
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const DomainSyncJobSchema = z.object({
   id: z.string().uuid(),
@@ -169,7 +172,7 @@ export const DomainSyncJobSchema = z.object({
   startedAt: z.string().datetime().nullable(),
   completedAt: z.string().datetime().nullable(),
   createdAt: z.string().datetime(),
-})
+});
 
 export const PriceChangeSchema = z.object({
   id: z.string().uuid(),
@@ -180,7 +183,7 @@ export const PriceChangeSchema = z.object({
   changePercent: z.number(),
   changeType: z.enum(['reduction', 'increase', 'price_guide_set']),
   detectedAt: z.string().datetime(),
-})
+});
 
 export const AuctionResultSchema = z.object({
   id: z.string().uuid(),
@@ -195,7 +198,7 @@ export const AuctionResultSchema = z.object({
   registeredBidders: z.number().int().nullable(),
   agentName: z.string().nullable(),
   agencyName: z.string().nullable(),
-})
+});
 
 export const DomainSyncStatusSchema = z.object({
   connected: z.boolean(),
@@ -203,12 +206,12 @@ export const DomainSyncStatusSchema = z.object({
   listingsSynced: z.number().int(),
   priceChanges24h: z.number().int(),
   auctionResults7d: z.number().int(),
-})
+});
 
-export type DomainSyncJob = z.infer<typeof DomainSyncJobSchema>
-export type PriceChange = z.infer<typeof PriceChangeSchema>
-export type AuctionResult = z.infer<typeof AuctionResultSchema>
-export type DomainSyncStatus = z.infer<typeof DomainSyncStatusSchema>
+export type DomainSyncJob = z.infer<typeof DomainSyncJobSchema>;
+export type PriceChange = z.infer<typeof PriceChangeSchema>;
+export type AuctionResult = z.infer<typeof AuctionResultSchema>;
+export type DomainSyncStatus = z.infer<typeof DomainSyncStatusSchema>;
 ```
 
 ---
@@ -221,23 +224,24 @@ export type DomainSyncStatus = z.infer<typeof DomainSyncStatusSchema>
 // Interface spec — implementation fills these methods
 interface DomainSyncEngine {
   // Fetch new listings matching ALL active briefs for an agent, import as properties
-  syncListingsForAgent(agentId: string): Promise<DomainSyncJob>
+  syncListingsForAgent(agentId: string): Promise<DomainSyncJob>;
 
   // Called when Domain sends a webhook — parse and process
-  processWebhook(payload: DomainWebhookPayload): Promise<void>
+  processWebhook(payload: DomainWebhookPayload): Promise<void>;
 
   // Detect price changes for tracked properties
-  detectPriceChanges(agentId: string): Promise<PriceChange[]>
+  detectPriceChanges(agentId: string): Promise<PriceChange[]>;
 
   // Ingest this week's auction results for agent's tracked suburbs
-  ingestAuctionResults(suburbs: string[]): Promise<AuctionResult[]>
+  ingestAuctionResults(suburbs: string[]): Promise<AuctionResult[]>;
 
   // Build search params from a client brief (suburb list, bedrooms, price range)
-  buildSearchParams(brief: ClientBrief): DomainSearchParams
+  buildSearchParams(brief: ClientBrief): DomainSearchParams;
 }
 ```
 
 **Key behaviours:**
+
 - `syncListingsForAgent`: Load all active client briefs → extract suburb lists and price ranges → call `DomainClient.searchListings()` for each unique suburb group → upsert into `properties` (keyed on `domain_listing_id`) → run `AIPropertyMatchingService.scoreMatch()` for each brief × listing → record matches with `status = 'new'`
 - `processWebhook`: Domain sends events for new listings, price changes, status changes → route to correct handler
 - `detectPriceChanges`: Query `properties` where `domain_listing_id IS NOT NULL` → re-fetch from Domain API → compare `price` → insert `property_price_changes` if changed → return changes for notification
@@ -247,15 +251,15 @@ interface DomainSyncEngine {
 
 ### A.4 API Routes — `apps/api/src/routes/domain-sync.ts`
 
-| Method | Path | Description | Auth |
-|--------|------|-------------|------|
-| GET | `/api/v1/domain/status` | Connection status + last sync stats | JWT |
-| POST | `/api/v1/domain/sync` | Trigger manual sync for agent | JWT |
-| GET | `/api/v1/domain/listings` | Browse Domain listings (search + filter) | JWT |
-| GET | `/api/v1/domain/listings/:domainId/match` | Run match engine on a Domain listing | JWT |
-| POST | `/api/v1/domain/webhooks` | Domain webhook receiver | HMAC sig |
-| GET | `/api/v1/domain/price-changes` | Recent price changes for agent's properties | JWT |
-| GET | `/api/v1/domain/auction-results` | Auction results feed (suburb filter, date range) | JWT |
+| Method | Path                                      | Description                                      | Auth     |
+| ------ | ----------------------------------------- | ------------------------------------------------ | -------- |
+| GET    | `/api/v1/domain/status`                   | Connection status + last sync stats              | JWT      |
+| POST   | `/api/v1/domain/sync`                     | Trigger manual sync for agent                    | JWT      |
+| GET    | `/api/v1/domain/listings`                 | Browse Domain listings (search + filter)         | JWT      |
+| GET    | `/api/v1/domain/listings/:domainId/match` | Run match engine on a Domain listing             | JWT      |
+| POST   | `/api/v1/domain/webhooks`                 | Domain webhook receiver                          | HMAC sig |
+| GET    | `/api/v1/domain/price-changes`            | Recent price changes for agent's properties      | JWT      |
+| GET    | `/api/v1/domain/auction-results`          | Auction results feed (suburb filter, date range) | JWT      |
 
 **Webhook security:** Verify Domain's HMAC signature header `X-Domain-Signature` before processing. Return `200` immediately; process async.
 
@@ -264,6 +268,7 @@ interface DomainSyncEngine {
 ### A.5 Supabase Edge Function — `supabase/functions/domain-scheduled-sync/`
 
 Runs nightly at 6am AEST via pg_cron or Supabase scheduled function:
+
 - Loops over all agents with Domain integration connected
 - Calls `domain-sync/sync` route per agent
 - Logs outcomes to `domain_sync_jobs`
@@ -275,6 +280,7 @@ Runs nightly at 6am AEST via pg_cron or Supabase scheduled function:
 **New Pages:**
 
 **`/settings/integrations/domain`** — Domain connection settings
+
 ```
 ┌─────────────────────────────────────────────────┐
 │ Domain.com.au Integration                       │
@@ -293,6 +299,7 @@ Runs nightly at 6am AEST via pg_cron or Supabase scheduled function:
 ```
 
 **`/properties/price-changes`** — Price change alert feed
+
 ```
 ┌─────────────────────────────────────────────────┐
 │ Price Changes (Last 7 days)    [Filter by brief] │
@@ -314,6 +321,7 @@ Runs nightly at 6am AEST via pg_cron or Supabase scheduled function:
 ### A.7 Mobile
 
 Push notification (via Expo Notifications):
+
 - New match imported: "New Paddington listing matches Jane Smith's brief — 3BR $1.8M"
 - Price reduction: "23 Maple St dropped 7% to $1.72M — matches 2 active briefs"
 
@@ -321,11 +329,11 @@ Push notification (via Expo Notifications):
 
 ### A.8 Tests — Team A (Target: 40+ tests)
 
-| File | Tests |
-|------|-------|
+| File                         | Tests                                                  |
+| ---------------------------- | ------------------------------------------------------ |
 | `domain-sync-engine.test.ts` | 20 tests: sync logic, webhook parsing, price detection |
-| `domain-sync.route.test.ts` | 12 tests: all 7 endpoints, auth, error cases |
-| `domain-sync.types.test.ts` | 8 tests: Zod schema validation |
+| `domain-sync.route.test.ts`  | 12 tests: all 7 endpoints, auth, error cases           |
+| `domain-sync.types.test.ts`  | 8 tests: Zod schema validation                         |
 
 ---
 
@@ -451,16 +459,16 @@ CREATE POLICY "all_agents_read_market" ON market_data_snapshots
 ### B.2 Shared Types — `packages/shared/src/types/analytics.ts`
 
 ```typescript
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const PipelineVelocitySchema = z.object({
   stage: z.string(),
   pipelineType: z.enum(['buyer', 'seller', 'buyers_agent']),
   activeCount: z.number().int(),
   avgDaysInStage: z.number(),
-  conversionRate: z.number().min(0).max(100),   // % who move to next stage
+  conversionRate: z.number().min(0).max(100), // % who move to next stage
   new30d: z.number().int(),
-})
+});
 
 export const AgentPerformanceSchema = z.object({
   agentId: z.string().uuid(),
@@ -474,7 +482,7 @@ export const AgentPerformanceSchema = z.object({
   messagesSent: z.number().int(),
   inspectionsDone: z.number().int(),
   offerConversionRate: z.number().min(0).max(100),
-})
+});
 
 export const MarketInsightSchema = z.object({
   suburb: z.string(),
@@ -486,17 +494,17 @@ export const MarketInsightSchema = z.object({
   clearanceRate: z.number().nullable(),
   priceChange1yPercent: z.number().nullable(),
   snapshotDate: z.string().date(),
-})
+});
 
 export const RevenueForecastSchema = z.object({
   period: z.string(),
   earnedRevenue: z.number(),
   pipelineValue: z.number(),
-  forecastRevenue: z.number(),   // earned + % of pipeline
+  forecastRevenue: z.number(), // earned + % of pipeline
   retainerFees: z.number(),
   successFees: z.number(),
   referralFees: z.number(),
-})
+});
 
 export const DashboardSnapshotSchema = z.object({
   pipelineVelocity: z.array(PipelineVelocitySchema),
@@ -504,13 +512,13 @@ export const DashboardSnapshotSchema = z.object({
   marketInsights: z.array(MarketInsightSchema),
   revenue: RevenueForecastSchema,
   generatedAt: z.string().datetime(),
-})
+});
 
-export type PipelineVelocity = z.infer<typeof PipelineVelocitySchema>
-export type AgentPerformance = z.infer<typeof AgentPerformanceSchema>
-export type MarketInsight = z.infer<typeof MarketInsightSchema>
-export type RevenueForecast = z.infer<typeof RevenueForecastSchema>
-export type DashboardSnapshot = z.infer<typeof DashboardSnapshotSchema>
+export type PipelineVelocity = z.infer<typeof PipelineVelocitySchema>;
+export type AgentPerformance = z.infer<typeof AgentPerformanceSchema>;
+export type MarketInsight = z.infer<typeof MarketInsightSchema>;
+export type RevenueForecast = z.infer<typeof RevenueForecastSchema>;
+export type DashboardSnapshot = z.infer<typeof DashboardSnapshotSchema>;
 ```
 
 ---
@@ -520,26 +528,30 @@ export type DashboardSnapshot = z.infer<typeof DashboardSnapshotSchema>
 ```typescript
 interface AnalyticsEngine {
   // Generate daily snapshot for an agent (called by cron at midnight)
-  generateDailySnapshot(agentId: string, date: Date): Promise<AnalyticsDailySnapshot>
+  generateDailySnapshot(agentId: string, date: Date): Promise<AnalyticsDailySnapshot>;
 
   // Compute pipeline funnel from live data
-  getPipelineVelocity(agentId: string, period: '7d'|'30d'|'90d'|'ytd'): Promise<PipelineVelocity[]>
+  getPipelineVelocity(
+    agentId: string,
+    period: '7d' | '30d' | '90d' | 'ytd',
+  ): Promise<PipelineVelocity[]>;
 
   // Agent performance metrics
-  getAgentPerformance(agentId: string, period: string): Promise<AgentPerformance>
+  getAgentPerformance(agentId: string, period: string): Promise<AgentPerformance>;
 
   // Pull market data from Domain for agent's tracked suburbs
-  refreshMarketData(suburbs: string[]): Promise<MarketInsight[]>
+  refreshMarketData(suburbs: string[]): Promise<MarketInsight[]>;
 
   // Revenue: earned + pipeline value + forecast
-  getRevenueForecast(agentId: string): Promise<RevenueForecast>
+  getRevenueForecast(agentId: string): Promise<RevenueForecast>;
 
   // Single-call dashboard snapshot (cached 15min)
-  getDashboardSnapshot(agentId: string): Promise<DashboardSnapshot>
+  getDashboardSnapshot(agentId: string): Promise<DashboardSnapshot>;
 }
 ```
 
 **Key implementation notes:**
+
 - `getPipelineVelocity`: Query `transactions` → group by `stage` → calc `avg(NOW() - stage_entered_at)` per stage → calculate conversion rate from snapshot history
 - `getAgentPerformance`: Aggregate from `domain_sync_jobs`, `messages`, `inspections`, `offers`, `invoices` tables
 - `refreshMarketData`: Call `DomainClient.getSuburbPerformance()` → upsert `market_data_snapshots`
@@ -549,13 +561,13 @@ interface AnalyticsEngine {
 
 ### B.4 API Routes — `apps/api/src/routes/analytics.ts`
 
-| Method | Path | Query Params | Description |
-|--------|------|-------------|-------------|
-| GET | `/api/v1/analytics/pipeline-velocity` | `period`, `pipelineType` | Stage funnel stats |
-| GET | `/api/v1/analytics/agent-performance` | `period`, `agentId` | Performance metrics |
-| GET | `/api/v1/analytics/market-insights` | `suburbs[]`, `propertyType` | Market data |
-| GET | `/api/v1/analytics/revenue` | `period` | Revenue + forecast |
-| GET | `/api/v1/analytics/snapshot` | `period` | Full dashboard (single call) |
+| Method | Path                                  | Query Params                | Description                  |
+| ------ | ------------------------------------- | --------------------------- | ---------------------------- |
+| GET    | `/api/v1/analytics/pipeline-velocity` | `period`, `pipelineType`    | Stage funnel stats           |
+| GET    | `/api/v1/analytics/agent-performance` | `period`, `agentId`         | Performance metrics          |
+| GET    | `/api/v1/analytics/market-insights`   | `suburbs[]`, `propertyType` | Market data                  |
+| GET    | `/api/v1/analytics/revenue`           | `period`                    | Revenue + forecast           |
+| GET    | `/api/v1/analytics/snapshot`          | `period`                    | Full dashboard (single call) |
 
 All routes: JWT required, agent scoped via RLS.
 
@@ -566,6 +578,7 @@ All routes: JWT required, agent scoped via RLS.
 **Upgrade:** `apps/web/src/app/dashboard/page.tsx` — full analytics dashboard
 
 **Layout:**
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ Dashboard                      Period: [30d ▼]  [Export]│
@@ -594,6 +607,7 @@ All routes: JWT required, agent scoped via RLS.
 ```
 
 **Components to build:**
+
 - `components/analytics/PipelineFunnelChart.tsx` — horizontal bar chart (Recharts)
 - `components/analytics/RevenueBarChart.tsx` — monthly revenue bars
 - `components/analytics/MarketInsightsTable.tsx` — suburb data table
@@ -605,6 +619,7 @@ All routes: JWT required, agent scoped via RLS.
 ### B.6 Mobile
 
 **Screen:** `/(tabs)/dashboard` — summary KPI view
+
 - 4 KPI cards (active clients, settled this month, pipeline value, response time)
 - Tap to open full web dashboard (WebView or deep link)
 
@@ -612,11 +627,11 @@ All routes: JWT required, agent scoped via RLS.
 
 ### B.7 Tests — Team B (Target: 45+ tests)
 
-| File | Tests |
-|------|-------|
-| `analytics-engine.test.ts` | 20 tests: each method, edge cases, empty data |
-| `analytics.route.test.ts` | 15 tests: all 5 endpoints, period params, auth |
-| `analytics.types.test.ts` | 10 tests: Zod schema validation |
+| File                       | Tests                                          |
+| -------------------------- | ---------------------------------------------- |
+| `analytics-engine.test.ts` | 20 tests: each method, edge cases, empty data  |
+| `analytics.route.test.ts`  | 15 tests: all 5 endpoints, period params, auth |
+| `analytics.types.test.ts`  | 10 tests: Zod schema validation                |
 
 ---
 
@@ -648,6 +663,7 @@ All routes: JWT required, agent scoped via RLS.
 ### C.1 Context: Australian AML Requirements
 
 Buyers agents (as "designated services" under AUSTRAC) must:
+
 1. Collect customer ID at onboarding (100-point check)
 2. Record verification method and outcome
 3. Keep records for 7 years
@@ -816,28 +832,42 @@ CREATE POLICY "agents_own_smr" ON aml_suspicious_matter_reports
 ### C.2 Shared Types — `packages/shared/src/types/compliance.ts`
 
 ```typescript
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const AmlDocumentTypeSchema = z.enum([
-  'passport', 'birth_certificate', 'citizenship_certificate',
-  'drivers_licence', 'government_id_card', 'proof_of_age_card',
-  'medicare_card', 'credit_card', 'bank_card',
-  'utility_bill', 'bank_statement', 'council_rates',
-  'lease_agreement', 'centrelink_letter'
-])
+  'passport',
+  'birth_certificate',
+  'citizenship_certificate',
+  'drivers_licence',
+  'government_id_card',
+  'proof_of_age_card',
+  'medicare_card',
+  'credit_card',
+  'bank_card',
+  'utility_bill',
+  'bank_statement',
+  'council_rates',
+  'lease_agreement',
+  'centrelink_letter',
+]);
 
 export const AmlCheckStatusSchema = z.enum([
-  'pending', 'in_progress', 'passed', 'failed', 'expired', 'waived'
-])
+  'pending',
+  'in_progress',
+  'passed',
+  'failed',
+  'expired',
+  'waived',
+]);
 
 export const AmlCheckSchema = z.object({
   id: z.string().uuid(),
   contactId: z.string().uuid(),
   agentId: z.string().uuid(),
   status: AmlCheckStatusSchema,
-  verificationMethod: z.enum([
-    'face_to_face', 'certified_copies', 'electronic', 'third_party'
-  ]).nullable(),
+  verificationMethod: z
+    .enum(['face_to_face', 'certified_copies', 'electronic', 'third_party'])
+    .nullable(),
   totalPoints: z.number().int().min(0).max(300),
   pointsRequired: z.number().int().default(100),
   fullLegalName: z.string().nullable(),
@@ -852,7 +882,7 @@ export const AmlCheckSchema = z.object({
   notes: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-})
+});
 
 export const AmlIdentityDocumentSchema = z.object({
   id: z.string().uuid(),
@@ -870,17 +900,15 @@ export const AmlIdentityDocumentSchema = z.object({
   verifiedAt: z.string().datetime().nullable(),
   notes: z.string().nullable(),
   createdAt: z.string().datetime(),
-})
+});
 
 export const CreateAmlCheckSchema = z.object({
   contactId: z.string().uuid(),
-  verificationMethod: z.enum([
-    'face_to_face', 'certified_copies', 'electronic', 'third_party'
-  ]),
+  verificationMethod: z.enum(['face_to_face', 'certified_copies', 'electronic', 'third_party']),
   fullLegalName: z.string().min(2),
   dateOfBirth: z.string().date(),
   residentialAddress: z.string().min(5),
-})
+});
 
 export const AddAmlDocumentSchema = z.object({
   documentType: AmlDocumentTypeSchema,
@@ -889,12 +917,12 @@ export const AddAmlDocumentSchema = z.object({
   issueDate: z.string().date().optional(),
   expiryDate: z.string().date().optional(),
   notes: z.string().optional(),
-})
+});
 
-export type AmlCheck = z.infer<typeof AmlCheckSchema>
-export type AmlIdentityDocument = z.infer<typeof AmlIdentityDocumentSchema>
-export type CreateAmlCheck = z.infer<typeof CreateAmlCheckSchema>
-export type AddAmlDocument = z.infer<typeof AddAmlDocumentSchema>
+export type AmlCheck = z.infer<typeof AmlCheckSchema>;
+export type AmlIdentityDocument = z.infer<typeof AmlIdentityDocumentSchema>;
+export type CreateAmlCheck = z.infer<typeof CreateAmlCheckSchema>;
+export type AddAmlDocument = z.infer<typeof AddAmlDocumentSchema>;
 ```
 
 ---
@@ -904,19 +932,22 @@ export type AddAmlDocument = z.infer<typeof AddAmlDocumentSchema>
 ```typescript
 interface AmlEngine {
   // Calculate current points tally for a check
-  calculatePoints(documents: AmlIdentityDocument[]): number
+  calculatePoints(documents: AmlIdentityDocument[]): number;
 
   // Validate that ID combination is legally valid (must have primary + secondary)
-  validateDocumentSet(documents: AmlIdentityDocument[]): AmlValidationResult
+  validateDocumentSet(documents: AmlIdentityDocument[]): AmlValidationResult;
 
   // Generate AUSTRAC-formatted compliance report
-  generateComplianceReport(agentId: string, period: { from: Date, to: Date }): Promise<ComplianceReport>
+  generateComplianceReport(
+    agentId: string,
+    period: { from: Date; to: Date },
+  ): Promise<ComplianceReport>;
 
   // Check for expired verifications requiring renewal
-  getExpiringChecks(agentId: string, daysAhead: number): Promise<AmlCheck[]>
+  getExpiringChecks(agentId: string, daysAhead: number): Promise<AmlCheck[]>;
 
   // Mark check as complete if points >= 100 and required fields captured
-  tryAutoComplete(checkId: string): Promise<AmlCheck>
+  tryAutoComplete(checkId: string): Promise<AmlCheck>;
 }
 
 // 100-point validation rules:
@@ -929,17 +960,17 @@ interface AmlEngine {
 
 ### C.4 API Routes — `apps/api/src/routes/compliance.ts`
 
-| Method | Path | Body/Params | Description |
-|--------|------|-------------|-------------|
-| GET | `/api/v1/compliance/checks` | `status?`, `contactId?` | List AML checks |
-| POST | `/api/v1/compliance/checks` | `CreateAmlCheck` | Start new check |
-| GET | `/api/v1/compliance/checks/:id` | — | Check detail + documents |
-| PATCH | `/api/v1/compliance/checks/:id` | Partial `AmlCheck` fields | Update check fields |
-| POST | `/api/v1/compliance/checks/:id/documents` | `AddAmlDocument` + file | Add identity document |
-| DELETE | `/api/v1/compliance/checks/:id/documents/:docId` | — | Remove document |
-| POST | `/api/v1/compliance/checks/:id/complete` | `{ outcome: 'passed'\|'failed', reason? }` | Finalise check |
-| GET | `/api/v1/compliance/report` | `from`, `to` | AUSTRAC compliance report |
-| GET | `/api/v1/compliance/expiring` | `daysAhead?` | Checks expiring soon |
+| Method | Path                                             | Body/Params                                | Description               |
+| ------ | ------------------------------------------------ | ------------------------------------------ | ------------------------- |
+| GET    | `/api/v1/compliance/checks`                      | `status?`, `contactId?`                    | List AML checks           |
+| POST   | `/api/v1/compliance/checks`                      | `CreateAmlCheck`                           | Start new check           |
+| GET    | `/api/v1/compliance/checks/:id`                  | —                                          | Check detail + documents  |
+| PATCH  | `/api/v1/compliance/checks/:id`                  | Partial `AmlCheck` fields                  | Update check fields       |
+| POST   | `/api/v1/compliance/checks/:id/documents`        | `AddAmlDocument` + file                    | Add identity document     |
+| DELETE | `/api/v1/compliance/checks/:id/documents/:docId` | —                                          | Remove document           |
+| POST   | `/api/v1/compliance/checks/:id/complete`         | `{ outcome: 'passed'\|'failed', reason? }` | Finalise check            |
+| GET    | `/api/v1/compliance/report`                      | `from`, `to`                               | AUSTRAC compliance report |
+| GET    | `/api/v1/compliance/expiring`                    | `daysAhead?`                               | Checks expiring soon      |
 
 ---
 
@@ -995,6 +1026,7 @@ interface AmlEngine {
 ```
 
 **Components:**
+
 - `components/compliance/AmlCheckCard.tsx`
 - `components/compliance/DocumentList.tsx`
 - `components/compliance/PointsMeter.tsx` — progress bar to 100 pts
@@ -1004,11 +1036,11 @@ interface AmlEngine {
 
 ### C.6 Tests — Team C (Target: 30+ tests)
 
-| File | Tests |
-|------|-------|
-| `aml-engine.test.ts` | 15 tests: point calculation, document validation, report generation |
-| `compliance.route.test.ts` | 12 tests: all endpoints, auth, complete workflow |
-| `compliance.types.test.ts` | 8 tests: Zod validation incl. edge cases |
+| File                       | Tests                                                               |
+| -------------------------- | ------------------------------------------------------------------- |
+| `aml-engine.test.ts`       | 15 tests: point calculation, document validation, report generation |
+| `compliance.route.test.ts` | 12 tests: all endpoints, auth, complete workflow                    |
+| `compliance.types.test.ts` | 8 tests: Zod validation incl. edge cases                            |
 
 ---
 
@@ -1071,10 +1103,11 @@ To avoid conflicts, **Team Lead signs off on migration order before Day 1**.
 ## Shared Type Exports
 
 Add to `packages/shared/src/types/index.ts`:
+
 ```typescript
-export * from './domain-sync'
-export * from './analytics'
-export * from './compliance'
+export * from './domain-sync';
+export * from './analytics';
+export * from './compliance';
 ```
 
 ---
@@ -1106,15 +1139,15 @@ The following must be true before Sprint 4 Day 1 starts:
 
 ## Risk Register
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| Domain API rate limits during bulk sync | Medium | Medium | Queue requests with 100ms delay; cache results 24h |
-| Analytics queries slow on large datasets | Medium | Medium | Add DB indexes in migration; use daily snapshot table |
-| AML document upload size | Low | Low | 10MB file size limit on upload endpoint; PDF/JPEG only |
-| Migration conflict between teams | Low | High | Team Lead reviews all 3 migrations on Day 1 before branching |
-| Domain API schema changes | Low | Medium | Version-pin DomainClient; add integration test against real API |
+| Risk                                     | Likelihood | Impact | Mitigation                                                      |
+| ---------------------------------------- | ---------- | ------ | --------------------------------------------------------------- |
+| Domain API rate limits during bulk sync  | Medium     | Medium | Queue requests with 100ms delay; cache results 24h              |
+| Analytics queries slow on large datasets | Medium     | Medium | Add DB indexes in migration; use daily snapshot table           |
+| AML document upload size                 | Low        | Low    | 10MB file size limit on upload endpoint; PDF/JPEG only          |
+| Migration conflict between teams         | Low        | High   | Team Lead reviews all 3 migrations on Day 1 before branching    |
+| Domain API schema changes                | Low        | Medium | Version-pin DomainClient; add integration test against real API |
 
 ---
 
-*Sprint 4 Plan v1.0 — Ready for implementation once Sprint 2 & 3 complete their backend layers.*
-*Next: Sprint 5 (Client Portal) plan available on request.*
+_Sprint 4 Plan v1.0 — Ready for implementation once Sprint 2 & 3 complete their backend layers._
+_Next: Sprint 5 (Client Portal) plan available on request._

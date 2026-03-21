@@ -36,8 +36,8 @@ services:
   - type: web
     name: realflow-api
     runtime: node
-    region: oregon  # Choose closest to your Supabase region
-    plan: starter   # Free tier for alpha; upgrade to Starter ($7/mo) for custom domain + better resources
+    region: oregon # Choose closest to your Supabase region
+    plan: starter # Free tier for alpha; upgrade to Starter ($7/mo) for custom domain + better resources
 
     # Root directory approach (required for Turborepo)
     rootDir: .
@@ -63,9 +63,9 @@ services:
         - apps/web/**
         - apps/mobile/**
         - apps/portal/**
-        - "**/*.md"
-        - "**/*.test.ts"
-        - "**/*.test.tsx"
+        - '**/*.md'
+        - '**/*.test.ts'
+        - '**/*.test.tsx'
 
     # Health check
     healthCheckPath: /health
@@ -76,19 +76,19 @@ services:
         value: production
 
       - key: PORT
-        value: 10000  # Render default
+        value: 10000 # Render default
 
       - key: SUPABASE_URL
-        sync: false  # Set in dashboard
+        sync: false # Set in dashboard
 
       - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false  # Set in dashboard (secret)
+        sync: false # Set in dashboard (secret)
 
       - key: SUPABASE_ANON_KEY
         sync: false
 
       - key: DATABASE_URL
-        sync: false  # Supabase pooler connection (transaction mode)
+        sync: false # Supabase pooler connection (transaction mode)
 
       - key: DOMAIN_API_BASE_URL
         value: https://api.domain.com.au
@@ -143,7 +143,7 @@ Your API already implements the standard pattern:
 // /Users/jamespcino/real-estate-app/apps/api/src/index.ts:88
 fastify.get('/health', async () => ({
   status: 'ok',
-  service: 'realflow-api'
+  service: 'realflow-api',
 }));
 ```
 
@@ -166,8 +166,8 @@ await fastify.register(healthcheck, {
     maxEventLoopDelay: 1000,
     maxHeapUsedBytes: 100000000,
     maxRssBytes: 100000000,
-    maxEventLoopUtilization: 0.98
-  }
+    maxEventLoopUtilization: 0.98,
+  },
 });
 
 // Custom deep health check
@@ -182,14 +182,14 @@ fastify.get('/health/deep', async (request, reply) => {
       service: 'realflow-api',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      database: 'connected'
+      database: 'connected',
     };
   } catch (err) {
     reply.code(503);
     return {
       status: 'degraded',
       service: 'realflow-api',
-      error: err instanceof Error ? err.message : 'Unknown error'
+      error: err instanceof Error ? err.message : 'Unknown error',
     };
   }
 });
@@ -210,6 +210,7 @@ DATABASE_URL=postgresql://postgres.xxxxxxxxxxxxx:password@aws-0-ap-southeast-2.p
 ```
 
 **When to Use Direct Connection:**
+
 - Local development
 - Long-running admin tasks
 - Database migrations (see Supabase section)
@@ -217,6 +218,7 @@ DATABASE_URL=postgresql://postgres.xxxxxxxxxxxxx:password@aws-0-ap-southeast-2.p
 ### Free Tier vs Paid Tier
 
 **Free Tier ($0/mo):**
+
 - ✅ Good for: Alpha testing, proof of concept
 - ✅ 750 hours/month (always-on for 1 service)
 - ✅ 512 MB RAM, shared CPU
@@ -225,6 +227,7 @@ DATABASE_URL=postgresql://postgres.xxxxxxxxxxxxx:password@aws-0-ap-southeast-2.p
 - ❌ No deployment protection
 
 **Starter Tier ($7/mo):**
+
 - ✅ Custom domains
 - ✅ Always-on (no cold starts)
 - ✅ 512 MB RAM (same as free, but dedicated)
@@ -270,9 +273,10 @@ render logs --service realflow-api --tail
 - **Trade-off:** Must configure 3 projects (vs 1 project with multiple apps, which Vercel doesn't officially support)
 
 **Projects to Create:**
+
 1. `realflow-web` (main agent dashboard)
 2. `realflow-portal` (client portal)
-3. *(Mobile app deploys via EAS, not Vercel)*
+3. _(Mobile app deploys via EAS, not Vercel)_
 
 ### vercel.json Configuration
 
@@ -387,6 +391,7 @@ npx turbo link
 ```
 
 **Benefits:**
+
 - Share build cache across team members
 - Faster CI/CD (skip rebuilding unchanged packages)
 - Free for Vercel projects
@@ -427,16 +432,19 @@ git push origin feature/xyz  # Auto-deploys to preview
 **Recommendation:** Call Resend directly from Fastify API (not via Supabase SMTP)
 
 **Why:**
+
 - ✅ Full API control (templates, batch sends, webhooks)
 - ✅ Programmatic email tracking (opened, clicked, bounced)
 - ✅ Easier to test in development (no SMTP config)
 - ❌ Supabase SMTP integration only supports auth emails (not custom transactional emails)
 
 **When to Use Supabase SMTP:**
+
 - Supabase Auth emails (password reset, magic links, email confirmation)
 - You want Supabase to send emails on your behalf without code
 
 **Solution:** Use **both** approaches:
+
 1. **Resend SMTP for Supabase Auth** (configured in Supabase Dashboard)
 2. **Resend API for custom emails** (invitations, notifications, digests)
 
@@ -482,10 +490,7 @@ export async function sendInvitationEmail(params: {
   return data;
 }
 
-export async function sendPasswordResetEmail(params: {
-  to: string;
-  resetLink: string;
-}) {
+export async function sendPasswordResetEmail(params: { to: string; resetLink: string }) {
   const { data, error } = await resend.emails.send({
     from: 'RealFlow <noreply@realflow.com.au>',
     to: params.to,
@@ -505,11 +510,7 @@ export async function sendPasswordResetEmail(params: {
   return data;
 }
 
-export async function sendNotificationEmail(params: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
+export async function sendNotificationEmail(params: { to: string; subject: string; html: string }) {
   const { data, error } = await resend.emails.send({
     from: 'RealFlow Notifications <notifications@realflow.com.au>',
     to: params.to,
@@ -662,17 +663,20 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 **Add to:**
+
 - `apps/api/.env` (local development)
 - Render Dashboard (production)
 
 ### Email Sending Limits
 
 **Resend Free Tier:**
+
 - 100 emails/day
 - 3,000 emails/month
 - All features included
 
 **Paid Plans:**
+
 - $20/mo: 50,000 emails/month
 - $80/mo: 100,000 emails/month
 - Custom: Volume pricing
@@ -714,11 +718,13 @@ supabase db push --include-all
 ```
 
 **Pros:**
+
 - Simple one command
 - Automatically detects new migrations
 - Idempotent (safe to run multiple times)
 
 **Cons:**
+
 - Requires Supabase CLI installed in CI environment
 
 **Approach 2: SQL Migrations via Supabase Dashboard**
@@ -728,10 +734,12 @@ supabase db push --include-all
 3. Run each migration in order (00001 → 00012)
 
 **Pros:**
+
 - No CLI required
 - Manual review before executing
 
 **Cons:**
+
 - Error-prone (easy to miss migrations)
 - No version tracking
 
@@ -743,10 +751,7 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 async function runMigrations() {
   const migrationsDir = path.join(__dirname, '../../supabase/migrations');
@@ -844,13 +849,13 @@ postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/p
 
 **Which to Use for RealFlow:**
 
-| Service | Connection Type | Reason |
-|---------|----------------|--------|
-| **Fastify API (Render)** | Transaction Mode (6543) | Ephemeral containers, high concurrency |
-| **Next.js API Routes (Vercel)** | Transaction Mode (6543) | Serverless functions |
-| **Supabase Client (Browser)** | Direct (via REST API) | supabase-js handles this automatically |
-| **Database Migrations** | Direct (5432) | Requires DDL operations |
-| **Local Development** | Direct (5432) | Simplest, no pooler needed |
+| Service                         | Connection Type         | Reason                                 |
+| ------------------------------- | ----------------------- | -------------------------------------- |
+| **Fastify API (Render)**        | Transaction Mode (6543) | Ephemeral containers, high concurrency |
+| **Next.js API Routes (Vercel)** | Transaction Mode (6543) | Serverless functions                   |
+| **Supabase Client (Browser)**   | Direct (via REST API)   | supabase-js handles this automatically |
+| **Database Migrations**         | Direct (5432)           | Requires DDL operations                |
+| **Local Development**           | Direct (5432)           | Simplest, no pooler needed             |
 
 **Environment Variable Setup:**
 
@@ -898,7 +903,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 async function signInWithGoogle() {
@@ -955,13 +960,13 @@ async function signInWithApple() {
 
 **Redirect URL Patterns:**
 
-| Environment | Redirect URL |
-|-------------|-------------|
-| **Production Web** | `https://app.realflow.com.au/auth/callback` |
-| **Production Portal** | `https://portal.realflow.com.au/auth/callback` |
-| **Production Mobile** | `realflow://auth/callback` |
-| **Preview (Vercel)** | `https://realflow-web-git-*.vercel.app/auth/callback` |
-| **Local Development** | `http://localhost:3000/auth/callback` |
+| Environment           | Redirect URL                                          |
+| --------------------- | ----------------------------------------------------- |
+| **Production Web**    | `https://app.realflow.com.au/auth/callback`           |
+| **Production Portal** | `https://portal.realflow.com.au/auth/callback`        |
+| **Production Mobile** | `realflow://auth/callback`                            |
+| **Preview (Vercel)**  | `https://realflow-web-git-*.vercel.app/auth/callback` |
+| **Local Development** | `http://localhost:3000/auth/callback`                 |
 
 **⚠️ Important:** You must add **ALL** redirect URLs to OAuth provider configurations (Google Cloud Console, Apple Developer Portal, Supabase Dashboard).
 
@@ -1002,6 +1007,7 @@ DATABASE_URL_DIRECT=postgresql://postgres.xxxxxxxxxxxxx:password@aws-0-ap-southe
 ### Backup Strategy
 
 **Automatic Backups (Supabase Cloud):**
+
 - Free tier: 7 days retention
 - Pro tier: 30 days retention
 - Enterprise: Custom retention
@@ -1017,6 +1023,7 @@ psql "postgresql://..." < backup.sql
 ```
 
 **Point-in-Time Recovery (Pro/Enterprise only):**
+
 - Go to **Database > Backups**
 - Restore to any point in the last 30 days
 
@@ -1165,14 +1172,17 @@ vercel --prod --cwd apps/portal
 ### Monitoring & Rollback
 
 **Render:**
+
 - View logs: `render logs --service realflow-api --tail`
 - Rollback: Render Dashboard > Deploys > Redeploy previous version
 
 **Vercel:**
+
 - View logs: Vercel Dashboard > Deployments > Select deployment > Logs
 - Rollback: Vercel Dashboard > Deployments > Select previous deployment > Promote to Production
 
 **Supabase:**
+
 - View logs: Supabase Dashboard > Logs > Postgres logs
 - Rollback migrations: Create new migration that reverts changes (never delete migrations)
 
@@ -1196,15 +1206,16 @@ vercel --prod --cwd apps/portal
 
 ### Cost Estimates (Alpha Phase)
 
-| Service | Tier | Monthly Cost |
-|---------|------|--------------|
-| **Render (API)** | Free | $0 |
-| **Vercel (web + portal)** | Hobby | $0 |
-| **Supabase** | Free | $0 |
-| **Resend** | Free | $0 |
-| **Total** | | **$0** |
+| Service                   | Tier  | Monthly Cost |
+| ------------------------- | ----- | ------------ |
+| **Render (API)**          | Free  | $0           |
+| **Vercel (web + portal)** | Hobby | $0           |
+| **Supabase**              | Free  | $0           |
+| **Resend**                | Free  | $0           |
+| **Total**                 |       | **$0**       |
 
 **Notes:**
+
 - Free tiers support ~20-50 alpha testers
 - Upgrade to paid tiers before beta launch:
   - Render Starter: $7/mo

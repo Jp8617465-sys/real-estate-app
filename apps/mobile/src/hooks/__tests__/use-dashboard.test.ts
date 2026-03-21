@@ -33,9 +33,7 @@ describe('useDashboardStats', () => {
       chain.select = vi.fn().mockReturnValue(chain);
       chain.eq = vi.fn().mockReturnValue(chain);
       chain.lte = vi.fn().mockReturnValue(chain);
-      chain.then = vi.fn((resolve: (v: unknown) => void) =>
-        resolve({ count, error: null }),
-      );
+      chain.then = vi.fn((resolve: (v: unknown) => void) => resolve({ count, error: null }));
       return chain;
     }
 
@@ -81,9 +79,7 @@ describe('useDashboardStats', () => {
       chain.select = vi.fn().mockReturnValue(chain);
       chain.eq = vi.fn().mockReturnValue(chain);
       chain.lte = vi.fn().mockReturnValue(chain);
-      chain.then = vi.fn((resolve: (v: unknown) => void) =>
-        resolve({ count, error: null }),
-      );
+      chain.then = vi.fn((resolve: (v: unknown) => void) => resolve({ count, error: null }));
       return chain;
     }
 

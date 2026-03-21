@@ -32,21 +32,22 @@ A buyers agent can open RealFlow on their phone and laptop and feel no embarrass
 
 All 11 features come directly from the signed-off discovery document at `docs/discovery/FRONTEND_MODERNISATION.md`.
 
-| ID | Feature | Complexity | Business Value | Apps |
-|----|---------|-----------|---------------|------|
-| FEAT-UI-001 | Animated page entrance (Framer Motion) | Medium | High — first impression on every navigation | web |
-| FEAT-UI-002 | Dark mode toggle (CSS vars + localStorage) | Medium | High — night-time inspections, battery life | web, portal |
-| FEAT-UI-003 | Pipeline drag-and-drop with animation (@dnd-kit + Framer Motion) | High | Very High — signature interaction for agents | web |
-| FEAT-UI-004 | Skeleton loaders with shimmer entry/exit animation | Low | Medium — removes "broken" feeling during load | web, portal, mobile |
-| FEAT-UI-005 | Toast notification system (@radix-ui/react-toast) | Medium | Very High — every mutation needs feedback | web, portal, mobile |
-| FEAT-UI-006 | Portal progress timeline animation | Medium | High — trust signal for buyer clients (Mei-Ling persona) | portal |
-| FEAT-UI-007 | Empty states with SVG illustration | Low | Medium — eliminates blank-list confusion | web, portal, mobile |
-| FEAT-UI-008 | Mobile micro-interactions (haptics + spring) | Medium | High — native feel on Lachlan's iPhone 15 | mobile |
-| FEAT-UI-009 | Consistent typography scale | Low | Medium — information hierarchy, Grace persona | web, portal, mobile |
-| FEAT-UI-010 | Accessible focus rings | Low | High — DDA 1992 compliance, Grace (JAWS) | web, portal |
-| FEAT-UI-011 | Pipeline keyboard navigation | Medium | High — DDA 1992 compliance, pairs with FEAT-UI-003 | web |
+| ID          | Feature                                                          | Complexity | Business Value                                           | Apps                |
+| ----------- | ---------------------------------------------------------------- | ---------- | -------------------------------------------------------- | ------------------- |
+| FEAT-UI-001 | Animated page entrance (Framer Motion)                           | Medium     | High — first impression on every navigation              | web                 |
+| FEAT-UI-002 | Dark mode toggle (CSS vars + localStorage)                       | Medium     | High — night-time inspections, battery life              | web, portal         |
+| FEAT-UI-003 | Pipeline drag-and-drop with animation (@dnd-kit + Framer Motion) | High       | Very High — signature interaction for agents             | web                 |
+| FEAT-UI-004 | Skeleton loaders with shimmer entry/exit animation               | Low        | Medium — removes "broken" feeling during load            | web, portal, mobile |
+| FEAT-UI-005 | Toast notification system (@radix-ui/react-toast)                | Medium     | Very High — every mutation needs feedback                | web, portal, mobile |
+| FEAT-UI-006 | Portal progress timeline animation                               | Medium     | High — trust signal for buyer clients (Mei-Ling persona) | portal              |
+| FEAT-UI-007 | Empty states with SVG illustration                               | Low        | Medium — eliminates blank-list confusion                 | web, portal, mobile |
+| FEAT-UI-008 | Mobile micro-interactions (haptics + spring)                     | Medium     | High — native feel on Lachlan's iPhone 15                | mobile              |
+| FEAT-UI-009 | Consistent typography scale                                      | Low        | Medium — information hierarchy, Grace persona            | web, portal, mobile |
+| FEAT-UI-010 | Accessible focus rings                                           | Low        | High — DDA 1992 compliance, Grace (JAWS)                 | web, portal         |
+| FEAT-UI-011 | Pipeline keyboard navigation                                     | Medium     | High — DDA 1992 compliance, pairs with FEAT-UI-003       | web                 |
 
 **Complexity definitions:**
+
 - Low: One component or CSS change, no new library, no state management
 - Medium: New library integration or cross-component state
 - High: New library + interaction model + accessibility requirements simultaneously
@@ -59,10 +60,10 @@ Sprint 7 has **zero inter-team file dependencies**. All three workstreams operat
 
 File paths were verified against the live repository on 2026-03-09. No file appears in more than one team column.
 
-| Team | Features | App Scope | Key Files Owned | Est. Effort |
-|------|---------|-----------|----------------|-------------|
-| **Team A** | UI-001, UI-002, UI-004, UI-005 (web), UI-007 (web), UI-009 (web), UI-010 (web) | apps/web only | `apps/web/src/app/globals.css`, `apps/web/src/lib/theme-context.tsx`, `apps/web/src/components/layout/sidebar.tsx`, `apps/web/src/components/dashboard/stat-card.tsx`, `apps/web/src/components/providers.tsx` | 12 dev-days |
-| **Team B** | UI-003, UI-011 | apps/web — pipeline only | `apps/web/src/components/pipeline/pipeline-board.tsx`, `apps/web/src/components/buyers-agent/ba-pipeline-board.tsx` | 8 dev-days |
+| Team       | Features                                                                               | App Scope                 | Key Files Owned                                                                                                                                                                                                                                                                                                                           | Est. Effort |
+| ---------- | -------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| **Team A** | UI-001, UI-002, UI-004, UI-005 (web), UI-007 (web), UI-009 (web), UI-010 (web)         | apps/web only             | `apps/web/src/app/globals.css`, `apps/web/src/lib/theme-context.tsx`, `apps/web/src/components/layout/sidebar.tsx`, `apps/web/src/components/dashboard/stat-card.tsx`, `apps/web/src/components/providers.tsx`                                                                                                                            | 12 dev-days |
+| **Team B** | UI-003, UI-011                                                                         | apps/web — pipeline only  | `apps/web/src/components/pipeline/pipeline-board.tsx`, `apps/web/src/components/buyers-agent/ba-pipeline-board.tsx`                                                                                                                                                                                                                       | 8 dev-days  |
 | **Team C** | UI-005 (portal+mobile), UI-006, UI-007 (portal+mobile), UI-008, UI-009 (portal+mobile) | apps/portal + apps/mobile | `apps/portal/src/components/timeline-step.tsx`, `apps/portal/src/app/(dashboard)/progress/page.tsx`, `apps/portal/src/components/providers.tsx`, `apps/mobile/src/components/ContactCard.tsx`, `apps/mobile/src/components/DealCard.tsx`, `apps/mobile/src/components/EmptyState.tsx`, `apps/mobile/src/components/QuickActionButton.tsx` | 11 dev-days |
 
 **Total:** ~31 dev-days across 3 parallel tracks = comfortable fit for a 4-week sprint at solo-founder pace or 2-week sprint with a 2-person team.
@@ -88,39 +89,41 @@ These are **not** new shared type files in `packages/shared/` (this is a display
 **⚠️ Architectural coupling risk resolved (Risk 2 from system-architect review):** Portal (Next.js, browser) and mobile (React Native) require different OS APIs. Mixing them causes a runtime crash. Keep them separate.
 
 **Web + Portal implementation** (browser API):
+
 ```typescript
 // apps/web/src/hooks/use-reduced-motion.ts
 // Copy verbatim to apps/portal/src/hooks/use-reduced-motion.ts
-'use client'
-import { useEffect, useState } from 'react'
+'use client';
+import { useEffect, useState } from 'react';
 
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false)
+  const [reduced, setReduced] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-  return reduced
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return reduced;
 }
 ```
 
 **Mobile implementation** (React Native API — Team C owns this):
+
 ```typescript
 // apps/mobile/src/hooks/use-reduced-motion.ts
-import { useEffect, useState } from 'react'
-import { AccessibilityInfo } from 'react-native'
+import { useEffect, useState } from 'react';
+import { AccessibilityInfo } from 'react-native';
 
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false)
+  const [reduced, setReduced] = useState(false);
   useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then(setReduced)
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced)
-    return () => sub.remove()
-  }, [])
-  return reduced
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduced);
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
+    return () => sub.remove();
+  }, []);
+  return reduced;
 }
 ```
 
@@ -137,36 +140,37 @@ export function useReducedMotion(): boolean {
 ```typescript
 // packages/ui/src/types/toast.ts
 
-export type ToastVariant = 'success' | 'error' | 'info' | 'warning'
+export type ToastVariant = 'success' | 'error' | 'info' | 'warning';
 
 export interface ToastPayload {
   /** Short message displayed to user. Max 120 chars. */
-  message: string
+  message: string;
   /** Visual treatment and icon. Defaults to 'info'. */
-  variant: ToastVariant
+  variant: ToastVariant;
   /**
    * Auto-dismiss after this many ms.
    * success: 3000, info: 3000, warning: 5000
    * error: undefined (requires manual dismiss)
    */
-  duration?: number
+  duration?: number;
   /** Optional action label — shows a button inside the toast. */
-  actionLabel?: string
+  actionLabel?: string;
   /** Fires when actionLabel button is pressed. */
-  onAction?: () => void
+  onAction?: () => void;
 }
 
 export interface ToastContextValue {
   /** Push a new toast. Returns a unique toastId. */
-  toast(payload: ToastPayload): string
+  toast(payload: ToastPayload): string;
   /** Dismiss a specific toast by id. */
-  dismiss(toastId: string): void
+  dismiss(toastId: string): void;
   /** Dismiss all active toasts. */
-  dismissAll(): void
+  dismissAll(): void;
 }
 ```
 
 **Positioning contract:**
+
 - Web (next.js): bottom-right viewport, 16px inset, z-index 9999
 - Portal (next.js): bottom-right viewport, 16px inset, z-index 9999
 - Mobile (React Native): bottom-center, `bottom: 24` safe-area-inset-aware
@@ -194,27 +198,27 @@ export type EmptyStateIllustration =
   | 'matches'
   | 'documents'
   | 'messages'
-  | 'generic'
+  | 'generic';
 
 export interface EmptyStateProps {
   /** Which SVG illustration to render. */
-  illustration: EmptyStateIllustration
+  illustration: EmptyStateIllustration;
   /** Primary heading. E.g. "No contacts yet". */
-  heading: string
+  heading: string;
   /**
    * Optional supporting line below heading.
    * Legal note: must not imply records exist when they do not (ACL).
    */
-  description?: string
+  description?: string;
   /** Label for the primary CTA button. Omit to render no button. */
-  actionLabel?: string
+  actionLabel?: string;
   /** Fires when CTA button is pressed. */
-  onAction?: () => void
+  onAction?: () => void;
   /**
    * Width of the SVG illustration.
    * Web default: 180px. Mobile default: 140. Must work at 320px viewport.
    */
-  illustrationWidth?: number
+  illustrationWidth?: number;
 }
 ```
 
@@ -252,6 +256,7 @@ The highest existing migration number is `00023_round_robin_function.sql`. Sprin
 **Goal:** Eliminate the dated feel of the web app. After Team A's work: dark mode works, toasts fire on every mutation, skeletons shimmer, page entrances animate, all lists have illustrated empty states, and every interactive element has a visible focus ring.
 
 **Package installs (apps/web):**
+
 ```bash
 npm install framer-motion@^11 @radix-ui/react-toast@^1 @radix-ui/react-dialog@^1 --workspace=apps/web
 ```
@@ -287,47 +292,63 @@ Complete the half-implemented HSL token system. Every colour currently hardcoded
 
 :root {
   /* Brand */
-  --color-primary-50:  220 100% 97%;
+  --color-primary-50: 220 100% 97%;
   --color-primary-100: 220 100% 93%;
   --color-primary-500: 220 90% 56%;
   --color-primary-600: 220 90% 48%;
   --color-primary-700: 220 90% 40%;
 
   /* Neutral */
-  --color-neutral-50:  220 20% 98%;
+  --color-neutral-50: 220 20% 98%;
   --color-neutral-100: 220 20% 95%;
   --color-neutral-200: 220 15% 88%;
   --color-neutral-700: 220 15% 30%;
   --color-neutral-900: 220 15% 10%;
 
   /* Semantic */
-  --color-background:  var(--color-neutral-50);
-  --color-surface:     0 0% 100%;
-  --color-text:        var(--color-neutral-900);
-  --color-text-muted:  var(--color-neutral-700);
-  --color-border:      var(--color-neutral-200);
-  --color-focus-ring:  var(--color-primary-500);
+  --color-background: var(--color-neutral-50);
+  --color-surface: 0 0% 100%;
+  --color-text: var(--color-neutral-900);
+  --color-text-muted: var(--color-neutral-700);
+  --color-border: var(--color-neutral-200);
+  --color-focus-ring: var(--color-primary-500);
 
   /* Status */
   --color-success: 142 72% 29%;
-  --color-error:   0 84% 60%;
+  --color-error: 0 84% 60%;
   --color-warning: 38 92% 50%;
 }
 
 .dark {
-  --color-background:  220 15% 10%;
-  --color-surface:     220 15% 14%;
-  --color-text:        220 20% 95%;
-  --color-text-muted:  220 15% 65%;
-  --color-border:      220 15% 22%;
+  --color-background: 220 15% 10%;
+  --color-surface: 220 15% 14%;
+  --color-text: 220 20% 95%;
+  --color-text-muted: 220 15% 65%;
+  --color-border: 220 15% 22%;
 }
 
 /* Typography scale — enforced globally */
-h1 { font-size: 1.875rem; line-height: 1.2; }  /* 30px */
-h2 { font-size: 1.5rem;   line-height: 1.3; }  /* 24px */
-h3 { font-size: 1.25rem;  line-height: 1.4; }  /* 20px */
-body { font-size: 1rem;   line-height: 1.6; }  /* 16px */
-small, .text-sm { font-size: 0.875rem; line-height: 1.5; }  /* 14px */
+h1 {
+  font-size: 1.875rem;
+  line-height: 1.2;
+} /* 30px */
+h2 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+} /* 24px */
+h3 {
+  font-size: 1.25rem;
+  line-height: 1.4;
+} /* 20px */
+body {
+  font-size: 1rem;
+  line-height: 1.6;
+} /* 16px */
+small,
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+} /* 14px */
 
 /* Accessible focus rings — applied globally */
 *:focus-visible {
@@ -338,8 +359,12 @@ small, .text-sm { font-size: 0.875rem; line-height: 1.5; }  /* 14px */
 
 /* Skeleton shimmer */
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .skeleton-shimmer {
@@ -438,8 +463,8 @@ Wrap the existing provider tree with `ThemeProvider` (outermost) and `ToastProvi
 
 ```typescript
 // apps/web/src/components/providers.tsx — additions
-import { ThemeProvider } from '@/lib/theme-context'
-import { ToastProvider } from '@/components/ui/toast-provider'
+import { ThemeProvider } from '@/lib/theme-context';
+import { ToastProvider } from '@/components/ui/toast-provider';
 
 // Wrap children: ThemeProvider > QueryClientProvider > ToastProvider > children
 ```
@@ -451,17 +476,19 @@ import { ToastProvider } from '@/components/ui/toast-provider'
 Built on `@radix-ui/react-toast`. Implements `ToastContextValue` from Contract 2. Exports a `useToast()` hook. Every React Query `onSuccess` / `onError` mutation callback in `apps/web` must call `useToast().toast(...)`.
 
 **Files:**
+
 - `apps/web/src/components/ui/toast-provider.tsx` — context + Radix viewport
 - `apps/web/src/components/ui/toast.tsx` — styled Radix Toast.Root component
 
 **Mutation hook pattern** (each existing mutation hook in `apps/web/src/hooks/` must be updated):
+
 ```typescript
-const { toast } = useToast()
+const { toast } = useToast();
 const mutation = useMutation({
   mutationFn: createContact,
   onSuccess: () => toast({ message: 'Contact saved', variant: 'success' }),
   onError: (err) => toast({ message: err.message, variant: 'error' }),
-})
+});
 ```
 
 ---
@@ -570,13 +597,13 @@ Typography scale applied globally via `globals.css` h1–h3 rules. Audit `apps/w
 
 #### A.11 Tests — Team A (Target: 22+ new tests)
 
-| File | Tests | Count |
-|------|-------|-------|
-| `apps/web/src/lib/theme-context.test.tsx` | ThemeProvider persists to localStorage, resolves system preference, toggles dark class on html element | 6 |
-| `apps/web/src/components/ui/toast-provider.test.tsx` | toast() returns id, dismiss() removes toast, dismissAll() clears queue, error toasts require manual dismiss, success toasts auto-dismiss after 3s, stack max 4 | 6 |
-| `apps/web/src/components/ui/skeleton.test.tsx` | renders shimmer when isLoading=true, crossfades to children when isLoading=false, skips animation when reduced motion | 3 |
-| `apps/web/src/components/ui/empty-state.test.tsx` | renders heading, renders description, renders action button, calls onAction, renders correct illustration, works at 320px | 5 |
-| `packages/ui/src/hooks/use-reduced-motion.test.ts` | returns false when no preference, returns true when prefers-reduced-motion matches | 2 |
+| File                                                 | Tests                                                                                                                                                          | Count |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `apps/web/src/lib/theme-context.test.tsx`            | ThemeProvider persists to localStorage, resolves system preference, toggles dark class on html element                                                         | 6     |
+| `apps/web/src/components/ui/toast-provider.test.tsx` | toast() returns id, dismiss() removes toast, dismissAll() clears queue, error toasts require manual dismiss, success toasts auto-dismiss after 3s, stack max 4 | 6     |
+| `apps/web/src/components/ui/skeleton.test.tsx`       | renders shimmer when isLoading=true, crossfades to children when isLoading=false, skips animation when reduced motion                                          | 3     |
+| `apps/web/src/components/ui/empty-state.test.tsx`    | renders heading, renders description, renders action button, calls onAction, renders correct illustration, works at 320px                                      | 5     |
+| `packages/ui/src/hooks/use-reduced-motion.test.ts`   | returns false when no preference, returns true when prefers-reduced-motion matches                                                                             | 2     |
 
 ---
 
@@ -605,6 +632,7 @@ Typography scale applied globally via `globals.css` h1–h3 rules. Audit `apps/w
 **Goal:** Make the pipeline board the signature interaction of RealFlow — satisfying to use with a mouse and fully accessible by keyboard. Team B touches exactly two files throughout the sprint.
 
 **Package installs (apps/web):**
+
 ```bash
 npm install @dnd-kit/core@^6 @dnd-kit/sortable@^7 --workspace=apps/web
 ```
@@ -627,6 +655,7 @@ No other files. Team B reads `apps/web/src/hooks/use-transactions.ts` and `apps/
 Replace the existing HTML5 drag-and-drop (or static rendering) with `@dnd-kit`.
 
 **Key design decisions:**
+
 - `DndContext` wraps the entire board
 - Each column is a `SortableContext` with `horizontalListSortingStrategy`
 - Each card is a `useSortable` element
@@ -635,6 +664,7 @@ Replace the existing HTML5 drag-and-drop (or static rendering) with `@dnd-kit`.
 - 422 rollback: animate card back to origin column using Framer Motion layout animation
 
 **Card lift animation** (Framer Motion `layoutId`):
+
 ```typescript
 // Inside the draggable card component
 <motion.div
@@ -650,6 +680,7 @@ Replace the existing HTML5 drag-and-drop (or static rendering) with `@dnd-kit`.
 ```
 
 **Drop zone highlight:**
+
 ```typescript
 // Column component receives isOver prop from useDroppable
 <div
@@ -660,13 +691,14 @@ Replace the existing HTML5 drag-and-drop (or static rendering) with `@dnd-kit`.
 ```
 
 **422 rollback pattern:**
+
 ```typescript
 onError: (err, variables, context) => {
   // Restore previous stage in local state
-  queryClient.setQueryData(['transactions'], context?.previousTransactions)
+  queryClient.setQueryData(['transactions'], context?.previousTransactions);
   // Toast the error message
-  toast({ message: err.message ?? 'Invalid stage transition', variant: 'error' })
-}
+  toast({ message: err.message ?? 'Invalid stage transition', variant: 'error' });
+};
 ```
 
 ---
@@ -676,22 +708,25 @@ onError: (err, variables, context) => {
 Implemented as a custom keyboard handler layered on top of the @dnd-kit keyboard sensor.
 
 @dnd-kit ships a `KeyboardSensor` — enable it alongside the default `PointerSensor`:
+
 ```typescript
 const sensors = useSensors(
   useSensor(PointerSensor),
   useSensor(KeyboardSensor, {
     coordinateGetter: sortableKeyboardCoordinates,
-  })
-)
+  }),
+);
 ```
 
 **Keyboard behaviour spec (from FEAT-UI-011 acceptance criteria):**
+
 - `Space` on a card: enter move mode (`aria-grabbed="true"`)
 - `ArrowLeft` / `ArrowRight`: move card to adjacent column
 - `Enter`: confirm drop → fires `PUT /api/v1/transactions/:id`
 - `Escape`: cancel, return card to origin column
 
 **Accessible live region** (added to board root):
+
 ```html
 <div aria-live="polite" aria-atomic="true" className="sr-only" id="pipeline-announcer">
   <!-- Populated by JS: "Card moved to Inspection" -->
@@ -710,10 +745,10 @@ The discovery doc notes: AML check records must display in chronological order �
 
 #### B.5 Tests — Team B (Target: 14+ new tests)
 
-| File | Tests | Count |
-|------|-------|-------|
-| `apps/web/src/components/pipeline/pipeline-board.test.tsx` | renders columns, card appears in correct column, onDragEnd fires PUT mutation, 422 rolls back card to origin column, toast fires on 422, drop zone highlights on hover, keyboard Space enters move mode, ArrowRight moves card to next column, Enter confirms drop, Escape cancels and restores position, live region announces move | 11 |
-| `apps/web/src/components/buyers-agent/ba-pipeline-board.test.tsx` | renders BA pipeline columns, keyboard navigation works, 422 rollback works | 3 |
+| File                                                              | Tests                                                                                                                                                                                                                                                                                                                                | Count |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| `apps/web/src/components/pipeline/pipeline-board.test.tsx`        | renders columns, card appears in correct column, onDragEnd fires PUT mutation, 422 rolls back card to origin column, toast fires on 422, drop zone highlights on hover, keyboard Space enters move mode, ArrowRight moves card to next column, Enter confirms drop, Escape cancels and restores position, live region announces move | 11    |
+| `apps/web/src/components/buyers-agent/ba-pipeline-board.test.tsx` | renders BA pipeline columns, keyboard navigation works, 422 rollback works                                                                                                                                                                                                                                                           | 3     |
 
 ---
 
@@ -744,6 +779,7 @@ The discovery doc notes: AML check records must display in chronological order �
 **Goal:** Give Mei-Ling a portal that communicates momentum. Give Lachlan a mobile app that feels native. Eliminate all hardcoded hex colours from mobile components.
 
 **Package installs:**
+
 ```bash
 # apps/portal
 npm install framer-motion@^11 @radix-ui/react-toast@^1 @radix-ui/react-dialog@^1 --workspace=apps/portal
@@ -755,12 +791,11 @@ npm install expo-haptics@~14 --workspace=apps/mobile
 ```
 
 **Before EAS build:** Add to `apps/mobile/app.json`:
+
 ```json
 {
   "expo": {
-    "plugins": [
-      ["expo-haptics", {}]
-    ],
+    "plugins": [["expo-haptics", {}]],
     "ios": {
       "infoPlist": {
         "NSMotionUsageDescription": "RealFlow uses haptic feedback to confirm actions."
@@ -780,6 +815,7 @@ npm install expo-haptics@~14 --workspace=apps/mobile
 Implement `ToastContextValue` from Contract 2 using `@radix-ui/react-toast`.
 
 **Files:**
+
 - `apps/portal/src/components/ui/toast-provider.tsx`
 - `apps/portal/src/components/ui/toast.tsx`
 
@@ -907,7 +943,7 @@ const styles = StyleSheet.create({
   container: { backgroundColor: '#ffffff', borderColor: '#e5e7eb' },
   name: { color: '#111827', fontSize: 16 },
   role: { color: '#6b7280', fontSize: 14 },
-})
+});
 
 // AFTER
 // Remove StyleSheet.create entirely.
@@ -993,12 +1029,12 @@ Apply to: `(tabs)/contacts.tsx`, `(tabs)/pipeline.tsx`, `alerts/index.tsx`.
 
 #### C.10 Tests — Team C (Target: 18+ new tests)
 
-| File | Tests | Count |
-|------|-------|-------|
-| `apps/portal/src/components/timeline-step.test.tsx` | completed step renders checkmark, current step pulses, future step renders muted, newly completed step animates checkmark path, reduced motion skips animation, index prop staggers delay | 6 |
-| `apps/portal/src/components/ui/toast-provider.test.tsx` | toast() fires, dismiss() works, error toast has no auto-dismiss, same API as web contract | 4 |
-| `apps/mobile/src/components/QuickActionButton.test.tsx` | scale animates on press, haptic fires on pressIn, haptic skipped when reduced motion, onPress still fires when haptic fails | 4 |
-| `apps/mobile/src/components/EmptyState.test.tsx` | renders heading, renders action button, calls onAction, matches snapshot at 320px width | 4 |
+| File                                                    | Tests                                                                                                                                                                                     | Count |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `apps/portal/src/components/timeline-step.test.tsx`     | completed step renders checkmark, current step pulses, future step renders muted, newly completed step animates checkmark path, reduced motion skips animation, index prop staggers delay | 6     |
+| `apps/portal/src/components/ui/toast-provider.test.tsx` | toast() fires, dismiss() works, error toast has no auto-dismiss, same API as web contract                                                                                                 | 4     |
+| `apps/mobile/src/components/QuickActionButton.test.tsx` | scale animates on press, haptic fires on pressIn, haptic skipped when reduced motion, onPress still fires when haptic fails                                                               | 4     |
+| `apps/mobile/src/components/EmptyState.test.tsx`        | renders heading, renders action button, calls onAction, matches snapshot at 320px width                                                                                                   | 4     |
 
 ---
 
@@ -1021,29 +1057,29 @@ Apply to: `(tabs)/contacts.tsx`, `(tabs)/pipeline.tsx`, `alerts/index.tsx`.
 
 ### Sprint Start Baseline
 
-| Package | Passing | Total |
-|---------|---------|-------|
-| `@realflow/shared` | 168 | 168 |
-| `@realflow/business-logic` | 774 | 774 |
-| `@realflow/integrations` | 122 | 122 |
-| `apps/api` | 327 | 327 |
-| **Total** | **1391** | **1391** |
+| Package                    | Passing  | Total    |
+| -------------------------- | -------- | -------- |
+| `@realflow/shared`         | 168      | 168      |
+| `@realflow/business-logic` | 774      | 774      |
+| `@realflow/integrations`   | 122      | 122      |
+| `apps/api`                 | 327      | 327      |
+| **Total**                  | **1391** | **1391** |
 
 Sprint 7 is display-only. Zero business-logic, shared, integrations, or API tests change.
 
 ### Sprint Target
 
-| Package | Sprint Start | New Tests | Sprint End Target |
-|---------|-------------|-----------|------------------|
-| `@realflow/shared` | 168 | 0 | 168 |
-| `@realflow/business-logic` | 774 | 0 | 774 |
-| `@realflow/integrations` | 122 | 0 | 122 |
-| `apps/api` | 327 | 0 | 327 |
-| `apps/web` (new) | 0 | 36 | 36 |
-| `apps/portal` (new) | 0 | 10 | 10 |
-| `apps/mobile` (new) | 0 | 8 | 8 |
-| `packages/ui` (new) | 0 | 2 | 2 |
-| **Total** | **1391** | **56** | **1447** |
+| Package                    | Sprint Start | New Tests | Sprint End Target |
+| -------------------------- | ------------ | --------- | ----------------- |
+| `@realflow/shared`         | 168          | 0         | 168               |
+| `@realflow/business-logic` | 774          | 0         | 774               |
+| `@realflow/integrations`   | 122          | 0         | 122               |
+| `apps/api`                 | 327          | 0         | 327               |
+| `apps/web` (new)           | 0            | 36        | 36                |
+| `apps/portal` (new)        | 0            | 10        | 10                |
+| `apps/mobile` (new)        | 0            | 8         | 8                 |
+| `packages/ui` (new)        | 0            | 2         | 2                 |
+| **Total**                  | **1391**     | **56**    | **1447**          |
 
 Team breakdown: Team A contributes 22, Team B contributes 14, Team C contributes 18, packages/ui hook contributes 2.
 
@@ -1061,35 +1097,35 @@ These are the acceptance gates for sprint close. All must pass before the sprint
 
 ### Performance (Lighthouse CI — run against staging)
 
-| Metric | Baseline | Target | Measurement |
-|--------|----------|--------|-------------|
-| Largest Contentful Paint (web) | Unknown | < 1.5s | Lighthouse CI on `/dashboard` |
-| Total Blocking Time (web) | Unknown | < 200ms | Lighthouse CI on `/dashboard` |
-| Cumulative Layout Shift (web) | Unknown | 0 on skeleton → content transition | Lighthouse CI |
-| First Input Delay (mobile) | Unknown | < 100ms tap-to-feedback | Expo Profiler |
+| Metric                         | Baseline | Target                             | Measurement                   |
+| ------------------------------ | -------- | ---------------------------------- | ----------------------------- |
+| Largest Contentful Paint (web) | Unknown  | < 1.5s                             | Lighthouse CI on `/dashboard` |
+| Total Blocking Time (web)      | Unknown  | < 200ms                            | Lighthouse CI on `/dashboard` |
+| Cumulative Layout Shift (web)  | Unknown  | 0 on skeleton → content transition | Lighthouse CI                 |
+| First Input Delay (mobile)     | Unknown  | < 100ms tap-to-feedback            | Expo Profiler                 |
 
 ### Accessibility (axe-core CI gate)
 
-| Check | Target |
-|-------|--------|
-| Critical violations across all web pages | 0 |
-| Serious violations across all web pages | 0 |
-| `focus-visible` violations | 0 |
-| Pipeline drag-and-drop keyboard accessible | All FEAT-UI-011 acceptance criteria pass |
-| WCAG AA contrast in dark mode | All text elements pass (4.5:1 for normal text, 3:1 for large text) |
+| Check                                      | Target                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------ |
+| Critical violations across all web pages   | 0                                                                  |
+| Serious violations across all web pages    | 0                                                                  |
+| `focus-visible` violations                 | 0                                                                  |
+| Pipeline drag-and-drop keyboard accessible | All FEAT-UI-011 acceptance criteria pass                           |
+| WCAG AA contrast in dark mode              | All text elements pass (4.5:1 for normal text, 3:1 for large text) |
 
 ### Feature acceptance
 
-| Feature | Acceptance Gate |
-|---------|----------------|
-| Dark mode (FEAT-UI-002) | Toggle works, persists in localStorage, no FOUC on hard reload, dark mode active in both web and portal |
-| Toast on every mutation (FEAT-UI-005) | Code-reviewed: every `useMutation` in apps/web and apps/portal has an `onSuccess` and `onError` toast call |
-| Portal timeline (FEAT-UI-006) | Newly completed stages animate checkmark on first load after login; previously completed stages do not re-animate |
-| Pipeline D&D (FEAT-UI-003) | Drag-and-drop works on desktop, 422 rolls back with animation and toast, keyboard navigation satisfies all FEAT-UI-011 ACs |
-| Mobile haptics (FEAT-UI-008) | Verified on physical iOS device (simulator does not produce haptics); spring animation runs on UI thread |
-| No hardcoded hex in mobile (FEAT-UI-009) | `grep -r '#[0-9a-fA-F]\{3,6\}' apps/mobile/src/components/` returns zero results |
-| Reduced motion respected | All animations skip to final state when `prefers-reduced-motion: reduce` is set at OS level |
-| Bundle size guard | `framer-motion` + `@dnd-kit/core` + `@dnd-kit/sortable` + `@radix-ui/react-toast` + `@radix-ui/react-dialog` add no more than 130KB gzip to the web bundle (`next build --analyze`) |
+| Feature                                  | Acceptance Gate                                                                                                                                                                     |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dark mode (FEAT-UI-002)                  | Toggle works, persists in localStorage, no FOUC on hard reload, dark mode active in both web and portal                                                                             |
+| Toast on every mutation (FEAT-UI-005)    | Code-reviewed: every `useMutation` in apps/web and apps/portal has an `onSuccess` and `onError` toast call                                                                          |
+| Portal timeline (FEAT-UI-006)            | Newly completed stages animate checkmark on first load after login; previously completed stages do not re-animate                                                                   |
+| Pipeline D&D (FEAT-UI-003)               | Drag-and-drop works on desktop, 422 rolls back with animation and toast, keyboard navigation satisfies all FEAT-UI-011 ACs                                                          |
+| Mobile haptics (FEAT-UI-008)             | Verified on physical iOS device (simulator does not produce haptics); spring animation runs on UI thread                                                                            |
+| No hardcoded hex in mobile (FEAT-UI-009) | `grep -r '#[0-9a-fA-F]\{3,6\}' apps/mobile/src/components/` returns zero results                                                                                                    |
+| Reduced motion respected                 | All animations skip to final state when `prefers-reduced-motion: reduce` is set at OS level                                                                                         |
+| Bundle size guard                        | `framer-motion` + `@dnd-kit/core` + `@dnd-kit/sortable` + `@radix-ui/react-toast` + `@radix-ui/react-dialog` add no more than 130KB gzip to the web bundle (`next build --analyze`) |
 
 ### Deployment gate
 
@@ -1124,20 +1160,20 @@ The following must be complete before any team writes feature code:
 
 These items are explicitly excluded from Sprint 7 and must not creep in:
 
-| Item | Where it belongs |
-|------|-----------------|
-| New routes or pages | Not in scope |
-| Recharts replacement | Separate charting spike |
-| Storybook component docs | Separate tooling sprint |
-| White-label / multi-theme | Commercial decision, Sprint 9+ |
-| i18n / localisation | Not in v1 scope |
-| New Supabase tables or migrations | Sprint 7 is display-only — blocked |
-| Backend API changes | Sprint 7 is display-only — blocked |
-| A/B testing framework | v1.5 |
-| Push notification UI redesign | Mobile notifications sprint |
-| Native splash screen redesign | Expo managed workflow |
-| Auction date cron alerts | Deferred from Sprint 5, Sprint 8 candidate |
+| Item                              | Where it belongs                           |
+| --------------------------------- | ------------------------------------------ |
+| New routes or pages               | Not in scope                               |
+| Recharts replacement              | Separate charting spike                    |
+| Storybook component docs          | Separate tooling sprint                    |
+| White-label / multi-theme         | Commercial decision, Sprint 9+             |
+| i18n / localisation               | Not in v1 scope                            |
+| New Supabase tables or migrations | Sprint 7 is display-only — blocked         |
+| Backend API changes               | Sprint 7 is display-only — blocked         |
+| A/B testing framework             | v1.5                                       |
+| Push notification UI redesign     | Mobile notifications sprint                |
+| Native splash screen redesign     | Expo managed workflow                      |
+| Auction date cron alerts          | Deferred from Sprint 5, Sprint 8 candidate |
 
 ---
 
-*Sprint plan authored 2026-03-09. Discovery sign-off required from Product Owner, Engineering Lead, QA Engineer, and Legal before BUILD phase begins.*
+_Sprint plan authored 2026-03-09. Discovery sign-off required from Product Owner, Engineering Lead, QA Engineer, and Legal before BUILD phase begins._

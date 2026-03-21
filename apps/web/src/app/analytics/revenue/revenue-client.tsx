@@ -39,11 +39,7 @@ interface RevenueByType {
   amount: number;
 }
 
-function buildRevenueByType(
-  retainer: number,
-  success: number,
-  referral: number,
-): RevenueByType[] {
+function buildRevenueByType(retainer: number, success: number, referral: number): RevenueByType[] {
   return [
     { type: 'Retainer Fees', amount: retainer },
     { type: 'Success Fees', amount: success },
@@ -317,15 +313,11 @@ export function RevenueClient() {
                   const pct = Math.round((row.amount / totalEarned) * 100);
                   return (
                     <tr key={row.label} className="transition-colors hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                        {row.label}
-                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.label}</td>
                       <td className="px-4 py-3 text-right text-sm text-gray-700">
                         {formatCurrency(row.amount)}
                       </td>
-                      <td className="px-4 py-3 text-right text-sm text-gray-500">
-                        {pct}%
-                      </td>
+                      <td className="px-4 py-3 text-right text-sm text-gray-500">{pct}%</td>
                     </tr>
                   );
                 })}

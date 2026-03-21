@@ -28,11 +28,7 @@ const FILE_ICONS: Record<FileType, React.ComponentType<{ className?: string }>> 
 function getFileType(mimeType: string): FileType {
   if (mimeType.includes('pdf')) return 'pdf';
   if (mimeType.startsWith('image/')) return 'image';
-  if (
-    mimeType.includes('spreadsheet') ||
-    mimeType.includes('excel') ||
-    mimeType.includes('csv')
-  )
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel') || mimeType.includes('csv'))
     return 'spreadsheet';
   return 'other';
 }
@@ -51,9 +47,7 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function groupByCategory(
-  docs: PortalDocument[],
-): Record<string, PortalDocument[]> {
+function groupByCategory(docs: PortalDocument[]): Record<string, PortalDocument[]> {
   const grouped: Record<string, PortalDocument[]> = {};
   for (const doc of docs) {
     const cat = doc.category ?? 'other';
@@ -137,12 +131,7 @@ export default function DocumentsPage() {
           </p>
         </div>
         <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFileChange}
-          />
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
           <button
             type="button"
             onClick={handleUploadClick}
@@ -173,16 +162,11 @@ export default function DocumentsPage() {
           {sortedCategories.map((category) => {
             const categoryDocs = grouped[category];
             return (
-              <div
-                key={category}
-                className="rounded-xl border border-gray-200 bg-white shadow-sm"
-              >
+              <div key={category} className="rounded-xl border border-gray-200 bg-white shadow-sm">
                 <div className="border-b border-gray-100 px-5 py-3">
                   <h2 className="text-sm font-semibold text-gray-700">
                     {formatCategory(category)}{' '}
-                    <span className="font-normal text-gray-400">
-                      ({categoryDocs.length})
-                    </span>
+                    <span className="font-normal text-gray-400">({categoryDocs.length})</span>
                   </h2>
                 </div>
                 <div className="divide-y divide-gray-50">
@@ -198,9 +182,7 @@ export default function DocumentsPage() {
                           <Icon className="h-5 w-5 text-gray-500" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-gray-900">
-                            {doc.name}
-                          </p>
+                          <p className="truncate text-sm font-medium text-gray-900">{doc.name}</p>
                           <div className="flex items-center gap-2 text-xs text-gray-400">
                             <span>{formatFileSize(doc.size_bytes)}</span>
                             <span className="flex items-center gap-1">

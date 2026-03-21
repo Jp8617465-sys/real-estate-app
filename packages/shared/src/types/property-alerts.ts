@@ -1,7 +1,7 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
-export const AlertChannelSchema = z.enum(['push', 'email', 'sms'])
-export type AlertChannel = z.infer<typeof AlertChannelSchema>
+export const AlertChannelSchema = z.enum(['push', 'email', 'sms']);
+export type AlertChannel = z.infer<typeof AlertChannelSchema>;
 
 export const PropertyAlertSubscriptionSchema = z.object({
   id: z.string().uuid(),
@@ -17,22 +17,33 @@ export const PropertyAlertSubscriptionSchema = z.object({
   deletedAt: z.string().datetime().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-})
-export type PropertyAlertSubscription = z.infer<typeof PropertyAlertSubscriptionSchema>
+});
+export type PropertyAlertSubscription = z.infer<typeof PropertyAlertSubscriptionSchema>;
 
 export const CreateAlertSubscriptionSchema = z.object({
   briefId: z.string().uuid(),
   scoreThreshold: z.number().int().min(50).max(100).default(70),
   channels: z.array(AlertChannelSchema).min(1).default(['push']),
   digestMode: z.boolean().default(false),
-  digestTime: z.string().regex(/^\d{2}:\d{2}$/).default('07:00'),
-  quietHoursStart: z.string().regex(/^\d{2}:\d{2}$/).default('21:00'),
-  quietHoursEnd: z.string().regex(/^\d{2}:\d{2}$/).default('07:00'),
-})
-export type CreateAlertSubscription = z.infer<typeof CreateAlertSubscriptionSchema>
+  digestTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default('07:00'),
+  quietHoursStart: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default('21:00'),
+  quietHoursEnd: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default('07:00'),
+});
+export type CreateAlertSubscription = z.infer<typeof CreateAlertSubscriptionSchema>;
 
-export const UpdateAlertSubscriptionSchema = CreateAlertSubscriptionSchema.omit({ briefId: true }).partial()
-export type UpdateAlertSubscription = z.infer<typeof UpdateAlertSubscriptionSchema>
+export const UpdateAlertSubscriptionSchema = CreateAlertSubscriptionSchema.omit({
+  briefId: true,
+}).partial();
+export type UpdateAlertSubscription = z.infer<typeof UpdateAlertSubscriptionSchema>;
 
 export const PropertyAlertEventSchema = z.object({
   id: z.string().uuid(),
@@ -47,10 +58,10 @@ export const PropertyAlertEventSchema = z.object({
   action: z.enum(['viewed', 'sent_to_client', 'dismissed', 'snoozed']).nullable(),
   snoozeUntil: z.string().datetime().nullable(),
   createdAt: z.string().datetime(),
-})
-export type PropertyAlertEvent = z.infer<typeof PropertyAlertEventSchema>
+});
+export type PropertyAlertEvent = z.infer<typeof PropertyAlertEventSchema>;
 
 export const SendToClientSchema = z.object({
   matchId: z.string().uuid(),
-})
-export type SendToClient = z.infer<typeof SendToClientSchema>
+});
+export type SendToClient = z.infer<typeof SendToClientSchema>;

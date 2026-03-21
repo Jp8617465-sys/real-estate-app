@@ -20,7 +20,12 @@ const ALERT_TYPE_COLOURS: Record<PropertyAlertEvent['alertType'], string> = {
 };
 
 function scorePill(score: number) {
-  const colour = score >= 80 ? 'bg-green-100 text-green-800' : score >= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600';
+  const colour =
+    score >= 80
+      ? 'bg-green-100 text-green-800'
+      : score >= 70
+        ? 'bg-yellow-100 text-yellow-800'
+        : 'bg-gray-100 text-gray-600';
   return `inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${colour}`;
 }
 
@@ -54,7 +59,9 @@ function AlertRow({ event }: { event: PropertyAlertEvent }) {
     <div className="flex items-start gap-4 rounded-lg border border-gray-200 bg-white p-4">
       <div className="flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${ALERT_TYPE_COLOURS[event.alertType]}`}>
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${ALERT_TYPE_COLOURS[event.alertType]}`}
+          >
             {ALERT_TYPE_LABELS[event.alertType]}
           </span>
           <span className={scorePill(event.matchScore)}>{event.matchScore}% match</span>
@@ -66,7 +73,9 @@ function AlertRow({ event }: { event: PropertyAlertEvent }) {
         </div>
         <p className="text-xs text-gray-500">
           Sent {formatAuDate(event.sentAt)} &middot; Channels:{' '}
-          {event.channelsDelivered.length > 0 ? event.channelsDelivered.join(', ') : 'none delivered'}
+          {event.channelsDelivered.length > 0
+            ? event.channelsDelivered.join(', ')
+            : 'none delivered'}
         </p>
       </div>
       <button
@@ -98,16 +107,18 @@ export function AlertsClient() {
   const { data: events, isLoading, dataUpdatedAt } = useAlertEvents(50);
 
   const lastRefreshed = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleString('en-AU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    ? new Date(dataUpdatedAt).toLocaleString('en-AU', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
     : null;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Property Alerts</h1>
-        {lastRefreshed && (
-          <p className="text-xs text-gray-400">Last refreshed {lastRefreshed}</p>
-        )}
+        {lastRefreshed && <p className="text-xs text-gray-400">Last refreshed {lastRefreshed}</p>}
       </div>
 
       {isLoading && <Skeleton />}

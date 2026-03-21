@@ -23,10 +23,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
   fastify.get('/profile', async (request, reply) => {
     const supabase = createSupabaseClient(request);
 
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .single();
+    const { data, error } = await supabase.from('users').select('*').single();
 
     if (error) return reply.status(500).send({ error: error.message });
     return { data };
@@ -49,10 +46,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
     updates.updated_at = new Date().toISOString();
 
     // Get the current user's ID first
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .single();
+    const { data: userData } = await supabase.from('users').select('id').single();
 
     if (!userData) return reply.status(401).send({ error: 'User not found' });
 
@@ -72,10 +66,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
     const supabase = createSupabaseClient(request);
 
     // Get current user
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .single();
+    const { data: userData } = await supabase.from('users').select('id').single();
 
     if (!userData) return reply.status(401).send({ error: 'User not found' });
 
@@ -111,9 +102,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       const connection = (connections ?? []).find(
         (c: Record<string, unknown>) => c.provider === p.provider,
       );
-      const token = (tokens ?? []).find(
-        (t: Record<string, unknown>) => t.provider === p.provider,
-      );
+      const token = (tokens ?? []).find((t: Record<string, unknown>) => t.provider === p.provider);
 
       const isActive = connection
         ? (connection as Record<string, unknown>).is_active === true
@@ -125,12 +114,8 @@ export async function settingsRoutes(fastify: FastifyInstance) {
         provider: p.provider,
         connected: isActive || hasToken,
         status: isActive || hasToken ? 'Connected' : 'Not connected',
-        accountEmail: token
-          ? (token as Record<string, unknown>).account_email
-          : undefined,
-        lastSyncAt: connection
-          ? (connection as Record<string, unknown>).last_sync_at
-          : undefined,
+        accountEmail: token ? (token as Record<string, unknown>).account_email : undefined,
+        lastSyncAt: connection ? (connection as Record<string, unknown>).last_sync_at : undefined,
       };
     });
 
@@ -169,10 +154,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       const { provider } = request.params;
 
       // Get current user
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .single();
+      const { data: userData } = await supabase.from('users').select('id').single();
 
       if (!userData) return reply.status(401).send({ error: 'User not found' });
 

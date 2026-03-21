@@ -13,30 +13,30 @@ function formatCurrency(amount: number): string {
 
 function getUrgencyLabel(urgency: Urgency): string {
   const labels: Record<Urgency, string> = {
-    'asap': 'ASAP',
+    asap: 'ASAP',
     '1_3_months': '1-3 months',
     '3_6_months': '3-6 months',
     '6_12_months': '6-12 months',
-    'no_rush': 'No rush',
+    no_rush: 'No rush',
   };
   return labels[urgency];
 }
 
 function getFrequencyLabel(freq: UpdateFrequency): string {
   const labels: Record<UpdateFrequency, string> = {
-    'daily': 'Daily',
-    'twice_weekly': 'Twice weekly',
-    'weekly': 'Weekly',
+    daily: 'Daily',
+    twice_weekly: 'Twice weekly',
+    weekly: 'Weekly',
   };
   return labels[freq];
 }
 
 function getPurchaseTypeLabel(type: PurchaseType): string {
   const labels: Record<PurchaseType, string> = {
-    'owner_occupier': 'Owner Occupier',
-    'investor': 'Investor',
-    'development': 'Development',
-    'smsf': 'SMSF',
+    owner_occupier: 'Owner Occupier',
+    investor: 'Investor',
+    development: 'Development',
+    smsf: 'SMSF',
   };
   return labels[type];
 }
@@ -97,11 +97,17 @@ export default function ClientBriefScreen() {
       {/* Budget Section */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Budget</Text>
-        <InfoRow label="Range" value={`${formatCurrency(brief.budget.min)} - ${formatCurrency(brief.budget.max)}`} />
+        <InfoRow
+          label="Range"
+          value={`${formatCurrency(brief.budget.min)} - ${formatCurrency(brief.budget.max)}`}
+        />
         {brief.budget.absoluteMax && (
           <InfoRow label="Absolute Max" value={formatCurrency(brief.budget.absoluteMax)} />
         )}
-        <InfoRow label="Stamp Duty Budgeted" value={brief.budget.stampDutyBudgeted ? 'Yes' : 'No'} />
+        <InfoRow
+          label="Stamp Duty Budgeted"
+          value={brief.budget.stampDutyBudgeted ? 'Yes' : 'No'}
+        />
 
         <View style={styles.divider} />
         <Text style={styles.subTitle}>Finance</Text>
@@ -110,14 +116,23 @@ export default function ClientBriefScreen() {
           <InfoRow label="Pre-Approval" value={formatCurrency(brief.finance.preApprovalAmount)} />
         )}
         {brief.finance.preApprovalExpiry && (
-          <InfoRow label="Expiry" value={new Date(brief.finance.preApprovalExpiry).toLocaleDateString('en-AU')} />
+          <InfoRow
+            label="Expiry"
+            value={new Date(brief.finance.preApprovalExpiry).toLocaleDateString('en-AU')}
+          />
         )}
         {brief.finance.lender && <InfoRow label="Lender" value={brief.finance.lender} />}
         {brief.finance.brokerName && (
-          <InfoRow label="Broker" value={`${brief.finance.brokerName}${brief.finance.brokerPhone ? ` (${brief.finance.brokerPhone})` : ''}`} />
+          <InfoRow
+            label="Broker"
+            value={`${brief.finance.brokerName}${brief.finance.brokerPhone ? ` (${brief.finance.brokerPhone})` : ''}`}
+          />
         )}
         {brief.finance.depositAvailable !== undefined && (
-          <InfoRow label="Deposit Available" value={formatCurrency(brief.finance.depositAvailable)} />
+          <InfoRow
+            label="Deposit Available"
+            value={formatCurrency(brief.finance.depositAvailable)}
+          />
         )}
         <InfoRow label="First Home Buyer" value={brief.finance.firstHomeBuyer ? 'Yes' : 'No'} />
       </View>
@@ -126,7 +141,10 @@ export default function ClientBriefScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Requirements</Text>
         <InfoRow label="Property Types" value={brief.requirements.propertyTypes.join(', ')} />
-        <InfoRow label="Bedrooms" value={`${brief.requirements.bedrooms.min}+${brief.requirements.bedrooms.ideal ? ` (ideal: ${brief.requirements.bedrooms.ideal})` : ''}`} />
+        <InfoRow
+          label="Bedrooms"
+          value={`${brief.requirements.bedrooms.min}+${brief.requirements.bedrooms.ideal ? ` (ideal: ${brief.requirements.bedrooms.ideal})` : ''}`}
+        />
         <InfoRow label="Bathrooms" value={`${brief.requirements.bathrooms.min}+`} />
         <InfoRow label="Cars" value={`${brief.requirements.carSpaces.min}+`} />
 
@@ -176,10 +194,19 @@ export default function ClientBriefScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Communication</Text>
         {brief.communication.preferredMethod && (
-          <InfoRow label="Preferred" value={brief.communication.preferredMethod.charAt(0).toUpperCase() + brief.communication.preferredMethod.slice(1)} />
+          <InfoRow
+            label="Preferred"
+            value={
+              brief.communication.preferredMethod.charAt(0).toUpperCase() +
+              brief.communication.preferredMethod.slice(1)
+            }
+          />
         )}
         {brief.communication.updateFrequency && (
-          <InfoRow label="Update Frequency" value={getFrequencyLabel(brief.communication.updateFrequency)} />
+          <InfoRow
+            label="Update Frequency"
+            value={getFrequencyLabel(brief.communication.updateFrequency)}
+          />
         )}
         {brief.communication.bestTimeToCall && (
           <InfoRow label="Best Time to Call" value={brief.communication.bestTimeToCall} />
@@ -215,7 +242,12 @@ export default function ClientBriefScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { padding: 16 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
   errorText: { fontSize: 16, color: '#dc2626' },
 
   header: {

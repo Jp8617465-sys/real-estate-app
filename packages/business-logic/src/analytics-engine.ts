@@ -143,8 +143,7 @@ export class AnalyticsEngine {
 
     for (const [pipelineType, stageRows] of byType) {
       // Sort by the canonical stage order for buyers_agent; fall back to alphabetical
-      const stageOrder =
-        pipelineType === 'buyers_agent' ? BUYERS_AGENT_STAGE_ORDER : [];
+      const stageOrder = pipelineType === 'buyers_agent' ? BUYERS_AGENT_STAGE_ORDER : [];
 
       const sorted = [...stageRows].sort((a, b) => {
         const ai = stageOrder.indexOf(a.stage);
@@ -170,9 +169,7 @@ export class AnalyticsEngine {
             : 0;
 
         const pipelineTypeValue = (
-          pipelineType === 'buyer' ||
-          pipelineType === 'seller' ||
-          pipelineType === 'buyers_agent'
+          pipelineType === 'buyer' || pipelineType === 'seller' || pipelineType === 'buyers_agent'
             ? pipelineType
             : 'buyers_agent'
         ) as 'buyer' | 'seller' | 'buyers_agent';
@@ -210,10 +207,9 @@ export class AnalyticsEngine {
       .eq('id', agentId)
       .single();
 
-    const agentName =
-      profile
-        ? `${(profile as { first_name: string; last_name: string }).first_name ?? ''} ${(profile as { first_name: string; last_name: string }).last_name ?? ''}`.trim()
-        : 'Agent';
+    const agentName = profile
+      ? `${(profile as { first_name: string; last_name: string }).first_name ?? ''} ${(profile as { first_name: string; last_name: string }).last_name ?? ''}`.trim()
+      : 'Agent';
 
     // Deals settled in period (completed transactions linked to this agent via client_briefs)
     const { data: completedTxns } = await supabase
@@ -244,10 +240,7 @@ export class AnalyticsEngine {
       .lte('paid_date', toIso);
 
     const paidInvoiceRows = (paidInvoices as InvoiceRow[] | null) ?? [];
-    const totalRevenue = paidInvoiceRows.reduce(
-      (sum, inv) => sum + Number(inv.amount),
-      0,
-    );
+    const totalRevenue = paidInvoiceRows.reduce((sum, inv) => sum + Number(inv.amount), 0);
 
     const avgDealValue = totalRevenue / Math.max(dealsSettled, 1);
 
@@ -459,13 +452,12 @@ export class AnalyticsEngine {
     }
     const suburbs = Array.from(suburbSet).slice(0, 10);
 
-    const [pipelineVelocity, agentPerformance, marketInsights, revenue] =
-      await Promise.all([
-        this.getPipelineVelocity(agentId, supabase),
-        this.getAgentPerformance(agentId, period, supabase),
-        this.getMarketInsights(suburbs, supabase),
-        this.getRevenueForecast(agentId, period, supabase),
-      ]);
+    const [pipelineVelocity, agentPerformance, marketInsights, revenue] = await Promise.all([
+      this.getPipelineVelocity(agentId, supabase),
+      this.getAgentPerformance(agentId, period, supabase),
+      this.getMarketInsights(suburbs, supabase),
+      this.getRevenueForecast(agentId, period, supabase),
+    ]);
 
     return {
       pipelineVelocity,
@@ -498,8 +490,7 @@ export class AnalyticsEngine {
       .eq('agent_id', agentId)
       .eq('is_deleted', false);
 
-    const activeClientsCount =
-      (activeClients as null | { count?: number })?.count ?? 0;
+    const activeClientsCount = (activeClients as null | { count?: number })?.count ?? 0;
 
     // New leads on that day (contacts created that day)
     const { count: newLeadsCount } = await supabase
@@ -587,8 +578,7 @@ export class AnalyticsEngine {
     );
 
     const settledCount = settlementsCount ?? 0;
-    const avgDealValueAud =
-      settledCount > 0 ? revenueEarnedAud / settledCount : 0;
+    const avgDealValueAud = settledCount > 0 ? revenueEarnedAud / settledCount : 0;
 
     // Messages sent count
     const { count: messagesSentCount } = await supabase

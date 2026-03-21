@@ -30,42 +30,42 @@ export const AmlDocumentCategorySchema = z.enum([
   'supporting',
 ]);
 
-export type AmlDocumentType     = z.infer<typeof AmlDocumentTypeSchema>;
+export type AmlDocumentType = z.infer<typeof AmlDocumentTypeSchema>;
 export type AmlDocumentCategory = z.infer<typeof AmlDocumentCategorySchema>;
 
 // Point values are static reference data
 export const AML_DOCUMENT_POINTS: Record<AmlDocumentType, number> = {
-  passport:                70,
-  birth_certificate:       70,
+  passport: 70,
+  birth_certificate: 70,
   citizenship_certificate: 70,
-  drivers_licence:         40,
-  government_id_card:      40,
-  proof_of_age_card:       40,
-  medicare_card:           25,
-  credit_card:             25,
-  bank_card:               25,
-  utility_bill:            25,
-  bank_statement:          25,
-  council_rates:           25,
-  lease_agreement:         25,
-  centrelink_letter:       25,
+  drivers_licence: 40,
+  government_id_card: 40,
+  proof_of_age_card: 40,
+  medicare_card: 25,
+  credit_card: 25,
+  bank_card: 25,
+  utility_bill: 25,
+  bank_statement: 25,
+  council_rates: 25,
+  lease_agreement: 25,
+  centrelink_letter: 25,
 };
 
 export const AML_DOCUMENT_CATEGORIES: Record<AmlDocumentType, AmlDocumentCategory> = {
-  passport:                'primary',
-  birth_certificate:       'primary',
+  passport: 'primary',
+  birth_certificate: 'primary',
   citizenship_certificate: 'primary',
-  drivers_licence:         'secondary_a',
-  government_id_card:      'secondary_a',
-  proof_of_age_card:       'secondary_a',
-  medicare_card:           'secondary_b',
-  credit_card:             'secondary_b',
-  bank_card:               'secondary_b',
-  utility_bill:            'supporting',
-  bank_statement:          'supporting',
-  council_rates:           'supporting',
-  lease_agreement:         'supporting',
-  centrelink_letter:       'supporting',
+  drivers_licence: 'secondary_a',
+  government_id_card: 'secondary_a',
+  proof_of_age_card: 'secondary_a',
+  medicare_card: 'secondary_b',
+  credit_card: 'secondary_b',
+  bank_card: 'secondary_b',
+  utility_bill: 'supporting',
+  bank_statement: 'supporting',
+  council_rates: 'supporting',
+  lease_agreement: 'supporting',
+  centrelink_letter: 'supporting',
 };
 
 // ─── AML Check ────────────────────────────────────────────────────────────────
@@ -267,11 +267,7 @@ export const AUSTRACReportTypeSchema = z.enum([
   'international_transfer',
 ]);
 
-export const AUSTRACReportStatusSchema = z.enum([
-  'draft',
-  'submitted',
-  'acknowledged',
-]);
+export const AUSTRACReportStatusSchema = z.enum(['draft', 'submitted', 'acknowledged']);
 
 export const AUSTRACReportSchema = z.object({
   id: z.string().uuid(),
@@ -315,13 +311,15 @@ export const ComplianceDashboardStatsSchema = z.object({
   failed: z.number().int().min(0),
   expiringWithin90Days: z.number().int().min(0),
   recentVerifications: z.array(VerificationRecordSchema),
-  pendingQueue: z.array(z.object({
-    contactId: z.string().uuid(),
-    contactName: z.string(),
-    verificationType: VerificationTypeSchema,
-    status: VerificationStatusSchema,
-    createdAt: z.string().datetime(),
-  })),
+  pendingQueue: z.array(
+    z.object({
+      contactId: z.string().uuid(),
+      contactName: z.string(),
+      verificationType: VerificationTypeSchema,
+      status: VerificationStatusSchema,
+      createdAt: z.string().datetime(),
+    }),
+  ),
 });
 
 // ─── Verification Type Labels ────────────────────────────────────────────────
@@ -351,27 +349,27 @@ export const AUSTRAC_REPORT_TYPE_LABELS: Record<AUSTRACReportType, string> = {
 
 // ─── Inferred Types ───────────────────────────────────────────────────────────
 
-export type AmlCheckStatus              = z.infer<typeof AmlCheckStatusSchema>;
-export type AmlVerificationMethod       = z.infer<typeof AmlVerificationMethodSchema>;
-export type AmlCheck                    = z.infer<typeof AmlCheckSchema>;
-export type CreateAmlCheck              = z.infer<typeof CreateAmlCheckSchema>;
-export type UpdateAmlCheck              = z.infer<typeof UpdateAmlCheckSchema>;
-export type CompleteAmlCheck            = z.infer<typeof CompleteAmlCheckSchema>;
-export type AmlIdentityDocument         = z.infer<typeof AmlIdentityDocumentSchema>;
-export type AddAmlDocument              = z.infer<typeof AddAmlDocumentSchema>;
-export type AmlSmrStatus                = z.infer<typeof AmlSmrStatusSchema>;
-export type AmlSuspiciousMatterReport   = z.infer<typeof AmlSuspiciousMatterReportSchema>;
-export type CreateAmlSmr                = z.infer<typeof CreateAmlSmrSchema>;
-export type ComplianceReport            = z.infer<typeof ComplianceReportSchema>;
-export type AmlValidationResult         = z.infer<typeof AmlValidationResultSchema>;
-export type VerificationStatus          = z.infer<typeof VerificationStatusSchema>;
-export type VerificationType            = z.infer<typeof VerificationTypeSchema>;
-export type VerificationRecord          = z.infer<typeof VerificationRecordSchema>;
-export type CreateVerificationRecord    = z.infer<typeof CreateVerificationRecordSchema>;
-export type UpdateVerificationRecord    = z.infer<typeof UpdateVerificationRecordSchema>;
-export type AUSTRACReportType           = z.infer<typeof AUSTRACReportTypeSchema>;
-export type AUSTRACReportStatus         = z.infer<typeof AUSTRACReportStatusSchema>;
-export type AUSTRACReport               = z.infer<typeof AUSTRACReportSchema>;
-export type GenerateAUSTRACReport       = z.infer<typeof GenerateAUSTRACReportSchema>;
-export type ThresholdTransaction        = z.infer<typeof ThresholdTransactionSchema>;
-export type ComplianceDashboardStats    = z.infer<typeof ComplianceDashboardStatsSchema>;
+export type AmlCheckStatus = z.infer<typeof AmlCheckStatusSchema>;
+export type AmlVerificationMethod = z.infer<typeof AmlVerificationMethodSchema>;
+export type AmlCheck = z.infer<typeof AmlCheckSchema>;
+export type CreateAmlCheck = z.infer<typeof CreateAmlCheckSchema>;
+export type UpdateAmlCheck = z.infer<typeof UpdateAmlCheckSchema>;
+export type CompleteAmlCheck = z.infer<typeof CompleteAmlCheckSchema>;
+export type AmlIdentityDocument = z.infer<typeof AmlIdentityDocumentSchema>;
+export type AddAmlDocument = z.infer<typeof AddAmlDocumentSchema>;
+export type AmlSmrStatus = z.infer<typeof AmlSmrStatusSchema>;
+export type AmlSuspiciousMatterReport = z.infer<typeof AmlSuspiciousMatterReportSchema>;
+export type CreateAmlSmr = z.infer<typeof CreateAmlSmrSchema>;
+export type ComplianceReport = z.infer<typeof ComplianceReportSchema>;
+export type AmlValidationResult = z.infer<typeof AmlValidationResultSchema>;
+export type VerificationStatus = z.infer<typeof VerificationStatusSchema>;
+export type VerificationType = z.infer<typeof VerificationTypeSchema>;
+export type VerificationRecord = z.infer<typeof VerificationRecordSchema>;
+export type CreateVerificationRecord = z.infer<typeof CreateVerificationRecordSchema>;
+export type UpdateVerificationRecord = z.infer<typeof UpdateVerificationRecordSchema>;
+export type AUSTRACReportType = z.infer<typeof AUSTRACReportTypeSchema>;
+export type AUSTRACReportStatus = z.infer<typeof AUSTRACReportStatusSchema>;
+export type AUSTRACReport = z.infer<typeof AUSTRACReportSchema>;
+export type GenerateAUSTRACReport = z.infer<typeof GenerateAUSTRACReportSchema>;
+export type ThresholdTransaction = z.infer<typeof ThresholdTransactionSchema>;
+export type ComplianceDashboardStats = z.infer<typeof ComplianceDashboardStatsSchema>;

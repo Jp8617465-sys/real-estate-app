@@ -117,7 +117,11 @@ export class NotificationDispatcher {
 
       await this.supabase
         .from('notifications')
-        .update({ status: 'sent', sent_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .update({
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', notificationId);
     } else {
       // Mark as digest item
@@ -158,9 +162,10 @@ export class NotificationDispatcher {
 
     const count = items.length;
     const categories = [...new Set(items.map((i) => i.category as string))];
-    const body = categories.length === 1
-      ? `${count} update${count > 1 ? 's' : ''} in ${categories[0]}`
-      : `${count} update${count > 1 ? 's' : ''} across ${categories.length} categories`;
+    const body =
+      categories.length === 1
+        ? `${count} update${count > 1 ? 's' : ''} in ${categories[0]}`
+        : `${count} update${count > 1 ? 's' : ''} across ${categories.length} categories`;
 
     await this.sendPush(userId, {
       title: `${count} new update${count > 1 ? 's' : ''} today`,
@@ -230,10 +235,7 @@ export class NotificationDispatcher {
     return currentMinutes >= startMinutes && currentMinutes < endMinutes;
   }
 
-  private async sendPush(
-    userId: string,
-    message: Omit<ExpoPushMessage, 'to'>,
-  ): Promise<void> {
+  private async sendPush(userId: string, message: Omit<ExpoPushMessage, 'to'>): Promise<void> {
     // Get all active push tokens for user
     const { data: tokens } = await this.supabase
       .from('push_device_tokens')

@@ -8,14 +8,17 @@ const supabase = createClient();
 export function usePipelineTransactions(pipelineType: PipelineType) {
   return useQuery({
     queryKey: ['transactions', pipelineType],
+    staleTime: 30_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transactions')
-        .select(`
+        .select(
+          `
           *,
           contact:contacts(id, first_name, last_name, email, phone, buyer_profile, lead_score),
           property:properties(id, address_street_number, address_street_name, address_suburb)
-        `)
+        `,
+        )
         .eq('pipeline_type', pipelineType)
         .eq('is_deleted', false)
         .order('updated_at', { ascending: false });
@@ -59,20 +62,21 @@ export function useTransitionStage() {
       if (updateError) throw updateError;
 
       // Log the transition
-      const { error: logError } = await supabase
-        .from('stage_transitions')
-        .insert({
-          transaction_id: transactionId,
-          from_stage: fromStage,
-          to_stage: toStage,
-          triggered_by: userId,
-          reason,
-        });
+      const { error: logError } = await supabase.from('stage_transitions').insert({
+        transaction_id: transactionId,
+        from_stage: fromStage,
+        to_stage: toStage,
+        triggered_by: userId,
+        reason,
+      });
 
       if (logError) throw logError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

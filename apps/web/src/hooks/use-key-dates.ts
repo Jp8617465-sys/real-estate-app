@@ -44,6 +44,9 @@ export function useCreateKeyDate() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['key-dates'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -56,7 +59,8 @@ export function useUpdateKeyDate(id: string) {
       if (updates.label !== undefined) updatePayload.label = updates.label;
       if (updates.date !== undefined) updatePayload.date = updates.date;
       if (updates.isCritical !== undefined) updatePayload.is_critical = updates.isCritical;
-      if (updates.reminderDaysBefore !== undefined) updatePayload.reminder_days_before = updates.reminderDaysBefore;
+      if (updates.reminderDaysBefore !== undefined)
+        updatePayload.reminder_days_before = updates.reminderDaysBefore;
       if (updates.status !== undefined) updatePayload.status = updates.status;
       if (updates.completedAt !== undefined) updatePayload.completed_at = updates.completedAt;
       if (updates.notes !== undefined) updatePayload.notes = updates.notes;
@@ -72,6 +76,9 @@ export function useUpdateKeyDate(id: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['key-dates'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

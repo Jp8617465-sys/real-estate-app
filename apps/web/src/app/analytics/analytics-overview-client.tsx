@@ -28,7 +28,11 @@ interface RevenueTrendPoint {
   revenue: number;
 }
 
-function buildRevenueTrend(earned: number, pipeline: number, forecast: number): RevenueTrendPoint[] {
+function buildRevenueTrend(
+  earned: number,
+  pipeline: number,
+  forecast: number,
+): RevenueTrendPoint[] {
   // Generate a simple trend line for visualization.
   // In production this would come from daily snapshots.
   const base = earned * 0.6;
@@ -77,10 +81,9 @@ export function AnalyticsOverviewClient() {
   const perf = snapshot?.agentPerformance;
   const revenue = snapshot?.revenue;
 
-  const trendData =
-    revenue
-      ? buildRevenueTrend(revenue.earnedRevenue, revenue.pipelineValue, revenue.forecastRevenue)
-      : [];
+  const trendData = revenue
+    ? buildRevenueTrend(revenue.earnedRevenue, revenue.pipelineValue, revenue.forecastRevenue)
+    : [];
 
   return (
     <div className="space-y-8">

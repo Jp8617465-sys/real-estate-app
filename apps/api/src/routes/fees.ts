@@ -97,13 +97,20 @@ export async function feeRoutes(fastify: FastifyInstance) {
     if (updates.clientId !== undefined) updatePayload.client_id = updates.clientId;
     if (updates.transactionId !== undefined) updatePayload.transaction_id = updates.transactionId;
     if (updates.retainerFee !== undefined) updatePayload.retainer_fee = updates.retainerFee;
-    if (updates.retainerPaidDate !== undefined) updatePayload.retainer_paid_date = updates.retainerPaidDate;
-    if (updates.successFeeType !== undefined) updatePayload.success_fee_type = updates.successFeeType;
-    if (updates.successFeeFlatAmount !== undefined) updatePayload.success_fee_flat_amount = updates.successFeeFlatAmount;
-    if (updates.successFeePercentage !== undefined) updatePayload.success_fee_percentage = updates.successFeePercentage;
-    if (updates.successFeeTiers !== undefined) updatePayload.success_fee_tiers = updates.successFeeTiers;
-    if (updates.successFeeDueDate !== undefined) updatePayload.success_fee_due_date = updates.successFeeDueDate;
-    if (updates.successFeePaid !== undefined) updatePayload.success_fee_paid = updates.successFeePaid;
+    if (updates.retainerPaidDate !== undefined)
+      updatePayload.retainer_paid_date = updates.retainerPaidDate;
+    if (updates.successFeeType !== undefined)
+      updatePayload.success_fee_type = updates.successFeeType;
+    if (updates.successFeeFlatAmount !== undefined)
+      updatePayload.success_fee_flat_amount = updates.successFeeFlatAmount;
+    if (updates.successFeePercentage !== undefined)
+      updatePayload.success_fee_percentage = updates.successFeePercentage;
+    if (updates.successFeeTiers !== undefined)
+      updatePayload.success_fee_tiers = updates.successFeeTiers;
+    if (updates.successFeeDueDate !== undefined)
+      updatePayload.success_fee_due_date = updates.successFeeDueDate;
+    if (updates.successFeePaid !== undefined)
+      updatePayload.success_fee_paid = updates.successFeePaid;
     if (updates.gstIncluded !== undefined) updatePayload.gst_included = updates.gstIncluded;
 
     const { data, error } = await supabase
@@ -175,42 +182,40 @@ export async function feeRoutes(fastify: FastifyInstance) {
   });
 
   // Update invoice status
-  fastify.put<{ Params: { invoiceId: string } }>(
-    '/invoices/:invoiceId',
-    async (request, reply) => {
-      const supabase = createSupabaseClient(request);
-      const { invoiceId } = request.params;
-      const parsed = UpdateInvoiceSchema.safeParse(request.body);
+  fastify.put<{ Params: { invoiceId: string } }>('/invoices/:invoiceId', async (request, reply) => {
+    const supabase = createSupabaseClient(request);
+    const { invoiceId } = request.params;
+    const parsed = UpdateInvoiceSchema.safeParse(request.body);
 
-      if (!parsed.success) {
-        return reply.status(400).send({ error: parsed.error.flatten() });
-      }
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() });
+    }
 
-      const updates = parsed.data;
-      const updatePayload: Record<string, unknown> = {
-        updated_at: new Date().toISOString(),
-      };
+    const updates = parsed.data;
+    const updatePayload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
 
-      if (updates.status !== undefined) updatePayload.status = updates.status;
-      if (updates.paidDate !== undefined) updatePayload.paid_date = updates.paidDate;
-      if (updates.stripeInvoiceId !== undefined) updatePayload.stripe_invoice_id = updates.stripeInvoiceId;
+    if (updates.status !== undefined) updatePayload.status = updates.status;
+    if (updates.paidDate !== undefined) updatePayload.paid_date = updates.paidDate;
+    if (updates.stripeInvoiceId !== undefined)
+      updatePayload.stripe_invoice_id = updates.stripeInvoiceId;
 
-      // Auto-set paidDate when status is set to paid
-      if (updates.status === 'paid' && !updates.paidDate) {
-        updatePayload.paid_date = new Date().toISOString();
-      }
+    // Auto-set paidDate when status is set to paid
+    if (updates.status === 'paid' && !updates.paidDate) {
+      updatePayload.paid_date = new Date().toISOString();
+    }
 
-      const { data, error } = await supabase
-        .from('invoices')
-        .update(updatePayload)
-        .eq('id', invoiceId)
-        .select()
-        .single();
+    const { data, error } = await supabase
+      .from('invoices')
+      .update(updatePayload)
+      .eq('id', invoiceId)
+      .select()
+      .single();
 
-      if (error) return reply.status(500).send({ error: error.message });
-      return { data };
-    },
-  );
+    if (error) return reply.status(500).send({ error: error.message });
+    return { data };
+  });
 
   // Calculate total fees
   fastify.post<{
@@ -234,7 +239,12 @@ export async function feeRoutes(fastify: FastifyInstance) {
       gstIncluded,
     } = request.body;
 
-    if (purchasePrice === undefined || retainerFee === undefined || !successFeeType || gstIncluded === undefined) {
+    if (
+      purchasePrice === undefined ||
+      retainerFee === undefined ||
+      !successFeeType ||
+      gstIncluded === undefined
+    ) {
       return reply.status(400).send({
         error: 'purchasePrice, retainerFee, successFeeType, and gstIncluded are required',
       });

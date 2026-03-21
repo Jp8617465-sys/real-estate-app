@@ -10,10 +10,12 @@ export function useSellingAgents(suburb?: string) {
     queryFn: async () => {
       let query = supabase
         .from('selling_agent_profiles')
-        .select(`
+        .select(
+          `
           *,
           contact:contacts(id, first_name, last_name, email, phone)
-        `)
+        `,
+        )
         .order('relationship_score', { ascending: false });
 
       if (suburb) {
@@ -33,10 +35,12 @@ export function useSellingAgent(contactId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('selling_agent_profiles')
-        .select(`
+        .select(
+          `
           *,
           contact:contacts(id, first_name, last_name, email, phone)
-        `)
+        `,
+        )
         .eq('contact_id', contactId)
         .single();
       if (error) throw error;
@@ -70,6 +74,9 @@ export function useCreateSellingAgent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['selling-agents'] });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
+    },
   });
 }
 
@@ -82,9 +89,12 @@ export function useUpdateSellingAgent(id: string) {
       if (updates.contactId) updatePayload.contact_id = updates.contactId;
       if (updates.agency !== undefined) updatePayload.agency = updates.agency;
       if (updates.suburbs) updatePayload.suburbs = updates.suburbs;
-      if (updates.relationshipScore !== undefined) updatePayload.relationship_score = updates.relationshipScore;
-      if (updates.lastContactDate !== undefined) updatePayload.last_contact_date = updates.lastContactDate;
-      if (updates.averageResponseTime !== undefined) updatePayload.average_response_time = updates.averageResponseTime;
+      if (updates.relationshipScore !== undefined)
+        updatePayload.relationship_score = updates.relationshipScore;
+      if (updates.lastContactDate !== undefined)
+        updatePayload.last_contact_date = updates.lastContactDate;
+      if (updates.averageResponseTime !== undefined)
+        updatePayload.average_response_time = updates.averageResponseTime;
       if (updates.tags) updatePayload.tags = updates.tags;
 
       const { data, error } = await supabase
@@ -98,6 +108,9 @@ export function useUpdateSellingAgent(id: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['selling-agents'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

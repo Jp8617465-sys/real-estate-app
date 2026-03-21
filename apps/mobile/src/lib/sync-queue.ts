@@ -5,11 +5,7 @@ import { storageGet, storageSet, StorageKeys } from './offline-storage';
 
 export type SyncOperationType = 'create' | 'update' | 'delete';
 
-export type SyncTable =
-  | 'contacts'
-  | 'transactions'
-  | 'tasks'
-  | 'conversation_messages';
+export type SyncTable = 'contacts' | 'transactions' | 'tasks' | 'conversation_messages';
 
 export interface SyncQueueEntry {
   /** Unique identifier for this queue entry */
@@ -132,9 +128,7 @@ async function saveQueue(queue: SyncQueueEntry[]): Promise<void> {
  */
 async function loadDeadLetterQueue(): Promise<SyncQueueEntry[]> {
   const userId = getUserId();
-  const queue = await storageGet<SyncQueueEntry[]>(
-    StorageKeys.syncQueueDeadLetter(userId),
-  );
+  const queue = await storageGet<SyncQueueEntry[]>(StorageKeys.syncQueueDeadLetter(userId));
   return queue ?? [];
 }
 
@@ -161,10 +155,7 @@ export async function enqueue(
   // merge the data into the existing entry instead of adding a duplicate.
   if (type === 'update' && recordId) {
     const existingIndex = queue.findIndex(
-      (entry) =>
-        entry.table === table &&
-        entry.recordId === recordId &&
-        entry.type === 'update',
+      (entry) => entry.table === table && entry.recordId === recordId && entry.type === 'update',
     );
 
     if (existingIndex !== -1) {
@@ -183,10 +174,7 @@ export async function enqueue(
   // If we have a create followed by an update for the same temp ID, merge into create
   if (type === 'update' && recordId) {
     const createIndex = queue.findIndex(
-      (entry) =>
-        entry.table === table &&
-        entry.recordId === recordId &&
-        entry.type === 'create',
+      (entry) => entry.table === table && entry.recordId === recordId && entry.type === 'create',
     );
 
     if (createIndex !== -1) {
@@ -251,18 +239,11 @@ async function processEntry(entry: SyncQueueEntry): Promise<SyncResult> {
       case 'create': {
         // For creates, strip the temporary ID if present and let the server assign one
         const createData = { ...entry.data };
-        if (
-          typeof createData.id === 'string' &&
-          createData.id.startsWith('temp_')
-        ) {
+        if (typeof createData.id === 'string' && createData.id.startsWith('temp_')) {
           delete createData.id;
         }
 
-        result = await supabase
-          .from(entry.table)
-          .insert(createData)
-          .select()
-          .single();
+        result = await supabase.from(entry.table).insert(createData).select().single();
         break;
       }
 
@@ -328,8 +309,7 @@ async function processEntry(entry: SyncQueueEntry): Promise<SyncResult> {
       serverData: (result.data as Record<string, unknown>) ?? undefined,
     };
   } catch (err: unknown) {
-    const errorMessage =
-      err instanceof Error ? err.message : 'Unknown error during sync';
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error during sync';
     return {
       success: false,
       entry,

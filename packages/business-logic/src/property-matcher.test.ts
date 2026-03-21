@@ -84,7 +84,8 @@ function makeProperty(overrides: Partial<Property> & { id: string }): Property {
 
 const perfectMatchWithDescription = makeProperty({
   id: 'prop-perfect',
-  listingDescription: 'Beautiful renovated kitchen with north-facing backyard. Features include a pool and separate study. Modern air conditioning throughout.',
+  listingDescription:
+    'Beautiful renovated kitchen with north-facing backyard. Features include a pool and separate study. Modern air conditioning throughout.',
 });
 
 const dealBreakerProperty = makeProperty({
@@ -156,10 +157,7 @@ describe('PropertyMatcher.matchProperties', () => {
       seenPropertyIds: new Set(['prop-seen']),
       enableDescriptionMatching: true,
     });
-    const results = matcher.matchProperties(
-      [seenProperty, perfectMatchWithDescription],
-      baseBrief,
-    );
+    const results = matcher.matchProperties([seenProperty, perfectMatchWithDescription], baseBrief);
 
     expect(results.find((r) => r.propertyId === 'prop-seen')).toBeUndefined();
     expect(results.find((r) => r.propertyId === 'prop-perfect')).toBeDefined();
@@ -354,7 +352,8 @@ describe('PropertyMatcher keyword expansion', () => {
   it('matches pool variations', () => {
     const swimmingPool = makeProperty({
       id: 'prop-swimpool',
-      listingDescription: 'Gorgeous swimming pool in the backyard. Renovated kitchen. North facing.',
+      listingDescription:
+        'Gorgeous swimming pool in the backyard. Renovated kitchen. North facing.',
     });
 
     const matcher = new PropertyMatcher({ minimumScore: 0, enableDescriptionMatching: true });

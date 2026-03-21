@@ -38,21 +38,13 @@ describe('AddressSchema', () => {
   });
 
   it('rejects invalid postcode (non-4-digit)', () => {
-    expect(() =>
-      AddressSchema.parse({ ...validAddress, postcode: '200' }),
-    ).toThrow();
-    expect(() =>
-      AddressSchema.parse({ ...validAddress, postcode: '20000' }),
-    ).toThrow();
-    expect(() =>
-      AddressSchema.parse({ ...validAddress, postcode: 'ABCD' }),
-    ).toThrow();
+    expect(() => AddressSchema.parse({ ...validAddress, postcode: '200' })).toThrow();
+    expect(() => AddressSchema.parse({ ...validAddress, postcode: '20000' })).toThrow();
+    expect(() => AddressSchema.parse({ ...validAddress, postcode: 'ABCD' })).toThrow();
   });
 
   it('rejects invalid state', () => {
-    expect(() =>
-      AddressSchema.parse({ ...validAddress, state: 'XX' }),
-    ).toThrow();
+    expect(() => AddressSchema.parse({ ...validAddress, state: 'XX' })).toThrow();
   });
 
   it('accepts all valid Australian states', () => {
@@ -65,9 +57,7 @@ describe('AddressSchema', () => {
 
   it('rejects missing required fields', () => {
     expect(() => AddressSchema.parse({})).toThrow();
-    expect(() =>
-      AddressSchema.parse({ streetNumber: '1' }),
-    ).toThrow();
+    expect(() => AddressSchema.parse({ streetNumber: '1' })).toThrow();
   });
 });
 
@@ -75,8 +65,18 @@ describe('AddressSchema', () => {
 
 describe('PropertyTypeSchema', () => {
   const validTypes = [
-    'house', 'unit', 'townhouse', 'villa', 'land', 'rural',
-    'apartment', 'duplex', 'studio', 'acreage', 'retirement', 'commercial',
+    'house',
+    'unit',
+    'townhouse',
+    'villa',
+    'land',
+    'rural',
+    'apartment',
+    'duplex',
+    'studio',
+    'acreage',
+    'retirement',
+    'commercial',
   ];
 
   it('accepts all valid property types', () => {
@@ -95,9 +95,19 @@ describe('PropertyTypeSchema', () => {
 
 describe('LeadSourceSchema', () => {
   const validSources = [
-    'domain', 'rea', 'instagram', 'facebook', 'linkedin',
-    'referral', 'walk-in', 'cold-call', 'website', 'open-home',
-    'signboard', 'print', 'other',
+    'domain',
+    'rea',
+    'instagram',
+    'facebook',
+    'linkedin',
+    'referral',
+    'walk-in',
+    'cold-call',
+    'website',
+    'open-home',
+    'signboard',
+    'print',
+    'other',
   ];
 
   it('accepts all valid lead sources', () => {

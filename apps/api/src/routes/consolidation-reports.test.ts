@@ -39,9 +39,9 @@ vi.mock('@realflow/integrations/src/errors', () => ({
 
 vi.mock('../services/market-data-service', () => ({
   MarketDataService: class MockMarketDataService {
-    getSnapshotsForSuburbs = vi.fn().mockResolvedValue([
-      { suburb: 'Bondi', state: 'NSW', medianPrice: 2350000 },
-    ]);
+    getSnapshotsForSuburbs = vi
+      .fn()
+      .mockResolvedValue([{ suburb: 'Bondi', state: 'NSW', medianPrice: 2350000 }]);
   },
 }));
 
@@ -279,18 +279,31 @@ describe('POST /api/v1/consolidation-reports/generate', () => {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockResolvedValue({
-              data: [{
-                propertyId: 'prop-1',
-                overallScore: 82,
-                status: 'new',
-                scoreBreakdown: { priceMatch: 85, locationMatch: 90, sizeMatch: 80, featureMatch: 75 },
-                matchedAt: '2026-01-10T00:00:00.000Z',
-                updatedAt: '2026-01-10T00:00:00.000Z',
-                property: {
-                  id: 'prop-1',
-                  address: { streetNumber: '42', streetName: 'Ocean St', suburb: 'Bondi', state: 'NSW', postcode: '2026' },
+              data: [
+                {
+                  propertyId: 'prop-1',
+                  overallScore: 82,
+                  status: 'new',
+                  scoreBreakdown: {
+                    priceMatch: 85,
+                    locationMatch: 90,
+                    sizeMatch: 80,
+                    featureMatch: 75,
+                  },
+                  matchedAt: '2026-01-10T00:00:00.000Z',
+                  updatedAt: '2026-01-10T00:00:00.000Z',
+                  property: {
+                    id: 'prop-1',
+                    address: {
+                      streetNumber: '42',
+                      streetName: 'Ocean St',
+                      suburb: 'Bondi',
+                      state: 'NSW',
+                      postcode: '2026',
+                    },
+                  },
                 },
-              }],
+              ],
               error: null,
             }),
           }),
@@ -401,7 +414,9 @@ describe('POST /api/v1/consolidation-reports/generate', () => {
               is: vi.fn().mockReturnValue({
                 order: vi.fn().mockReturnValue({
                   limit: vi.fn().mockReturnValue({
-                    single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
+                    single: vi
+                      .fn()
+                      .mockResolvedValue({ data: null, error: { message: 'Not found' } }),
                   }),
                 }),
               }),

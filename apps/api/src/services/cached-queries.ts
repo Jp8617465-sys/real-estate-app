@@ -79,9 +79,7 @@ export class CachedQueryService {
       const cached = await cache.get<Record<string, unknown>[]>('contacts', cacheId);
       if (cached) {
         // Schedule background refresh if near expiry
-        this.maybeBackgroundRefresh('contacts', cacheId, ttl, () =>
-          this.fetchContacts(filters),
-        );
+        this.maybeBackgroundRefresh('contacts', cacheId, ttl, () => this.fetchContacts(filters));
         return cached;
       }
     }
@@ -145,16 +143,16 @@ export class CachedQueryService {
     return data;
   }
 
-  private async fetchPipelineItems(
-    filters: PipelineFilters,
-  ): Promise<Record<string, unknown>[]> {
+  private async fetchPipelineItems(filters: PipelineFilters): Promise<Record<string, unknown>[]> {
     const { data, error } = await this.supabase
       .from('transactions')
-      .select(`
+      .select(
+        `
         *,
         contact:contacts(id, first_name, last_name, phone, email, buyer_profile, lead_score),
         property:properties(id, address_street_number, address_street_name, address_suburb, address_state)
-      `)
+      `,
+      )
       .eq('pipeline_type', filters.pipelineType)
       .eq('is_deleted', false)
       .order('updated_at', { ascending: false });
@@ -189,41 +187,39 @@ export class CachedQueryService {
 
   private async fetchDashboardStats(): Promise<DashboardStatsResult> {
     // Run all queries in parallel for <200ms target
-    const [contactsResult, transactionsResult, tasksResult, revenueResult] =
-      await Promise.all([
-        this.supabase
-          .from('contacts')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_deleted', false),
-        this.supabase
-          .from('transactions')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_deleted', false)
-          .not('current_stage', 'in', '("settled","lost","withdrawn")'),
-        this.supabase
-          .from('tasks')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_deleted', false)
-          .eq('status', 'pending')
-          .lt('due_date', new Date().toISOString()),
-        this.supabase
-          .from('transactions')
-          .select('estimated_revenue')
-          .eq('is_deleted', false)
-          .gte(
-            'settlement_date',
-            new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
-          )
-          .lte(
-            'settlement_date',
-            new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
-          ),
-      ]);
+    const [contactsResult, transactionsResult, tasksResult, revenueResult] = await Promise.all([
+      this.supabase
+        .from('contacts')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_deleted', false),
+      this.supabase
+        .from('transactions')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_deleted', false)
+        .not('current_stage', 'in', '("settled","lost","withdrawn")'),
+      this.supabase
+        .from('tasks')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_deleted', false)
+        .eq('status', 'pending')
+        .lt('due_date', new Date().toISOString()),
+      this.supabase
+        .from('transactions')
+        .select('estimated_revenue')
+        .eq('is_deleted', false)
+        .gte(
+          'settlement_date',
+          new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+        )
+        .lte(
+          'settlement_date',
+          new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+        ),
+    ]);
 
-    const revenueThisMonth = ((revenueResult.data ?? []) as Array<{ estimated_revenue: number | null }>).reduce(
-      (sum, row) => sum + (row.estimated_revenue ?? 0),
-      0,
-    );
+    const revenueThisMonth = (
+      (revenueResult.data ?? []) as Array<{ estimated_revenue: number | null }>
+    ).reduce((sum, row) => sum + (row.estimated_revenue ?? 0), 0);
 
     return {
       totalContacts: contactsResult.count ?? 0,
@@ -264,9 +260,7 @@ export class CachedQueryService {
     return data;
   }
 
-  private async fetchMarketData(
-    filters: MarketDataFilters,
-  ): Promise<Record<string, unknown>[]> {
+  private async fetchMarketData(filters: MarketDataFilters): Promise<Record<string, unknown>[]> {
     let query = this.supabase
       .from('market_snapshots')
       .select('*')
@@ -337,10 +331,7 @@ export class CachedQueryService {
       for (const pipelineType of pipelineTypes) {
         try {
           const service = new CachedQueryService(supabase, 'system');
-          await service.getPipelineItems(
-            { pipelineType },
-            { forceRefresh: true },
-          );
+          await service.getPipelineItems({ pipelineType }, { forceRefresh: true });
         } catch {
           // Non-critical — log and continue
           console.warn(`[CachedQueries] Failed to warm pipeline cache for ${pipelineType}`);

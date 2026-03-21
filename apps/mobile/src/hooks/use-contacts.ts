@@ -41,11 +41,7 @@ export function useContact(id: string) {
   return useQuery({
     queryKey: ['contacts', id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('contacts')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await supabase.from('contacts').select('*').eq('id', id).single();
       if (error) throw error;
       return data as Contact;
     },
@@ -102,7 +98,8 @@ export function useUpdateContact(id: string) {
       if (updates.buyerProfile) updatePayload.buyer_profile = updates.buyerProfile;
       if (updates.sellerProfile) updatePayload.seller_profile = updates.sellerProfile;
       if (updates.tags) updatePayload.tags = updates.tags;
-      if (updates.communicationPreference) updatePayload.communication_preference = updates.communicationPreference;
+      if (updates.communicationPreference)
+        updatePayload.communication_preference = updates.communicationPreference;
       if (updates.nextFollowUp !== undefined) updatePayload.next_follow_up = updates.nextFollowUp;
 
       const { data, error } = await supabase

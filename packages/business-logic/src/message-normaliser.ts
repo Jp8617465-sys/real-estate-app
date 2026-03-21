@@ -231,21 +231,25 @@ export class MessageNormaliser {
             content.text = msg.text.body;
           } else if (msg.type === 'image' && msg.image) {
             content.text = msg.image.caption;
-            content.attachments = [{
-              id: crypto.randomUUID(),
-              fileName: 'whatsapp-image',
-              mimeType: msg.image.mime_type,
-              sizeBytes: 0,
-              url: `whatsapp://media/${msg.image.id}`,
-            }];
+            content.attachments = [
+              {
+                id: crypto.randomUUID(),
+                fileName: 'whatsapp-image',
+                mimeType: msg.image.mime_type,
+                sizeBytes: 0,
+                url: `whatsapp://media/${msg.image.id}`,
+              },
+            ];
           } else if (msg.type === 'document' && msg.document) {
-            content.attachments = [{
-              id: crypto.randomUUID(),
-              fileName: msg.document.filename,
-              mimeType: msg.document.mime_type,
-              sizeBytes: 0,
-              url: `whatsapp://media/${msg.document.id}`,
-            }];
+            content.attachments = [
+              {
+                id: crypto.randomUUID(),
+                fileName: msg.document.filename,
+                mimeType: msg.document.mime_type,
+                sizeBytes: 0,
+                url: `whatsapp://media/${msg.document.id}`,
+              },
+            ];
           }
 
           const metadata: MessageMetadata = {

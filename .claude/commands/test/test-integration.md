@@ -28,6 +28,7 @@ $ARGUMENTS
 ## Reference Files
 
 Read before generating:
+
 - `apps/api/src/routes/contacts.ts` — canonical route handler pattern
 - `apps/api/src/routes/contacts.test.ts` — canonical integration test pattern
 - `apps/api/src/middleware/supabase.ts` — auth middleware (to understand how token extraction works)
@@ -39,17 +40,25 @@ import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vites
 import Fastify, { type FastifyInstance } from 'fastify';
 
 // vi.hoisted() for all shared mocks
-const { mockFrom, mockSelect, mockInsert, mockEq, mockSingle, mockOrder, mockLimit } = vi.hoisted(() => {
-  const mockSingle = vi.fn();
-  const mockLimit = vi.fn().mockResolvedValue({ data: [], error: null });
-  const mockOrder = vi.fn().mockReturnValue({ limit: mockLimit });
-  const mockEq = vi.fn().mockReturnValue({ is: vi.fn().mockReturnValue({ single: mockSingle }) });
-  const mockSelect = vi.fn().mockReturnValue({ eq: mockEq, order: mockOrder, is: vi.fn().mockReturnValue({ order: mockOrder }) });
-  const mockInsert = vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single: mockSingle }) });
-  const mockFrom = vi.fn().mockReturnValue({ select: mockSelect, insert: mockInsert });
+const { mockFrom, mockSelect, mockInsert, mockEq, mockSingle, mockOrder, mockLimit } = vi.hoisted(
+  () => {
+    const mockSingle = vi.fn();
+    const mockLimit = vi.fn().mockResolvedValue({ data: [], error: null });
+    const mockOrder = vi.fn().mockReturnValue({ limit: mockLimit });
+    const mockEq = vi.fn().mockReturnValue({ is: vi.fn().mockReturnValue({ single: mockSingle }) });
+    const mockSelect = vi.fn().mockReturnValue({
+      eq: mockEq,
+      order: mockOrder,
+      is: vi.fn().mockReturnValue({ order: mockOrder }),
+    });
+    const mockInsert = vi
+      .fn()
+      .mockReturnValue({ select: vi.fn().mockReturnValue({ single: mockSingle }) });
+    const mockFrom = vi.fn().mockReturnValue({ select: mockSelect, insert: mockInsert });
 
-  return { mockFrom, mockSelect, mockInsert, mockEq, mockSingle, mockOrder, mockLimit };
-});
+    return { mockFrom, mockSelect, mockInsert, mockEq, mockSingle, mockOrder, mockLimit };
+  },
+);
 
 // Mock Supabase
 vi.mock('@supabase/supabase-js', () => ({
@@ -239,6 +248,7 @@ describe('Feature Routes', () => {
 ## What Integration Tests Must Cover
 
 For each route:
+
 - ✅ Happy path — correct status code and response shape
 - ✅ Auth missing — 401
 - ✅ Auth malformed — 401

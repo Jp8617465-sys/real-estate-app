@@ -31,7 +31,9 @@ export default function PropertyDetailScreen() {
     );
   }
 
-  const displayPrice = property.priceGuide ?? (property.listPrice ? `$${property.listPrice.toLocaleString()}` : 'Price TBC');
+  const displayPrice =
+    property.priceGuide ??
+    (property.listPrice ? `$${property.listPrice.toLocaleString()}` : 'Price TBC');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -67,7 +69,12 @@ export default function PropertyDetailScreen() {
         <Text style={styles.cardTitle}>Listing Details</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Status</Text>
-          <Text style={[styles.infoValue, { color: property.listingStatus === 'active' ? '#15803d' : '#111827' }]}>
+          <Text
+            style={[
+              styles.infoValue,
+              { color: property.listingStatus === 'active' ? '#15803d' : '#111827' },
+            ]}
+          >
             {property.listingStatus}
           </Text>
         </View>
@@ -111,7 +118,12 @@ export default function PropertyDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb' },
   content: { paddingBottom: 32 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9fafb',
+  },
   errorText: { fontSize: 16, color: '#dc2626' },
   imagePlaceholder: {
     height: 220,
@@ -120,7 +132,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   imageEmoji: { fontSize: 60 },
-  address: { fontSize: 20, fontWeight: '700', color: '#111827', paddingHorizontal: 16, paddingTop: 16 },
+  address: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
   type: { fontSize: 14, color: '#6b7280', paddingHorizontal: 16, marginTop: 4 },
   features: {
     flexDirection: 'row',
@@ -144,7 +162,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
-  cardTitle: { fontSize: 13, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 },
+  cardTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   infoLabel: { fontSize: 13, color: '#6b7280' },
   infoValue: { fontSize: 13, color: '#111827', fontWeight: '500' },

@@ -96,10 +96,7 @@ interface BriefForScoring {
   };
 }
 
-function scoreOffMarketAgainstBrief(
-  property: OffMarketProperty,
-  brief: BriefForScoring,
-): number {
+function scoreOffMarketAgainstBrief(property: OffMarketProperty, brief: BriefForScoring): number {
   const r = brief.requirements;
   let score = 0;
   let totalWeight = 0;
@@ -117,7 +114,7 @@ function scoreOffMarketAgainstBrief(
   if (r.locations?.suburbs && r.locations.suburbs.length > 0) {
     totalWeight += 25;
     const match = r.locations.suburbs.some(
-      s => s.toLowerCase() === property.suburb.toLowerCase(),
+      (s) => s.toLowerCase() === property.suburb.toLowerCase(),
     );
     if (match) score += 25;
   }
@@ -273,16 +270,16 @@ export class OffMarketEngine {
     if (briefErr) throw new Error(`Failed to fetch briefs: ${briefErr.message}`);
 
     const scoredMatches = (briefs as BriefForScoring[])
-      .map(brief => ({
+      .map((brief) => ({
         brief,
         score: scoreOffMarketAgainstBrief(property, brief),
       }))
-      .filter(m => m.score >= threshold);
+      .filter((m) => m.score >= threshold);
 
     if (scoredMatches.length === 0) return [];
 
     // Upsert match records
-    const inserts = scoredMatches.map(m => ({
+    const inserts = scoredMatches.map((m) => ({
       off_market_id: propertyId,
       client_brief_id: m.brief.id,
       match_score: m.score,
@@ -396,8 +393,9 @@ export class OffMarketEngine {
 
   /**
    * Get a single off-market property by ID.
+   * Returns null if the property does not exist (PGRST116).
    */
-  async getById(propertyId: string): Promise<OffMarketProperty> {
+  async getById(propertyId: string): Promise<OffMarketProperty | null> {
     const { data, error } = await this.db
       .from('off_market_properties')
       .select('*')
@@ -405,7 +403,10 @@ export class OffMarketEngine {
       .is('deleted_at', null)
       .single();
 
-    if (error) throw new Error(`Off-market property not found: ${error.message}`);
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw new Error(`Failed to fetch off-market property: ${error.message}`);
+    }
     return mapProperty(data as OffMarketPropertyRow);
   }
 
@@ -423,7 +424,7 @@ export class OffMarketEngine {
 
     const offRows = offMarket as { status: string }[];
     const totalOffMarket = offRows.length;
-    const offMarketClosed = offRows.filter(r => r.status === 'sold').length;
+    const offMarketClosed = offRows.filter((r) => r.status === 'sold').length;
 
     // On-market = transactions with a property, excluding off-market
     const { data: onMarket, error: txErr } = await this.db
@@ -436,7 +437,7 @@ export class OffMarketEngine {
 
     const txRows = onMarket as { current_stage: string }[];
     const totalOnMarket = txRows.length;
-    const onMarketClosed = txRows.filter(r => r.current_stage === 'settlement').length;
+    const onMarketClosed = txRows.filter((r) => r.current_stage === 'settlement').length;
 
     return {
       totalOffMarket,

@@ -96,9 +96,10 @@ export function DataTable<T>({
     return [...data].sort((a, b) => {
       const aVal = getValue(a);
       const bVal = getValue(b);
-      const cmp = typeof aVal === 'number' && typeof bVal === 'number'
-        ? aVal - bVal
-        : String(aVal).localeCompare(String(bVal));
+      const cmp =
+        typeof aVal === 'number' && typeof bVal === 'number'
+          ? aVal - bVal
+          : String(aVal).localeCompare(String(bVal));
       return sortDir === 'asc' ? cmp : -cmp;
     });
   }, [data, sortKey, sortDir, columns]);
@@ -161,9 +162,7 @@ export function DataTable<T>({
                   <span className="inline-flex items-center gap-1">
                     {col.header}
                     {col.sortable && sortKey === col.key && (
-                      <span aria-hidden="true">
-                        {sortDir === 'asc' ? '\u2191' : '\u2193'}
-                      </span>
+                      <span aria-hidden="true">{sortDir === 'asc' ? '\u2191' : '\u2193'}</span>
                     )}
                   </span>
                 </th>
@@ -182,10 +181,7 @@ export function DataTable<T>({
               </tr>
             ) : (
               sortedData.map((row) => (
-                <tr
-                  key={keyExtractor(row)}
-                  className="transition-colors hover:bg-gray-50"
-                >
+                <tr key={keyExtractor(row)} className="transition-colors hover:bg-gray-50">
                   {columns.map((col) => (
                     <td
                       key={col.key}

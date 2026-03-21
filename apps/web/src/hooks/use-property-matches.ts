@@ -7,15 +7,18 @@ const supabase = createClient();
 export function usePropertyMatches(clientBriefId?: string) {
   return useQuery({
     queryKey: ['property-matches', clientBriefId],
+    staleTime: 60_000,
     queryFn: async () => {
       let query = supabase
         .from('property_matches')
-        .select(`
+        .select(
+          `
           *,
           property:properties(id, address_street_number, address_street_name, address_suburb, address_state, address_postcode, price_display, bedrooms, bathrooms, car_spaces),
           client_brief:client_briefs(id, contact_id),
           client:contacts(id, first_name, last_name)
-        `)
+        `,
+        )
         .order('overall_score', { ascending: false });
 
       if (clientBriefId) {
@@ -36,7 +39,8 @@ export function useUpdateMatchStatus(id: string) {
     mutationFn: async (updates: UpdatePropertyMatch) => {
       const updatePayload: Record<string, unknown> = {};
       if (updates.status) updatePayload.status = updates.status;
-      if (updates.rejectionReason !== undefined) updatePayload.rejection_reason = updates.rejectionReason;
+      if (updates.rejectionReason !== undefined)
+        updatePayload.rejection_reason = updates.rejectionReason;
       if (updates.agentNotes !== undefined) updatePayload.agent_notes = updates.agentNotes;
 
       const { data, error } = await supabase
@@ -50,6 +54,9 @@ export function useUpdateMatchStatus(id: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['property-matches'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

@@ -8,13 +8,16 @@ interface SocialAccountCardProps {
   onDisconnect?: (accountId: string) => void;
 }
 
-const platformConfig: Record<SocialPlatform, {
-  label: string;
-  icon: string;
-  bgColor: string;
-  textColor: string;
-  borderColor: string;
-}> = {
+const platformConfig: Record<
+  SocialPlatform,
+  {
+    label: string;
+    icon: string;
+    bgColor: string;
+    textColor: string;
+    borderColor: string;
+  }
+> = {
   facebook: {
     label: 'Facebook',
     icon: 'FB',
@@ -51,17 +54,21 @@ export function SocialAccountCard({ account, onDisconnect }: SocialAccountCardPr
     : null;
 
   return (
-    <div className={cn(
-      'rounded-lg border p-4 transition-shadow hover:shadow-md',
-      isActive && !isExpired ? config.borderColor : 'border-gray-200',
-    )}>
+    <div
+      className={cn(
+        'rounded-lg border p-4 transition-shadow hover:shadow-md',
+        isActive && !isExpired ? config.borderColor : 'border-gray-200',
+      )}
+    >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className={cn(
-            'flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold',
-            config.bgColor,
-            config.textColor,
-          )}>
+          <div
+            className={cn(
+              'flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold',
+              config.bgColor,
+              config.textColor,
+            )}
+          >
             {config.icon}
           </div>
           <div>

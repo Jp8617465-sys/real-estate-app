@@ -17,9 +17,7 @@ interface SequenceStepListProps {
 
 export function SequenceStepList({ steps }: SequenceStepListProps) {
   if (steps.length === 0) {
-    return (
-      <p className="py-4 text-center text-sm text-gray-400">No steps configured</p>
-    );
+    return <p className="py-4 text-center text-sm text-gray-400">No steps configured</p>;
   }
 
   return (
@@ -32,8 +30,8 @@ export function SequenceStepList({ steps }: SequenceStepListProps) {
           step.dayOffset === 0
             ? 'Immediately'
             : step.dayOffset < 0
-            ? `${Math.abs(step.dayOffset)} day${Math.abs(step.dayOffset) !== 1 ? 's' : ''} before`
-            : `Day ${step.dayOffset}`;
+              ? `${Math.abs(step.dayOffset)} day${Math.abs(step.dayOffset) !== 1 ? 's' : ''} before`
+              : `Day ${step.dayOffset}`;
 
         return (
           <li key={index} className="relative">
@@ -55,34 +53,39 @@ export function SequenceStepList({ steps }: SequenceStepListProps) {
               </div>
 
               {/* Action details */}
-              {actionType === 'send_email' && step.action && (() => {
-                const emailAction = step.action as Record<string, unknown>;
-                return (emailAction.subject || emailAction.useAiContent) ? (
-                  <div className="mt-2 space-y-1">
-                    {!!emailAction.subject && (
-                      <p className="text-xs text-gray-700">
-                        <span className="font-medium">Subject:</span> {String(emailAction.subject)}
-                      </p>
-                    )}
-                    {!!emailAction.useAiContent && (
+              {actionType === 'send_email' &&
+                step.action &&
+                (() => {
+                  const emailAction = step.action as Record<string, unknown>;
+                  return emailAction.subject || emailAction.useAiContent ? (
+                    <div className="mt-2 space-y-1">
+                      {!!emailAction.subject && (
+                        <p className="text-xs text-gray-700">
+                          <span className="font-medium">Subject:</span>{' '}
+                          {String(emailAction.subject)}
+                        </p>
+                      )}
+                      {!!emailAction.useAiContent && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                          ✨ AI-generated content
+                        </span>
+                      )}
+                    </div>
+                  ) : null;
+                })()}
+
+              {actionType === 'send_sms' &&
+                step.action &&
+                (() => {
+                  const smsAction = step.action as Record<string, unknown>;
+                  return smsAction.useAiContent ? (
+                    <div className="mt-2">
                       <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
                         ✨ AI-generated content
                       </span>
-                    )}
-                  </div>
-                ) : null;
-              })()}
-
-              {actionType === 'send_sms' && step.action && (() => {
-                const smsAction = step.action as Record<string, unknown>;
-                return smsAction.useAiContent ? (
-                  <div className="mt-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
-                      ✨ AI-generated content
-                    </span>
-                  </div>
-                ) : null;
-              })()}
+                    </div>
+                  ) : null;
+                })()}
 
               {actionType === 'create_task' && step.action && 'taskTitle' in step.action && (
                 <p className="mt-2 text-xs text-gray-700">

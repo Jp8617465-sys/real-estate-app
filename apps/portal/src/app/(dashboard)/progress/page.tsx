@@ -19,14 +19,46 @@ const MILESTONES: Array<{
   label: string;
   description: string;
 }> = [
-  { stage: 'enquiry', label: 'Initial Enquiry', description: 'You reached out to your buyers agent.' },
-  { stage: 'consult-qualify', label: 'Discovery Consultation', description: 'Understanding your needs and qualifying the engagement.' },
-  { stage: 'engaged', label: 'Engagement Signed', description: 'Agreement signed and retainer paid.' },
-  { stage: 'strategy-brief', label: 'Brief Submitted', description: 'Full property brief completed and search strategy activated.' },
-  { stage: 'active-search', label: 'First Shortlist', description: 'Properties are being sourced and inspected on your behalf.' },
-  { stage: 'offer-negotiate', label: 'Offer Made', description: 'Making offers or bidding at auction.' },
-  { stage: 'under-contract', label: 'Under Contract', description: 'Contracts exchanged. Due diligence and settlement underway.' },
-  { stage: 'settled-nurture', label: 'Settlement Complete', description: 'Congratulations! Property settled successfully.' },
+  {
+    stage: 'enquiry',
+    label: 'Initial Enquiry',
+    description: 'You reached out to your buyers agent.',
+  },
+  {
+    stage: 'consult-qualify',
+    label: 'Discovery Consultation',
+    description: 'Understanding your needs and qualifying the engagement.',
+  },
+  {
+    stage: 'engaged',
+    label: 'Engagement Signed',
+    description: 'Agreement signed and retainer paid.',
+  },
+  {
+    stage: 'strategy-brief',
+    label: 'Brief Submitted',
+    description: 'Full property brief completed and search strategy activated.',
+  },
+  {
+    stage: 'active-search',
+    label: 'First Shortlist',
+    description: 'Properties are being sourced and inspected on your behalf.',
+  },
+  {
+    stage: 'offer-negotiate',
+    label: 'Offer Made',
+    description: 'Making offers or bidding at auction.',
+  },
+  {
+    stage: 'under-contract',
+    label: 'Under Contract',
+    description: 'Contracts exchanged. Due diligence and settlement underway.',
+  },
+  {
+    stage: 'settled-nurture',
+    label: 'Settlement Complete',
+    description: 'Congratulations! Property settled successfully.',
+  },
 ];
 
 function daysUntil(iso: string): number {
@@ -70,7 +102,8 @@ export default function ProgressPage() {
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-600" aria-hidden="true" />
             <h2 className="font-semibold text-amber-800">
-              {criticalUpcoming.length} Critical Date{criticalUpcoming.length !== 1 ? 's' : ''} Approaching
+              {criticalUpcoming.length} Critical Date{criticalUpcoming.length !== 1 ? 's' : ''}{' '}
+              Approaching
             </h2>
           </div>
           <div className="mt-2 space-y-1">
@@ -132,9 +165,7 @@ export default function ProgressPage() {
                     <CheckCircle2 className="h-4 w-4 text-white" aria-hidden="true" />
                   ) : (
                     <span
-                      className={`text-xs font-bold ${
-                        isCurrent ? 'text-white' : 'text-gray-400'
-                      }`}
+                      className={`text-xs font-bold ${isCurrent ? 'text-white' : 'text-gray-400'}`}
                     >
                       {index + 1}
                     </span>

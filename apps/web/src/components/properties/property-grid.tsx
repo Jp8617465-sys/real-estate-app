@@ -71,9 +71,7 @@ export function PropertyGrid() {
         >
           {/* Placeholder image */}
           <div className="aspect-[16/10] bg-gradient-to-br from-gray-200 to-gray-300">
-            <div className="flex h-full items-center justify-center text-4xl text-gray-400">
-              🏠
-            </div>
+            <div className="flex h-full items-center justify-center text-4xl text-gray-400">🏠</div>
           </div>
 
           <div className="p-4">
@@ -103,9 +101,7 @@ export function PropertyGrid() {
             </div>
 
             {/* Price */}
-            <p className="mt-2 text-sm font-semibold text-gray-900">
-              {property.priceGuide}
-            </p>
+            <p className="mt-2 text-sm font-semibold text-gray-900">{property.priceGuide}</p>
 
             {/* Stats */}
             <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">

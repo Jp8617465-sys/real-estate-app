@@ -14,6 +14,7 @@ Based on web research of ePlace's brand identity:
 - **Rebrand Year:** 2020 (first rebrand in 18 years of operation)
 
 **Sources:**
+
 - [ePlace New Brand Announcement](https://www.eplace.com.au/a-new-place-brand)
 - [Fresh New Face Article](https://www.eplace.com.au/lifestyle/a-fresh-new-face.-an-even-better-place)
 - [The Real Estate Conversation Coverage](https://www.therealestateconversation.com.au/news/2020/10/06/new-look-place-expands-presence-it-celebrates-18th-anniversary/1601960405)
@@ -21,6 +22,7 @@ Based on web research of ePlace's brand identity:
 ## Implementation Details
 
 ### 1. Theme Type System
+
 - **Location:** `packages/shared/src/types/theme.ts`
 - **Features:**
   - Complete color scale definitions (50-950 shades)
@@ -31,11 +33,13 @@ Based on web research of ePlace's brand identity:
 ### 2. Theme Configurations
 
 #### Default Theme
+
 - **Location:** `packages/shared/src/themes/default.ts`
 - **Colors:** Modern blue palette (#3b82f6 primary)
 - **Purpose:** Standard RealFlow branding
 
 #### ePlace Theme
+
 - **Location:** `packages/shared/src/themes/eplace.ts`
 - **Colors:**
   - Primary: Navy blue (#1a1f5e)
@@ -44,6 +48,7 @@ Based on web research of ePlace's brand identity:
 - **Purpose:** Matches Place Estate Agents branding
 
 ### 3. Theme Registry
+
 - **Location:** `packages/shared/src/themes/index.ts`
 - **Functions:**
   - `getTheme(id)` - Get theme by ID with fallback
@@ -51,6 +56,7 @@ Based on web research of ePlace's brand identity:
   - `themeExists(id)` - Check theme availability
 
 ### 4. React Context & Provider
+
 - **Location:** `apps/web/src/lib/theme-context.tsx`
 - **Features:**
   - Client-side theme switching
@@ -59,6 +65,7 @@ Based on web research of ePlace's brand identity:
   - `useTheme()` hook for components
 
 ### 5. Tailwind Integration
+
 - **Location:** `apps/web/tailwind.config.ts`
 - **Updates:**
   - CSS variable-based color system
@@ -68,6 +75,7 @@ Based on web research of ePlace's brand identity:
 ### 6. UI Components
 
 #### ThemeSwitcher
+
 - **Location:** `apps/web/src/components/theme-switcher.tsx`
 - **Features:**
   - Visual theme selection
@@ -75,16 +83,19 @@ Based on web research of ePlace's brand identity:
   - Real-time switching
 
 #### Settings Page Integration
+
 - **Location:** `apps/web/src/app/settings/page.tsx`
 - **Update:** Added "Appearance" section with ThemeSwitcher
 
 ### 7. Provider Integration
+
 - **Location:** `apps/web/src/components/providers.tsx`
 - **Update:** Wrapped app with ThemeProvider
 
 ## Color Palette Details
 
 ### ePlace Navy Blue Scale
+
 ```
 50:  #f0f4ff (lightest)
 100: #e0e8ff
@@ -100,6 +111,7 @@ Based on web research of ePlace's brand identity:
 ```
 
 ### Complementary Colors
+
 - **Secondary (Teal):** Brisbane coastal vibes, fresh and professional
 - **Accent (Coral):** Warm, approachable, modern touch
 - **Neutral (Slate):** Clean, professional grays
@@ -115,11 +127,7 @@ import { useTheme } from '@/lib/theme-context';
 function MyComponent() {
   const { theme, themeId, setThemeId } = useTheme();
 
-  return (
-    <button className="bg-primary-600 text-white">
-      Styled with {theme.name}
-    </button>
-  );
+  return <button className="bg-primary-600 text-white">Styled with {theme.name}</button>;
 }
 ```
 
@@ -144,6 +152,7 @@ function MyComponent() {
 Comprehensive guide available at: `docs/CLIENT_THEMES.md`
 
 Includes:
+
 - Step-by-step theme creation
 - Color palette generation tools
 - Best practices
@@ -186,6 +195,7 @@ apps/web/tailwind.config.ts
 To test the theme system:
 
 1. Run the development server:
+
    ```bash
    npm run dev
    ```

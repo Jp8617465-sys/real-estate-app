@@ -3,9 +3,9 @@ import { SocialLeadEngine } from './social-lead-engine';
 
 // ─── UUIDs ───────────────────────────────────────────────────────────────────
 
-const AGENT_ID   = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const OFFICE_ID  = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
-const LEAD_ID    = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
+const AGENT_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const OFFICE_ID = 'b1b2c3d4-e5f6-7890-abcd-ef1234567891';
+const LEAD_ID = 'c1b2c3d4-e5f6-7890-abcd-ef1234567892';
 const CONTACT_ID = 'd1b2c3d4-e5f6-7890-abcd-ef1234567893';
 
 const NOW = new Date().toISOString();
@@ -64,9 +64,10 @@ describe('SocialLeadEngine.ingestDm', () => {
   it('creates a new lead when external_id is unique', async () => {
     const row = makeLeadRow();
     const supabase = {
-      from: vi.fn()
+      from: vi
+        .fn()
         .mockReturnValueOnce(makeChain(null)) // dedup check → not found
-        .mockReturnValueOnce(makeChain(row)),  // insert
+        .mockReturnValueOnce(makeChain(row)), // insert
     };
 
     const engine = new SocialLeadEngine(supabase as never);
@@ -102,8 +103,9 @@ describe('SocialLeadEngine.ingestDm', () => {
 
   it('throws when insert fails', async () => {
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(null))  // dedup → not found
+      from: vi
+        .fn()
+        .mockReturnValueOnce(makeChain(null)) // dedup → not found
         .mockReturnValueOnce(makeChain(null, { message: 'DB error' })),
     };
 
@@ -126,10 +128,11 @@ describe('SocialLeadEngine.convertToContact', () => {
   it('creates a contact from a pending lead', async () => {
     const pendingLead = makeLeadRow({ status: 'pending' });
     const supabase = {
-      from: vi.fn()
-        .mockReturnValueOnce(makeChain(pendingLead))                  // getById
-        .mockReturnValueOnce(makeChain({ id: CONTACT_ID }))           // insert contact
-        .mockReturnValueOnce(makeChain(null)),                        // update lead status
+      from: vi
+        .fn()
+        .mockReturnValueOnce(makeChain(pendingLead)) // getById
+        .mockReturnValueOnce(makeChain({ id: CONTACT_ID })) // insert contact
+        .mockReturnValueOnce(makeChain(null)), // update lead status
     };
 
     const engine = new SocialLeadEngine(supabase as never);
@@ -167,7 +170,8 @@ describe('SocialLeadEngine.convertToContact', () => {
     const pendingLead = makeLeadRow({ sender_name: 'Jane', status: 'pending' });
     const insertChain = makeChain({ id: CONTACT_ID });
     const supabase = {
-      from: vi.fn()
+      from: vi
+        .fn()
         .mockReturnValueOnce(makeChain(pendingLead))
         .mockReturnValueOnce(insertChain)
         .mockReturnValueOnce(makeChain(null)),
@@ -269,5 +273,32 @@ describe('SocialLeadEngine.listLeads', () => {
 
     const engine = new SocialLeadEngine(supabase as never);
     await expect(engine.listLeads(AGENT_ID)).rejects.toThrow('Failed to list leads');
+  });
+});
+
+// ─── SocialLeadEngine.getById ─────────────────────────────────────────────────
+
+describe('SocialLeadEngine.getById', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns null when lead does not exist (PGRST116 — no rows)', async () => {
+    const supabase = {
+      from: vi.fn(() =>
+        makeChain(null, { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' }),
+      ),
+    };
+
+    const engine = new SocialLeadEngine(supabase as never);
+    const result = await engine.getById(LEAD_ID);
+    expect(result).toBeNull();
+  });
+
+  it('throws on non-PGRST116 error', async () => {
+    const supabase = {
+      from: vi.fn(() => makeChain(null, { code: 'PGRST500', message: 'Internal error' })),
+    };
+
+    const engine = new SocialLeadEngine(supabase as never);
+    await expect(engine.getById(LEAD_ID)).rejects.toThrow('Failed to fetch lead: Internal error');
   });
 });

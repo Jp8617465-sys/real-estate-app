@@ -223,11 +223,13 @@ export type DomainSalesResponse = z.infer<typeof DomainSalesResponseSchema>;
 // ─── Domain Alert Subscription ──────────────────────────────────────────────
 
 export const DomainAlertCriteriaSchema = z.object({
-  suburbs: z.array(z.object({
-    suburb: z.string(),
-    state: z.string(),
-    postCode: z.string().optional(),
-  })),
+  suburbs: z.array(
+    z.object({
+      suburb: z.string(),
+      state: z.string(),
+      postCode: z.string().optional(),
+    }),
+  ),
   propertyTypes: z.array(z.string()).optional(),
   minBedrooms: z.number().int().nonnegative().optional(),
   maxBedrooms: z.number().int().nonnegative().optional(),
@@ -297,11 +299,11 @@ export const DOMAIN_PROPERTY_TYPE_MAP: Record<string, string> = {
   House: 'house',
   Townhouse: 'townhouse',
   Apartment: 'apartment',
-  'ApartmentUnitFlat': 'apartment',
+  ApartmentUnitFlat: 'apartment',
   Unit: 'unit',
   Villa: 'villa',
   Land: 'land',
-  'VacantLand': 'land',
+  VacantLand: 'land',
   Rural: 'rural',
   'Semi-Detached': 'duplex',
   SemiDetached: 'duplex',
@@ -342,11 +344,11 @@ export const DEFAULT_CACHE_CONFIG: CacheConfig = {
   enabled: true,
   defaultTtlMs: 5 * 60_000, // 5 minutes
   ttlOverrides: {
-    'listings/_search': 2 * 60_000,    // 2 minutes for search (data changes frequently)
-    'listings/': 5 * 60_000,            // 5 minutes for individual listings
-    'agents/': 30 * 60_000,             // 30 minutes for agent profiles
-    'properties/': 15 * 60_000,         // 15 minutes for property history
-    'salesResults/': 60 * 60_000,       // 1 hour for sales results (historical data)
-    'suburbPerformance': 60 * 60_000,   // 1 hour for suburb stats
+    'listings/_search': 2 * 60_000, // 2 minutes for search (data changes frequently)
+    'listings/': 5 * 60_000, // 5 minutes for individual listings
+    'agents/': 30 * 60_000, // 30 minutes for agent profiles
+    'properties/': 15 * 60_000, // 15 minutes for property history
+    'salesResults/': 60 * 60_000, // 1 hour for sales results (historical data)
+    suburbPerformance: 60 * 60_000, // 1 hour for suburb stats
   },
 };

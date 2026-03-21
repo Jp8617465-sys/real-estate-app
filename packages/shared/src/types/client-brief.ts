@@ -107,14 +107,18 @@ export const ClientBriefSchema = z.object({
       min: z.number().int().nonnegative(),
       ideal: z.number().int().nonnegative().optional(),
     }),
-    landSize: z.object({
-      min: z.number().nonnegative().optional(),
-      max: z.number().nonnegative().optional(),
-    }).optional(),
-    buildingAge: z.object({
-      min: z.number().int().optional(),
-      max: z.number().int().optional(),
-    }).optional(),
+    landSize: z
+      .object({
+        min: z.number().nonnegative().optional(),
+        max: z.number().nonnegative().optional(),
+      })
+      .optional(),
+    buildingAge: z
+      .object({
+        min: z.number().int().optional(),
+        max: z.number().int().optional(),
+      })
+      .optional(),
 
     // Location
     suburbs: z.array(SuburbPreferenceSchema),

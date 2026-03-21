@@ -1,4 +1,5 @@
 # Discovery: Property Alerts
+
 **Feature:** Property Alerts — notification and alerting layer on top of the existing match and sync infrastructure
 **Sprint:** Sprint 5 — Client Experience
 **Status:** Discovery complete, ready for sprint planning
@@ -27,6 +28,7 @@ What is missing is the bridge: the system currently stops at creating a `propert
 ### What This Feature Delivers
 
 A real-time alerting layer that:
+
 1. Intercepts new `property_matches` records and `property_price_changes` records at the point of creation.
 2. Evaluates each match against a configurable score threshold (default: 70/100).
 3. Dispatches alerts to the agent immediately via push notification (primary), email, or SMS based on their stored preferences.
@@ -43,12 +45,14 @@ A real-time alerting layer that:
 **Context:** Sarah manages 8–12 active buyer clients simultaneously. She is on the road most of the day — attending inspections, meeting vendors' agents, doing suburb drive-arounds. Her phone is her primary work tool; she opens her laptop perhaps twice a day.
 
 **Pain points:**
+
 - Missing a new listing because the sync ran overnight and she only saw it the next morning.
 - Being pinged constantly by low-quality matches (score: 45/100) that waste her time.
 - Having to manually cross-reference which clients each new property is relevant to.
 - No easy way to forward a match to a client without leaving the app.
 
 **Needs from Property Alerts:**
+
 - Instant push notification when a new listing scores above her threshold for any client brief.
 - The notification must tell her: which client, the match score, the address, the price, and the top reason for the match.
 - One-tap action to view the full listing, or to send it to the client.
@@ -60,11 +64,13 @@ A real-time alerting layer that:
 **Context:** Marcus is a professional, not a property expert. He has engaged Sarah (his buyers agent) specifically to filter the market for him. He does not want to be overwhelmed — he expects Sarah's filter to work. He checks the client portal (`apps/portal`) a few times a week, typically on weekday evenings.
 
 **Pain points:**
+
 - Not knowing if his agent has seen something relevant — feeling out of the loop.
 - Being shown properties that clearly do not match his brief (undermining trust in the process).
 - Missing properties that were great matches but were never surfaced to him in the portal.
 
 **Needs from Property Alerts:**
+
 - See a curated feed of properties his agent has approved for him in the portal.
 - Receive a portal notification or email when his agent shares a new match.
 - Ability to mark a property as Interested, Not Interested, or Ask Agent.
@@ -75,11 +81,13 @@ A real-time alerting layer that:
 **Context:** David runs a boutique buyers agency with 6 agents. He is not involved in day-to-day property searches but wants assurance that the business is performing well and that clients are receiving a high-quality experience.
 
 **Pain points:**
+
 - No visibility into how many relevant properties are being surfaced per client.
 - Agents ignoring high-score matches because they didn't notice the alert.
 - Clients churning because they felt they weren't getting value from the service.
 
 **Needs from Property Alerts:**
+
 - Dashboard visibility: how many alerts were sent this week, average match score of alerted properties, alert-to-action conversion rate (i.e., what percentage of alerts led to an inspection booking or a client-view).
 - Configurable office-wide default threshold and channel preferences for new agents.
 - Ability to see alert history for any agent or client brief within his office.
@@ -96,6 +104,7 @@ A real-time alerting layer that:
 **Then** I receive a push notification on my mobile device within 60 seconds containing: the client's name, the property address, the match score, the listing price (formatted as AUD), the top matching factor (e.g., "Location: Paddington, Budget: within range"), and two action buttons — "View Listing" and "Send to Client".
 
 **Acceptance Criteria:**
+
 - Alert fires within 60 seconds of the `property_matches` row being created with `status = 'new'`.
 - Push notification is delivered via Expo Push Notification API to all active `push_device_tokens` for the agent's `user_id`.
 - A `property_alert_events` row is created with `event_type = 'agent_push_sent'`, linking to the `property_matches` row and the `notifications` row.
@@ -114,6 +123,7 @@ A real-time alerting layer that:
 **Then** I receive an alert stating the property address, the old price, the new price, the reduction amount in AUD, the reduction as a percentage, and the client brief(s) the property was previously matched against.
 
 **Acceptance Criteria:**
+
 - Alert fires only for `change_type IN ('reduction', 'price_guide_set')` — not for `'increase'`.
 - A `property_alert_events` row is created with `event_type = 'price_drop_alert_sent'`.
 - The alert includes re-evaluated match score with the new price (the existing `PropertyMatchEngine.scoreProperty()` is re-run).
@@ -130,6 +140,7 @@ A real-time alerting layer that:
 **Then** I receive an alert reminding me of the upcoming auction, the property details, the match score, the client it is matched to, and a prompt to confirm whether a pre-auction offer or auction registration is being prepared.
 
 **Acceptance Criteria:**
+
 - Three separate alerts are dispatched at T-7 days, T-2 days, and T-1 day (09:00 AEST).
 - Alerts are only sent for properties with `property_matches.status NOT IN ('rejected')`.
 - Alert delivery mechanism follows agent's preferred channel (push first, fallback to email).
@@ -146,6 +157,7 @@ A real-time alerting layer that:
 **Then** I can set a minimum match score threshold (0–100, default 70) for that specific brief, choose between instant alerts and digest mode, and set a maximum of N alerts per day for that brief.
 
 **Acceptance Criteria:**
+
 - Threshold is stored on a `property_alert_subscriptions` row keyed on `(agent_id, brief_id)` with a `UNIQUE` constraint.
 - Valid range: 0–100 (integer). Values outside this range are rejected with a 400 error.
 - Digest mode setting is stored on the same row: `alert_mode ENUM('instant', 'digest')`.
@@ -164,6 +176,7 @@ A real-time alerting layer that:
 **Then** I can select any combination of push notification, email, or SMS, with a clear primary/fallback hierarchy.
 
 **Acceptance Criteria:**
+
 - Channel preferences are stored in an extended `notification_preferences` row or in a new `property_alert_subscriptions` column: `channels JSONB` (e.g., `{"push": true, "email": true, "sms": false}`).
 - If push is enabled but the agent has no registered `push_device_tokens`, the system falls back to email automatically and logs a `property_alert_events` row with `event_type = 'push_fallback_to_email'`.
 - SMS alerts are only sent if the agent has a verified mobile number in their `users` profile. If unverified, SMS is silently skipped (no error surfaced to the user).
@@ -181,6 +194,7 @@ A real-time alerting layer that:
 **Then** the property match is surfaced in the client's portal feed and the client receives a portal notification (email or in-app) that their agent has found a potential property for them.
 
 **Acceptance Criteria:**
+
 - The property match `status` is updated to `'sent_to_client'` in the `property_matches` table.
 - A `property_alert_events` row is created with `event_type = 'sent_to_client'` and the agent's `user_id` recorded as `actor_id`.
 - The client sees the property in their portal at `/portal/properties` filtered to `status = 'sent_to_client'`.
@@ -199,6 +213,7 @@ A real-time alerting layer that:
 **Then** I can snooze the alert for 1 hour, 4 hours, or until tomorrow morning (07:00 AEST), and the alert will re-appear in my notification centre at the snoozed time.
 
 **Acceptance Criteria:**
+
 - Snooze updates `notifications.status = 'snoozed'` and sets `notifications.snoozed_until` to the computed future timestamp. This already exists in the `/api/v1/notifications/:id/snooze` route.
 - Supported snooze durations: 60 minutes, 240 minutes, or "until 07:00 tomorrow" (computed server-side).
 - A `property_alert_events` row is created with `event_type = 'snoozed'` and `snooze_until` recorded in `metadata`.
@@ -216,6 +231,7 @@ A real-time alerting layer that:
 **Then** I see a chronological log of every alert sent for that brief: what was sent, when, the match score at the time, the delivery channel, whether it was read, and what action was taken (viewed, sent to client, snoozed, dismissed, inspection booked).
 
 **Acceptance Criteria:**
+
 - Alert history is served by `GET /api/v1/alert-events?briefId={id}` with pagination (limit/offset).
 - Each record includes: `event_type`, `created_at`, `property_match_id`, `overall_score_at_time`, `channel`, `actor_id`, and `metadata`.
 - Principal can query alert history across all briefs in their office via `GET /api/v1/alert-events?officeId={id}` (RLS enforces office membership).
@@ -229,12 +245,14 @@ A real-time alerting layer that:
 The following must all pass before the feature is considered complete for Sprint 5.
 
 **Alerting Engine**
+
 - A new `PropertyAlertEngine` class exists in `packages/business-logic/src/property-alert-engine.ts`.
 - The engine accepts a `MatchResult` and an agent's `property_alert_subscriptions` row and decides: (a) should an alert fire, (b) on which channels, (c) instant or queued for digest.
 - The engine calls the appropriate integration clients (`TwilioClient`, `GmailClient`) and the Expo Push API.
 - Unit tests reach >= 90% line coverage on the engine.
 
 **Database**
+
 - Migration `00014_property_alerts.sql` is written and reviewed.
 - `property_alert_subscriptions` table exists with columns per Section 8.
 - `property_alert_events` table exists with columns per Section 8.
@@ -242,28 +260,33 @@ The following must all pass before the feature is considered complete for Sprint
 - All new tables use soft deletes (`is_deleted`, `deleted_at`).
 
 **API**
+
 - All endpoints listed in Section 9 exist, are Zod-validated, and return documented response shapes.
 - All endpoints require authentication (`supabase.auth.getUser()` check).
 - Endpoints are registered in `apps/api/src/index.ts` under the `/api/v1/alert-subscriptions` and `/api/v1/alert-events` prefixes.
 
 **Mobile (Expo)**
+
 - Push tokens are registered on app launch and deregistered on logout (already partially built via `push-tokens.ts`).
 - Property match push notification displays correctly on iOS and Android.
 - Deep link from notification opens the correct property match detail screen.
 - Snooze and dismiss are accessible via notification long-press on iOS and notification action buttons on Android.
 
 **Portal (Client)**
+
 - Client portal shows a feed of properties with `status = 'sent_to_client'`.
 - Clients can mark a property as Interested or Not Interested.
 - Portal feed is not accessible to unauthenticated users (RLS enforced).
 
 **Alert Fatigue**
+
 - The minimum score threshold gate (default 70/100) is enforced by the engine before any alert is dispatched.
 - Quiet hours are respected for push and SMS channels.
 - Digest mode batches eligible alerts and sends at the configured `digest_send_time`.
 - Per-brief daily cap, when set, is enforced by querying `property_alert_events` count for the current AEST calendar day.
 
 **Observability**
+
 - Every alert dispatch attempt (success or failure) is recorded in `property_alert_events`.
 - Failed dispatches log the error in `metadata.error` without crashing the sync run.
 
@@ -290,13 +313,16 @@ The following items are explicitly excluded from Sprint 5 to keep the scope deli
 Agents are in the field most of the working day. Mobile is not a secondary surface — it is the primary one. The following mobile requirements are non-negotiable for Sprint 5.
 
 ### Push Notification Delivery
+
 - The Expo Push Notification API must be used for iOS and Android (Expo SDK 54 is the target per the current branch `chore/expo-54-migration`).
 - Push tokens must be registered using `POST /api/v1/push-tokens` on every app launch (upsert — the route already exists).
 - Push tokens must be deregistered using `DELETE /api/v1/push-tokens/:token` on logout.
 - Tokens that have not been seen (`last_seen_at`) within 30 days should be marked `is_active = false` by a nightly job (not Sprint 5 scope, but the schema supports it).
 
 ### Notification Payload
+
 The push notification payload must include:
+
 ```json
 {
   "title": "New Match: 14 Roslyn St, Paddington",
@@ -308,22 +334,27 @@ The push notification payload must include:
   }
 }
 ```
+
 The `data` object enables deep linking. The `apps/mobile` Expo Router setup must handle the `PropertyMatchDetail` route and accept `propertyMatchId` as a param.
 
 ### Deep Linking
+
 - Tapping the notification opens `apps/mobile` directly to the property match detail screen.
 - If the app is closed, cold-launch deep link must be handled via `expo-notifications` `lastNotificationResponse`.
 - If the app is foregrounded, the in-app notification banner must also be shown (use `expo-notifications` foreground handler).
 
 ### Offline Behaviour
+
 - If the device is offline when a notification is tapped, the app must gracefully degrade — show a cached version of the property if available, or display an offline state rather than crashing.
 
 ### Action Buttons
+
 - iOS: Notification action buttons ("View" and "Send to Client") must be registered as `UNNotificationAction` categories.
 - Android: Notification action buttons use `setActions()` on the notification channel.
 - "Send to Client" action from the notification triggers an API call in the background without requiring the app to be opened.
 
 ### Battery and Data Considerations
+
 - Push is always preferred over polling. The app must not implement a polling loop for new matches.
 - If push delivery fails (Expo push receipt shows an error), the system logs the failure in `property_alert_events` and the agent sees the alert the next time they open the app via the in-app notification centre.
 
@@ -344,10 +375,10 @@ Alert fatigue is the single greatest risk to adoption. An agent who is woken up 
 
 Agents choose one of two modes per brief:
 
-| Mode | Behaviour |
-|------|-----------|
-| Instant | Alert fires within 60 seconds of a match being created or a qualifying price change being detected. Quiet hours still apply. |
-| Digest | Qualifying matches are accumulated. A single digest notification is sent at the configured `digest_send_time` (default 07:00 AEST). If no matches exceed threshold, no digest is sent. |
+| Mode    | Behaviour                                                                                                                                                                              |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Instant | Alert fires within 60 seconds of a match being created or a qualifying price change being detected. Quiet hours still apply.                                                           |
+| Digest  | Qualifying matches are accumulated. A single digest notification is sent at the configured `digest_send_time` (default 07:00 AEST). If no matches exceed threshold, no digest is sent. |
 
 The digest notification lists up to 5 properties (sorted by score descending). If more than 5 qualify, the notification says "5 of {n} matches shown — tap to see all."
 
@@ -383,14 +414,14 @@ Over time, the system should record which alerts led to actions (inspection book
 
 ### 8.1 Data Visibility Model
 
-| Data | Agent | Client (portal) | Principal |
-|------|-------|-----------------|-----------|
-| `property_alert_subscriptions` | Own rows only | No access | All rows in office |
-| `property_alert_events` | Own events only | No access | All events in office |
-| `property_matches` (status = 'new') | Own matches | No access | Office-wide |
-| `property_matches` (status = 'sent_to_client') | Own matches | Their own client matches | Office-wide |
-| `notifications` (agent) | Own notifications | No access | No access |
-| `notifications` (client portal) | No access | Own notifications | No access |
+| Data                                           | Agent             | Client (portal)          | Principal            |
+| ---------------------------------------------- | ----------------- | ------------------------ | -------------------- |
+| `property_alert_subscriptions`                 | Own rows only     | No access                | All rows in office   |
+| `property_alert_events`                        | Own events only   | No access                | All events in office |
+| `property_matches` (status = 'new')            | Own matches       | No access                | Office-wide          |
+| `property_matches` (status = 'sent_to_client') | Own matches       | Their own client matches | Office-wide          |
+| `notifications` (agent)                        | Own notifications | No access                | No access            |
+| `notifications` (client portal)                | No access         | Own notifications        | No access            |
 
 ### 8.2 New Tables Required
 
@@ -543,40 +574,40 @@ All endpoints are under `/api/v1`. All require `Authorization: Bearer <supabase_
 
 ### Alert Subscriptions
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/alert-subscriptions` | List the authenticated agent's alert subscriptions. Query params: `briefId?`. |
-| `GET` | `/alert-subscriptions/:id` | Get a single subscription row. |
-| `POST` | `/alert-subscriptions` | Create a subscription for a brief. Body: `{ briefId, minScoreThreshold?, alertMode?, channels?, maxAlertsPerDay? }`. Auto-created with defaults when a brief is created. |
-| `PATCH` | `/alert-subscriptions/:id` | Update threshold, mode, channels, or daily cap. |
-| `DELETE` | `/alert-subscriptions/:id` | Soft-delete (sets `is_deleted = true`, `is_active = false`). |
+| Method   | Path                       | Description                                                                                                                                                              |
+| -------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET`    | `/alert-subscriptions`     | List the authenticated agent's alert subscriptions. Query params: `briefId?`.                                                                                            |
+| `GET`    | `/alert-subscriptions/:id` | Get a single subscription row.                                                                                                                                           |
+| `POST`   | `/alert-subscriptions`     | Create a subscription for a brief. Body: `{ briefId, minScoreThreshold?, alertMode?, channels?, maxAlertsPerDay? }`. Auto-created with defaults when a brief is created. |
+| `PATCH`  | `/alert-subscriptions/:id` | Update threshold, mode, channels, or daily cap.                                                                                                                          |
+| `DELETE` | `/alert-subscriptions/:id` | Soft-delete (sets `is_deleted = true`, `is_active = false`).                                                                                                             |
 
 ### Alert Events (Audit Log — Read Only)
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/alert-events` | Paginated alert event history. Query params: `briefId?`, `agentId?` (principal only), `eventType?`, `from?`, `to?`, `limit`, `offset`. |
-| `GET` | `/alert-events/:id` | Get a single alert event row. |
+| Method | Path                | Description                                                                                                                            |
+| ------ | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/alert-events`     | Paginated alert event history. Query params: `briefId?`, `agentId?` (principal only), `eventType?`, `from?`, `to?`, `limit`, `offset`. |
+| `GET`  | `/alert-events/:id` | Get a single alert event row.                                                                                                          |
 
 ### Trigger Manual Alert (Developer/Debug)
 
-| Method | Path | Description |
-|--------|------|-------------|
+| Method | Path                           | Description                                                                                                                                                                 |
+| ------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `POST` | `/alert-subscriptions/trigger` | Manually trigger alert evaluation for a specific `propertyMatchId`. Useful for testing and for agents who want to re-send a match to a client. Body: `{ propertyMatchId }`. |
 
 ### Existing Endpoints (Unchanged, Relevant Context)
 
-| Method | Path | Notes |
-|--------|------|-------|
-| `GET` | `/notifications` | Existing — lists agent notifications, filterable by `category=property_match`. |
-| `POST` | `/notifications/:id/read` | Existing — marks notification read, triggers `property_alert_events` write. |
-| `POST` | `/notifications/:id/snooze` | Existing — snooze with minutes param. |
-| `POST` | `/notifications/:id/dismiss` | Existing — dismiss alert. |
-| `GET` | `/notifications/preferences` | Existing — includes global `notifyPropertyMatch` toggle. |
-| `PATCH` | `/notifications/preferences` | Existing — updates global toggle and quiet hours. |
-| `POST` | `/push-tokens` | Existing — register device token on app launch. |
-| `DELETE` | `/push-tokens/:token` | Existing — deregister on logout. |
-| `POST` | `/domain/sync` | Existing — manual sync trigger (should chain into alert evaluation post-sync). |
+| Method   | Path                         | Notes                                                                          |
+| -------- | ---------------------------- | ------------------------------------------------------------------------------ |
+| `GET`    | `/notifications`             | Existing — lists agent notifications, filterable by `category=property_match`. |
+| `POST`   | `/notifications/:id/read`    | Existing — marks notification read, triggers `property_alert_events` write.    |
+| `POST`   | `/notifications/:id/snooze`  | Existing — snooze with minutes param.                                          |
+| `POST`   | `/notifications/:id/dismiss` | Existing — dismiss alert.                                                      |
+| `GET`    | `/notifications/preferences` | Existing — includes global `notifyPropertyMatch` toggle.                       |
+| `PATCH`  | `/notifications/preferences` | Existing — updates global toggle and quiet hours.                              |
+| `POST`   | `/push-tokens`               | Existing — register device token on app launch.                                |
+| `DELETE` | `/push-tokens/:token`        | Existing — deregister on logout.                                               |
+| `POST`   | `/domain/sync`               | Existing — manual sync trigger (should chain into alert evaluation post-sync). |
 
 ### Integration Points to Wire Up
 

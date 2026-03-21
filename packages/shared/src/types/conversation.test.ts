@@ -13,9 +13,17 @@ describe('Conversation Types', () => {
   describe('MessageChannelSchema', () => {
     it('should validate all channel types', () => {
       const channels = [
-        'email', 'sms', 'phone_call', 'whatsapp', 'instagram_dm',
-        'facebook_messenger', 'domain_enquiry', 'rea_enquiry',
-        'linkedin', 'internal_note', 'portal_notification',
+        'email',
+        'sms',
+        'phone_call',
+        'whatsapp',
+        'instagram_dm',
+        'facebook_messenger',
+        'domain_enquiry',
+        'rea_enquiry',
+        'linkedin',
+        'internal_note',
+        'portal_notification',
       ];
 
       for (const channel of channels) {

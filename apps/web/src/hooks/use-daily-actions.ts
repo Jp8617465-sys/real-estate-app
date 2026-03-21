@@ -51,9 +51,7 @@ export function useCompleteDailyAction() {
         if (!old) return old;
         return {
           ...old,
-          data: old.data.map((item) =>
-            item.id === id ? { ...item, isCompleted: true } : item,
-          ),
+          data: old.data.map((item) => (item.id === id ? { ...item, isCompleted: true } : item)),
         };
       });
       return { previous };
@@ -84,6 +82,9 @@ export function useRegenerateDailyActions() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['daily-actions'] });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error);
     },
   });
 }

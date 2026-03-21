@@ -76,26 +76,22 @@ describe('useContacts', () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useContacts({ query: 'John' }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useContacts({ query: 'John' }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(chain.or).toHaveBeenCalledWith(
-      expect.stringContaining('first_name.ilike.%John%'),
-    );
+    expect(chain.or).toHaveBeenCalledWith(expect.stringContaining('first_name.ilike.%John%'));
   });
 
   it('applies types filter when provided', async () => {
     const chain = createChainedQuery({ data: [], error: null });
     mockFrom.mockReturnValue(chain);
 
-    const { result } = renderHook(
-      () => useContacts({ types: ['buyer'] }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useContacts({ types: ['buyer'] }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -231,9 +227,7 @@ describe('useDeleteContact', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(chain.update).toHaveBeenCalledWith(
-      expect.objectContaining({ is_deleted: true }),
-    );
+    expect(chain.update).toHaveBeenCalledWith(expect.objectContaining({ is_deleted: true }));
     expect(chain.eq).toHaveBeenCalledWith('id', '1');
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['contacts'] });
   });

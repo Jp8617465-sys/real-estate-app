@@ -150,9 +150,7 @@ describe('MessageNormaliser', () => {
                     display_phone_number: '61298765432',
                     phone_number_id: 'pn123',
                   },
-                  contacts: [
-                    { profile: { name: 'Jane Smith' }, wa_id: '61412345678' },
-                  ],
+                  contacts: [{ profile: { name: 'Jane Smith' }, wa_id: '61412345678' }],
                   messages: [
                     {
                       id: 'wamid.abc',

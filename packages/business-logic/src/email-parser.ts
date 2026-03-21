@@ -106,12 +106,16 @@ export class EmailParser {
     }
 
     // Check for solicitor
-    if (EmailParser.SOLICITOR_PATTERNS.some((p) => fromLower.includes(p) || subjectLower.includes(p))) {
+    if (
+      EmailParser.SOLICITOR_PATTERNS.some((p) => fromLower.includes(p) || subjectLower.includes(p))
+    ) {
       return 'solicitor';
     }
 
     // Check for broker
-    if (EmailParser.BROKER_PATTERNS.some((p) => fromLower.includes(p) || subjectLower.includes(p))) {
+    if (
+      EmailParser.BROKER_PATTERNS.some((p) => fromLower.includes(p) || subjectLower.includes(p))
+    ) {
       return 'broker';
     }
 
@@ -145,12 +149,13 @@ export class EmailParser {
     const addressFromSubject = EmailParser.extractDomainAddress(subject);
 
     // Extract enquirer name
-    const name = EmailParser.extractPattern(body, [
-      /Name:\s*(.+?)(?:\n|$)/i,
-      /From:\s*(.+?)(?:\n|$)/i,
-      /Enquirer:\s*(.+?)(?:\n|$)/i,
-      /enquiry from\s+(.+?)(?:\s+for|\s+about|\s*$)/i,
-    ]) ?? 'Unknown';
+    const name =
+      EmailParser.extractPattern(body, [
+        /Name:\s*(.+?)(?:\n|$)/i,
+        /From:\s*(.+?)(?:\n|$)/i,
+        /Enquirer:\s*(.+?)(?:\n|$)/i,
+        /enquiry from\s+(.+?)(?:\s+for|\s+about|\s*$)/i,
+      ]) ?? 'Unknown';
 
     // Extract enquirer email
     const enquirerEmail = EmailParser.extractPattern(body, [
@@ -219,11 +224,12 @@ export class EmailParser {
     const addressFromSubject = EmailParser.extractREAAddress(subject);
 
     // Extract enquirer name
-    const name = EmailParser.extractPattern(body, [
-      /Name:\s*(.+?)(?:\n|$)/i,
-      /From:\s*(.+?)(?:\n|$)/i,
-      /Contact name:\s*(.+?)(?:\n|$)/i,
-    ]) ?? 'Unknown';
+    const name =
+      EmailParser.extractPattern(body, [
+        /Name:\s*(.+?)(?:\n|$)/i,
+        /From:\s*(.+?)(?:\n|$)/i,
+        /Contact name:\s*(.+?)(?:\n|$)/i,
+      ]) ?? 'Unknown';
 
     // Extract email
     const enquirerEmail = EmailParser.extractPattern(body, [
