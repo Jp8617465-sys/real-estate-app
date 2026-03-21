@@ -48,6 +48,7 @@ import { domainWebhookRoutes } from './routes/domain-webhooks';
 import { inboxEmailRoutes } from './routes/inbox-email';
 import { marketDataRoutes } from './routes/market-data';
 import { subscriptionRoutes } from './routes/subscriptions';
+import { assistantRoutes } from './routes/assistant';
 
 // ─── Initialize Observability ───────────────────────────────────────
 
@@ -143,6 +144,7 @@ async function start() {
   await fastify.register(inboxEmailRoutes, { prefix: '/api/v1/inbox' });
   await fastify.register(marketDataRoutes, { prefix: '/api/v1/market-data' });
   await fastify.register(subscriptionRoutes, { prefix: '/api/v1/subscriptions' });
+  await fastify.register(assistantRoutes, { prefix: '/api/v1/assistant' });
 
   // Scheduler tick — manual trigger for dev/test environments
   fastify.post('/api/v1/scheduler/tick', async () => {
