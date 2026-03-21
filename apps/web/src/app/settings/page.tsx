@@ -9,6 +9,7 @@ import {
   useDisconnectIntegration,
 } from '@/hooks/use-settings';
 import { ThemeSwitcher } from '@/components/theme-switcher';
+import { SubscriptionStatus } from '@/components/settings/subscription-status';
 
 export default function SettingsPage() {
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -152,6 +153,15 @@ export default function SettingsPage() {
                 </div>
               ))
             )}
+          </div>
+        </div>
+
+        {/* Subscription / Billing */}
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Subscription</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your plan and billing</p>
+          <div className="mt-4">
+            <SubscriptionStatus />
           </div>
         </div>
 
