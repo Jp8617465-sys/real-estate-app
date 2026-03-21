@@ -5,6 +5,7 @@ export * from './pipeline';
 export * from './activity';
 export * from './task';
 export * from './workflow';
+export * from './product';
 export * from './user';
 export * from './client-brief';
 export * from './property-match';
