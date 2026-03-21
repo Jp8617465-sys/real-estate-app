@@ -34,6 +34,21 @@
     "harden": {
       "dependsOn": ["quality"],
       "cache": false
+    },
+    "build:ba": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["NEXT_PUBLIC_PRODUCT_MODE"]
+    },
+    "build:selling": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["NEXT_PUBLIC_PRODUCT_MODE"]
+    },
+    "build:full": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["NEXT_PUBLIC_PRODUCT_MODE"]
     }
   }
 }

@@ -2,8 +2,10 @@ import type { FastifyInstance } from 'fastify';
 import { CreateOffMarketPropertySchema, UpdateOffMarketPropertySchema } from '@realflow/shared';
 import { OffMarketEngine } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
+import { productGuardHook } from '../plugins/product-guard';
 
 export async function offMarketRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', productGuardHook('off_market'));
   // ─── GET /off-market ──────────────────────────────────────────────────────
   fastify.get('/off-market', async (request, reply) => {
     const supabase = createSupabaseClient(request);

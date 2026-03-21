@@ -1,8 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import { CreateSellingAgentProfileSchema, UpdateSellingAgentProfileSchema } from '@realflow/shared';
 import { createSupabaseClient } from '../middleware/supabase';
+import { productGuardHook } from '../plugins/product-guard';
 
 export async function sellingAgentRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', productGuardHook('selling_agents'));
+
   // List selling agent profiles (optionally filter by suburb)
   fastify.get<{ Querystring: { suburb?: string } }>('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);

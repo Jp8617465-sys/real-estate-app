@@ -2,8 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import { CreateClientBriefSchema, UpdateClientBriefSchema } from '@realflow/shared';
 import { toDbSchema, fromDbSchema } from '@realflow/business-logic';
 import { createSupabaseClient } from '../middleware/supabase';
+import { productGuardHook } from '../plugins/product-guard';
 
 export async function clientBriefRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', productGuardHook('client_briefs'));
+
   // List briefs (optionally filter by contactId)
   fastify.get<{ Querystring: { contactId?: string } }>('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);

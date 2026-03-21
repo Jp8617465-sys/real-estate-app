@@ -6,6 +6,7 @@ import { DomainSyncEngine } from '@realflow/business-logic';
 import { DomainClient } from '@realflow/integrations';
 import { CreateDomainSyncJobSchema } from '@realflow/shared';
 import { createSupabaseClient } from '../middleware/supabase';
+import { productGuardHook } from '../plugins/product-guard';
 import { makeAlertEngine } from '../lib/make-alert-engine';
 
 // ─── Shared engine instance ──────────────────────────────────────────────────
@@ -41,6 +42,8 @@ const AuctionResultsQuerySchema = z.object({
 // ─── Routes ──────────────────────────────────────────────────────────────────
 
 export async function domainSyncRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', productGuardHook('domain_sync'));
+
   // Capture raw request body bytes before parsing — required for HMAC validation
   // on the webhook route. Uses PassThrough to tee the stream without consuming it.
   fastify.addHook('preParsing', (_req, _reply, payload, done) => {

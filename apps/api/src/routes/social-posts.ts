@@ -11,6 +11,7 @@ import type { SocialPlatform, PlatformPublishResult } from '@realflow/shared';
 import { createSupabaseClient } from '../middleware/supabase';
 import { IntegrationRegistry } from '../services/integration-registry';
 import { SocialPublishingService } from '@realflow/integrations';
+import { productGuardHook } from '../plugins/product-guard';
 
 /**
  * Social Posts API routes.
@@ -23,6 +24,8 @@ import { SocialPublishingService } from '@realflow/integrations';
  * - Post analytics retrieval
  */
 export async function socialPostRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', productGuardHook('social_publishing'));
+
   // ─── List Social Posts ──────────────────────────────────────────
   fastify.get('/', async (request, reply) => {
     const supabase = createSupabaseClient(request);

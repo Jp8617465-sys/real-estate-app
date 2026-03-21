@@ -31,6 +31,10 @@ vi.mock('../middleware/supabase', () => ({
   createSupabaseClient: vi.fn(),
 }));
 
+vi.mock('../plugins/product-guard', () => ({
+  productGuardHook: () => async () => {},
+}));
+
 vi.mock('@realflow/business-logic', () => {
   function OffMarketEngine() {
     return mockEngine;

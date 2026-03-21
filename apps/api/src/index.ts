@@ -47,6 +47,7 @@ import { teamRoutes } from './routes/team';
 import { domainWebhookRoutes } from './routes/domain-webhooks';
 import { inboxEmailRoutes } from './routes/inbox-email';
 import { marketDataRoutes } from './routes/market-data';
+import { subscriptionRoutes } from './routes/subscriptions';
 
 // ─── Initialize Observability ───────────────────────────────────────
 
@@ -84,6 +85,21 @@ async function start() {
       'http://localhost:3002', // Portal dev
     ],
   });
+
+  // Store raw body for Stripe webhook signature verification
+  fastify.addContentTypeParser(
+    'application/json',
+    { parseAs: 'buffer' },
+    (req, body, done) => {
+      const buf = body instanceof Buffer ? body : Buffer.from(body);
+      (req as unknown as Record<string, unknown>).rawBody = buf;
+      try {
+        done(null, JSON.parse(buf.toString()));
+      } catch (err) {
+        done(err instanceof Error ? err : new Error(String(err)), undefined);
+      }
+    }
+  );
 
   // Health check routes (registered before auth-protected routes)
   await fastify.register(healthRoutes, { prefix: '/health' });
@@ -126,6 +142,7 @@ async function start() {
   await fastify.register(domainWebhookRoutes, { prefix: '/api/webhooks/domain' });
   await fastify.register(inboxEmailRoutes, { prefix: '/api/v1/inbox' });
   await fastify.register(marketDataRoutes, { prefix: '/api/v1/market-data' });
+  await fastify.register(subscriptionRoutes, { prefix: '/api/v1/subscriptions' });
 
   // Scheduler tick — manual trigger for dev/test environments
   fastify.post('/api/v1/scheduler/tick', async () => {

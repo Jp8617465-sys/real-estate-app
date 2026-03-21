@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ProductTypeSchema } from './product';
 
 // ─── User Role ──────────────────────────────────────────────────────
 export const UserRoleSchema = z.enum(['agent', 'principal', 'admin', 'assistant']);
@@ -15,6 +16,7 @@ export const UserSchema = z.object({
   avatarUrl: z.string().url().optional(),
   officeId: z.string().uuid().optional(),
   teamId: z.string().uuid().optional(),
+  productAccess: ProductTypeSchema.optional(),
   isActive: z.boolean().default(true),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
@@ -28,6 +30,7 @@ export const OfficeSchema = z.object({
   address: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email().optional(),
+  productType: ProductTypeSchema.default('both'),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

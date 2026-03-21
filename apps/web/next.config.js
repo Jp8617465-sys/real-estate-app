@@ -1,6 +1,17 @@
 /** @type {import('next').NextConfig} */
+
+// ─── Product Mode ───────────────────────────────────────────────────────────
+const PRODUCT_MODE = process.env.NEXT_PUBLIC_PRODUCT_MODE || 'both';
+if (!['buyers_agent', 'selling_agent', 'both'].includes(PRODUCT_MODE)) {
+  throw new Error(`Invalid NEXT_PUBLIC_PRODUCT_MODE: ${PRODUCT_MODE}`);
+}
+
 const nextConfig = {
   transpilePackages: ['@realflow/shared', '@realflow/business-logic', '@realflow/ui'],
+
+  env: {
+    NEXT_PUBLIC_PRODUCT_MODE: PRODUCT_MODE,
+  },
 
   // ─── Image Optimization ──────────────────────────────────────────────────────
   images: {
@@ -118,6 +129,19 @@ const nextConfig = {
         destination: '/dashboard',
         permanent: true,
       },
+      // Product mode build-time route exclusion
+      ...(PRODUCT_MODE === 'buyers_agent'
+        ? [
+            { source: '/properties/:path*', destination: '/dashboard', permanent: false },
+            { source: '/social/:path*', destination: '/dashboard', permanent: false },
+            { source: '/market/:path*', destination: '/dashboard', permanent: false },
+          ]
+        : []),
+      ...(PRODUCT_MODE === 'selling_agent'
+        ? [
+            { source: '/buyers-agent/:path*', destination: '/dashboard', permanent: false },
+          ]
+        : []),
     ];
   },
 

@@ -9,6 +9,10 @@ vi.mock('../middleware/supabase', () => ({
   createSupabaseClient: () => mockSupabase,
 }));
 
+vi.mock('../plugins/product-guard', () => ({
+  productGuardHook: () => async () => {},
+}));
+
 // ─── Import after mocks ───────────────────────────────────────────
 
 import Fastify from 'fastify';
