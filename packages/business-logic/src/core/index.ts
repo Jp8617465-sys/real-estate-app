@@ -11,6 +11,7 @@ export { BaseService } from './base-service';
 // Core engines
 export { PipelineEngine } from './pipeline-engine';
 export { ContactScoring } from './contact-scoring';
+export { DealHealthCalculator } from './deal-health-calculator';
 export { ContactMatcher } from './contact-matcher';
 export { DuplicateDetector } from './duplicate-detection';
 export { KeyDatesEngine } from './key-dates-engine';
