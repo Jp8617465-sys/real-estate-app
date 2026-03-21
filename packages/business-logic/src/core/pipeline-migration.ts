@@ -1,5 +1,5 @@
 import type { BuyerStage, BuyersAgentStage, BuyerProfile, PropertyType } from '@realflow/shared';
-import type { ClientBriefDbRow } from '../client-brief-transformer';
+import type { ClientBriefDbRow } from '../ba/client-brief-transformer';
 
 // ─── Migration Context ──────────────────────────────────────────────
 

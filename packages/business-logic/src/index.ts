@@ -9,8 +9,8 @@ export {
 export { PipelineEngine } from './core/pipeline-engine';
 export { ContactScoring } from './core/contact-scoring';
 export { DuplicateDetector } from './core/duplicate-detection';
-export { PropertyMatchEngine } from './property-match-engine';
-export { DueDiligenceEngine } from './due-diligence-engine';
+export { PropertyMatchEngine } from './ba/property-match-engine';
+export { DueDiligenceEngine } from './ba/due-diligence-engine';
 export { FeeCalculator } from './fee-calculator';
 export { KeyDatesEngine } from './core/key-dates-engine';
 export {
@@ -56,25 +56,25 @@ export type { RecoveryResult } from './core/workflow-error-recovery';
 export { MessageNormaliser } from './core/message-normaliser';
 export { ContactMatcher } from './core/contact-matcher';
 export { EmailParser } from './core/email-parser';
-export { toDbSchema, fromDbSchema, type ClientBriefDbRow } from './client-brief-transformer';
+export { toDbSchema, fromDbSchema, type ClientBriefDbRow } from './ba/client-brief-transformer';
 export {
   PipelineMigrationEngine,
   type MigrationContext,
   type MigrationDecision,
 } from './core/pipeline-migration';
 export { DomainSyncEngine, type DomainSearchParams, type SyncResult } from './domain-sync-engine';
-export { PropertyMatcher } from './property-matcher';
+export { PropertyMatcher } from './ba/property-matcher';
 export type {
   PropertyMatcherConfig,
   EnhancedMatchResult,
   FeatureMatchDetail,
-} from './property-matcher';
+} from './ba/property-matcher';
 export { AnalyticsEngine } from './core/analytics-engine';
 export { AmlEngine } from './core/aml-engine';
 export { PropertyAlertEngine } from './core/property-alert-engine';
 export { PortalEngine } from './core/portal-engine';
 export { SocialLeadEngine } from './social-lead-engine';
-export { OffMarketEngine } from './off-market-engine';
+export { OffMarketEngine } from './ba/off-market-engine';
 export { TeamEngine } from './core/team-engine';
 export { generateDailyActions, scoreCandidate } from './core/daily-action-engine';
 export type {
