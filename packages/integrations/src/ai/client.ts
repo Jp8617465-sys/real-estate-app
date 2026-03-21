@@ -58,6 +58,82 @@ interface AnthropicErrorResponse {
   };
 }
 
+// ─── Tool Calling Types ─────────────────────────────────────────────
+
+export interface AnthropicToolDefinition {
+  name: string;
+  description: string;
+  input_schema: Record<string, unknown>;
+}
+
+interface ToolUseContentBlock {
+  type: 'tool_use';
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+}
+
+interface TextContentBlock {
+  type: 'text';
+  text: string;
+}
+
+export type ContentBlock = TextContentBlock | ToolUseContentBlock;
+
+interface ToolResultContent {
+  type: 'tool_result';
+  tool_use_id: string;
+  content: string;
+}
+
+type ToolResultMessage = {
+  role: 'user';
+  content: ToolResultContent[];
+};
+
+type AssistantContentMessage = {
+  role: 'assistant';
+  content: ContentBlock[];
+};
+
+export type ConversationMessage = AnthropicMessage | ToolResultMessage | AssistantContentMessage;
+
+export interface ChatOptions {
+  system: string;
+  messages: ConversationMessage[];
+  tools?: AnthropicToolDefinition[];
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+}
+
+export interface ChatResponse {
+  content: ContentBlock[];
+  stopReason: 'end_turn' | 'tool_use' | 'max_tokens' | 'stop_sequence';
+  tokenUsage: AITokenUsage;
+}
+
+// ─── Streaming Types ────────────────────────────────────────────────
+
+export type StreamEvent =
+  | { type: 'text'; text: string }
+  | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
+  | { type: 'message_stop'; tokenUsage: AITokenUsage }
+  | { type: 'error'; error: string };
+
+interface ChatAPIResponse {
+  id: string;
+  type: 'message';
+  role: 'assistant';
+  content: ContentBlock[];
+  model: string;
+  stop_reason: 'end_turn' | 'tool_use' | 'max_tokens' | 'stop_sequence';
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
+  };
+}
+
 // ─── Cost Constants (AUD per million tokens) ────────────────────────
 
 const COST_PER_MILLION_INPUT: Record<string, number> = {
@@ -382,6 +458,192 @@ export class AnthropicClient {
     return { narrative: response.text.trim(), tokenUsage: response.tokenUsage };
   }
 
+  // ─── Chat Methods (Tool Calling + Streaming) ───────────────────
+
+  /**
+   * Multi-turn conversation with optional tool calling.
+   * Returns raw content blocks so the caller can dispatch tools and loop.
+   */
+  async chat(options: ChatOptions): Promise<ChatResponse> {
+    await this.enforceRateLimit();
+
+    const model = options.model ?? this.config.model;
+    const maxTokens = options.maxTokens ?? this.config.maxTokens;
+    const temperature = options.temperature ?? this.config.defaultTemperature;
+
+    const body: Record<string, unknown> = {
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      system: options.system,
+      messages: options.messages,
+    };
+
+    if (options.tools && options.tools.length > 0) {
+      body.tools = options.tools;
+    }
+
+    const data = await this.fetchChatAPI(body);
+
+    const tokenUsage: AITokenUsage = {
+      inputTokens: data.usage.input_tokens,
+      outputTokens: data.usage.output_tokens,
+      model: data.model,
+      estimatedCostAud: this.calculateCost(
+        data.model,
+        data.usage.input_tokens,
+        data.usage.output_tokens,
+      ),
+    };
+
+    return {
+      content: data.content,
+      stopReason: data.stop_reason,
+      tokenUsage,
+    };
+  }
+
+  /**
+   * Streaming multi-turn conversation. Yields events as they arrive via SSE.
+   * Text deltas stream incrementally; tool_use blocks yield on completion.
+   */
+  async *streamChat(options: ChatOptions): AsyncGenerator<StreamEvent> {
+    await this.enforceRateLimit();
+
+    const model = options.model ?? this.config.model;
+    const maxTokens = options.maxTokens ?? this.config.maxTokens;
+    const temperature = options.temperature ?? this.config.defaultTemperature;
+
+    const body: Record<string, unknown> = {
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      system: options.system,
+      messages: options.messages,
+      stream: true,
+    };
+
+    if (options.tools && options.tools.length > 0) {
+      body.tools = options.tools;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120_000);
+
+    try {
+      const response = await fetch(`${this.config.baseUrl}/v1/messages`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.config.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify(body),
+      });
+
+      this.requestTimestamps.push(Date.now());
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        const errorResponse = errorBody as AnthropicErrorResponse | null;
+        yield { type: 'error', error: errorResponse?.error?.message ?? response.statusText };
+        return;
+      }
+
+      if (!response.body) {
+        yield { type: 'error', error: 'No response body for streaming' };
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let inputTokens = 0;
+      let outputTokens = 0;
+      let responseModel = model;
+
+      // Track current tool_use block being built
+      let currentToolId = '';
+      let currentToolName = '';
+      let currentToolInputJson = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]' || !jsonStr) continue;
+
+          try {
+            const event = JSON.parse(jsonStr) as Record<string, unknown>;
+            const eventType = event.type as string;
+
+            if (eventType === 'message_start') {
+              const message = event.message as Record<string, unknown>;
+              const usage = message.usage as Record<string, number>;
+              inputTokens = usage.input_tokens ?? 0;
+              responseModel = (message.model as string) ?? model;
+            } else if (eventType === 'content_block_start') {
+              const block = event.content_block as Record<string, unknown>;
+              if (block.type === 'tool_use') {
+                currentToolId = block.id as string;
+                currentToolName = block.name as string;
+                currentToolInputJson = '';
+              }
+            } else if (eventType === 'content_block_delta') {
+              const delta = event.delta as Record<string, unknown>;
+              if (delta.type === 'text_delta') {
+                yield { type: 'text', text: delta.text as string };
+              } else if (delta.type === 'input_json_delta') {
+                currentToolInputJson += delta.partial_json as string;
+              }
+            } else if (eventType === 'content_block_stop') {
+              if (currentToolId) {
+                let input: Record<string, unknown> = {};
+                try {
+                  input = JSON.parse(currentToolInputJson) as Record<string, unknown>;
+                } catch { /* empty input */ }
+                yield { type: 'tool_use', id: currentToolId, name: currentToolName, input };
+                currentToolId = '';
+                currentToolName = '';
+                currentToolInputJson = '';
+              }
+            } else if (eventType === 'message_delta') {
+              const usage = event.usage as Record<string, number> | undefined;
+              if (usage) {
+                outputTokens = usage.output_tokens ?? 0;
+              }
+            } else if (eventType === 'message_stop') {
+              yield {
+                type: 'message_stop',
+                tokenUsage: {
+                  inputTokens,
+                  outputTokens,
+                  model: responseModel,
+                  estimatedCostAud: this.calculateCost(responseModel, inputTokens, outputTokens),
+                },
+              };
+            }
+          } catch {
+            // Skip malformed SSE chunks
+          }
+        }
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      yield { type: 'error', error: message };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   // ─── Private Methods ────────────────────────────────────────────
 
   private async sendMessage(
@@ -457,6 +719,58 @@ export class AnthropicClient {
       };
 
       return { text, tokenUsage };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  private async fetchChatAPI(
+    body: Record<string, unknown>,
+    retryCount = 0,
+  ): Promise<ChatAPIResponse> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+    try {
+      const response = await fetch(`${this.config.baseUrl}/v1/messages`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.config.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify(body),
+      });
+
+      this.requestTimestamps.push(Date.now());
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        const errorResponse = errorBody as AnthropicErrorResponse | null;
+        const errorType = errorResponse?.error?.type ?? 'unknown';
+        const errorMessage = errorResponse?.error?.message ?? response.statusText;
+
+        if (
+          (response.status === 429 || response.status === 529) &&
+          retryCount < this.config.maxRetries
+        ) {
+          const delayMs = Math.min(
+            this.config.retryBaseDelayMs * Math.pow(2, retryCount) + Math.random() * 500,
+            30_000,
+          );
+          await this.sleep(delayMs);
+          return this.fetchChatAPI(body, retryCount + 1);
+        }
+
+        throw new AnthropicAPIError(
+          `Anthropic API error: ${errorMessage}`,
+          response.status,
+          response.statusText,
+          errorType,
+        );
+      }
+
+      return (await response.json()) as ChatAPIResponse;
     } finally {
       clearTimeout(timeout);
     }
