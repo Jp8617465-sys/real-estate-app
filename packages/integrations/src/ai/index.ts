@@ -5,6 +5,12 @@ export type {
   BriefRefinementResult,
   MessageDraftResult,
   EmailSignalsResult,
+  AnthropicToolDefinition,
+  ContentBlock,
+  ConversationMessage,
+  ChatOptions,
+  ChatResponse,
+  StreamEvent,
 } from './client';
 export { AICache } from './cache';
 export type { CacheStats } from './cache';

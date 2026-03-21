@@ -60,4 +60,10 @@ export type {
   MessageDraftResult,
   EmailSignalsResult,
   CacheStats,
+  AnthropicToolDefinition,
+  ContentBlock,
+  ConversationMessage,
+  ChatOptions,
+  ChatResponse,
+  StreamEvent,
 } from './ai/index';
