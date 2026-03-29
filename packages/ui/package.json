@@ -20,7 +20,7 @@
     "@realflow/shared": "*"
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
+    "typescript": "^6.0.2",
     "vitest": "^4.0.18"
   }
 }
