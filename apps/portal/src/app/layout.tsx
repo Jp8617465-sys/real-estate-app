@@ -1,14 +1,10 @@
+export const dynamic = 'force-dynamic';
+
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { PortalNav } from '@/components/portal-nav';
 import { Providers } from '@/components/providers';
 import { UserBadge } from '@/components/user-badge';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
 
 export const metadata: Metadata = {
   title: 'BuyerPilot - Client Portal',
@@ -18,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en">
       <body className="min-h-screen bg-white font-sans antialiased">
         <Providers>
           <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">

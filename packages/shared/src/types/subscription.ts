@@ -81,7 +81,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
 
 // ─── Helper Functions ───────────────────────────────────────────────────
 export function getTierLimits(tier: SubscriptionTier): TierLimits {
-  return TIER_LIMITS[tier];
+  return TIER_LIMITS[tier]!;
 }
 
 export function isWithinTierLimit(
@@ -89,7 +89,7 @@ export function isWithinTierLimit(
   resource: keyof TierLimits,
   currentCount: number
 ): boolean {
-  const limits = TIER_LIMITS[tier];
+  const limits = TIER_LIMITS[tier]!;
   const limit = limits[resource];
   if (typeof limit === 'boolean') return limit;
   return currentCount < limit;
