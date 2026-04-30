@@ -2,7 +2,7 @@
 
 > The heartbeat of the PM brain. Claude reads this at every session start.
 > Updated after every significant state change. Human-readable — spot-check any time.
-> Last updated: 2026-03-10
+> Last updated: 2026-03-22
 
 ---
 
@@ -86,20 +86,33 @@ Acceptance: 0 N+1 queries in hot paths. All external fetches have timeouts.
 
 > Updated at end of each session. Provides enough context to resume without re-reading code.
 
-**Date:** 2026-03-11
-**Working on:** Sprint 8 — all phases complete (8.1–8.6). Docs generated. Deploy is next human gate.
-**Status:** 8.1–8.6 all DONE. Tests: 1,978 passing (was 1,782 — +196). API: 638 (+136), BL: 934 (+65). API branch: 65.24%, BL branch: 80.47%. All quality gates green. Docs written.
-Additional fixes beyond original scope:
-- H1: inbox.ts `.parse()` → `.safeParse()`
-- H2: inbox.ts GET /contacts/:contactId/channels IDOR fix (agent ownership check)
-- H3: domain-sync.ts rawBody fallback removed (HMAC integrity)
-- H4: social-leads.ts agentId verified against users table
-Docs generated: `docs/sprints/SPRINT_8_REPORT.md`, `docs/sprints/CHANGELOG_SPRINT_8.md`
-**Decisions:** getById returns null on PGRST116 (not throws). Push token userId from JWT. Webhooks fail-closed. RawBody fallback removed. AgentId verified server-side.
+**Date:** 2026-03-22
+**Working on:** Evolution Plan — Week 5 (B2 AI Assistant Backend) + Auth fix + DB seeding + Health check
+**Status:**
+- **Week 5 (B2) complete** — all 5 tasks delivered (commits on `evolution/week-5`):
+  - Task 1: `AnthropicClient` extended with `chat()` + `streamChat()` (SSE)
+  - Task 2: Migration 00026 — `ai_conversations` + `ai_messages` tables with RLS
+  - Task 3: Tool registry with 10 CRM tools
+  - Task 4: `AssistantService` with tool-calling loop + conversation store
+  - Task 5: 5 API routes at `/api/v1/assistant/*` (chat, stream, conversations CRUD)
+- **Web app auth fixed** — `apps/web/src/app/auth/page.tsx` wired up with `signInWithPassword()` + `signInWithOtp()`. Auth callback route created at `apps/web/src/app/auth/callback/route.ts`.
+- **Demo user seeded** — Created auth user + users table row + office in Supabase:
+  - Email: `sarah@realflowdemo.com.au` / Password: `testpass123`
+  - User ID: `75cf68db-23cb-46cc-86ab-77d07266291d`
+  - Auth ID: `a72518c6-da0d-4702-afc9-e034bbda2ca0`
+  - Office: "RealFlow Demo Agency" (`58a7dc86-58ab-4de5-b263-88e707cd529a`)
+  - Fixed missing `auth.identities` record (was causing "Database error querying schema")
+- **Branch pushed** — `evolution/week-5` pushed to origin
+- **Health check** — API healthy (HTTP 200, 0.45s, uptime 6.5h). Render MCP 401 issue ongoing.
+- All type-checks green. All 2,079 tests pass.
+**Decisions:** SSE via manual `reply.raw.writeHead()`. Tool results respect RLS. Max 5 tool iterations. Render API key `rnd_CYcaa6ARl2fRMFSixCfPjYDLn5sy` is valid (curl returns 200) but MCP HTTP transport caches old auth header.
 **Next session:**
-1. PR #38 merge (human gate)
-2. `/deploy-staging` → smoke test → `/deploy-production` (human gate)
-**Open questions:** None. Sprint 8 code complete. Awaiting human approval to merge and deploy.
+1. **Fix Render MCP** — key works via curl but MCP returns 401. Try full VS Code quit/restart (not just reload). If still broken, may need to delete and re-add the MCP server config.
+2. **Week 6:** B2 Frontend — Chat panel component, React hooks, integration with assistant API
+3. **Merge PR #41** if not yet merged (human gate)
+4. **Apply migration 00026** via Supabase MCP when ready
+5. **Create PR** from `evolution/week-5` → `main` (was requested but deferred due to session end)
+**Open questions:** Render MCP HTTP transport may need full VS Code restart to pick up new bearer token. PR #40 (Sprint 8) may need to be closed/superseded by PR #41. Deal health tool qualification booleans need enrichment from contact/brief data in future.
 
 ---
 
@@ -132,7 +145,8 @@ These are not sprint tasks but should be resolved when convenient:
 ## Human Gates Pending
 
 - [ ] **Production deploy** — Always explicit; never automatic
-- [ ] **PR #38 merge** — All P0+P1 items must be resolved first
+- [ ] **PR #40 merge** — Sprint 8 PR open at https://github.com/Jp8617465-sys/real-estate-app/pull/40
+- [x] **PR #38 merge** — Sprint 6+7 already merged
 
 ---
 
@@ -163,7 +177,7 @@ These are not sprint tasks but should be resolved when convenient:
 | 5      | Client Portal + Alerts    | All       | ~7          | First production deploy         |
 | 6      | Growth & Scale            | All       | ~7          | Social, off-market, team        |
 | 7      | Frontend Modernisation    | All       | ~3          | Dark mode, DnD, skeletons       |
-| 8      | Hardening                 | —         | 7 (target)  | First tracked sprint            |
+| 8      | Hardening                 | All       | 7           | PR #40 open, deploy pending     |
 
 ---
 
