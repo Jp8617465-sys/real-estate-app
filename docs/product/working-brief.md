@@ -1,6 +1,6 @@
 # Buyers-agent workspace — working brief
 
-Updated 6 November 2026. This is the starting context for further ideation with James, including a session in VS Code. The work remains active. The hybrid demonstrates a direction to challenge and refine; it does not settle the final product design or architecture.
+Updated 7 November 2026. This is the starting context for further ideation with James, including a session in VS Code. The work remains active. The hybrid demonstrates a direction to challenge and refine; it does not settle the final product design or architecture.
 
 The [north star](north-star.md) owns agreed product direction, [GLOSSARY.md](../../GLOSSARY.md) owns vocabulary, and the [GitHub map](https://github.com/Jp8617465-sys/real-estate-app/issues/47) owns live decisions, dependencies and status. Follow [AGENTS.md](../../AGENTS.md) and the [host adapters](../process/agent-adapters.md).
 
@@ -22,9 +22,9 @@ James sees potentially significant value in **using a conversation transcript to
 4. Assess candidate properties against the engagement's buyer brief.
 5. Shortlist, hold, pass or record a missed property, retaining reasons, next actions and history.
 
-This is a direction to explore. Which conversations are ingested, how participants/entities are identified, which fields are proposed and what can be applied automatically remain design questions. The initial five-field demo is not an agreed production schema.
+On 7 November James agreed the intake and review design, test approach and first tracer-bullet route in [Decide how consultation transcripts become reviewed records](https://github.com/Jp8617465-sys/real-estate-app/issues/54). In short: start with the initial buyer consultation; extraction only suggests; each suggestion carries a verbatim quote, speaker and stated/inferred mark that code verifies; the person who was on the call reviews, with conflicts always shown; precision beats recall. The initial five-field demo is not the agreed field list; that ticket holds it.
 
-**Real model-backed extraction is unconnected.** James was asked to choose an existing cloud API or a model running locally and answered **TBC**. No model/provider, API entitlement, spending authority or model installation is selected. A normal product subscription must not be treated as API access.
+**Real model-backed extraction is still unbuilt.** Real client conversations are to be processed only in Australia (Claude on AWS Bedrock Australian profiles or a local model, agreed as future state). For now the tracer bullet uses Anthropic's Claude API with synthetic and role-play material only, measuring Claude Opus 5.5, Sonnet 5.5 and Haiku 5.5 plus a local Qwen3.5-9B against the agreed pass bar, under an approved US$50 cap. The API account, credits and key are not yet set up. A normal product subscription must not be treated as API access.
 
 ## Feedback and UI direction
 
@@ -32,7 +32,7 @@ This is a direction to explore. Which conversations are ingested, how participan
 - James requested structurally different A/B/C variants. A offered a guided client workspace; B a conversation inbox and property board/drawer; C a client dossier and comparison desk.
 - James preferred **A's overall UI with useful later-stage B elements**. The hybrid combines A's green client rail/guided intake with B's property board and detail drawer. This is a useful starting point for further ideation.
 - James reported that only prefilled examples appeared functional. Inspection confirmed narrow sample-shaped parsing, a few recognised speaker labels/three suburbs, and missing own-client/property creation. Those limitations must not become hidden assumptions in a real extraction implementation.
-- The latest hybrid starts empty and accepts own records. Its brief entry is explicitly manual while the model route is TBC.
+- The latest hybrid starts empty and accepts own records. Its brief entry is explicitly manual until extraction is built.
 
 ## What the current artifacts actually do
 
@@ -48,9 +48,9 @@ The hybrid accepts `.txt`, `.md`, `.vtt` and `.srt` transcripts up to 1 MB. Actu
 
 Records live in memory until the user exports a versioned JSON workspace. Open workspace file restores it. There is no automatic persistence, backend/authentication, connected CRM, live listing feed or independent property verification. Do not imply the prototype has these capabilities.
 
-Working interpretations to validate: "opportunity" meant the buying engagement in these demos; "assessed" describes review progress; "passed" means choosing not to pursue; "missed" means unavailable/lost out. Fit evidence and the engagement's decision are separate dimensions.
+Working interpretations to validate: "opportunity" is no longer a separate term, because a buying engagement exists from first enquiry (see the glossary); "assessed" describes review progress; "passed" means choosing not to pursue; "missed" means unavailable/lost out. Fit evidence and the engagement's decision are separate dimensions.
 
-## Useful questions for the next ideation session
+## Status of the ideation questions
 
 - What is the highest-value conversation to start with: initial buyer consultation, an ongoing client call, a selling-agent conversation, or another interaction? How should multiple speakers and professional relationships map to records?
 - Which details belong to the lasting client, which to an engagement, and which to a property/assessment? How do sales opportunities relate to buying engagements in the agency's language?
@@ -60,7 +60,7 @@ Working interpretations to validate: "opportunity" meant the buying engagement i
 - What should the first live tracer bullet prove across ingestion, review, record updates and a useful agent outcome? Keep live property-data integration as an explicit dependency if that slice actually needs it.
 - When James is ready, what model route, access, processing/privacy expectations and spend are acceptable? What pilot evidence would validate usefulness?
 
-These are prompts for discussion, not approved requirements or a new implementation backlog. [Property-data research](https://github.com/Jp8617465-sys/real-estate-app/issues/49) has a separate claim; check current results before duplicating research.
+The questions above were answered on [Decide how consultation transcripts become reviewed records](https://github.com/Jp8617465-sys/real-estate-app/issues/54), except pilot evidence of usefulness (a role-played consultation with a real buyers agent is likely but not arranged). New open items: AML/CTF-driven customer identification checks, and moving extraction to AWS in Australia before any real transcript. Next ready work: [Prototype the transcript suggestion review](https://github.com/Jp8617465-sys/real-estate-app/issues/55) and [Draft the synthetic consultation test set](https://github.com/Jp8617465-sys/real-estate-app/issues/56), which gate [Agree the first live tracer bullet](https://github.com/Jp8617465-sys/real-estate-app/issues/52). [Property-data research](https://github.com/Jp8617465-sys/real-estate-app/issues/49) has a separate claim; check current results before duplicating research.
 
 ## Running and verification
 
@@ -77,8 +77,8 @@ The HTML also opens directly. The preview is local and may need restarting in a 
 
 Hybrid Chrome verification used independently written fictional inputs without optional examples: actual file upload, new names/suburbs, manual brief, own-property creation/editing, validation, outcomes/tags, retained history and engagement isolation. An actual workspace download/reopen round-trip restored the records. Desktop and all five phone screens were checked without page overflow/browser exceptions; phone engagement/history controls were reachable. Script parsing, factory and diff checks passed. Temporary QA files were removed; no permanent prototype tests were added.
 
-This is technical walkthrough evidence and James's design feedback. Actual agency workflow accuracy and pilot usefulness remain unvalidated. Main and the foundation draft PR remain unchanged/unmerged. No production stack, deployment, external contact or spend has been selected. GitHub connector discovery reported administrator-disabled/unavailable; the authenticated `gh` CLI was the available fallback.
+This is technical walkthrough evidence and James's design feedback. Actual agency workflow accuracy and pilot usefulness remain unvalidated. Main and the foundation draft PR remain unchanged/unmerged. No production stack, deployment or external contact has been selected; a US$50 Claude API spend cap is approved but not set up. GitHub connector discovery reported administrator-disabled/unavailable; the authenticated `gh` CLI was the available fallback.
 
 ## Suggested VS Code session opener
 
-> Read AGENTS.md, docs/product/working-brief.md, docs/product/north-star.md and GLOSSARY.md. Recheck the live GitHub map and prototype ticket. Use the committed grilling and domain-modeling skills through docs/process/agent-adapters.md to help me ideate the buyers-agent product, especially conversation-to-record ingestion and the review journey. Treat the A+B hybrid as a starting point to challenge. Keep real model extraction TBC until we decide the route. Establish shared understanding before implementing more; use prototype for concrete interaction questions. Preserve the agreed buyer-profile/engagement distinction and do not restore the retired RealFlow stack.
+> Read AGENTS.md, docs/product/working-brief.md, docs/product/north-star.md, GLOSSARY.md and the latest docs/handoffs/ brief. Recheck the live GitHub map. Claim and resolve one frontier ticket: Prototype the transcript suggestion review (committed prototype skill) or Draft the synthetic consultation test set (drafted by a fresh-context agent that never sees the extraction design). Follow the decisions on Decide how consultation transcripts become reviewed records. Send no real client conversation to any model. Preserve the buyer-profile/engagement distinction and do not restore the retired RealFlow stack.
