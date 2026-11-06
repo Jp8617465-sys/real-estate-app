@@ -1,74 +1,20 @@
-# RealFlow
+# Buyers-agent workspace — rebuild
 
-The frictionless CRM and workflow platform for Australian real estate agents and buyers agents.
+A fresh product for Australian buyers agents and small agencies. Working name only; RealFlow is retired on this branch. Connect buyer profiles, buying engagements, property intelligence and mapping, professional relationships, intake, service delivery and aftercare. Prove one useful workflow with one real agency at a time.
 
-## Quick Start
+Start with AGENTS.md, docs/product/north-star.md and GLOSSARY.md. Follow the live decision map linked from docs/process/issue-tracker.md, and the latest relevant brief in docs/handoffs/.
 
-```bash
-# Install dependencies
-npm install
+Claude Code: /grill-me, /wayfinder, /prototype, /to-spec, /to-tickets.
+Codex: $grill-me, $wayfinder, $prototype, $to-spec, $to-tickets, or ask for the workflow by name. See docs/process/agent-adapters.md.
 
-# Run all apps in development mode
-npm run dev
+## Verification
 
-# Run specific apps
-cd apps/web && npm run dev    # Next.js web app on :3000
-cd apps/api && npm run dev    # API server on :3001
-cd apps/mobile && npm start   # Expo mobile app
-```
+    make check
 
-## Project Structure
+Requires Python 3.10+ and Git. This verifies the factory foundation; no application runtime or production stack is selected yet.
 
-```
-realflow/
-├── apps/
-│   ├── web/                    # Next.js 14 web application
-│   ├── mobile/                 # React Native (Expo) mobile app
-│   └── api/                    # Fastify API server
-├── packages/
-│   ├── shared/                 # Shared types, Zod schemas, constants
-│   ├── ui/                     # Shared UI component interfaces
-│   ├── business-logic/         # Pipeline engine, scoring, duplicate detection
-│   └── integrations/           # Domain.com.au, Meta API clients
-├── supabase/
-│   ├── migrations/             # PostgreSQL database migrations
-│   ├── functions/              # Supabase Edge Functions
-│   └── seed.sql                # Development seed data
-└── CLAUDE.md                   # AI assistant context
-```
+## Recovery
 
-## Tech Stack
-
-- **Web:** Next.js 14 (App Router), Tailwind CSS, React Query, Zustand
-- **Mobile:** React Native (Expo), NativeWind, Expo Router
-- **API:** Fastify, Supabase client
-- **Database:** PostgreSQL via Supabase with Row Level Security
-- **Auth:** Supabase Auth
-- **Monorepo:** Turborepo with npm workspaces
-
-## Environment Variables
-
-Copy `.env.example` files and fill in your values:
-
-```bash
-cp apps/web/.env.example apps/web/.env.local
-```
-
-Required:
-
-- `NEXT_PUBLIC_SUPABASE_URL` — Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Your Supabase anon key
-
-## Database
-
-Migrations are in `supabase/migrations/`. To apply:
-
-```bash
-npm run db:migrate
-```
-
-To seed development data:
-
-```bash
-npm run db:reset   # Applies migrations + seed data
-```
+Archive tag: archive/realflow-pre-rebuild-2026-11-06.
+Original main: 09303565dfed8cf3b667e91a8ec2273f603c2848.
+See docs/process/recovery.md for the verified full-history bundle and recovery steps.

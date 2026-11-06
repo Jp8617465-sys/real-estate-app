@@ -1,0 +1,28 @@
+# Product direction — agreed 6 November 2026
+
+## Outcome
+
+Help Australian buyers agents and small agencies work within their connected professional universe. Turn buyer requirements into a qualified property shortlist with clear fit evidence, supported by current property data and mapping, and connect the surrounding client/relationship work.
+
+## Agreed foundation
+
+- Start commercially oriented with one real agency as the proving ground. James has access to buyers agents and will speak with them. No real engagement walkthrough or agency interview has yet been captured.
+- Separate a lasting buyer/household profile from each engagement so returning clients keep their history.
+- Connect territory, property intelligence, briefs, private knowledge, selling agents, mortgage/finance brokers, other professional/referral partners, interactions, commitments and next actions.
+- Cover sales/intake, buying-service delivery and aftercare. Stage names are provisional until pilot validation. Checks and profile/record requirements are in scope; exact evidence/identity-verification requirements remain unresolved.
+- Provide a documented product API and replaceable provider connectors feeding a consistent property model. Public third-party API access is a separate future decision. Source data is not assumed freely redistributable.
+- Fast/current data needs a measurable definition: distinguish source update/observation from retrieval time; expose freshness and missing/stale data. Cotality is a candidate, not a selected or connected provider.
+- The previous attempt stopped because attention moved to ASXOS. Preserve continuity with durable decisions, bounded phases, handoffs and demonstrable tracer bullets.
+- Claude Code and Codex share factory instructions/skills. Authority is defined in AGENTS.md.
+
+## Current destination
+
+A prototype of one useful daily workflow, tested with the pilot agent, plus an agreed first live tracer bullet. Use wayfinder to resolve decisions and prototype to test a named interaction/logic question. Any scenario remains illustrative until real workflow evidence exists. A static/in-memory prototype does not prove live-data integration.
+
+## Open decisions
+
+Pilot agency and engagement example; first workflow and prototype question; exact profiles/checks; data sources, access and permitted use; freshness/latency; map behaviour; roles/tenancy; API consumers; production stack/hosting; spend; release arrangements. These are decisions to resolve, not commitments to build every feature.
+
+## Reset boundary
+
+Rebuild on codex/rebuild-foundation after preserving recovery. All prior tracked application files, tests, docs, migrations, deployment settings and agent configuration are disposable. Existing databases and deployed services are outside this reset. Do not inherit the old stack. Main remains unchanged during this setup phase.
