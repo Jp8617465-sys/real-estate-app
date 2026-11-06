@@ -15,3 +15,9 @@ Fictional first consultations (before any agreement is signed) between Halyard B
 ## Provenance
 
 Entirely fictional test material for [Draft the synthetic consultation test set](https://github.com/Jp8617465-sys/real-estate-app/issues/56). Drafted on 7 November 2026 by a fresh-context agent that received only the setting and failure cases and never saw the extraction design. James reviewed the set for realism and accepted it unchanged. Deliberate automatic-transcription errors and evenly paced, script-generated timestamps are intentional. Prices and Queensland rules quoted by speakers are the drafter's estimates, not verified facts. Expected answers are added separately and are decided by James.
+
+## Expected answers
+
+`expected/` holds James's approved answer key for each transcript: speakers, the profile, brief and intake items a cautious extraction should suggest (each with a verbatim quote, speaker and stated/inferred mark), properties mentioned, next actions, conflicts, items it must not suggest, items to confirm with the client, and fields the call did not cover. The rules behind the keys are in [expected/RULES.md](expected/RULES.md). Check that every quote still matches its transcript with:
+
+    python3 testdata/intake-consultations/check_quotes.py testdata/intake-consultations testdata/intake-consultations/expected
