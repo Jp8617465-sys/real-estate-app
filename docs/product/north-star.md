@@ -7,6 +7,7 @@ Help Australian buyers agents and small agencies work within their connected pro
 ## Agreed foundation
 
 - Start commercially oriented with one real agency as the proving ground. James has access to buyers agents and will speak with them. No real engagement walkthrough or agency interview has yet been captured.
+- James nominated Buywell Group's Brisbane buyers agency as the business he is modelling for. Buywell is not aware of the project and is not a participating pilot. Its public service descriptions inform provisional scenarios; James's belief that it uses HighLevel remains unconfirmed. Research and explicit assumptions may advance prototype exploration while real workflow evidence remains outstanding.
 - Separate a lasting buyer/household profile from each engagement so returning clients keep their history.
 - Connect territory, property intelligence, briefs, private knowledge, selling agents, mortgage/finance brokers, other professional/referral partners, interactions, commitments and next actions.
 - Cover sales/intake, buying-service delivery and aftercare. Stage names are provisional until pilot validation. Checks and profile/record requirements are in scope; exact evidence/identity-verification requirements remain unresolved.

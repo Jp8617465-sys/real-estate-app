@@ -6,6 +6,7 @@
 - **Buyer brief:** Requirements, priorities, constraints and budget for one engagement.
 - **Property:** A real-world property described by provider records and the agency's knowledge.
 - **Shortlist:** Properties selected against a brief, with reasons and supporting evidence.
+- **Property assessment:** An engagement's consideration of a property, including its review evidence, tags, decisions, reasons and next actions. The same property may have different assessments in different engagements; the buyer profile retains their history.
 - **Professional relationship:** A mortgage/finance broker, selling agent, conveyancer/solicitor, inspector or referral partner connection, including introductions, interactions and commitments.
 - **Check:** A review or verification with a status and supporting evidence. Required checks, roles and completion rules remain unresolved.
 - **Sales/intake pipeline:** Enquiry through qualification, consultation and proposal/agreement to engagement.
