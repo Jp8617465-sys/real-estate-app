@@ -7,6 +7,12 @@ Start with AGENTS.md, docs/product/north-star.md and GLOSSARY.md. Follow the liv
 Claude Code: /grill-me, /wayfinder, /prototype, /to-spec, /to-tickets.
 Codex: $grill-me, $wayfinder, $prototype, $to-spec, $to-tickets, or ask for the workflow by name. See docs/process/agent-adapters.md.
 
+## Working product brief
+
+The [working brief](docs/product/working-brief.md) captures the current direction, James's feedback, prototypes and open questions for the next ideation session. The work remains active; the hybrid is a starting point for further design.
+
+Run `make prototype` to serve the latest hybrid at <http://127.0.0.1:8765/buyers-desk-hybrid.html>. It supports own-data manual intake and property workflows; automatic NLP/ML extraction remains TBC.
+
 ## Verification
 
     make check
