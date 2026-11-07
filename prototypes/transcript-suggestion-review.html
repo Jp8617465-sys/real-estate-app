@@ -1,0 +1,2091 @@
+<!doctype html>
+<!-- PROTOTYPE (throwaway): transcript suggestion review for "Prototype the transcript suggestion review" (issue 55).
+     Logic prototype shape (.claude/skills/prototype/LOGIC.md) wearing the A+B hybrid's guided-workspace look.
+     Assumption: the A/B/C structure question is settled, so this tests the review rules and journey, not layouts.
+     Suggestions are HAND-WRITTEN from the approved answer key for synthetic transcript 03. NO MODEL is involved.
+     The transcript below is an embedded copy of testdata/intake-consultations/03-broker-joins-first-home-north.vtt.
+     The IntakeReview script block is the liftable part: pure functions plus a reducer, no DOM. -->
+<html lang="en-AU"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Suggestion review · prototype</title>
+<style>
+:root{--ink:#182b29;--muted:#65746d;--accent:#23634e;--wash:#e9f2ec;--paper:#f6f7f3;--line:#e1e6df;--warm:#f7edd6;--amber:#89601c;--red:#a14e44;--redwash:#f6e8e3;--rail:#173e33}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{border:1px solid var(--line);background:#fff;color:inherit;border-radius:8px;padding:8px 12px;cursor:pointer}button:hover{border-color:var(--accent)}button:disabled{opacity:.45;cursor:default}button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}button.quiet{border-color:transparent;background:transparent;color:var(--muted)}button.danger{color:var(--red)}
+:focus-visible{outline:3px solid #d69a38;outline-offset:2px}input,select,textarea{width:100%;background:#fff;border:1px solid #ccd6ce;border-radius:7px;padding:8px 10px;color:inherit}textarea{resize:vertical;min-height:70px}label{display:block;font-size:12px;font-weight:650;margin:10px 0 5px}
+h1,h2,h3,p{margin-top:0}h1{font:500 34px/1.15 Georgia,serif;letter-spacing:-.5px;margin-bottom:6px}h2{font-size:19px;letter-spacing:-.3px;margin:0}h3{font-size:14px;margin-bottom:8px}small,.muted{color:var(--muted)}small{font-size:12px}
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.rail{background:var(--rail);color:#e3eee5;padding:26px 18px 110px;display:flex;flex-direction:column;gap:26px;position:sticky;top:0;height:100vh;overflow:auto}
+.logo{display:flex;gap:10px;align-items:center;font-weight:750;font-size:17px;letter-spacing:-.4px}.logo-symbol{width:26px;height:26px;background:currentColor;clip-path:polygon(50% 0,100% 38%,100% 100%,62% 100%,62% 64%,38% 64%,38% 100%,0 100%,0 38%)}
+.rail-label{text-transform:uppercase;font-size:9px;letter-spacing:1.7px;color:#99b7a4;margin-bottom:10px}.client{background:#ffffff12;border-radius:10px;padding:12px;font-size:13px}.client small{display:block;color:#a5bfae;font-size:11px;margin-top:3px}
+.steps button{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:transparent;border-color:transparent;color:#cadace;padding:9px 8px;margin:2px 0}.steps button.on{background:#ffffff18;color:#fff}.steps .n{flex-shrink:0;display:inline-grid;place-items:center;width:22px;height:22px;border:1px solid #ffffff50;border-radius:50%;font-size:11px}.steps .on .n{background:#fff;color:var(--rail)}.steps small{display:block;color:#a5bfae;font-size:11px}
+.rail-foot{margin-top:auto;font-size:11px;color:#a5bfae}
+main{padding:24px 36px 150px;min-width:0}
+.top{display:flex;justify-content:space-between;gap:12px 20px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px;flex-wrap:wrap}.crumb{font-size:12px;color:var(--muted)}.crumb b{color:var(--ink);font-weight:650}
+.nomodel{display:inline-flex;gap:6px;align-items:center;background:var(--warm);color:var(--amber);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.about{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px}.about summary{cursor:pointer;font-weight:650}.about p,.about ul{margin:10px 0 0;color:var(--muted)}.about li{margin:4px 0}.about .question{color:var(--ink);font:500 16px/1.4 Georgia,serif}
+.changed{border-left:3px solid var(--accent);background:#fff;padding:9px 14px;border-radius:0 8px 8px 0;font-size:13px;margin:0 0 20px}.changed b{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-right:8px;color:var(--accent)}.changed.refused{border-color:var(--red);background:var(--redwash);color:var(--red)}.changed.refused b{color:var(--red)}
+.lede{color:var(--muted);max-width:640px;margin-bottom:6px}
+.work{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;align-items:start}
+.side{position:sticky;top:16px;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 32px)}.side-tabs{display:flex;border-bottom:1px solid var(--line);flex-shrink:0}.side-tabs button{flex:1;border:0;border-radius:0;background:transparent;padding:12px;color:var(--muted);border-bottom:2px solid transparent}.side-tabs button.on{color:var(--ink);font-weight:700;border-color:var(--accent)}.side-body{overflow:auto;padding:8px 14px 16px}
+.cue{display:grid;grid-template-columns:42px minmax(0,1fr);gap:8px;padding:7px 6px;border-radius:6px;font-size:13px}.cue .t{color:var(--muted);font-size:11px;padding-top:2px;font-variant-numeric:tabular-nums}.cue .who{font-weight:650;font-size:12px}.cue .who small{font-weight:400;font-size:11px}.cue.hit{background:#fbf4e2}.cue.focus{box-shadow:inset 0 0 0 2px #d69a38}.cue mark{background:#f3d98f;color:inherit;padding:0 1px;border-radius:2px}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:22px 0 4px;flex-wrap:wrap}.section-note{font-size:12px;color:var(--muted);margin:0 0 8px}
+.group{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;margin:18px 0 8px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:12px;cursor:pointer}.card.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--wash)}.card.blocked{border-color:#e6c9c2}
+.fieldname{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700}.value{font-size:16px;font-weight:600;margin:4px 0 6px}.who-owes{font-size:12px;color:var(--muted)}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 6px}.pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:650;background:var(--wash);color:var(--accent);white-space:nowrap}.pill.warn{background:var(--warm);color:var(--amber)}.pill.bad{background:var(--redwash);color:var(--red)}.pill.plain{background:var(--paper);color:var(--muted);border:1px solid var(--line)}
+.q{display:block;width:100%;text-align:left;border:0;border-left:2px solid #c3d1c6;border-radius:0;background:transparent;padding:2px 0 2px 10px;margin:6px 0;color:var(--ink);font-size:13px}.q:hover{border-left-color:var(--accent);background:var(--wash)}.q .by{display:block;color:var(--muted);font-size:11px}
+.aside{background:var(--paper);border-radius:8px;padding:9px 12px;margin:10px 0 0;font-size:12px}.aside>b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;color:var(--muted)}.aside.bad{background:var(--redwash);color:var(--red)}.aside.bad>b{color:var(--red)}.aside .q{font-size:12px}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.acts button{padding:7px 11px;font-size:13px}
+.ready{background:#fff;border:1px solid var(--line);border-radius:12px;padding:4px 16px 12px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:start;cursor:pointer}.row:last-child{border-bottom:0}.row.sel{background:var(--wash);margin:0 -16px;padding:11px 16px}.row .value{font-size:14px;margin:1px 0 0}.row .q{font-size:12px;margin:4px 0}.row .acts{margin:0;gap:6px}.row .acts button{padding:5px 9px;font-size:12px}
+.bulk{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--wash);border-radius:10px;padding:12px 14px;margin:8px 0 4px;flex-wrap:wrap}.bulk p{margin:0;font-size:12px;color:var(--muted);max-width:420px}
+.decided{margin-top:22px}.decided summary{cursor:pointer;font-weight:650}.drow{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}.drow .pill{flex-shrink:0}
+.speaker{cursor:default}.speaker .value{font-size:15px}.guess{font-size:11px;color:var(--amber);font-weight:650}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:16px;margin-top:22px;flex-wrap:wrap}
+.rec h3{margin:16px 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}.kv{padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}.kv:last-child{border:0}.kv .k{font-size:11px;color:var(--muted)}.kv .src{font-size:11px;color:var(--muted)}.kv .was{font-size:11px;color:var(--amber)}.empty{color:var(--muted);font-size:12px;padding:6px 0}
+.result{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:start}.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:20px}.panel>h2{margin-bottom:6px}.panel .group:first-of-type{margin-top:10px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 20px}.stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:110px}.stat b{display:block;font:24px/1.1 Georgia,serif}.stat span{font-size:11px;color:var(--muted)}.stat.bad b{color:var(--red)}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:11px;color:var(--muted);font-weight:650}
+.gaps li{margin:4px 0}.gaps{padding-left:18px;margin:6px 0}
+.verdict-ok{color:var(--accent);font-weight:650}.verdict-bad{color:var(--red);font-weight:700}.verdict-warn{color:var(--amber);font-weight:650}
+.bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:8px 10px;color:#fff;background:#15252c;box-shadow:0 8px 28px #0003;border-radius:14px;z-index:40;max-width:calc(100vw - 24px)}.bar button{background:transparent;border-color:transparent;color:#d6e0e1;padding:7px 10px;font-size:13px;white-space:nowrap}.bar button:hover{border-color:#ffffff40}.bar button.on{background:#fff;color:#15252c}.bar .tag{font-size:9px;letter-spacing:1.5px;color:#9fb2b6;padding:0 8px;white-space:nowrap}.bar .sep{width:1px;height:22px;background:#425159}
+.walk{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);width:min(760px,calc(100vw - 24px));max-height:62vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 20px 70px #0004;z-index:39;padding:18px 20px}.walk[hidden]{display:none}.wtabs{display:flex;gap:18px;border-bottom:1px solid var(--line);margin-bottom:12px;overflow:auto}.wtabs button{border:0;border-radius:0;background:transparent;padding:0 0 10px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}.wtabs button.on{color:var(--ink);font-weight:700;border-color:var(--accent)}.walk p{font-size:13px;color:var(--muted)}.wsteps{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px}.wsteps button{width:100%;text-align:left;display:flex;gap:10px;align-items:baseline;font-size:13px}.wsteps button.next{border-color:var(--accent);background:var(--wash);font-weight:650}.wsteps .n{flex-shrink:0;color:var(--muted);font-size:11px;width:16px}.wsteps .done{color:var(--accent)}
+.mtabs{display:none}
+@media(max-width:900px){.shell{grid-template-columns:minmax(0,1fr)}.rail{position:static;height:auto;padding:14px 18px;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px 16px}.rail .rail-label,.rail-foot,.rail .steps small{display:none}.rail .steps{display:flex;gap:4px;width:100%;overflow:auto}.rail .steps button{width:auto;white-space:nowrap;padding:6px 8px;font-size:12px}.client{padding:6px 10px}main{padding:18px 16px 150px}h1{font-size:28px}.work,.result{grid-template-columns:minmax(0,1fr)}.crumb{overflow-wrap:anywhere}table{display:block;overflow-x:auto}.side{position:static;max-height:none}.side-body{max-height:none}.side-tabs{display:none}.mtabs{display:flex;gap:6px;margin:0 0 14px;position:sticky;top:0;z-index:5;background:var(--paper);padding:8px 0}.mtabs button{flex:1;padding:8px 6px;font-size:13px}.mtabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}.work[data-m=list] .side{display:none}.work[data-m=transcript] .list,.work[data-m=record] .list{display:none}.row{grid-template-columns:1fr}.bar{bottom:10px;gap:2px;padding:6px}.bar .tag,.bar .sep{display:none}.bar button{padding:7px 8px;font-size:12px}.walk{bottom:64px;padding:14px}}
+</style>
+
+<div class="shell">
+  <aside class="rail" id="rail"></aside>
+  <main id="main"></main>
+</div>
+<div class="walk" id="walk" hidden></div>
+<div class="bar" id="bar"></div>
+
+<script type="text/plain" id="transcript-03">
+WEBVTT
+
+1
+00:00:01.764 --> 00:00:09.507
+Nadia Pearce | Halyard Buyers Advocacy: —sorry, I just had to let the dog out, she was scratching at the door. Okay. Can you both hear me okay?
+
+2
+00:00:09.979 --> 00:00:11.390
+Tash Kumar: Yep, all good.
+
+3
+00:00:11.789 --> 00:00:12.449
+Rhys Gallagher: Yep.
+
+4
+00:00:13.472 --> 00:00:21.220
+Nadia Pearce | Halyard Buyers Advocacy: Great. So I've hit record, that's just for my notes, is that okay? It gets deleted after we're done with it.
+
+5
+00:00:21.978 --> 00:00:23.373
+Tash Kumar: Yeah, that's fine.
+
+6
+00:00:23.665 --> 00:00:28.512
+Nadia Pearce | Halyard Buyers Advocacy: Lovely. And Dan's going to jump on a bit later, did he message you?
+
+7
+00:00:29.440 --> 00:00:36.920
+Rhys Gallagher: Yeah, he said he's got a client till quarter past, so he'll join after that. He said just start without him.
+
+8
+00:00:39.734 --> 00:00:47.437
+Nadia Pearce | Halyard Buyers Advocacy: Perfect. That actually works well, it gives me a chance to get to know you first. So how are you both?
+
+9
+00:00:47.437 --> 00:00:50.372
+Nadia Pearce | Halyard Buyers Advocacy: Tash, have you just come off a shift?
+
+10
+00:00:51.339 --> 00:00:58.691
+Tash Kumar: No, I'm on nights tomorrow. So today's my, um, my sleep normally day. I've had a coffee. I'm okay.
+
+11
+00:00:59.135 --> 00:01:02.157
+Nadia Pearce | Halyard Buyers Advocacy: Oh, that's brutal. Where are you working?
+
+12
+00:01:02.650 --> 00:01:05.412
+Tash Kumar: At the hospital at Chermside. In ICU.
+
+13
+00:01:05.688 --> 00:01:10.571
+Nadia Pearce | Halyard Buyers Advocacy: Wow. Okay. Respect. And Rhys, you're a sparky, is that right? From the form?
+
+14
+00:01:10.920 --> 00:01:14.915
+Rhys Gallagher: Yeah, electrician. I do mostly commercial. Fit outs and that.
+
+15
+00:01:15.211 --> 00:01:22.965
+Nadia Pearce | Halyard Buyers Advocacy: Great. Okay, so, just quickly about me, I'm Nadia, I run Halyard, it's a small buyers agency, there's three of us.
+
+16
+00:01:22.965 --> 00:01:31.087
+Nadia Pearce | Halyard Buyers Advocacy: I used to be a selling agent on the north side for about nine years, and I started doing this in 2019.
+
+17
+00:01:31.087 --> 00:01:37.363
+Nadia Pearce | Halyard Buyers Advocacy: I'll tell you more about what we do later, but first I want to hear about you.
+
+18
+00:01:37.363 --> 00:01:40.686
+Nadia Pearce | Halyard Buyers Advocacy: What's going on, what's got you thinking about buying?
+
+19
+00:01:41.459 --> 00:01:46.356
+Tash Kumar: Um, so we're renting in Lutwitch, in a unit, we've been there three years.
+
+20
+00:01:46.356 --> 00:01:51.952
+Tash Kumar: And we've been saving for ages, and we sort of, we just want to stop renting.
+
+21
+00:01:51.952 --> 00:01:57.898
+Tash Kumar: Our rent's gone up like a hundred and twenty dollars a week in the last two years.
+
+22
+00:01:58.579 --> 00:01:59.825
+Rhys Gallagher: Hundred and thirty.
+
+23
+00:02:00.460 --> 00:02:04.833
+Tash Kumar: Hundred and thirty. And it's, like, we're paying someone else's mortgage, you know.
+
+24
+00:02:07.594 --> 00:02:12.009
+Nadia Pearce | Halyard Buyers Advocacy: Yeah. I hear that every week. So this is your first place?
+
+25
+00:02:12.970 --> 00:02:14.402
+Tash Kumar: First place, yeah.
+
+26
+00:02:16.273 --> 00:02:17.682
+Rhys Gallagher: First home buyers.
+
+27
+00:02:18.302 --> 00:02:21.274
+Nadia Pearce | Halyard Buyers Advocacy: Okay. Great. And have you been looking much?
+
+28
+00:02:22.225 --> 00:02:26.391
+Tash Kumar: A bit. Mostly online. We've been to, like, five or six opens.
+
+29
+00:02:26.391 --> 00:02:31.946
+Tash Kumar: We went to a townhouse in Kedron that we really liked but it went really quickly.
+
+30
+00:02:31.946 --> 00:02:36.113
+Tash Kumar: Like, before we even had a chance to get our act together.
+
+31
+00:02:36.680 --> 00:02:39.357
+Rhys Gallagher: It was gone in like four days.
+
+32
+00:02:39.755 --> 00:02:46.564
+Nadia Pearce | Halyard Buyers Advocacy: Yeah, that happens a lot with townhouses at the moment, especially the ones in the first home buyer price range.
+
+33
+00:02:46.564 --> 00:02:50.990
+Nadia Pearce | Halyard Buyers Advocacy: Everyone's chasing the same stuff. Do you know roughly what it went for?
+
+34
+00:02:51.739 --> 00:02:57.756
+Rhys Gallagher: The agent said offers over eight-fifty, and then someone said it went for, um, nine-twenty? Something like that.
+
+35
+00:02:58.353 --> 00:03:03.805
+Nadia Pearce | Halyard Buyers Advocacy: Yep. That sounds about right. Okay, so tell me, what are you thinking? Townhouse, unit, house?
+
+36
+00:03:04.655 --> 00:03:11.582
+Tash Kumar: I mean, honestly, we'd love a house. But I don't think we can afford a house anywhere near here.
+
+37
+00:03:12.332 --> 00:03:20.520
+Rhys Gallagher: We had a look at houses out in, like, Bracken Ridge, Zilmere, but Tash doesn't want to be too far from work.
+
+38
+00:03:20.986 --> 00:03:28.538
+Tash Kumar: Because of nights. Like, when I finish a night shift at eight in the morning, I don't want to drive forty minutes.
+
+39
+00:03:28.538 --> 00:03:31.971
+Tash Kumar: I just want to get home and go to bed.
+
+40
+00:03:32.372 --> 00:03:41.159
+Nadia Pearce | Halyard Buyers Advocacy: Yeah, completely. That's actually a really important one, I'll write that down. So, distance to Chermside is a big priority for you.
+
+41
+00:03:42.027 --> 00:03:43.955
+Tash Kumar: Yeah. Like twenty minutes max.
+
+42
+00:03:44.210 --> 00:03:46.772
+Nadia Pearce | Halyard Buyers Advocacy: Okay. And Rhys, where's your work?
+
+43
+00:03:47.673 --> 00:03:54.686
+Rhys Gallagher: All over. Wherever the job is. Mostly the city, Fortitude Valley, sometimes out at the airport. I drive.
+
+44
+00:03:55.560 --> 00:03:59.388
+Nadia Pearce | Halyard Buyers Advocacy: Okay, so you're flexible. And you've got a work vehicle?
+
+45
+00:03:59.932 --> 00:04:05.315
+Rhys Gallagher: Yeah, I've got the ute, it's mine, not the company's. And I've got all my tools.
+
+46
+00:04:05.315 --> 00:04:12.717
+Rhys Gallagher: So I need, like, a lockable garage. I can't leave tools in the ute on the street. I've had them nicked before.
+
+47
+00:04:13.741 --> 00:04:18.351
+Nadia Pearce | Halyard Buyers Advocacy: Oh no. Yeah. Okay, that's a must. Secure garage, lock up. And what else?
+
+48
+00:04:18.606 --> 00:04:22.035
+Tash Kumar: Three bedrooms would be good. Or two and a study.
+
+49
+00:04:22.035 --> 00:04:27.864
+Tash Kumar: We've got a cat, so, um, pet friendly, which I know with a body corporate can be—
+
+50
+00:04:27.940 --> 00:04:35.666
+Nadia Pearce | Halyard Buyers Advocacy: Yep. That's one of the things I'd check in the by-laws. It's mostly fine now in Queensland, but it's worth checking.
+
+51
+00:04:36.312 --> 00:04:40.884
+Tash Kumar: And some outdoor space. Even a courtyard. Just somewhere to sit outside.
+
+52
+00:04:41.297 --> 00:04:42.342
+Rhys Gallagher: A barbecue.
+
+53
+00:04:42.696 --> 00:04:45.038
+Tash Kumar: A barbecue. Ha. That's his must.
+
+54
+00:04:45.800 --> 00:04:52.095
+Nadia Pearce | Halyard Buyers Advocacy: Ha. Everyone's got one. Okay so, can I ask about budget? What have you been thinking?
+
+55
+00:04:52.615 --> 00:04:58.921
+Rhys Gallagher: That's kind of what we want to talk to Dan about. We've got, um, about $85,000 saved.
+
+56
+00:04:58.921 --> 00:05:03.002
+Rhys Gallagher: And then we were looking at the five percent deposit thing.
+
+57
+00:05:05.592 --> 00:05:07.245
+Tash Kumar: The first home guarantee.
+
+58
+00:05:08.075 --> 00:05:12.745
+Nadia Pearce | Halyard Buyers Advocacy: Yep. That's one Dan will be able to explain better than me.
+
+59
+00:05:12.745 --> 00:05:17.415
+Nadia Pearce | Halyard Buyers Advocacy: But okay, so you're looking at going in with a small deposit.
+
+60
+00:05:18.448 --> 00:05:23.128
+Tash Kumar: Yeah. And we just, we don't really know what we can afford.
+
+61
+00:05:23.128 --> 00:05:30.148
+Tash Kumar: Dan did a quick calculation and said maybe 900, 950, but he wanted to look at everything properly.
+
+62
+00:05:30.914 --> 00:05:38.966
+Nadia Pearce | Halyard Buyers Advocacy: That's sensible. I'll leave all the numbers stuff for Dan. While we wait, can I ask some more about what you want?
+
+63
+00:05:38.966 --> 00:05:45.555
+Nadia Pearce | Halyard Buyers Advocacy: So, location, you said near Chermside, what suburbs have you looked at, or what suburbs are you thinking?
+
+64
+00:05:45.838 --> 00:05:50.340
+Tash Kumar: Um, Kedron, Stafford, maybe Nundah? Wavell Heights? I don't know if that's realistic.
+
+65
+00:05:51.222 --> 00:05:58.233
+Nadia Pearce | Halyard Buyers Advocacy: Wavell Heights houses are well out of reach unfortunately, they're really expensive now, but there are a few townhouses around the edges.
+
+66
+00:05:58.233 --> 00:06:04.289
+Nadia Pearce | Halyard Buyers Advocacy: Kedron, Stafford, Stafford Heights, Chermside, Chermside West, Nundah, Wooloowin, Gordon Park even, those all have a lot of townhouses.
+
+67
+00:06:04.289 --> 00:06:08.751
+Nadia Pearce | Halyard Buyers Advocacy: And then houses, maybe Gee bung, Zillmere, Aspley, but it's going to be tight.
+
+68
+00:06:09.500 --> 00:06:13.256
+Rhys Gallagher: Aspley would be good, it's close to my mum.
+
+69
+00:06:13.850 --> 00:06:16.410
+Tash Kumar: We're not buying near your mum.
+
+70
+00:06:17.386 --> 00:06:18.860
+Rhys Gallagher: I'm just saying.
+
+71
+00:06:19.871 --> 00:06:23.969
+Nadia Pearce | Halyard Buyers Advocacy: Ha. Okay, I'll put Aspley on the list but in pencil.
+
+72
+00:06:24.297 --> 00:06:27.114
+iPhone (2): Hello? Hi. Sorry. Can you hear me?
+
+73
+00:06:27.390 --> 00:06:29.111
+Nadia Pearce | Halyard Buyers Advocacy: Hi! Is that Dan?
+
+74
+00:06:29.501 --> 00:06:34.780
+iPhone (2): Yeah, it's Dan, sorry, I'm on my phone, I'm in the car outside my last appointment.
+
+75
+00:06:34.780 --> 00:06:38.738
+iPhone (2): I couldn't get the laptop to connect. Can you hear me okay?
+
+76
+00:06:39.097 --> 00:06:43.333
+Nadia Pearce | Halyard Buyers Advocacy: We can hear you fine. Hi, I'm Nadia, nice to meet you.
+
+77
+00:06:44.038 --> 00:06:47.061
+iPhone (2): Hi Nadia, nice to meet you. Hi guys.
+
+78
+00:06:48.030 --> 00:06:49.088
+Tash Kumar: Hi Dan.
+
+79
+00:06:49.970 --> 00:06:50.640
+Rhys Gallagher: G'day.
+
+80
+00:06:51.138 --> 00:06:57.821
+Nadia Pearce | Halyard Buyers Advocacy: So we were just talking about budget and I said I'd leave all of the hard stuff for you.
+
+81
+00:06:58.437 --> 00:07:03.204
+iPhone (2): Ha. Great. Thanks. Um, so, okay. Let me just get my notes up.
+
+82
+00:07:03.204 --> 00:07:08.705
+iPhone (2): So, I had a first chat with Rhys and Tash a couple of weeks ago,
+
+83
+00:07:08.705 --> 00:07:16.772
+iPhone (2): and I've had a look at their payslips and a few other bits and pieces, so I've got a reasonably good picture.
+
+84
+00:07:16.772 --> 00:07:23.373
+iPhone (2): Is it okay if I go through it here, guys? Nadia's going to hear your income and everything.
+
+85
+00:07:23.867 --> 00:07:25.379
+Tash Kumar: Yeah, it's fine.
+
+86
+00:07:26.372 --> 00:07:27.551
+Rhys Gallagher: Yeah, all good.
+
+87
+00:07:28.161 --> 00:07:32.579
+iPhone (2): Okay. So, both of you are full time, permanent, which is great.
+
+88
+00:07:32.579 --> 00:07:38.101
+iPhone (2): Rhys, your base is around ninety-five and then you do a fair bit of overtime,
+
+89
+00:07:38.101 --> 00:07:41.415
+iPhone (2): so with that you're about a hundred and ten.
+
+90
+00:07:41.415 --> 00:07:48.778
+iPhone (2): Tash, you're around eighty-eight base and then with your penalties and night shift allowances, you're around a hundred and five.
+
+91
+00:07:48.778 --> 00:07:50.987
+iPhone (2): So combined, two-fifteen, give or take.
+
+92
+00:07:51.934 --> 00:07:52.479
+Nadia Pearce | Halyard Buyers Advocacy: Okay.
+
+93
+00:07:52.754 --> 00:07:58.239
+iPhone (2): Now, the thing with overtime and penalties is the banks don't always count all of it.
+
+94
+00:07:58.239 --> 00:08:03.382
+iPhone (2): Most of the lenders I'd use for you will count, like, eighty percent of it,
+
+95
+00:08:03.382 --> 00:08:07.496
+iPhone (2): if it's been consistent for at least six months, which yours has.
+
+96
+00:08:07.496 --> 00:08:11.611
+iPhone (2): So for borrowing purposes, I'm working on a bit less than two-fifteen.
+
+97
+00:08:12.520 --> 00:08:13.292
+Tash Kumar: Okay.
+
+98
+00:08:13.805 --> 00:08:20.656
+iPhone (2): And then, Tash has a Hex debt, about twenty-eight thousand, and that does affect how much you can borrow,
+
+99
+00:08:20.656 --> 00:08:26.786
+iPhone (2): because it comes out of your pay. And Rhys has got the car loan on the ute.
+
+100
+00:08:27.127 --> 00:08:28.544
+Rhys Gallagher: Eighteen left on it.
+
+101
+00:08:29.367 --> 00:08:32.909
+iPhone (2): Yeah, about eighteen. So that's another repayment the bank counts.
+
+102
+00:08:32.909 --> 00:08:38.930
+iPhone (2): If there's any way to pay that off, it would actually help your borrowing quite a bit,
+
+103
+00:08:38.930 --> 00:08:44.951
+iPhone (2): but I wouldn't want you to empty your savings to do it. We can talk about that.
+
+104
+00:08:45.924 --> 00:08:48.245
+Rhys Gallagher: Yeah, I've been thinking about that.
+
+105
+00:08:48.698 --> 00:08:49.079
+iPhone (2): Okay.
+
+106
+00:08:49.079 --> 00:08:57.458
+iPhone (2): So, putting all that together, at the moment I think a lender would approve you for a loan of around nine hundred,
+
+107
+00:08:57.458 --> 00:09:03.552
+iPhone (2): maybe a little bit more. But I don't want to put you at the absolute max.
+
+108
+00:09:03.552 --> 00:09:11.551
+iPhone (2): The banks assess you at a rate that's about three percent above what you'd actually pay, so there's already a buffer,
+
+109
+00:09:11.551 --> 00:09:16.121
+iPhone (2): but still, I'd rather you're comfortable. Especially if, you know, anything changes.
+
+110
+00:09:16.811 --> 00:09:23.310
+Nadia Pearce | Halyard Buyers Advocacy: Can I ask, Dan, on the five percent deposit scheme, what's the price cap in Brisbane at the moment?
+
+111
+00:09:24.351 --> 00:09:26.807
+iPhone (2): Yeah, so it's a million in Brisbane.
+
+112
+00:09:26.807 --> 00:09:34.177
+iPhone (2): Since they changed it in October last year, there's no income caps anymore and no limit on places. So they qualify.
+
+113
+00:09:34.177 --> 00:09:40.844
+iPhone (2): The way it works is they put in five percent, the government guarantees the rest of the twenty percent,
+
+114
+00:09:40.844 --> 00:09:47.160
+iPhone (2): and they don't pay lenders mortgage insurance. Which, on a nine hundred thousand purchase, is a big saving.
+
+115
+00:09:47.160 --> 00:09:49.266
+iPhone (2): Like, thirty, forty grand, sometimes more.
+
+116
+00:09:49.659 --> 00:09:50.181
+Tash Kumar: Wow.
+
+117
+00:09:50.573 --> 00:09:57.106
+iPhone (2): So, with eighty-five saved, and say we're buying at, um, let's say nine hundred. Five percent is forty-five.
+
+118
+00:09:57.106 --> 00:09:58.921
+iPhone (2): Then you've got stamp duty.
+
+119
+00:09:59.408 --> 00:10:02.685
+Nadia Pearce | Halyard Buyers Advocacy: And that's the bit that hurts on established property.
+
+120
+00:10:03.408 --> 00:10:10.970
+iPhone (2): Yeah, exactly. So, Nadia knows this, but for you guys, in Queensland, if you're a first home buyer buying an established home,
+
+121
+00:10:10.970 --> 00:10:18.188
+iPhone (2): you get a full stamp duty concession up to seven hundred thousand, and then it phases out up to eight hundred.
+
+122
+00:10:18.188 --> 00:10:25.062
+iPhone (2): Above eight hundred, you don't get the first home concession at all, you just get the normal home concession rate.
+
+123
+00:10:25.062 --> 00:10:30.561
+iPhone (2): So on a nine hundred thousand townhouse, you'd be paying about twenty-six thousand in stamp duty.
+
+124
+00:10:31.067 --> 00:10:32.384
+Rhys Gallagher: Oh. Shit. Sorry.
+
+125
+00:10:32.963 --> 00:10:35.210
+iPhone (2): Ha. No, that's the normal reaction.
+
+126
+00:10:35.592 --> 00:10:38.529
+Tash Kumar: So nine hundred plus forty-five plus twenty-six.
+
+127
+00:10:41.336 --> 00:10:49.178
+iPhone (2): So forty-five for the deposit, twenty-six-ish for stamp duty, then you've got your legal costs, your building and pest, bank fees,
+
+128
+00:10:49.178 --> 00:10:57.020
+iPhone (2): a couple of grand in moving. Call it seventy-eight, eighty thousand in total. So you're basically using all of your eighty-five.
+
+129
+00:10:57.848 --> 00:11:00.046
+Tash Kumar: Okay. That's kind of scary.
+
+130
+00:11:00.573 --> 00:11:05.435
+iPhone (2): It is a bit tight. That's why I want to talk about it.
+
+131
+00:11:05.435 --> 00:11:12.915
+iPhone (2): Now, the other side of it, and this is where it gets interesting, if you buy a brand new property,
+
+132
+00:11:12.915 --> 00:11:20.395
+iPhone (2): so a new build or off the plan, first home buyers in Queensland now pay no stamp duty at all.
+
+133
+00:11:20.395 --> 00:11:27.127
+iPhone (2): That came in May last year. So on a brand new townhouse, there's twenty-six grand you don't pay.
+
+134
+00:11:27.443 --> 00:11:28.562
+Rhys Gallagher: Oh, really?
+
+135
+00:11:29.424 --> 00:11:34.780
+iPhone (2): Yeah. And there's the first home owner grant on new homes as well, which, um,
+
+136
+00:11:34.780 --> 00:11:41.564
+iPhone (2): I'd need to double check what it is now, it changed at the end of the last financial year,
+
+137
+00:11:41.564 --> 00:11:47.277
+iPhone (2): I don't want to give you the wrong number. I'll confirm that and send it through.
+
+138
+00:11:48.045 --> 00:11:54.331
+Nadia Pearce | Halyard Buyers Advocacy: Can I just add one thing on the new build stuff, Dan, just so they've got both sides?
+
+139
+00:11:55.330 --> 00:11:56.686
+iPhone (2): Yeah, of course.
+
+140
+00:11:57.240 --> 00:12:00.834
+Nadia Pearce | Halyard Buyers Advocacy: So, new can be great, especially with the duty saving.
+
+141
+00:12:00.834 --> 00:12:06.225
+Nadia Pearce | Halyard Buyers Advocacy: But new townhouses, especially off the plan, they can be harder on the resale side,
+
+142
+00:12:06.225 --> 00:12:11.257
+Nadia Pearce | Halyard Buyers Advocacy: because you're competing with the developer who's still selling the rest of the complex.
+
+143
+00:12:11.257 --> 00:12:16.649
+Nadia Pearce | Halyard Buyers Advocacy: And sometimes the bank valuation on new stuff comes in lower than what you paid,
+
+144
+00:12:16.649 --> 00:12:19.883
+Nadia Pearce | Halyard Buyers Advocacy: which is a problem with a five percent deposit.
+
+145
+00:12:20.837 --> 00:12:25.989
+iPhone (2): Yeah, that's a really good point. Valuations on new can be a bit of a risk.
+
+146
+00:12:25.989 --> 00:12:31.786
+iPhone (2): If the bank values it at less than the contract price, you'd have to make up the difference.
+
+147
+00:12:31.786 --> 00:12:35.328
+iPhone (2): So I always want the valuation done before you go unconditional.
+
+148
+00:12:35.977 --> 00:12:39.464
+Nadia Pearce | Halyard Buyers Advocacy: And there's the build quality question, which I'll look at.
+
+149
+00:12:39.464 --> 00:12:45.393
+Nadia Pearce | Halyard Buyers Advocacy: Some of the new complexes around Chermside and Stafford are great, and some are, um, less great.
+
+150
+00:12:45.930 --> 00:12:51.573
+Rhys Gallagher: Ha. Yeah. I've done the electrical on some of those. Some of them are, um, yeah.
+
+151
+00:12:51.988 --> 00:12:54.576
+Nadia Pearce | Halyard Buyers Advocacy: Ha. You'd know better than me!
+
+152
+00:12:55.491 --> 00:12:59.832
+Tash Kumar: So what's the actual number then? Like what should we be looking at?
+
+153
+00:13:00.249 --> 00:13:02.549
+iPhone (2): Okay, so here's where I'd land it.
+
+154
+00:13:02.549 --> 00:13:09.120
+iPhone (2): For an established townhouse or house, I'd want you at about eight-eighty to nine hundred, maybe nine-ten at a stretch.
+
+155
+00:13:09.120 --> 00:13:12.405
+iPhone (2): That keeps a little bit of your savings left over.
+
+156
+00:13:12.405 --> 00:13:18.319
+iPhone (2): For a brand new property where you're not paying stamp duty, you could go up to about nine-fifty,
+
+157
+00:13:18.319 --> 00:13:20.619
+iPhone (2): because you've got that extra twenty-odd thousand.
+
+158
+00:13:21.419 --> 00:13:23.157
+Nadia Pearce | Halyard Buyers Advocacy: Okay. That's really helpful.
+
+159
+00:13:23.409 --> 00:13:30.071
+iPhone (2): And look, if Rhys paid off some of the car loan, and if Tash's grandma's gift comes through,
+
+160
+00:13:30.071 --> 00:13:31.921
+iPhone (2): that changes things a bit.
+
+161
+00:13:32.329 --> 00:13:37.947
+Tash Kumar: Oh, yeah, that's, um. My nan said she'd give us ten thousand. But I don't know when.
+
+162
+00:13:38.526 --> 00:13:45.308
+iPhone (2): Yeah, so if that happens, we just need a gift letter from her, saying it's a gift, not a loan.
+
+163
+00:13:45.308 --> 00:13:50.056
+iPhone (2): It's not hard. But I'm not including it until it's actually in your account.
+
+164
+00:13:50.753 --> 00:13:51.428
+Tash Kumar: Okay.
+
+165
+00:13:51.992 --> 00:13:58.092
+Nadia Pearce | Halyard Buyers Advocacy: Dan, what's the timeline on pre-approval? Because I'd want that in place before we're making offers.
+
+166
+00:13:58.520 --> 00:14:04.243
+iPhone (2): So I can lodge it this week, as long as I get the last few documents.
+
+167
+00:14:04.243 --> 00:14:10.682
+iPhone (2): Rhys, I still need your last two payslips, the ones from October, and Tash, I need your roster,
+
+168
+00:14:10.682 --> 00:14:17.836
+iPhone (2): or something from the hospital that shows your penalties are regular. And I need the statement for the car loan.
+
+169
+00:14:17.836 --> 00:14:25.348
+iPhone (2): Then pre-approval's usually a few days, maybe a week with the lender I'm thinking of. It's normally good for ninety days.
+
+170
+00:14:25.616 --> 00:14:28.820
+Tash Kumar: I can get the roster thing from my manager.
+
+171
+00:14:29.495 --> 00:14:32.035
+Rhys Gallagher: I'll send you the payslips tonight.
+
+172
+00:14:33.067 --> 00:14:38.537
+iPhone (2): Perfect. Then I'll send you guys the documents for the gift letter too, just in case.
+
+173
+00:14:38.851 --> 00:14:43.751
+Nadia Pearce | Halyard Buyers Advocacy: Thanks Dan. This is really clear. Anything else on your side, before you go?
+
+174
+00:14:44.579 --> 00:14:49.569
+iPhone (2): Um, just one thing. Rates. You know, the rate you get matters a lot.
+
+175
+00:14:49.569 --> 00:14:56.698
+iPhone (2): On the five percent scheme, not every lender has the best rates, so I'll show you a couple of options.
+
+176
+00:14:56.698 --> 00:15:03.470
+iPhone (2): And the other thing, when you guys get a property under contract, tell me straight away, on the day,
+
+177
+00:15:03.470 --> 00:15:09.529
+iPhone (2): because I'll need to order the valuation, and the finance clause is usually fourteen or twenty-one days,
+
+178
+00:15:09.529 --> 00:15:11.668
+iPhone (2): and the banks can be slow.
+
+179
+00:15:12.572 --> 00:15:19.345
+Nadia Pearce | Halyard Buyers Advocacy: Yeah, I always try for twenty-one on finance for first home buyers. We don't always get it, but I try.
+
+180
+00:15:19.867 --> 00:15:25.330
+iPhone (2): Great. Okay, guys, I've got to run, I've got another client in Albion at four thirty.
+
+181
+00:15:25.330 --> 00:15:27.721
+iPhone (2): But I'll send everything through tonight, okay?
+
+182
+00:15:28.217 --> 00:15:29.895
+Tash Kumar: Thanks so much Dan.
+
+183
+00:15:30.667 --> 00:15:31.855
+Rhys Gallagher: Cheers mate.
+
+184
+00:15:32.862 --> 00:15:36.653
+Nadia Pearce | Halyard Buyers Advocacy: Thanks Dan, great to meet you, I'll email you after this.
+
+185
+00:15:37.079 --> 00:15:38.751
+iPhone (2): Thanks Nadia. Bye guys.
+
+186
+00:15:39.658 --> 00:15:42.056
+Tash Kumar: Okay. Wow. That was a lot.
+
+187
+00:15:42.772 --> 00:15:46.179
+Nadia Pearce | Halyard Buyers Advocacy: It was a lot. How are you feeling?
+
+188
+00:15:47.085 --> 00:15:50.987
+Tash Kumar: Um. Honestly, like, a bit overwhelmed? But also, it's good to know.
+
+189
+00:15:50.987 --> 00:15:56.839
+Tash Kumar: Like, we always thought it'd be nine-fifty, and it's sort of, it's less than that, unless it's new.
+
+190
+00:15:57.411 --> 00:16:02.748
+Rhys Gallagher: But nine hundred's still good. Like, that townhouse in Kedron would've been in range.
+
+191
+00:16:04.720 --> 00:16:08.911
+Nadia Pearce | Halyard Buyers Advocacy: Yeah, nine hundred is genuinely a good budget for what you want.
+
+192
+00:16:08.911 --> 00:16:14.499
+Nadia Pearce | Halyard Buyers Advocacy: Let me tell you what I think that buys, and then how I'd work with you.
+
+193
+00:16:14.499 --> 00:16:21.485
+Nadia Pearce | Halyard Buyers Advocacy: So in Kedron, Stafford, Chermside, at eight-eighty to nine hundred, you're looking at a three bed townhouse, probably two bathrooms,
+
+194
+00:16:21.485 --> 00:16:29.169
+Nadia Pearce | Halyard Buyers Advocacy: double lock up garage or a single plus a car space, in a complex of somewhere between, like, six and thirty townhouses.
+
+195
+00:16:29.169 --> 00:16:36.504
+Nadia Pearce | Halyard Buyers Advocacy: Older ones, from the two thousands, are often a bit bigger, with bigger courtyards. Newer ones are smaller but more modern.
+
+196
+00:16:36.504 --> 00:16:40.346
+Nadia Pearce | Halyard Buyers Advocacy: In Nundah and Wooloowin, it's similar but a bit more competition.
+
+197
+00:16:40.346 --> 00:16:45.585
+Nadia Pearce | Halyard Buyers Advocacy: And a house, at nine hundred, I'd be honest, it's very hard in those suburbs.
+
+198
+00:16:45.585 --> 00:16:51.872
+Nadia Pearce | Halyard Buyers Advocacy: Geebung and Zillmere you might get something small, older, on a small block, but it would need work,
+
+199
+00:16:51.872 --> 00:16:54.317
+Nadia Pearce | Halyard Buyers Advocacy: and it's not near the train necessarily.
+
+200
+00:16:55.270 --> 00:16:57.761
+Tash Kumar: I don't need near the train.
+
+201
+00:16:58.630 --> 00:17:01.561
+Nadia Pearce | Halyard Buyers Advocacy: No, you need near work. Which is fine.
+
+202
+00:17:01.561 --> 00:17:09.620
+Nadia Pearce | Halyard Buyers Advocacy: Chermside is actually really good, it's close to the shopping centre, close to the hospital. And then there's the double garage thing.
+
+203
+00:17:09.620 --> 00:17:16.214
+Nadia Pearce | Halyard Buyers Advocacy: Rhys, would a single lock up plus a car space work, or do you really need a double?
+
+204
+00:17:16.478 --> 00:17:23.806
+Rhys Gallagher: Single lock up is fine as long as I can lock the tools in it. Tash's car can go out the front.
+
+205
+00:17:24.766 --> 00:17:27.620
+Tash Kumar: My car's a Yaris. Nobody's stealing it.
+
+206
+00:17:27.976 --> 00:17:32.014
+Nadia Pearce | Halyard Buyers Advocacy: Ha. Okay. And then body corporate, so I'd be looking at the levies.
+
+207
+00:17:32.014 --> 00:17:38.848
+Nadia Pearce | Halyard Buyers Advocacy: On a townhouse, they could be anything from like two and a half thousand a year to six or seven thousand a
+
+208
+00:17:38.848 --> 00:17:45.371
+Nadia Pearce | Halyard Buyers Advocacy: year, depending on what's in the complex. Pool, gardens, lifts. And the sinking fund, which is the savings for big repairs.
+
+209
+00:17:45.371 --> 00:17:50.031
+Nadia Pearce | Halyard Buyers Advocacy: If the sinking fund is low, that's often a sign there's a big bill coming.
+
+210
+00:17:50.031 --> 00:17:54.690
+Nadia Pearce | Halyard Buyers Advocacy: I always read the body corporate records, the minutes, the disputes. Those are really important.
+
+211
+00:17:55.559 --> 00:17:58.946
+Tash Kumar: I wouldn't even know what to look for.
+
+212
+00:17:59.820 --> 00:18:04.897
+Nadia Pearce | Halyard Buyers Advocacy: That's what I do. Honestly, for townhouses, the body corporate stuff is about half the work.
+
+213
+00:18:04.897 --> 00:18:11.878
+Nadia Pearce | Halyard Buyers Advocacy: The other half is the building itself. Like, is there water coming in, is there cracking, has there been a defect claim.
+
+214
+00:18:11.878 --> 00:18:16.003
+Nadia Pearce | Halyard Buyers Advocacy: Some of the newer complexes around here have had big issues with waterproofing.
+
+215
+00:18:18.813 --> 00:18:20.566
+Rhys Gallagher: Yeah, we see that.
+
+216
+00:18:20.880 --> 00:18:25.171
+Nadia Pearce | Halyard Buyers Advocacy: Okay, so, the other question is, what do you want me to do?
+
+217
+00:18:25.171 --> 00:18:32.433
+Nadia Pearce | Halyard Buyers Advocacy: Because I can do the whole thing, which is the full search, or there's a couple of smaller options that a lot
+
+218
+00:18:32.433 --> 00:18:34.084
+Nadia Pearce | Halyard Buyers Advocacy: of first home buyers use.
+
+219
+00:18:34.472 --> 00:18:36.165
+Tash Kumar: What are the options?
+
+220
+00:18:37.206 --> 00:18:40.692
+Nadia Pearce | Halyard Buyers Advocacy: So, the full service is what most people do.
+
+221
+00:18:40.692 --> 00:18:46.114
+Nadia Pearce | Halyard Buyers Advocacy: We start with a brief session, then I search, on market and off market.
+
+222
+00:18:46.114 --> 00:18:54.635
+Nadia Pearce | Halyard Buyers Advocacy: A lot of townhouses that sell before they hit the portals, a selling agent will call me because they know I've got
+
+223
+00:18:54.635 --> 00:18:55.797
+Nadia Pearce | Halyard Buyers Advocacy: a buyer ready.
+
+224
+00:18:55.797 --> 00:19:03.543
+Nadia Pearce | Halyard Buyers Advocacy: I'd inspect for you, do all the due diligence, the body corporate, the building, the comparable sales, and then negotiate,
+
+225
+00:19:03.543 --> 00:19:08.965
+Nadia Pearce | Halyard Buyers Advocacy: or bid at auction, and then I look after it right through to settlement.
+
+226
+00:19:08.965 --> 00:19:15.162
+Nadia Pearce | Halyard Buyers Advocacy: The fee for that is an engagement fee of two and a half thousand plus GST,
+
+227
+00:19:15.162 --> 00:19:23.683
+Nadia Pearce | Halyard Buyers Advocacy: and then one point eight percent of the price plus GST when you buy. With a minimum of fifteen thousand plus GST.
+
+228
+00:19:23.683 --> 00:19:27.169
+Nadia Pearce | Halyard Buyers Advocacy: And the engagement fee comes off at the end.
+
+229
+00:19:27.529 --> 00:19:30.031
+Rhys Gallagher: So at nine hundred, that's, um—
+
+230
+00:19:30.263 --> 00:19:32.343
+Nadia Pearce | Halyard Buyers Advocacy: Sixteen thousand two hundred plus GST.
+
+231
+00:19:32.644 --> 00:19:36.167
+Rhys Gallagher: Yeah. That's, um. That's a lot, for us, honestly.
+
+232
+00:19:36.771 --> 00:19:40.052
+Nadia Pearce | Halyard Buyers Advocacy: No, I totally understand, and I'd rather you were honest.
+
+233
+00:19:40.052 --> 00:19:45.629
+Nadia Pearce | Halyard Buyers Advocacy: So the other options are, we've got a negotiate only service, where you find the property yourself,
+
+234
+00:19:45.629 --> 00:19:51.862
+Nadia Pearce | Halyard Buyers Advocacy: and you bring it to me, and I do the due diligence, I look at the body corporate records,
+
+235
+00:19:51.862 --> 00:19:57.112
+Nadia Pearce | Halyard Buyers Advocacy: I tell you what it's worth, and I negotiate it for you, or bid at auction.
+
+236
+00:19:57.112 --> 00:20:00.064
+Nadia Pearce | Halyard Buyers Advocacy: That one's five and a half thousand plus GST.
+
+237
+00:20:00.064 --> 00:20:06.298
+Nadia Pearce | Halyard Buyers Advocacy: And then there's just auction bidding, where I just bid on the day, and that's fifteen hundred plus GST.
+
+238
+00:20:06.945 --> 00:20:09.094
+Tash Kumar: Oh, okay. That's, um, that's interesting.
+
+239
+00:20:09.714 --> 00:20:13.792
+Rhys Gallagher: The negotiate one would be good. Because we can look ourselves.
+
+240
+00:20:14.339 --> 00:20:18.549
+Tash Kumar: But then we have to do all the looking. With my shifts.
+
+241
+00:20:19.248 --> 00:20:20.068
+Rhys Gallagher: Yeah. True.
+
+242
+00:20:21.036 --> 00:20:24.130
+Nadia Pearce | Halyard Buyers Advocacy: Honestly, I'd say have a think about it.
+
+243
+00:20:24.130 --> 00:20:29.931
+Nadia Pearce | Halyard Buyers Advocacy: The thing with the full service is mostly the off market stuff and the time.
+
+244
+00:20:29.931 --> 00:20:33.024
+Nadia Pearce | Halyard Buyers Advocacy: With your shifts, Tash, that's a real thing.
+
+245
+00:20:33.024 --> 00:20:39.599
+Nadia Pearce | Halyard Buyers Advocacy: But if you're happy to keep looking on the weekends, the negotiate one is really good value,
+
+246
+00:20:39.599 --> 00:20:42.692
+Nadia Pearce | Halyard Buyers Advocacy: a lot of first home buyers use that.
+
+247
+00:20:43.214 --> 00:20:46.358
+Tash Kumar: Okay. Can you send us both? Like, the details?
+
+248
+00:20:47.341 --> 00:20:48.076
+Nadia Pearce | Halyard Buyers Advocacy: Of course.
+
+249
+00:20:48.076 --> 00:20:56.170
+Nadia Pearce | Halyard Buyers Advocacy: And just so you know, whichever one you pick, we can't do anything until you sign the agreement, it's a Form 6,
+
+250
+00:20:56.170 --> 00:21:00.216
+Nadia Pearce | Halyard Buyers Advocacy: it's the Queensland form, so I'll attach that for both options.
+
+251
+00:21:01.153 --> 00:21:01.701
+Rhys Gallagher: Okay.
+
+252
+00:21:02.507 --> 00:21:10.520
+Nadia Pearce | Halyard Buyers Advocacy: Can I ask a couple more things before we finish? Just for my notes. Are you okay with an older complex?
+
+253
+00:21:10.520 --> 00:21:12.809
+Nadia Pearce | Halyard Buyers Advocacy: Like, from the eighties or nineties?
+
+254
+00:21:13.317 --> 00:21:16.452
+Tash Kumar: Um. As long as it's, like, not gross.
+
+255
+00:21:16.838 --> 00:21:19.635
+Rhys Gallagher: As long as the wiring's not stuffed.
+
+256
+00:21:20.679 --> 00:21:27.664
+Nadia Pearce | Halyard Buyers Advocacy: Ha. You'd be the one to check that. Okay, and are there any things you definitely don't want?
+
+257
+00:21:27.664 --> 00:21:30.768
+Nadia Pearce | Halyard Buyers Advocacy: Like, main roads, flood, that kind of thing?
+
+258
+00:21:31.637 --> 00:21:36.632
+Tash Kumar: Not on Gympie Road. I don't want to be on Gympie Road.
+
+259
+00:21:37.384 --> 00:21:38.762
+Rhys Gallagher: Or Webster Road.
+
+260
+00:21:39.047 --> 00:21:43.845
+Nadia Pearce | Halyard Buyers Advocacy: Okay. Main roads, no. What about the train line, or the busway, or flight paths?
+
+261
+00:21:43.845 --> 00:21:48.323
+Nadia Pearce | Halyard Buyers Advocacy: Some of the parts of Nundah and Kedron get a bit of plane noise.
+
+262
+00:21:49.202 --> 00:21:55.024
+Tash Kumar: Oh, I didn't think about planes. I sleep during the day sometimes. That would be bad.
+
+263
+00:21:55.755 --> 00:22:00.778
+Nadia Pearce | Halyard Buyers Advocacy: Yeah, so that's a good one, with your nights. I'll check the flight paths.
+
+264
+00:22:00.778 --> 00:22:06.159
+Nadia Pearce | Halyard Buyers Advocacy: And noise generally, because some townhouses share walls and if your neighbour's got a toddler,
+
+265
+00:22:06.159 --> 00:22:09.747
+Nadia Pearce | Halyard Buyers Advocacy: and you're trying to sleep at eleven in the morning.
+
+266
+00:22:10.761 --> 00:22:13.658
+Tash Kumar: Oh God. Yeah. Like, end unit would be good.
+
+267
+00:22:13.658 --> 00:22:18.166
+Tash Kumar: Or at least not, um, like, the bedroom not next to someone else's bedroom.
+
+268
+00:22:18.891 --> 00:22:22.483
+Nadia Pearce | Halyard Buyers Advocacy: Yep. That's a really good one, I'll put that on.
+
+269
+00:22:22.483 --> 00:22:27.872
+Nadia Pearce | Halyard Buyers Advocacy: And flooding, Kedron Brook runs through a few of those suburbs, so I always check.
+
+270
+00:22:28.344 --> 00:22:29.339
+Rhys Gallagher: No flooding.
+
+271
+00:22:29.785 --> 00:22:33.670
+Nadia Pearce | Halyard Buyers Advocacy: No flooding. Okay. And timing, is there a lease ending?
+
+272
+00:22:34.293 --> 00:22:40.624
+Tash Kumar: Our lease is up in April. And we don't want to renew it, honestly, with the rent.
+
+273
+00:22:41.494 --> 00:22:45.721
+Nadia Pearce | Halyard Buyers Advocacy: Okay, so April gives us a bit of time. That's good.
+
+274
+00:22:45.721 --> 00:22:50.332
+Nadia Pearce | Halyard Buyers Advocacy: What we don't want is to rush and buy the wrong thing.
+
+275
+00:22:50.332 --> 00:22:58.786
+Nadia Pearce | Halyard Buyers Advocacy: Dan said ninety days for pre-approval, so if he lodges this week, that takes us to about February. That's a good window.
+
+276
+00:22:59.196 --> 00:22:59.999
+Tash Kumar: Okay.
+
+277
+00:23:00.545 --> 00:23:03.187
+Rhys Gallagher: Do we have to buy before Christmas?
+
+278
+00:23:03.685 --> 00:23:09.541
+Nadia Pearce | Halyard Buyers Advocacy: No. Absolutely not. There's usually a quieter period over Christmas, and then February, March gets busy again.
+
+279
+00:23:09.541 --> 00:23:16.776
+Nadia Pearce | Halyard Buyers Advocacy: You might find something before Christmas, sometimes the best deals are in December when there's less people looking. But no pressure.
+
+280
+00:23:17.597 --> 00:23:18.884
+Tash Kumar: Okay. That's good.
+
+281
+00:23:19.778 --> 00:23:20.771
+Nadia Pearce | Halyard Buyers Advocacy: So, next steps.
+
+282
+00:23:20.771 --> 00:23:27.393
+Nadia Pearce | Halyard Buyers Advocacy: I'll send you an email tonight, with the summary of what we talked about, both service options, and the agreement.
+
+283
+00:23:27.393 --> 00:23:33.684
+Nadia Pearce | Halyard Buyers Advocacy: Dan's going to send you his document list. You're going to send him the payslips and the roster thing.
+
+284
+00:23:34.698 --> 00:23:35.518
+Rhys Gallagher: Payslips tonight.
+
+285
+00:23:36.483 --> 00:23:40.358
+Tash Kumar: I'll ask my manager tomorrow night when I'm on.
+
+286
+00:23:40.795 --> 00:23:45.866
+Nadia Pearce | Halyard Buyers Advocacy: Perfect. And then have a think about which service you want, no rush.
+
+287
+00:23:45.866 --> 00:23:54.057
+Nadia Pearce | Halyard Buyers Advocacy: If you want, I'm happy to look at a couple of listings for you this weekend, even before you sign anything,
+
+288
+00:23:54.057 --> 00:23:57.567
+Nadia Pearce | Halyard Buyers Advocacy: and just tell you what I think. Just informally.
+
+289
+00:23:58.189 --> 00:24:00.034
+Tash Kumar: Oh, that would be amazing.
+
+290
+00:24:01.013 --> 00:24:07.147
+Nadia Pearce | Halyard Buyers Advocacy: Send me links. Anything you're thinking of going to, send it through, and I'll give you my two cents.
+
+291
+00:24:07.940 --> 00:24:12.333
+Rhys Gallagher: There's one in Stafford we were going to look at on Saturday.
+
+292
+00:24:12.652 --> 00:24:14.181
+Nadia Pearce | Halyard Buyers Advocacy: Send it. Okay?
+
+293
+00:24:15.091 --> 00:24:16.104
+Rhys Gallagher: Will do.
+
+294
+00:24:17.143 --> 00:24:20.709
+Nadia Pearce | Halyard Buyers Advocacy: Great. Thank you both. And Tash, go have a nap.
+
+295
+00:24:21.112 --> 00:24:24.436
+Tash Kumar: Ha. I'm going to. Thank you so much, Nadia.
+
+296
+00:24:25.368 --> 00:24:26.178
+Rhys Gallagher: Thanks, Nadia.
+
+297
+00:24:27.012 --> 00:24:27.814
+Nadia Pearce | Halyard Buyers Advocacy: Bye!
+</script>
+
+<script>
+/* ======================================================================
+   IntakeReview — the liftable logic. Pure: no DOM, no globals, no I/O.
+   Seams it covers (as agreed for the tracer bullet): the suggestion
+   contract, the quote check, and the apply/conflict rules.
+   ====================================================================== */
+const IntakeReview = (() => {
+  // The agreed field list (Decide how consultation transcripts become reviewed records).
+  // support: whose words can carry the field.
+  //   household                 = a speaker matched to a household member must be quoted
+  //   household-or-professional = a household member or someone else (e.g. their broker)
+  //   owner                     = a next action: someone who owes it must be quoted committing
+  const F = (label, item, section, group, kind, support, extra) => ({ label, item, section, group, kind, support, ...(extra || {}) });
+  const FIELDS = {
+    finalSay:        F('Who has the final say', 'Final say', 'profile', 'People', 'one', 'household'),
+    housing:         F('Lives now', 'Lives now', 'profile', 'Circumstances', 'one', 'household'),
+    work_tash:       F('Work · Tash', 'Work · Tash', 'profile', 'Circumstances', 'one', 'household'),
+    work_rhys:       F('Work · Rhys', 'Work · Rhys', 'profile', 'Circumstances', 'one', 'household'),
+    children:        F('Children and schooling', 'Children', 'profile', 'Circumstances', 'one', 'household'),
+    pets:            F('Pets', 'Pets', 'profile', 'Circumstances', 'one', 'household'),
+    accessibility:   F('Accessibility', 'Accessibility', 'profile', 'Circumstances', 'one', 'household'),
+    professionals:   F('Professionals', 'Professional', 'profile', 'Professionals', 'many', 'household-or-professional'),
+    purpose:         F('Purpose', 'Purpose', 'brief', 'Purpose and money', 'one', 'household'),
+    firstHome:       F('First home buyer', 'First home buyer', 'brief', 'Purpose and money', 'one', 'household'),
+    budgetTarget:    F('Budget target', 'Budget target', 'brief', 'Purpose and money', 'one', 'household', { key: true }),
+    budgetCeiling:   F('Budget ceiling', 'Budget ceiling', 'brief', 'Purpose and money', 'one', 'household', { key: true }),
+    brokerGuidance:  F("Broker's price guidance", "Broker's price guidance", 'brief', 'Purpose and money', 'one', 'household-or-professional'),
+    preApproval:     F('Pre-approval (status, amount, lender, expiry)', 'Pre-approval', 'brief', 'Purpose and money', 'one', 'household-or-professional', { key: true }),
+    deposit:         F('Deposit and funds', 'Deposit and funds', 'brief', 'Purpose and money', 'one', 'household'),
+    depositScheme:   F('Deposit scheme', 'Deposit scheme', 'brief', 'Purpose and money', 'one', 'household-or-professional'),
+    familyHelp:      F('Family help', 'Family help', 'brief', 'Purpose and money', 'one', 'household'),
+    mustSellFirst:   F('Must sell first', 'Must sell first', 'brief', 'Purpose and money', 'one', 'household'),
+    areas:           F('Areas', 'Area', 'brief', 'Where', 'many', 'household'),
+    propertyType:    F('Property type', 'Property type', 'brief', 'What', 'one', 'household'),
+    bedrooms:        F('Bedrooms', 'Bedrooms', 'brief', 'What', 'one', 'household'),
+    bathrooms:       F('Bathrooms', 'Bathrooms', 'brief', 'What', 'one', 'household'),
+    parking:         F('Parking', 'Parking', 'brief', 'What', 'one', 'household'),
+    landSize:        F('Land and size', 'Land and size', 'brief', 'What', 'one', 'household'),
+    mustHaves:       F('Must-haves', 'Must-have', 'brief', 'Must-haves', 'many', 'household'),
+    dealBreakers:    F('Deal-breakers', 'Deal-breaker', 'brief', 'Deal-breakers', 'many', 'household', { key: true }),
+    niceToHaves:     F('Nice-to-haves', 'Nice-to-have', 'brief', 'Nice-to-haves', 'many', 'household'),
+    newOrEstablished:F('New or established', 'New or established', 'brief', 'Condition and risk', 'one', 'household'),
+    strata:          F('Strata acceptable', 'Strata acceptable', 'brief', 'Condition and risk', 'one', 'household'),
+    renovation:      F('Renovation appetite', 'Renovation appetite', 'brief', 'Condition and risk', 'one', 'household'),
+    floodTolerance:  F('Flood or overlay tolerance', 'Flood or overlay tolerance', 'brief', 'Condition and risk', 'one', 'household', { partly: { field: 'dealBreakers', test: /flood/i, text: 'overlay-only not discussed (flooding itself is a deal-breaker)' } }),
+    timeline:        F('Timeline', 'Timeline', 'brief', 'Timing', 'one', 'household'),
+    investor:        F('Investor-only: entity, yield or growth, tenanted', 'Investor-only', 'brief', 'Investor', 'one', 'household', { investorOnly: true }),
+    notes:           F('Brief notes (not scored)', 'Brief note', 'brief', 'Notes', 'many', 'household'),
+    referral:        F('Referral source', 'Referral source', 'intake', 'Engagement intake', 'one', 'household-or-professional'),
+    service:         F('Service wanted', 'Service wanted', 'intake', 'Engagement intake', 'one', 'household'),
+    properties:      F('Properties mentioned', 'Property mentioned', 'properties', 'Properties', 'many', 'household'),
+    nextActions:     F('Next actions', 'Next action', 'actions', 'Next actions', 'many', 'owner', { key: true }),
+  };
+  const SECTIONS = [['profile', 'Buyer profile'], ['brief', 'Buyer brief'], ['intake', 'Engagement intake'], ['properties', 'Properties mentioned'], ['actions', 'Next actions']];
+
+  // ---- Transcript ------------------------------------------------------
+  function parseTranscript(text) {
+    const cues = [];
+    for (const block of text.replace(/\r/g, '').trim().split(/\n\s*\n/)) {
+      const lines = block.split('\n');
+      const t = lines.findIndex(l => l.includes('-->'));
+      if (t < 0) continue;
+      const body = lines.slice(t + 1).join('\n');
+      const m = body.match(/^([^:\n]{1,60}): ([\s\S]*)$/);
+      const time = lines[t].split(' --> ')[0].replace(/^00:/, '').replace(/\.\d+$/, '');
+      cues.push({ n: cues.length, time, speaker: m ? m[1] : '?', text: m ? m[2] : body });
+    }
+    return cues;
+  }
+
+  // ---- Suggestion contract + quote check ---------------------------------
+  // Every quote (supporting, earlier value, each side of a disagreement) must sit inside one cue
+  // spoken by the claimed speaker. Failures are dropped before review and counted.
+  function quoteSets(s) {
+    const c = s.conflict || {};
+    return [s.quotes || [], (c.earlier && c.earlier.quotes) || [], (c.views || []).map(v => v.quote)];
+  }
+  function problem(cues, s) {
+    if (!FIELDS[s.field]) return `“${s.fieldLabel || s.field}” is not on the agreed field list`;
+    if (s.basis !== 'stated' && s.basis !== 'inferred') return 'Not marked stated or inferred';
+    if (!s.quotes || !s.quotes.length) return 'No supporting quote';
+    for (const q of quoteSets(s).flat()) {
+      const hits = cues.filter(c => c.text.includes(q.text));
+      if (!hits.length) return `Quote not found word for word: “${q.text}”`;
+      if (!hits.some(c => c.speaker === q.speaker)) return `Quote found, but “${hits[0].speaker}” said it, not “${q.speaker}”`;
+    }
+    return null;
+  }
+  function locate(cues, q) {
+    const cue = cues.find(c => c.speaker === q.speaker && c.text.includes(q.text));
+    return { ...q, cue: cue.n, time: cue.time };
+  }
+  function checkSuggestions(cues, raw) {
+    const kept = [], dropped = [];
+    for (const s of raw) {
+      const reason = problem(cues, s);
+      if (reason) { dropped.push({ ...s, reason }); continue; }
+      const c = s.conflict;
+      kept.push({
+        ...s,
+        quotes: s.quotes.map(q => locate(cues, q)),
+        conflict: c && {
+          ...c,
+          earlier: c.earlier && { ...c.earlier, quotes: c.earlier.quotes.map(q => locate(cues, q)) },
+          views: c.views && c.views.map(v => ({ ...v, quote: locate(cues, v.quote) })),
+        },
+      });
+    }
+    return { kept, dropped };
+  }
+
+  // ---- State -----------------------------------------------------------
+  function initialState({ cues, suggestions, dropped, people, existing, guesses }) {
+    const labels = [...new Set(cues.map(c => c.speaker))];
+    const speakers = {};
+    labels.forEach(l => { speakers[l] = guesses[l] ? { ...guesses[l], guessed: true } : null; });
+    const record = {};
+    for (const [f, e] of Object.entries(existing)) record[f] = { ...e, status: 'on record', history: [] };
+    return {
+      ctx: { cues, suggestions, dropped, labels },
+      stage: 'speakers', people: [...people], speakers, decisions: {}, record, seq: 0, log: [],
+      last: { ok: true, text: 'Match each speaker label to a person. Suggestions stay hidden until every speaker is matched.' },
+    };
+  }
+
+  const kindOf = (st, label) => st.speakers[label] && st.speakers[label].kind;
+  function nameOf(st, label) {
+    const m = st.speakers[label];
+    if (!m) return label;
+    if (m.kind === 'agent') return `${m.name} (you)`;
+    if (m.kind === 'other') return m.role ? `${m.name} (${m.role.toLowerCase()})` : m.name;
+    return m.name;
+  }
+  const namesOf = (st, quotes) => [...new Set(quotes.map(q => nameOf(st, q.speaker)))].join(' and ');
+  const matched = m => !!(m && m.kind && m.name && m.name.trim());
+
+  // Why a suggestion needs an individual decision, and whether it may be applied at all.
+  function assess(st, s) {
+    const field = FIELDS[s.field];
+    const kinds = s.quotes.map(q => kindOf(st, q.speaker));
+    let blocked = null, blockedTag = null;
+    if (field.support === 'owner') {
+      if (!s.quotes.some(q => (s.owners || []).includes(q.speaker))) {
+        blocked = `Nobody who owes this said they would do it. Only ${namesOf(st, s.quotes)} spoke.`;
+        blockedTag = 'No commitment from who owes it';
+      }
+    } else {
+      const ok = field.support === 'household' ? kinds.includes('household') : kinds.some(k => k === 'household' || k === 'other');
+      if (!ok) {
+        blockedTag = 'Not said by the buyers';
+        blocked = kinds.includes('other')
+          ? `Only ${namesOf(st, s.quotes)} said this. Someone else's figure stays their own fact; it becomes the buyers' only if a buyer accepts it.`
+          : kinds.includes('agent')
+            ? `Only you (the agent) said this. It counts once a buyer confirms it.`
+            : 'No household member said this.';
+      }
+    }
+    const reasons = [];
+    if (blocked) reasons.push({ code: 'blocked', tone: 'bad', text: blockedTag });
+    if (s.conflict && s.conflict.type === 'superseded') reasons.push({ code: 'changed', tone: 'warn', text: 'Changed during the call' });
+    if (s.conflict && s.conflict.type === 'disagreement') reasons.push({ code: 'disagree', tone: 'warn', text: 'Decision makers disagree' });
+    const current = field.kind === 'one' ? st.record[s.field] : null;
+    if (current && current.sid !== s.id) reasons.push({ code: 'replaces', tone: 'warn', text: 'Would replace a value on record' });
+    if (s.basis === 'inferred') reasons.push({ code: 'inferred', tone: 'warn', text: 'Inferred' });
+    const decision = st.decisions[s.id] || null;
+    return { s, blocked, reasons, current, decision, bucket: decision ? 'done' : reasons.length ? 'decide' : 'ready' };
+  }
+  const queue = st => st.ctx.suggestions.map(s => assess(st, s));
+
+  // ---- Reducer -----------------------------------------------------------
+  function done(st, text, patch) {
+    const seq = st.seq + 1;
+    return { ...st, ...patch, seq, log: [...st.log, { seq, text }], last: { ok: true, text } };
+  }
+  const refuse = (st, text) => ({ ...st, last: { ok: false, text } });
+
+  function write(st, s, value, status, quotes) {
+    const field = FIELDS[s.field];
+    const entry = {
+      sid: s.id, field: s.field, value, status, basis: s.basis, quotes,
+      owners: s.owners, due: s.due, outcome: s.outcome, detail: s.detail,
+      source: `Call 03 · ${namesOf(st, quotes)} · ${status === 'edited' ? 'edited' : status === 'discuss' ? 'kept to discuss' : 'accepted'} at review`,
+    };
+    const record = { ...st.record };
+    if (field.kind === 'one') {
+      const prev = record[s.field];
+      entry.history = prev ? [...(prev.history || []), { value: prev.value, source: prev.source }] : [];
+      record[s.field] = entry;
+    } else {
+      record[s.field] = [...(record[s.field] || []), entry];
+    }
+    return { record, decisions: { ...st.decisions, [s.id]: { status, value, seq: st.seq + 1 } } };
+  }
+
+  function reduce(st, a) {
+    const s = a.id && st.ctx.suggestions.find(x => x.id === a.id);
+    const label = s && (FIELDS[s.field].item + ': ' + (s.value.length > 60 ? s.value.slice(0, 57) + '…' : s.value));
+    const itemGuard = () => {
+      if (st.stage !== 'review') return 'Suggestions can only be decided on the review step.';
+      if (!s) return 'No such suggestion.';
+      if (st.decisions[s.id]) return `Already decided (${st.decisions[s.id].status}). Undo to change it.`;
+      return null;
+    };
+    switch (a.type) {
+      case 'matchSpeaker': {
+        if (st.stage !== 'speakers') return refuse(st, 'Speakers are locked while you review. Go back to speaker matching first.');
+        const m = a.kind ? { kind: a.kind, name: a.name || '', role: a.role || '', isNew: !!a.isNew } : null;
+        return done(st, m ? `Matched “${a.label}” to ${m.kind === 'agent' ? 'you' : m.name || 'a person still to be named'}${m.kind === 'other' ? ' (someone else)' : m.isNew ? ' (new household member)' : m.kind === 'household' ? ' (household member)' : ''}.` : `Cleared the match for “${a.label}”.`,
+          { speakers: { ...st.speakers, [a.label]: m } });
+      }
+      case 'confirmSpeakers': {
+        if (st.stage !== 'speakers') return refuse(st, 'Speakers are already confirmed.');
+        const missing = st.ctx.labels.filter(l => !matched(st.speakers[l]));
+        if (missing.length) return refuse(st, `Match every speaker first: ${missing.map(l => `“${l}”`).join(', ')} ${missing.length > 1 ? 'are' : 'is'} not matched to a person.`);
+        const agents = st.ctx.labels.filter(l => kindOf(st, l) === 'agent');
+        if (agents.length !== 1) return refuse(st, agents.length ? 'Only one speaker can be you.' : 'Say which speaker is you, the agent who ran the call. Only that person reviews.');
+        const people = [...st.people];
+        st.ctx.labels.forEach(l => { const m = st.speakers[l]; if (m.kind === 'household' && !people.includes(m.name)) people.push(m.name); });
+        const speakers = {};
+        st.ctx.labels.forEach(l => { speakers[l] = { ...st.speakers[l], guessed: false }; });
+        return done(st, `Speakers confirmed. ${queue({ ...st, speakers }).length} suggestions are now showing.`, { stage: 'review', speakers, people });
+      }
+      case 'editSpeakers': {
+        if (st.stage === 'speakers') return refuse(st, 'You are already matching speakers.');
+        if (Object.keys(st.decisions).length) return refuse(st, 'Speakers are locked once a suggestion has been decided, because attribution has already been used. Undo those decisions or start over.');
+        return done(st, 'Back to speaker matching. Suggestions are hidden again.', { stage: 'speakers' });
+      }
+      case 'accept':
+      case 'edit': {
+        const g = itemGuard(); if (g) return refuse(st, g);
+        const x = assess(st, s);
+        if (x.blocked) return refuse(st, `Can't apply “${label}”. ${x.blocked}`);
+        const isDiscuss = s.conflict && s.conflict.type === 'disagreement';
+        if (a.type === 'edit') {
+          const v = (a.value || '').trim();
+          if (!v) return refuse(st, 'An edited value cannot be empty. Reject it instead.');
+          if (v !== s.value) return done(st, `Edited and applied “${FIELDS[s.field].item}”. The quote stays with it as the source.`, write(st, s, v, 'edited', s.quotes));
+        }
+        const status = isDiscuss ? 'discuss' : 'accepted';
+        const extra = x.current ? ` It replaced “${x.current.value}”, which stays in the field's history.` : '';
+        return done(st, `${isDiscuss ? 'Kept as “to discuss”' : 'Applied'} “${label}”.${extra}`, write(st, s, s.value, status, s.quotes));
+      }
+      case 'useEarlier': {
+        const g = itemGuard(); if (g) return refuse(st, g);
+        if (!s.conflict || s.conflict.type !== 'superseded') return refuse(st, 'Only a value that changed during the call has an earlier value.');
+        const x = assess(st, s);
+        if (x.blocked) return refuse(st, `Can't apply “${label}”. ${x.blocked}`);
+        return done(st, `Applied the earlier value “${s.conflict.earlier.value}” for ${FIELDS[s.field].item}.`, write(st, s, s.conflict.earlier.value, 'earlier', s.conflict.earlier.quotes));
+      }
+      case 'reject': {
+        const g = itemGuard(); if (g) return refuse(st, g);
+        return done(st, `Rejected “${label}”. Nothing was written.`, { decisions: { ...st.decisions, [s.id]: { status: 'rejected', seq: st.seq + 1 } } });
+      }
+      case 'ask': {
+        const g = itemGuard(); if (g) return refuse(st, g);
+        return done(st, `Added “${label}” to Ask the client. Nothing was written to the record.`, { decisions: { ...st.decisions, [s.id]: { status: 'ask', seq: st.seq + 1 } } });
+      }
+      case 'acceptRest': {
+        if (st.stage !== 'review') return refuse(st, 'Suggestions can only be decided on the review step.');
+        const ready = queue(st).filter(x => x.bucket === 'ready');
+        if (!ready.length) return refuse(st, 'Nothing left that is safe to accept together.');
+        let next = st;
+        for (const x of ready) next = { ...next, ...write(next, x.s, x.s.value, 'accepted', x.s.quotes) };
+        const left = queue(next).filter(x => x.bucket === 'decide').length;
+        return done(next, `Accepted ${ready.length} stated, unconflicted suggestions together.${left ? ` ${left} still need your decision; they were not touched.` : ''}`);
+      }
+      case 'finish': {
+        if (st.stage !== 'review') return refuse(st, 'Finish from the review step.');
+        const open = queue(st).filter(x => x.bucket !== 'done').length;
+        return done(st, `Review finished.${open ? ` ${open} suggestion${open > 1 ? 's were' : ' was'} left undecided, so nothing was written for ${open > 1 ? 'them' : 'it'}.` : ''}`, { stage: 'result' });
+      }
+      case 'back': {
+        if (st.stage !== 'result') return refuse(st, 'Nothing to go back to.');
+        return done(st, 'Back to reviewing suggestions.', { stage: 'review' });
+      }
+      default: return refuse(st, `Unknown action ${a.type}`);
+    }
+  }
+
+  // ---- What the reviewed record now says ----------------------------------
+  function summary(st) {
+    const entries = {}; SECTIONS.forEach(([k]) => { entries[k] = []; });
+    const toDiscuss = [], notCovered = [];
+    const purpose = st.record.purpose;
+    for (const [id, f] of Object.entries(FIELDS)) {
+      const v = st.record[id];
+      const list = !v ? [] : Array.isArray(v) ? v : [v];
+      list.forEach(e => { (e.status === 'discuss' ? toDiscuss : entries[f.section]).push({ id, f, e }); });
+      const settled = list.some(e => e.status !== 'discuss');
+      if (!settled && !['properties', 'nextActions', 'notes', 'professionals'].includes(id)) {
+        const partly = f.partly && (st.record[f.partly.field] || []).some(e => f.partly.test.test(e.value));
+        if (f.investorOnly && purpose && !/invest/i.test(purpose.value)) notCovered.push(`${f.label}: not applicable (buying a home to live in)`);
+        else if (partly) notCovered.push(`${f.label}: ${f.partly.text}`);
+        else notCovered.push(list.length ? `${f.label}: undecided (to discuss)` : f.label);
+      }
+    }
+    const q = queue(st);
+    return {
+      entries, toDiscuss, notCovered,
+      ask: q.filter(x => x.decision && x.decision.status === 'ask').map(x => x.s),
+      rejected: q.filter(x => x.decision && x.decision.status === 'rejected').map(x => x.s),
+      undecided: q.filter(x => !x.decision).map(x => x.s),
+      written: q.filter(x => x.decision && ['accepted', 'edited', 'earlier', 'discuss'].includes(x.decision.status)).length,
+      dropped: st.ctx.dropped,
+      people: st.people,
+    };
+  }
+
+  return { FIELDS, SECTIONS, parseTranscript, checkSuggestions, initialState, reduce, assess, queue, summary, nameOf };
+})();
+</script>
+
+<script>
+/* ======================================================================
+   Prototype data: one synthetic transcript, its enquiry-form setup and
+   HAND-WRITTEN suggestions (no model), from the approved answer key
+   testdata/intake-consultations/expected/03-expected.md.
+   ====================================================================== */
+const N = 'Nadia Pearce | Halyard Buyers Advocacy', T = 'Tash Kumar', R = 'Rhys Gallagher', D = 'iPhone (2)';
+const q = (text, speaker) => ({ text, speaker });
+const FORM = 'Web enquiry form (prototype setup)';
+
+const SETUP = {
+  people: ['Tash Kumar', 'Rhys Gallagher'],
+  // Invented for the demo, consistent with the call ("you're a sparky… From the form?").
+  existing: {
+    budgetTarget: { value: 'About $950k', source: FORM },
+    work_rhys: { value: 'Electrician', source: FORM },
+  },
+  guesses: {
+    [N]: { kind: 'agent', name: 'Nadia Pearce' },
+    [T]: { kind: 'household', name: 'Tash Kumar' },
+    [R]: { kind: 'household', name: 'Rhys Gallagher' },
+  },
+};
+
+const CAT = q("We've got a cat, so, um, pet friendly, which I know with a body corporate can be—", T);
+const STOP_RENTING = q("And we've been saving for ages, and we sort of, we just want to stop renting.", T);
+const LUTWYCHE = q("Um, so we're renting in Lutwitch, in a unit, we've been there three years.", T);
+const AREAS_TASH = q("Um, Kedron, Stafford, maybe Nundah? Wavell Heights? I don't know if that's realistic.", T);
+const DAN_ESTABLISHED = q("For an established townhouse or house, I'd want you at about eight-eighty to nine hundred, maybe nine-ten at a stretch.", D);
+const DAN_NEW = q("For a brand new property where you're not paying stamp duty, you could go up to about nine-fifty,", D);
+const NADIA_ROADS = q("Okay. Main roads, no. What about the train line, or the busway, or flight paths?", N);
+
+const SUGGESTIONS = [
+  // ---- Profile
+  { id: 's-finalsay', field: 'finalSay', value: 'Tash and Rhys decide together', basis: 'inferred', quotes: [STOP_RENTING], note: "Rhys's mum is mentioned only as a reason to like Aspley; she is not part of the decision." },
+  { id: 's-pets', field: 'pets', value: 'A cat', basis: 'stated', quotes: [CAT] },
+  { id: 's-housing', field: 'housing', value: 'Renting a unit in Lutwyche for three years; rent up about $130 a week over two years', basis: 'stated',
+    quotes: [LUTWYCHE, q("Hundred and thirty. And it's, like, we're paying someone else's mortgage, you know.", T)],
+    conflict: { type: 'superseded', earlier: { value: 'Renting in Lutwyche; rent up about $120 a week over two years', quotes: [q("Our rent's gone up like a hundred and twenty dollars a week in the last two years.", T)] } },
+    note: 'The transcript says “Lutwitch”; normalised to Lutwyche.' },
+  { id: 's-worktash', field: 'work_tash', value: 'ICU nurse at the hospital at Chermside; works night shifts', basis: 'stated',
+    quotes: [q('At the hospital at Chermside. In ICU.', T), q("No, I'm on nights tomorrow. So today's my, um, my sleep normally day. I've had a coffee. I'm okay.", T)] },
+  { id: 's-workrhys', field: 'work_rhys', value: 'Electrician, mostly commercial fit-outs; works across the city, the Valley and the airport; drives his own ute with his tools', basis: 'stated',
+    quotes: [q('Yeah, electrician. I do mostly commercial. Fit outs and that.', R), q("Yeah, I've got the ute, it's mine, not the company's. And I've got all my tools.", R)] },
+  { id: 's-broker', field: 'professionals', value: 'Dan — their mortgage broker (firm not given)', basis: 'inferred',
+    quotes: [q("Yeah, it's Dan, sorry, I'm on my phone, I'm in the car outside my last appointment.", D), q('So, I had a first chat with Rhys and Tash a couple of weeks ago,', D)],
+    note: 'No professional named Dan is on record, so accepting creates a new professional and links him as their broker.' },
+
+  // ---- Brief: purpose and money
+  { id: 's-purpose', field: 'purpose', value: 'A home to live in (to stop renting)', basis: 'inferred', quotes: [STOP_RENTING] },
+  { id: 's-firsthome', field: 'firstHome', value: 'Yes', basis: 'stated', quotes: [q('First home buyers.', R), q('Yeah. I hear that every week. So this is your first place?', N)] },
+  { id: 's-budget', field: 'budgetTarget', value: 'About $900k (established property)', basis: 'inferred',
+    quotes: [DAN_ESTABLISHED, q("But nine hundred's still good. Like, that townhouse in Kedron would've been in range.", R)],
+    conflict: { type: 'superseded', earlier: { value: 'About $950k', quotes: [q("Like, we always thought it'd be nine-fifty, and it's sort of, it's less than that, unless it's new.", T)] } },
+    note: "Dan's figure, accepted by Rhys." },
+  { id: 's-ceiling', field: 'budgetCeiling', value: '$950k', basis: 'stated', quotes: [DAN_NEW] },
+  { id: 's-guidance', field: 'brokerGuidance', value: '$880–900k, $910k at a stretch, for an established property; up to about $950k for a brand-new one (no stamp duty)', basis: 'stated', quotes: [DAN_ESTABLISHED, DAN_NEW] },
+  { id: 's-preapproval', field: 'preApproval', value: 'Not yet lodged. Dan estimates a lender would approve about $900k, “maybe a little bit more”; lender not named; normally good for 90 days', basis: 'stated',
+    quotes: [q('So, putting all that together, at the moment I think a lender would approve you for a loan of around nine hundred,', D), q("maybe a little bit more. But I don't want to put you at the absolute max.", D), q('So I can lodge it this week, as long as I get the last few documents.', D), q("It's normally good for ninety days.", D)] },
+  { id: 's-deposit', field: 'deposit', value: 'About $85,000 saved', basis: 'stated', quotes: [q("That's kind of what we want to talk to Dan about. We've got, um, about $85,000 saved.", R)] },
+  { id: 's-scheme', field: 'depositScheme', value: '5% deposit First Home Guarantee (no LMI); Dan says they qualify', basis: 'stated',
+    quotes: [q('And then we were looking at the five percent deposit thing.', R), q("Since they changed it in October last year, there's no income caps anymore and no limit on places. So they qualify.", D)] },
+  { id: 's-family', field: 'familyHelp', value: "Tash's nan has offered $10,000, timing unknown; not counted until it arrives; a gift letter will be needed", basis: 'stated',
+    quotes: [q("Oh, yeah, that's, um. My nan said she'd give us ten thousand. But I don't know when.", T), q("It's not hard. But I'm not including it until it's actually in your account.", D)] },
+  { id: 's-sellfirst', field: 'mustSellFirst', value: 'No — they rent', basis: 'inferred', quotes: [LUTWYCHE] },
+
+  // ---- Brief: where
+  { id: 's-area-kedron', field: 'areas', value: 'Kedron — open to', basis: 'stated', quotes: [AREAS_TASH] },
+  { id: 's-area-stafford', field: 'areas', value: 'Stafford — open to', basis: 'stated', quotes: [AREAS_TASH] },
+  { id: 's-area-nundah', field: 'areas', value: 'Nundah — open to (“maybe”)', basis: 'stated', quotes: [AREAS_TASH] },
+  { id: 's-area-wavell', field: 'areas', value: "Wavell Heights — open to (Tash unsure it's realistic)", basis: 'stated', quotes: [AREAS_TASH] },
+  { id: 's-aspley', field: 'areas', value: 'Aspley — unresolved, to discuss', basis: 'inferred',
+    quotes: [q("And then houses, maybe Gee bung, Zillmere, Aspley, but it's going to be tight.", N), q("Aspley would be good, it's close to my mum.", R)],
+    conflict: { type: 'disagreement', views: [{ who: R, view: 'Open to Aspley', quote: q("Aspley would be good, it's close to my mum.", R) }, { who: T, view: 'Against', quote: q("We're not buying near your mum.", T) }] } },
+  { id: 's-agentareas', field: 'areas', value: 'Stafford Heights, Chermside, Chermside West, Wooloowin and Gordon Park — open to', basis: 'stated',
+    quotes: [q('Kedron, Stafford, Stafford Heights, Chermside, Chermside West, Nundah, Wooloowin, Gordon Park even, those all have a lot of townhouses.', N)] },
+
+  // ---- Brief: what
+  { id: 's-type', field: 'propertyType', value: "Most likely a townhouse; they'd love a house but think one is out of reach", basis: 'inferred',
+    quotes: [q("I mean, honestly, we'd love a house. But I don't think we can afford a house anywhere near here.", T), q('We went to a townhouse in Kedron that we really liked but it went really quickly.', T)] },
+  { id: 's-beds', field: 'bedrooms', value: '3, or 2 plus a study', basis: 'stated', quotes: [q('Three bedrooms would be good. Or two and a study.', T)] },
+  { id: 's-parking', field: 'parking', value: "Lockable garage for Rhys's ute and tools (a need); a single lock-up is fine", basis: 'stated',
+    quotes: [q("So I need, like, a lockable garage. I can't leave tools in the ute on the street. I've had them nicked before.", R), q("Single lock up is fine as long as I can lock the tools in it. Tash's car can go out the front.", R)] },
+  { id: 's-pet', field: 'mustHaves', value: 'Body corporate by-laws that allow their cat', basis: 'inferred', quotes: [CAT], note: 'Inferred because they own a cat.' },
+  { id: 's-train', field: 'mustHaves', value: 'Close to a train station', basis: 'stated', quotes: [q("I don't need near the train.", T)] },
+  { id: 's-outdoor', field: 'niceToHaves', value: 'Some outdoor space, even just a courtyard', basis: 'stated', quotes: [q('And some outdoor space. Even a courtyard. Just somewhere to sit outside.', T)] },
+  { id: 's-endunit', field: 'niceToHaves', value: 'An end townhouse', basis: 'stated', quotes: [q('Oh God. Yeah. Like, end unit would be good.', T)] },
+  { id: 's-bbq', field: 'niceToHaves', value: 'Room for a barbecue (Rhys)', basis: 'stated', quotes: [q("A barbecue. Ha. That's his must.", T)] },
+
+  // ---- Brief: deal-breakers
+  { id: 's-db-commute', field: 'dealBreakers', value: "More than about 20 minutes' drive from the hospital at Chermside", basis: 'stated',
+    quotes: [q("Because of nights. Like, when I finish a night shift at eight in the morning, I don't want to drive forty minutes.", T), q('Yeah. Like twenty minutes max.', T)] },
+  { id: 's-db-wall', field: 'dealBreakers', value: "A bedroom next to a neighbour's bedroom (Tash sleeps during the day)", basis: 'stated', quotes: [q("Or at least not, um, like, the bedroom not next to someone else's bedroom.", T)] },
+  { id: 's-db-gympie', field: 'dealBreakers', value: 'On Gympie Road', basis: 'stated', quotes: [q("Not on Gympie Road. I don't want to be on Gympie Road.", T)] },
+  { id: 's-db-webster', field: 'dealBreakers', value: 'On Webster Road', basis: 'stated', quotes: [q('Or Webster Road.', R), NADIA_ROADS] },
+  { id: 's-db-flood', field: 'dealBreakers', value: 'Flooding', basis: 'stated', quotes: [q('No flooding.', R), q('No flooding. Okay. And timing, is there a lease ending?', N)] },
+  { id: 's-db-planes', field: 'dealBreakers', value: 'Aircraft (flight-path) noise', basis: 'inferred',
+    quotes: [NADIA_ROADS, q("Oh, I didn't think about planes. I sleep during the day sometimes. That would be bad.", T)], note: 'You raised it; Tash confirmed it.' },
+  { id: 's-trainbus', field: 'dealBreakers', value: 'Near the train line or the busway', basis: 'stated', quotes: [NADIA_ROADS] },
+
+  // ---- Brief: condition, timing, notes
+  { id: 's-older', field: 'newOrEstablished', value: "An older complex (1980s or 1990s) is fine if it's “not gross” and the wiring is sound", basis: 'inferred',
+    quotes: [q('Can I ask a couple more things before we finish? Just for my notes. Are you okay with an older complex?', N), q('Like, from the eighties or nineties?', N), q("Um. As long as it's, like, not gross.", T), q("As long as the wiring's not stuffed.", R)] },
+  { id: 's-strata', field: 'strata', value: 'Yes — they expect a body corporate', basis: 'inferred', quotes: [CAT] },
+  { id: 's-timeline', field: 'timeline', value: "Lease ends in April and they won't renew; no need to buy before Christmas", basis: 'stated',
+    quotes: [q("Our lease is up in April. And we don't want to renew it, honestly, with the rent.", T), q('Do we have to buy before Christmas?', R), q("No. Absolutely not. There's usually a quieter period over Christmas, and then February, March gets busy again.", N)] },
+  { id: 's-note-further', field: 'notes', value: "Bracken Ridge and Zillmere houses ruled out: too far from Tash's work", basis: 'stated',
+    quotes: [q("We had a look at houses out in, like, Bracken Ridge, Zilmere, but Tash doesn't want to be too far from work.", R)] },
+
+  // ---- Engagement intake
+  { id: 's-service', field: 'service', value: 'Undecided — to discuss', basis: 'stated',
+    quotes: [q('The negotiate one would be good. Because we can look ourselves.', R), q('But then we have to do all the looking. With my shifts.', T)],
+    conflict: { type: 'disagreement', views: [{ who: R, view: 'Negotiate-only service', quote: q('The negotiate one would be good. Because we can look ourselves.', R) }, { who: T, view: 'Worried about doing all the looking', quote: q('But then we have to do all the looking. With my shifts.', T) }] },
+    note: 'Service wanted stays empty until they choose.' },
+
+  // ---- Properties mentioned
+  { id: 's-prop-kedron', field: 'properties', value: 'Townhouse in Kedron — missed', outcome: 'Missed', basis: 'stated',
+    detail: 'Sold in about four days, before they were ready. Advertised as offers over $850k; reportedly sold for about $920k.',
+    quotes: [q('We went to a townhouse in Kedron that we really liked but it went really quickly.', T), q('It was gone in like four days.', R), q('The agent said offers over eight-fifty, and then someone said it went for, um, nine-twenty? Something like that.', R)] },
+  { id: 's-prop-stafford', field: 'properties', value: 'A property in Stafford — inspecting on Saturday', outcome: 'Upcoming inspection', basis: 'stated',
+    detail: 'No address given; it stays partial until confirmed.', quotes: [q("There's one in Stafford we were going to look at on Saturday.", R)] },
+
+  // ---- Next actions
+  { id: 'a-nadia-email', field: 'nextActions', owners: [N], due: 'Tonight', value: 'Email a summary, both service options and the agreement (Form 6)', basis: 'stated',
+    quotes: [q("I'll send you an email tonight, with the summary of what we talked about, both service options, and the agreement.", N)] },
+  { id: 'a-nadia-dan', field: 'nextActions', owners: [N], due: 'After the call', value: 'Email Dan', basis: 'stated', quotes: [q("Thanks Dan, great to meet you, I'll email you after this.", N)] },
+  { id: 'a-dan-docs', field: 'nextActions', owners: [D], due: 'Tonight', value: 'Send the document list, the confirmed first home owner grant amount and the gift-letter documents', basis: 'stated',
+    quotes: [q("But I'll send everything through tonight, okay?", D), q("I don't want to give you the wrong number. I'll confirm that and send it through.", D), q("Perfect. Then I'll send you guys the documents for the gift letter too, just in case.", D)] },
+  { id: 'a-dan-lodge', field: 'nextActions', owners: [D], due: 'This week, once the last documents arrive', value: 'Lodge the pre-approval', basis: 'stated', quotes: [q('So I can lodge it this week, as long as I get the last few documents.', D)] },
+  { id: 'a-dan-rates', field: 'nextActions', owners: [D], due: 'Not stated', value: 'Show a couple of lender rate options on the 5% scheme', basis: 'stated',
+    quotes: [q("On the five percent scheme, not every lender has the best rates, so I'll show you a couple of options.", D)] },
+  { id: 'a-rhys-payslips', field: 'nextActions', owners: [R], due: 'Tonight', value: 'Send Dan his last two (October) payslips', basis: 'stated', quotes: [q("I'll send you the payslips tonight.", R)] },
+  { id: 'a-tash-roster', field: 'nextActions', owners: [T], due: 'Tomorrow night', value: 'Get her roster, or a hospital letter showing regular penalties, from her manager for Dan', basis: 'stated',
+    quotes: [q('I can get the roster thing from my manager.', T), q("I'll ask my manager tomorrow night when I'm on.", T)] },
+  { id: 'a-links', field: 'nextActions', owners: [T, R], due: 'Before Saturday (implied)', value: "Send you links to listings they're considering, including the Stafford one", basis: 'inferred',
+    quotes: [q("Send me links. Anything you're thinking of going to, send it through, and I'll give you my two cents.", N), q('Will do.', R)] },
+  { id: 'a-nadia-look', field: 'nextActions', owners: [N], due: 'This weekend', value: 'Look over those listings informally and give your view', basis: 'stated',
+    quotes: [q("If you want, I'm happy to look at a couple of listings for you this weekend, even before you sign anything,", N), q('Oh, that would be amazing.', T)] },
+  { id: 'a-carloan', field: 'nextActions', owners: [R], due: 'Not stated', value: 'Send Dan the car-loan statement', basis: 'stated',
+    quotes: [q('or something from the hospital that shows your penalties are regular. And I need the statement for the car loan.', D)] },
+
+  // ---- Malformed on purpose: code must drop these before review.
+  { id: 'd-ceiling910', field: 'budgetCeiling', value: '$910k', basis: 'stated', quotes: [q('maybe nine-ten at the most', D)] },
+  { id: 'd-bathrooms', field: 'mustHaves', value: 'Two bathrooms', basis: 'stated', quotes: [q('probably two bathrooms,', T)] },
+  { id: 'd-income', field: 'income', fieldLabel: 'Household income', value: 'Rhys about $95k base plus overtime', basis: 'stated',
+    quotes: [q('Rhys, your base is around ninety-five and then you do a fair bit of overtime,', D)] },
+];
+
+/* What James's approved key expects of each hand-written suggestion. Prototype-only scoring, not the extraction pass bar. */
+const KEY = {
+  's-worktash': { expect: 'edit', mustNot: /nurse/i, trap: 'Invented detail', why: 'Job title not stated: the call says “In ICU”, never “nurse”.' },
+  's-housing': { expect: 'later' }, 's-budget': { expect: 'later' },
+  's-ceiling': { expect: 'keepOut', trap: 'Another speaker’s figure', why: "Dan's guidance; the buyers set no ceiling (rule 5)." },
+  's-aspley': { expect: 'discuss' }, 's-service': { expect: 'discuss' },
+  's-agentareas': { expect: 'keepOut', trap: 'Agent-only suggestion', why: 'Suburbs Nadia listed; no buyer agreed (rule 9).' },
+  's-train': { expect: 'keepOut', trap: 'Invented requirement', why: 'Tash said she does not need to be near the train (key: brief note).' },
+  's-trainbus': { expect: 'ask', trap: 'Agent-only prompt', why: 'Nadia asked; only planes got an answer (key: confirm with client).' },
+  'a-carloan': { expect: 'keepOut', trap: 'No commitment', why: 'Requested by Dan; nobody committed (rule 8).' },
+};
+const keyOf = id => KEY[id] || { expect: 'apply' };
+
+function compareWithKey(st) {
+  const rows = IntakeReview.queue(st).map(({ s, decision }) => {
+    const k = keyOf(s.id), d = decision && decision.status, f = IntakeReview.FIELDS[s.field];
+    const written = ['accepted', 'edited', 'earlier', 'discuss'].includes(d);
+    let v;
+    if (!d) v = k.expect === 'keepOut' || k.expect === 'ask' ? 'ok' : 'unreviewed';
+    else if (k.expect === 'keepOut' || k.expect === 'ask') v = written ? 'slipped' : 'ok';
+    else if (k.expect === 'edit') v = !written ? 'missed' : d === 'edited' && !k.mustNot.test(decision.value) ? 'ok' : 'slipped';
+    else if (k.expect === 'later') v = d === 'earlier' ? 'wrong' : written ? 'ok' : 'missed';
+    else if (k.expect === 'discuss') v = d === 'discuss' ? 'ok' : d === 'edited' ? 'check' : 'missed';
+    else v = written ? 'ok' : 'missed';
+    return { s, f, k, d, v, key: !!f.key && !k.trap, rowValue: decision && decision.value };
+  });
+  const keyRows = rows.filter(r => r.key), other = rows.filter(r => !r.key && !r.k.trap);
+  return {
+    rows, slipped: rows.filter(r => r.v === 'slipped' || r.v === 'wrong'),
+    keyOk: keyRows.filter(r => r.v === 'ok').length, keyTotal: keyRows.length,
+    otherOk: other.filter(r => r.v === 'ok').length, otherTotal: other.length,
+    trapsKept: rows.filter(r => r.k.trap && r.v === 'ok').length, traps: rows.filter(r => r.k.trap).length,
+  };
+}
+
+/* Guided walkthroughs. Each step dispatches real actions into the module. */
+const MATCH = dan => [
+  { type: 'matchSpeaker', label: N, kind: 'agent', name: 'Nadia Pearce' },
+  { type: 'matchSpeaker', label: T, kind: 'household', name: 'Tash Kumar' },
+  { type: 'matchSpeaker', label: R, kind: 'household', name: 'Rhys Gallagher' },
+  dan === 'household' ? { type: 'matchSpeaker', label: D, kind: 'household', name: 'Dan', isNew: true } : { type: 'matchSpeaker', label: D, kind: 'other', name: 'Dan', role: 'Mortgage broker' },
+  { type: 'confirmSpeakers' },
+];
+const all = (type, ids) => ids.map(id => ({ type, id }));
+const WALKS = [
+  { name: 'Careful review', about: 'The happy path, decided the way the approved answer key says. Watch the budget keep both earlier values in its history, the flagged items stay out, and the two mistakes hiding in the ready list get fixed before the single accept. Ends with nothing slipped.',
+    steps: [
+      ['Match the four speakers: iPhone (2) is Dan, their broker', () => MATCH('other')],
+      ['Budget: use the later $900k (replaces the form’s $950k)', () => all('accept', ['s-budget'])],
+      ['Rent: use the later $130 a week', () => all('accept', ['s-housing'])],
+      ['Keep Aspley and the service choice as “to discuss”', () => all('accept', ['s-aspley', 's-service'])],
+      ['Rhys’s work: replace “Electrician” with the fuller detail', () => all('accept', ['s-workrhys'])],
+      ['Reject Dan’s $950k as the buyers’ ceiling', () => all('reject', ['s-ceiling'])],
+      ['Reject the suburbs only you listed; ask the client about the train line and busway', () => [...all('reject', ['s-agentareas']), ...all('ask', ['s-trainbus'])]],
+      ['Reject the car-loan statement: nobody committed to it', () => all('reject', ['a-carloan'])],
+      ['Accept the remaining inferred items after reading their quotes', () => all('accept', ['s-finalsay', 's-broker', 's-purpose', 's-sellfirst', 's-type', 's-pet', 's-db-planes', 's-older', 's-strata', 'a-links'])],
+      ['In the ready list, fix Tash’s work: the call never says “nurse”', () => [{ type: 'edit', id: 's-worktash', value: 'Works in ICU at the hospital at Chermside; night shifts (job title not given)' }]],
+      ['…and reject “close to a train station”: Tash said she doesn’t need it', () => all('reject', ['s-train'])],
+      ['Accept the rest together', () => [{ type: 'acceptRest' }]],
+      ['Finish and compare with the answer key', () => [{ type: 'finish' }]],
+    ] },
+  { name: 'Speed run', about: 'Trust the page: accept every decision item it allows, then accept the rest in one click. The code-level rules still hold back the broker’s ceiling, the agent-only suburbs and the car loan. Watch what the single accept carries in with it.',
+    steps: [
+      ['Match the four speakers', () => MATCH('other')],
+      ['Accept every decision item the page allows, as suggested', st => IntakeReview.queue(st).filter(x => x.bucket === 'decide' && !x.blocked).map(x => ({ type: 'accept', id: x.s.id }))],
+      ['Try the flagged ones too', st => IntakeReview.queue(st).filter(x => x.bucket === 'decide' && x.blocked).map(x => ({ type: 'accept', id: x.s.id }))],
+      ['Accept the rest together', () => [{ type: 'acceptRest' }]],
+      ['Finish and compare with the answer key', () => [{ type: 'finish' }]],
+    ] },
+  { name: 'Broker matched as family', about: 'A plausible slip in step 1: iPhone (2) is matched as a new household member. Every rule downstream trusts that match, so Dan’s $950k stops being “someone else’s figure” and moves into the ready list as a buyer requirement.',
+    steps: [
+      ['Match iPhone (2) as a new household member called Dan', () => MATCH('household')],
+      ['Look for Dan’s $950k ceiling: it is in Ready to accept now', () => []],
+      ['Accept the rest together', () => [{ type: 'acceptRest' }]],
+      ['Finish and compare with the answer key', () => [{ type: 'finish' }]],
+    ] },
+  { name: 'Moves that should be refused', about: 'Each step tries something the agreed rules forbid. The red “Refused” line says why. Nothing in the record changes on a refusal.',
+    steps: [
+      ['Try to see suggestions before iPhone (2) is matched', () => [{ type: 'confirmSpeakers' }]],
+      ['Match iPhone (2) properly and continue', () => MATCH('other')],
+      ['Try to apply Dan’s $950k as the buyers’ ceiling', () => all('accept', ['s-ceiling'])],
+      ['Try to edit it into the record instead', () => [{ type: 'edit', id: 's-ceiling', value: 'About $950k' }]],
+      ['Try to record the car-loan statement as Rhys’s next action', () => all('accept', ['a-carloan'])],
+      ['Accept the rest: the budget, rent and Rhys’s work are not touched', () => [{ type: 'acceptRest' }]],
+      ['Use the earlier $950k for the budget: history keeps both sources', () => [{ type: 'useEarlier', id: 's-budget' }]],
+      ['Try to change the speaker matches now', () => [{ type: 'editSpeakers' }]],
+      ['Try to decide the budget a second time', () => all('accept', ['s-budget'])],
+    ] },
+];
+</script>
+
+<script>
+/* ======================================================================
+   Page shell (throwaway). Renders state and turns clicks into actions.
+   ====================================================================== */
+const CUES = IntakeReview.parseTranscript(document.getElementById('transcript-03').textContent);
+const CHECK = IntakeReview.checkSuggestions(CUES, SUGGESTIONS);
+const fresh = () => IntakeReview.initialState({ cues: CUES, suggestions: CHECK.kept, dropped: CHECK.dropped, ...SETUP });
+const FIELDS = IntakeReview.FIELDS;
+let state = fresh(), undo = [];
+const ui = { focus: null, scroll: null, side: 'transcript', m: 'list', editing: null, walkOpen: false, walk: 0, step: -1 };
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nameOf = label => IntakeReview.nameOf(state, label);
+const byId = id => state.ctx.suggestions.find(s => s.id === id);
+
+function dispatch(action) {
+  const next = IntakeReview.reduce(state, action);
+  if (next.last.ok) undo.push(state);
+  state = next;
+  return next.last.ok;
+}
+function act(action) { dispatch(action); ui.editing = null; render(); }
+
+/* ---- small pieces */
+const pill = (text, tone) => `<span class="pill ${tone || ''}">${esc(text)}</span>`;
+function quoteBtn(sid, kind, i, qq) {
+  return `<button class="q" data-act="quote" data-sid="${sid}" data-kind="${kind}" data-i="${i}">“${esc(qq.text)}”<span class="by">${esc(nameOf(qq.speaker))} · ${qq.time}</span></button>`;
+}
+function quoteOf(s, kind, i) { return kind === 'e' ? s.conflict.earlier.quotes[i] : kind === 'v' ? s.conflict.views[i].quote : s.quotes[i]; }
+function owes(s) { return s.owners ? `<div class="who-owes">${esc(s.owners.map(nameOf).join(' and '))} · due ${esc(s.due)}</div>` : ''; }
+
+/* ---- rail, top, change line */
+function renderRail() {
+  const q = IntakeReview.queue(state), decided = q.filter(x => x.decision).length, matchedN = state.ctx.labels.filter(l => state.speakers[l] && state.speakers[l].name).length;
+  const step = (n, stage, title, sub) => `<button class="${state.stage === stage ? 'on' : ''}" data-act="stage" data-stage="${stage}"><span class="n">${n}</span><span>${title}<small>${sub}</small></span></button>`;
+  document.getElementById('rail').innerHTML = `
+    <div class="logo"><span class="logo-symbol"></span>Buyers desk</div>
+    <div><div class="rail-label">Buying engagement</div><div class="client">Tash Kumar &amp; Rhys Gallagher<small>Enquiry · web form · first consultation</small></div></div>
+    <div><div class="rail-label">Consultation intake</div><nav class="steps">
+      ${step(1, 'speakers', 'Match speakers', `${matchedN} of ${state.ctx.labels.length} matched`)}
+      ${step(2, 'review', 'Review suggestions', state.stage === 'speakers' ? 'Hidden until speakers match' : `${decided} of ${q.length} decided`)}
+      ${step(3, 'result', 'Applied result', 'Brief, gaps, next actions')}
+    </nav></div>
+    <div class="rail-foot">Synthetic transcript 03 · hand-written suggestions, no model. Records live in memory only.</div>`;
+}
+function renderTop() {
+  const me = state.ctx.labels.find(l => state.speakers[l] && state.speakers[l].kind === 'agent');
+  return `<div class="top"><div class="crumb"><b>First consultation</b> · 03-broker-joins-first-home-north.vtt · ${CUES.length} lines · reviewing as ${me ? esc(state.speakers[me].name) + ', who ran the call' : 'the agent who ran the call'}</div><span class="nomodel">Hand-written suggestions · no model</span></div>
+  <details class="about"${state.seq === 0 ? ' open' : ''}><summary>What this prototype asks</summary>
+    <p class="question">Can the person who ran a consultation check, correct and apply suggested intake details quickly, without an inferred, conflicting or wrong-speaker suggestion slipping into the record?</p>
+    <ul>
+      <li>Nothing here came from a model. Claude hand-wrote ${SUGGESTIONS.length} suggestions from James's approved answer key for synthetic transcript 03, including a few mistakes of the kinds a model could make. ${CHECK.dropped.length} are malformed on purpose; code drops them before review.</li>
+      <li>The engagement already holds two values from a web enquiry form (budget and Rhys's work). They are invented prototype setup, so you can see a suggestion meet an existing value.</li>
+      <li>Rules in play: speakers are matched before anything shows; each suggestion carries a verbatim quote, speaker and stated or inferred mark; conflicts, inferred items and flagged items come first; one accept covers the stated, unconflicted rest; nothing is written until you decide.</li>
+      <li>Only this transcript loads. Your own uploads stay on the hybrid's manual brief path; nothing here means extraction works. Walkthroughs are in the dark bar at the bottom.</li>
+    </ul></details>
+  <div class="changed ${state.last.ok ? '' : 'refused'}"><b>${state.last.ok ? 'Last change' : 'Refused'}</b>${esc(state.last.text)}</div>`;
+}
+
+/* ---- step 1: speakers */
+function speakerOptions(label) {
+  const m = state.speakers[label];
+  const v = !m ? '' : m.kind === 'agent' ? 'agent' : m.kind === 'other' ? 'other' : m.isNew ? 'new' : 'hh:' + m.name;
+  const opt = (val, text) => `<option value="${esc(val)}"${v === val ? ' selected' : ''}>${esc(text)}</option>`;
+  return `<select data-change="kind" data-li="${state.ctx.labels.indexOf(label)}">${opt('', 'Not matched yet')}${opt('agent', 'You — the agent on this call')}${SETUP.people.map(p => opt('hh:' + p, `${p} (household member on record)`)).join('')}${opt('new', 'A new household member…')}${opt('other', 'Someone else (a professional, a friend)…')}</select>`;
+}
+function renderSpeakers() {
+  const labels = state.ctx.labels;
+  const cards = labels.map((l, li) => {
+    const lines = CUES.filter(c => c.speaker === l), m = state.speakers[l];
+    const samples = lines.slice(0, 3).map(c => `<button class="q" data-act="cue" data-cue="${c.n}">“${esc(c.text)}”<span class="by">${c.time}</span></button>`).join('');
+    const extra = !m ? '' : m.kind === 'other'
+      ? `<div class="two-in"><label>Name</label><input data-change="name" data-li="${li}" value="${esc(m.name)}" placeholder="e.g. Dan"><label>Role</label><input data-change="role" data-li="${li}" value="${esc(m.role)}" placeholder="e.g. Mortgage broker"></div>`
+      : m.kind === 'household' && m.isNew ? `<label>Name</label><input data-change="name" data-li="${li}" value="${esc(m.name)}" placeholder="Their name">` : '';
+    return `<div class="card speaker"><div class="fieldname">Label in the transcript</div><div class="value">${esc(l)}</div>
+      <small>${lines.length} lines · first speaks at ${lines[0].time}</small>${m && m.guessed ? ` · <span class="guess">Suggested from the name — check it</span>` : ''}
+      ${samples}<label>Who is this?</label>${speakerOptions(l)}${extra}</div>`;
+  }).join('');
+  return `<h1>Who spoke on this call?</h1><p class="lede">Match each label before any suggestion appears. Every rule later relies on this: only household members can set buyer requirements, and a next action needs words from whoever owes it.</p>
+    ${cards}<div class="foot"><small>${labels.filter(l => state.speakers[l] && state.speakers[l].name).length} of ${labels.length} matched</small><button class="primary" data-act="confirm">Speakers are right — show suggestions</button></div>`;
+}
+
+/* ---- step 2: review */
+function decideCard(x) {
+  const { s, reasons, blocked, current } = x, f = FIELDS[s.field], c = s.conflict;
+  const sel = ui.focus && ui.focus.sid === s.id;
+  const basis = s.basis === 'inferred' ? pill('Inferred', 'warn') : pill('Stated', 'plain');
+  const pills = basis + reasons.filter(r => r.code !== 'inferred').map(r => pill(r.text, r.tone)).join('') + (f.key ? pill('Key item', 'plain') : '');
+  let asides = '';
+  if (c && c.type === 'superseded') asides += `<div class="aside"><b>Earlier in the call</b>${esc(c.earlier.value)}${c.earlier.quotes.map((qq, i) => quoteBtn(s.id, 'e', i, qq)).join('')}</div>`;
+  if (c && c.type === 'disagreement') asides += `<div class="aside"><b>They see it differently</b>${c.views.map((v, i) => `<div><strong>${esc(nameOf(v.who))}:</strong> ${esc(v.view)}${quoteBtn(s.id, 'v', i, v.quote)}</div>`).join('')}</div>`;
+  if (current && current.sid !== s.id) asides += `<div class="aside"><b>On record now</b>${esc(current.value)} <small>· ${esc(current.source)}</small></div>`;
+  if (blocked) asides += `<div class="aside bad"><b>Can't be applied as it stands</b>${esc(blocked)}</div>`;
+  let acts;
+  if (ui.editing === s.id) acts = `<label>Edit the value (the quotes stay as its source)</label><textarea id="edit-${s.id}">${esc(s.value)}</textarea><div class="acts"><button class="primary" data-act="save" data-id="${s.id}">Save and apply</button><button class="quiet" data-act="cancel">Cancel</button></div>`;
+  else if (blocked) acts = `<div class="acts"><button data-act="ask" data-id="${s.id}">Ask the client</button><button class="danger" data-act="reject" data-id="${s.id}">Reject</button></div>`;
+  else if (c && c.type === 'superseded') acts = `<div class="acts"><button class="primary" data-act="accept" data-id="${s.id}">Use the later value</button><button data-act="earlier" data-id="${s.id}">Use the earlier value</button><button data-act="edit" data-id="${s.id}">Edit</button><button data-act="ask" data-id="${s.id}">Ask the client</button><button class="danger" data-act="reject" data-id="${s.id}">Reject</button></div>`;
+  else if (c && c.type === 'disagreement') acts = `<div class="acts"><button class="primary" data-act="accept" data-id="${s.id}">Keep as “to discuss”</button><button data-act="edit" data-id="${s.id}">Edit (they agreed)</button><button class="danger" data-act="reject" data-id="${s.id}">Reject</button></div>`;
+  else acts = `<div class="acts"><button class="primary" data-act="accept" data-id="${s.id}">${current ? 'Replace with this' : 'Accept'}</button><button data-act="edit" data-id="${s.id}">Edit</button><button data-act="ask" data-id="${s.id}">Ask the client</button><button class="danger" data-act="reject" data-id="${s.id}">Reject</button></div>`;
+  return `<div class="card${sel ? ' sel' : ''}${blocked ? ' blocked' : ''}" data-focus="${s.id}">
+    <div class="fieldname">${esc(f.item)}</div><div class="value">${esc(s.value)}</div>${owes(s)}<div class="pills">${pills}</div>
+    ${s.detail ? `<div class="note">${esc(s.detail)}</div>` : ''}${s.quotes.map((qq, i) => quoteBtn(s.id, 'q', i, qq)).join('')}
+    ${s.note ? `<div class="note">${esc(s.note)}</div>` : ''}${asides}${acts}</div>`;
+}
+function readyRow(x) {
+  const s = x.s, f = FIELDS[s.field], sel = ui.focus && ui.focus.sid === s.id;
+  if (ui.editing === s.id) return `<div class="row sel" data-focus="${s.id}"><div><div class="fieldname">${esc(f.item)}</div><textarea id="edit-${s.id}">${esc(s.value)}</textarea>${s.quotes.map((qq, i) => quoteBtn(s.id, 'q', i, qq)).join('')}</div><div class="acts"><button class="primary" data-act="save" data-id="${s.id}">Save and apply</button><button class="quiet" data-act="cancel">Cancel</button></div></div>`;
+  return `<div class="row${sel ? ' sel' : ''}" data-focus="${s.id}"><div><div class="fieldname">${esc(f.item)}${f.key ? ' · key item' : ''}</div><div class="value">${esc(s.value)}</div>${owes(s)}${s.detail ? `<div class="note">${esc(s.detail)}</div>` : ''}${s.quotes.map((qq, i) => quoteBtn(s.id, 'q', i, qq)).join('')}</div>
+    <div class="acts"><button data-act="edit" data-id="${s.id}">Edit</button><button class="danger" data-act="reject" data-id="${s.id}">Reject</button></div></div>`;
+}
+function grouped(items, fn) {
+  return IntakeReview.SECTIONS.map(([k, title]) => {
+    const g = items.filter(x => FIELDS[x.s.field].section === k);
+    return g.length ? `<div class="group">${title} · ${g.length}</div>${g.map(fn).join('')}` : '';
+  }).join('');
+}
+const STATUS = { accepted: ['Applied', ''], edited: ['Edited', ''], earlier: ['Earlier value', 'warn'], discuss: ['To discuss', 'warn'], rejected: ['Rejected', 'bad'], ask: ['Ask the client', 'plain'] };
+function renderReview() {
+  const q = IntakeReview.queue(state);
+  const decide = q.filter(x => x.bucket === 'decide'), ready = q.filter(x => x.bucket === 'ready'), doneList = q.filter(x => x.bucket === 'done').sort((a, b) => b.decision.seq - a.decision.seq);
+  return `<h1>Review what the call suggests</h1><p class="lede">${q.length} suggestions passed the quote check; ${CHECK.dropped.length} were dropped by code before you saw them. Click any quote to find it in the transcript.</p>
+    <div class="section-title"><h2>1 · Needs your decision (${decide.length})</h2></div>
+    <p class="section-note">Inferred, changed during the call, disagreed, replacing a value on record, or not said by the right person.</p>
+    ${decide.length ? grouped(decide, decideCard) : '<div class="empty">Nothing left here.</div>'}
+    <div class="section-title"><h2>2 · Ready to accept (${ready.length})</h2></div>
+    <p class="section-note">Stated by a household member (or, for finance facts and their own actions, a professional), with no conflict.</p>
+    <div class="ready">${ready.length ? `<div class="bulk"><p>One click applies every row below. Rows you edit or reject first are left out.</p><button class="primary" data-act="rest">Accept all ${ready.length}</button></div>${grouped(ready, readyRow)}` : '<div class="empty">Nothing waiting.</div>'}</div>
+    <details class="decided"><summary>Decided so far (${doneList.length})</summary>${doneList.map(x => `<div class="drow" data-focus="${x.s.id}">${pill(...STATUS[x.decision.status])}<span><span class="muted">${esc(FIELDS[x.s.field].item)}:</span> ${esc(x.decision.value || x.s.value)}</span></div>`).join('') || '<div class="empty">Nothing yet.</div>'}<p class="note">Use Undo in the bottom bar to take a decision back.</p></details>
+    <div class="foot"><button class="quiet" data-act="stage" data-stage="speakers">← Speakers</button><button class="primary" data-act="finish">Finish review</button></div>`;
+}
+
+/* ---- side panel: transcript or record so far */
+function renderTranscript() {
+  const s = ui.focus && ui.focus.sid && byId(ui.focus.sid);
+  const marks = {};
+  if (s) [s.quotes, (s.conflict && s.conflict.earlier && s.conflict.earlier.quotes) || [], ((s.conflict && s.conflict.views) || []).map(v => v.quote)].flat().forEach(qq => { (marks[qq.cue] = marks[qq.cue] || []).push(qq.text); });
+  return CUES.map(c => {
+    let text = esc(c.text);
+    (marks[c.n] || []).forEach(t => { text = text.split(esc(t)).join(`<mark>${esc(t)}</mark>`); });
+    const m = state.speakers[c.speaker], shown = m && m.name ? nameOf(c.speaker) : c.speaker;
+    return `<div class="cue${marks[c.n] ? ' hit' : ''}${ui.focus && ui.focus.cue === c.n ? ' focus' : ''}" id="cue-${c.n}"><span class="t">${c.time}</span><div><div class="who">${esc(shown)}${shown !== c.speaker ? ` <small>${esc(c.speaker)}</small>` : ''}</div>${text}</div></div>`;
+  }).join('');
+}
+function entryLine(e, f) {
+  const hist = (e.history || []).map(h => `<div class="was">Replaced: ${esc(h.value)} · ${esc(h.source)}</div>`).join('');
+  const lead = f.section === 'actions' ? `${esc((e.owners || []).map(nameOf).join(' and '))}: ` : '';
+  return `<div class="kv"><div class="k">${esc(f.item)}${e.status === 'edited' ? ' · edited' : e.status === 'earlier' ? ' · earlier value' : ''}</div>${lead}${esc(e.value)}${e.due ? ` <span class="muted">· ${esc(e.due)}</span>` : ''}${e.detail ? `<div class="src">${esc(e.detail)}</div>` : ''}<div class="src">${esc(e.source)}</div>${hist}</div>`;
+}
+function renderRecord() {
+  const sum = IntakeReview.summary(state);
+  const sec = ([k, title]) => `<h3>${title}</h3>${k === 'profile' ? `<div class="kv"><div class="k">People</div>${esc(sum.people.join(', '))}</div>` : ''}${sum.entries[k].map(x => entryLine(x.e, x.f)).join('') || (k === 'profile' ? '' : '<div class="empty">Nothing yet.</div>')}`;
+  return `<div class="rec">${IntakeReview.SECTIONS.map(sec).join('')}<h3>To discuss</h3>${sum.toDiscuss.map(x => entryLine(x.e, x.f)).join('') || '<div class="empty">Nothing yet.</div>'}<h3>Ask the client</h3>${sum.ask.map(s => `<div class="kv">${esc(FIELDS[s.field].item)}: ${esc(s.value)}</div>`).join('') || '<div class="empty">Nothing yet.</div>'}</div>`;
+}
+function renderSide() {
+  const tab = ui.m === 'record' ? 'record' : ui.m === 'transcript' ? 'transcript' : ui.side;
+  return `<aside class="side"><div class="side-tabs"><button class="${tab === 'transcript' ? 'on' : ''}" data-act="side" data-side="transcript">Transcript</button><button class="${tab === 'record' ? 'on' : ''}" data-act="side" data-side="record">Record so far</button></div>
+    <div class="side-body" id="side-body">${tab === 'record' ? renderRecord() : renderTranscript()}</div></aside>`;
+}
+
+/* ---- step 3: result */
+function renderResult() {
+  const sum = IntakeReview.summary(state), cmp = compareWithKey(state);
+  const groups = sec => {
+    const items = sum.entries[sec]; const names = [...new Set(items.map(x => x.f.group))];
+    return names.map(g => `<div class="group">${esc(g)}</div>${items.filter(x => x.f.group === g).map(x => entryLine(x.e, x.f)).join('')}`).join('') || '<div class="empty">Nothing applied.</div>';
+  };
+  const actions = sum.entries.actions;
+  const verdict = { ok: ['As the key expects', 'verdict-ok'], slipped: ['Slipped into the record', 'verdict-bad'], wrong: ['Wrong value applied', 'verdict-bad'], missed: ['Left out (recoverable)', 'verdict-warn'], unreviewed: ['Not reviewed', 'verdict-warn'], check: ['Resolved; key keeps it to discuss', 'verdict-warn'] };
+  const notable = cmp.rows.filter(r => r.v !== 'ok' || r.k.trap);
+  return `<h1>Applied to Tash and Rhys's engagement</h1><p class="lede">This is everything the review wrote. Rejected, unreviewed and ask-the-client items wrote nothing.</p>
+    <div class="stats"><div class="stat"><b>${sum.written}</b><span>written</span></div><div class="stat"><b>${sum.toDiscuss.length}</b><span>to discuss</span></div><div class="stat"><b>${sum.ask.length}</b><span>ask the client</span></div><div class="stat"><b>${sum.rejected.length}</b><span>rejected</span></div><div class="stat"><b>${sum.undecided.length}</b><span>left undecided</span></div><div class="stat ${cmp.slipped.length ? 'bad' : ''}"><b>${cmp.slipped.length}</b><span>slipped in (vs key)</span></div></div>
+    ${cmp.slipped.length ? `<div class="aside bad" style="margin:0 0 20px"><b>Slipped into the record, compared with James's approved key</b>${cmp.slipped.map(r => `<div>${esc(r.f.item)}: ${esc(r.d === 'edited' ? r.rowValue : r.s.value)}${r.k.trap ? ` — ${esc(r.k.trap)}. ${esc(r.k.why)}` : r.v === 'wrong' ? ' — the key expects the later value' : ''}</div>`).join('')}<div class="note">Full comparison under Checks below.</div></div>` : `<div class="aside" style="margin:0 0 20px"><b>Compared with James's approved key</b>Nothing slipped into the record. Full comparison under Checks below.</div>`}
+    <div class="result"><div>
+      <div class="panel"><h2>Buyer brief</h2>${groups('brief')}</div>
+      <div class="panel"><h2>Engagement intake</h2>${groups('intake')}</div>
+      <div class="panel"><h2>Properties mentioned</h2>${sum.entries.properties.map(x => entryLine(x.e, x.f)).join('') || '<div class="empty">None applied.</div>'}</div>
+      <div class="panel"><h2>Buyer profile</h2><div class="kv"><div class="k">People</div>${esc(sum.people.join(', '))}</div>${groups('profile')}</div>
+    </div><div>
+      <div class="panel"><h2>Next actions</h2>${actions.length ? `<table><tr><th>Who owes it</th><th>What</th><th>Due</th></tr>${actions.map(({ e }) => `<tr><td>${esc((e.owners || []).map(nameOf).join(' and '))}</td><td>${esc(e.value)}</td><td>${esc(e.due)}</td></tr>`).join('')}</table>` : '<div class="empty">None applied.</div>'}</div>
+      <div class="panel"><h2>To discuss with them</h2>${sum.toDiscuss.map(x => `<div class="kv"><div class="k">${esc(x.f.item)}</div>${esc(x.e.value)}${(byId(x.e.sid).conflict.views || []).map(v => `<div class="src">${esc(nameOf(v.who))}: ${esc(v.view)}</div>`).join('')}</div>`).join('') || '<div class="empty">Nothing.</div>'}</div>
+      <div class="panel"><h2>Ask the client</h2>${sum.ask.map(s => `<div class="kv"><div class="k">${esc(FIELDS[s.field].item)}</div>${esc(s.value)}</div>`).join('') || '<div class="empty">Nothing.</div>'}</div>
+      <div class="panel"><h2>What the call did not cover</h2><ul class="gaps">${sum.notCovered.map(g => `<li>${esc(g)}</li>`).join('')}</ul></div>
+    </div></div>
+    <div class="panel"><h2>Checks</h2>
+      <div class="group">Dropped by code before review (${sum.dropped.length})</div>${sum.dropped.map(d => `<div class="kv"><div class="k">${esc(d.fieldLabel || (FIELDS[d.field] ? FIELDS[d.field].item : d.field))}: ${esc(d.value)}</div>${esc(d.reason)}</div>`).join('')}
+      <div class="group">Against James's approved key (prototype check, not the extraction pass bar)</div>
+      <p class="note">Key items as the key expects: ${cmp.keyOk} of ${cmp.keyTotal} (budget target, pre-approval, every deal-breaker and next action). Other fields: ${cmp.otherOk} of ${cmp.otherTotal}. Deliberate mistakes kept out or fixed: ${cmp.trapsKept} of ${cmp.traps}.</p>
+      <table><tr><th>Suggestion</th><th>Your decision</th><th>Verdict</th><th>Why it matters</th></tr>${notable.map(r => `<tr><td><span class="muted">${esc(r.f.item)}:</span> ${esc(r.s.value)}</td><td>${r.d ? STATUS[r.d][0] : '—'}</td><td class="${verdict[r.v][1]}">${verdict[r.v][0]}</td><td>${esc(r.k.trap ? `${r.k.trap}. ${r.k.why}` : '')}</td></tr>`).join('')}</table>
+    </div>
+    <div class="foot"><button class="quiet" data-act="back">← Back to review</button><small>Records live in memory only. Start over from the bottom bar.</small></div>`;
+}
+
+/* ---- walkthroughs and bar */
+function renderWalk() {
+  const w = WALKS[ui.walk];
+  const el = document.getElementById('walk'); el.hidden = !ui.walkOpen;
+  el.innerHTML = `<div class="wtabs">${WALKS.map((x, i) => `<button class="${i === ui.walk ? 'on' : ''}" data-act="wtab" data-i="${i}">${i + 1}. ${esc(x.name)}</button>`).join('')}</div>
+    <p>${esc(w.about)}</p><button class="primary" data-act="wstart">${ui.step === -1 ? 'Start' : 'Restart'} this walkthrough</button> <small>Starting resets to the same first state every time.</small>
+    <ol class="wsteps">${w.steps.map(([t], k) => `<li><button class="${ui.step === k ? 'next' : ''}" data-act="wstep" data-k="${k}" ${ui.step === k ? '' : 'disabled'}><span class="n ${k < ui.step ? 'done' : ''}">${k < ui.step ? '✓' : k + 1}</span>${esc(t)}</button></li>`).join('')}</ol>`;
+  document.getElementById('bar').innerHTML = `<span class="tag">PROTOTYPE · NO MODEL</span><span class="sep"></span><button class="${ui.walkOpen ? 'on' : ''}" data-act="walk">Walkthroughs ${ui.walkOpen ? '▾' : '▴'}</button><button data-act="undo" ${undo.length ? '' : 'disabled'}>Undo</button><button data-act="reset">Start over</button>`;
+}
+
+function render() {
+  renderRail();
+  const side = document.getElementById('side-body'), keep = side ? side.scrollTop : 0, sideTab = ui.side;
+  const mtabs = `<div class="mtabs"><button class="${ui.m === 'list' ? 'on' : ''}" data-act="m" data-m="list">${state.stage === 'speakers' ? 'Speakers' : 'Suggestions'}</button><button class="${ui.m === 'transcript' ? 'on' : ''}" data-act="m" data-m="transcript">Transcript</button><button class="${ui.m === 'record' ? 'on' : ''}" data-act="m" data-m="record">Record</button></div>`;
+  let body;
+  if (state.stage === 'result') body = renderResult();
+  else body = `${mtabs}<div class="work" data-m="${ui.m}"><div class="list">${state.stage === 'speakers' ? renderSpeakers() : renderReview()}</div>${renderSide()}</div>`;
+  document.getElementById('main').innerHTML = renderTop() + body;
+  renderWalk();
+  const nside = document.getElementById('side-body');
+  if (nside) {
+    const target = ui.scroll != null && document.getElementById('cue-' + ui.scroll);
+    if (target) nside.scrollTop = target.offsetTop - nside.clientHeight / 2 + target.clientHeight / 2;
+    else if (sideTab === ui.side) nside.scrollTop = keep;
+  }
+  ui.scroll = null;
+}
+
+/* ---- events */
+function focusSuggestion(sid, qq) {
+  const s = byId(sid); const first = qq || s.quotes[0];
+  ui.focus = { sid, cue: first.cue }; ui.scroll = first.cue; ui.side = 'transcript';
+  if (qq && window.matchMedia('(max-width:900px)').matches) ui.m = 'transcript';
+}
+function runStep(k) {
+  const fn = WALKS[ui.walk].steps[k][1], actions = fn(state);
+  let refused = null, okCount = 0, lastText = state.last.text;
+  for (const a of actions) { if (dispatch(a)) okCount++; else refused = refused || state.last.text; lastText = state.last.text; }
+  if (actions.length > 1) state = { ...state, last: refused && !okCount ? { ok: false, text: refused } : { ok: true, text: `${okCount} action${okCount === 1 ? '' : 's'} done.${refused ? ` ${actions.length - okCount} refused, e.g. ${refused}` : ''} Last: ${lastText}` } };
+  else if (!actions.length) state = { ...state, last: { ok: true, text: 'Nothing to press for this step: look at the page.' } };
+  ui.step = k + 1 < WALKS[ui.walk].steps.length ? k + 1 : -2;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) { const card = e.target.closest('[data-focus]'); if (card && !e.target.closest('textarea,input,select')) { focusSuggestion(card.dataset.focus); render(); } return; }
+  const d = b.dataset;
+  switch (d.act) {
+    case 'quote': { const s = byId(d.sid); focusSuggestion(d.sid, quoteOf(s, d.kind, +d.i)); break; }
+    case 'cue': ui.focus = { cue: +d.cue }; ui.scroll = +d.cue; ui.side = 'transcript'; if (window.matchMedia('(max-width:900px)').matches) ui.m = 'transcript'; break;
+    case 'accept': return act({ type: 'accept', id: d.id });
+    case 'earlier': return act({ type: 'useEarlier', id: d.id });
+    case 'reject': return act({ type: 'reject', id: d.id });
+    case 'ask': return act({ type: 'ask', id: d.id });
+    case 'edit': ui.editing = d.id; focusSuggestion(d.id); render(); { const t = document.getElementById('edit-' + d.id); if (t) t.focus(); } return;
+    case 'save': return act({ type: 'edit', id: d.id, value: document.getElementById('edit-' + d.id).value });
+    case 'cancel': ui.editing = null; break;
+    case 'rest': return act({ type: 'acceptRest' });
+    case 'confirm': ui.m = 'list'; return act({ type: 'confirmSpeakers' });
+    case 'finish': window.scrollTo(0, 0); return act({ type: 'finish' });
+    case 'back': return act({ type: 'back' });
+    case 'stage': {
+      const to = d.stage, from = state.stage;
+      if (to === from) return;
+      if (to === 'speakers') return act({ type: 'editSpeakers' });
+      if (to === 'review') return act(from === 'speakers' ? { type: 'confirmSpeakers' } : { type: 'back' });
+      if (to === 'result') return act(from === 'review' ? { type: 'finish' } : { type: 'confirmSpeakers' });
+      return;
+    }
+    case 'side': ui.side = d.side; break;
+    case 'm': ui.m = d.m; break;
+    case 'undo': if (undo.length) { state = { ...undo.pop() }; state = { ...state, last: { ok: true, text: 'Undid the last change.' } }; ui.step = -1; } break;
+    case 'reset': state = fresh(); undo = []; ui.focus = null; ui.editing = null; ui.step = -1; ui.m = 'list'; break;
+    case 'walk': ui.walkOpen = !ui.walkOpen; break;
+    case 'wtab': ui.walk = +d.i; ui.step = -1; break;
+    case 'wstart': state = fresh(); undo = []; ui.focus = null; ui.editing = null; ui.m = 'list'; ui.step = 0; state = { ...state, last: { ok: true, text: `Walkthrough “${WALKS[ui.walk].name}” started from a fresh state.` } }; break;
+    case 'wstep': runStep(+d.k); window.scrollTo(0, 0); break;
+  }
+  render();
+});
+document.addEventListener('change', e => {
+  const t = e.target, d = t.dataset; if (!d.change) return;
+  const label = state.ctx.labels[+d.li], m = state.speakers[label] || {};
+  if (d.change === 'kind') {
+    const v = t.value;
+    if (!v) act({ type: 'matchSpeaker', label, kind: null });
+    else if (v === 'agent') act({ type: 'matchSpeaker', label, kind: 'agent', name: 'Nadia Pearce' });
+    else if (v === 'new') act({ type: 'matchSpeaker', label, kind: 'household', name: '', isNew: true });
+    else if (v === 'other') act({ type: 'matchSpeaker', label, kind: 'other', name: '', role: '' });
+    else act({ type: 'matchSpeaker', label, kind: 'household', name: v.slice(3) });
+  } else act({ type: 'matchSpeaker', label, kind: m.kind, name: d.change === 'name' ? t.value : m.name, role: d.change === 'role' ? t.value : m.role, isNew: m.isNew });
+});
+render();
+</script>
