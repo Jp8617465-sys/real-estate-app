@@ -1,19 +1,21 @@
 # Glossary
 
-- **Agency:** The buyers-agent business delivering services.
-- **Buyer profile:** A lasting household record: its contacts and decision makers, relationship owner, lasting circumstances, professional relationships and document/check status. It holds no property criteria, budget or finance position; those belong to each buyer brief. Detailed identity-verification requirements remain unresolved.
-- **Contact:** One person in a buyer profile, with their names, email addresses and phone numbers. A person belongs to one buyer profile; professionals are separate records.
-- **Relationship owner:** The agency person responsible for a buyer profile across all its engagements. A returning client keeps their relationship owner.
-- **Enquiry:** An inbound request for buyers-agent help, arriving by website form, email to the agency or an agent's own note of a call. It opens a buying engagement, or is logged on the buyer profile's open one. _Avoid_: lead.
-- **Buying engagement:** One buying service for a buyer profile, from first enquiry through agreement, search and purchase, with its own brief. An enquiry that never reaches agreement is an engagement closed as did not proceed; a profile may have several engagements over time. _Avoid_: opportunity.
-- **Engagement owner:** The agency person responsible for one buying engagement. It starts as the relationship owner and can change.
-- **Discovery call:** The first consultation with a buyer about an engagement, before any agreement is signed. _Avoid_: initial consultation.
+- **Agency:** A business serving clients through one or more service lines.
+- **Service line:** A kind of service an agency delivers, with its own engagement type, stages and checks. Buying comes first; property management and sales may follow.
+- **Client profile:** A lasting household record: its contacts and decision makers, relationship owner, lasting circumstances, professional relationships and document/check status. It holds no property criteria, budget or finance position; those belong to each buyer brief. Detailed identity-verification requirements remain unresolved. _Avoid_: buyer profile.
+- **Contact:** One person in a client profile, with their names, email addresses and phone numbers. A person belongs to one client profile; professionals are separate records.
+- **Relationship owner:** The agency person responsible for a client profile across all its engagements. A returning client keeps their relationship owner.
+- **Enquiry:** An inbound request for an agency's help, arriving by website form, email to the agency or an agent's own note of a call. It opens an engagement, or is logged on the client profile's open one. _Avoid_: lead.
+- **Engagement:** One service an agency delivers to a client profile under one service line, with its own agreement and stages. A client profile may have several engagements over time. _Avoid_: opportunity.
+- **Buying engagement:** The buying service line's engagement, from first enquiry through agreement, search and purchase, with its own brief. An enquiry that never reaches agreement is an engagement closed as did not proceed.
+- **Engagement owner:** The agency person responsible for one engagement. It starts as the relationship owner and can change.
+- **Discovery call:** The first consultation with a client about an engagement, before any agreement is signed. _Avoid_: initial consultation.
 - **Buyer brief:** Requirements, priorities, constraints, budget and finance position for one engagement. A new engagement may start from a copy of an earlier brief but never inherits one silently.
 - **Property:** A real-world property described by provider records and the agency's knowledge.
 - **Shortlist:** Properties selected against a brief, with reasons and supporting evidence.
-- **Property assessment:** An engagement's consideration of a property, including its review evidence, tags, decisions, reasons and next actions. The same property may have different assessments in different engagements; the buyer profile retains their history.
-- **Professional:** A person or firm the agency works alongside, such as a mortgage/finance broker, selling agent, conveyancer/solicitor, inspector or referral partner. One agency-wide record, shared across profiles and properties.
-- **Professional relationship:** The link between a professional and a buyer profile or engagement, with a role such as their broker or referred them, including introductions, interactions and next actions.
+- **Property assessment:** An engagement's consideration of a property, including its review evidence, tags, decisions, reasons and next actions. The same property may have different assessments in different engagements; the client profile retains their history.
+- **Professional:** A person or firm the agency works alongside, such as a mortgage/finance broker, selling agent, conveyancer/solicitor, inspector or referral partner. One agency-wide record, shared across client profiles and properties.
+- **Professional relationship:** The link between a professional and a client profile or engagement, with a role such as their broker or referred them, including introductions, interactions and next actions.
 - **Next action:** Something a named person has agreed to do for an engagement, with a due date when one was given. It covers what the agent, the client or a professional owes. _Avoid_: commitment, task, follow-up.
 - **Check:** A review or verification with a status and supporting evidence. Required checks, roles and completion rules remain unresolved.
 - **Sales/intake pipeline:** The intake stages of a buying engagement: enquiry through qualification, discovery call and proposal/agreement.
