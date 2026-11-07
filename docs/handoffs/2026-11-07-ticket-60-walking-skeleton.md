@@ -23,7 +23,7 @@ Build [Create a buying opportunity that survives a restart](https://github.com/J
 
 ## Outstanding
 
-- Not committed or pushed; staged only. No PR yet (base branch to decide; use Refs #60, not Closes).
+- Committed (f4940d4), pushed, and opened as draft [PR 68](https://github.com/Jp8617465-sys/real-estate-app/pull/68) against prototype/engagement-property-review. It uses Refs #60, not Closes. Do not merge until James says so; CI runs `make check-factory` only.
 - Acceptance: on 7 November 2026 James ran `make run` and said it "seems to work well" and does not let you progress without the required details (his words, in chat; so the form ran in a browser). He did not ask to close #60; it stays open until he says so.
 - pytest prints a deprecation warning suggesting `httpx2`. Unverified package, so not installed.
 
