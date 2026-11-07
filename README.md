@@ -13,11 +13,20 @@ The [working brief](docs/product/working-brief.md) captures the current directio
 
 Run `make prototype` to serve the latest hybrid at <http://127.0.0.1:8765/buyers-desk-hybrid.html>. It supports own-data manual intake and property workflows; automatic NLP/ML extraction remains TBC.
 
+## Running the app
+
+The first tracer bullet is a local app: a Python back end and a React front end ([ADR 0001](docs/adr/0001-python-backend-typescript-frontend.md)). Synthetic or role-play material only.
+
+    make setup   # once: pinned dependencies, local PostgreSQL 17, database, migrations
+    make run     # http://127.0.0.1:8000, the API and the built front end
+
+Needs macOS with Homebrew, `uv`, `postgresql@17` and Node 20 (`brew install uv postgresql@17 node@20`). After changing the API, run `make generate-client`.
+
 ## Verification
 
     make check
 
-Requires Python 3.10+ and Git. This verifies the factory foundation; no application runtime or production stack is selected yet.
+Runs the factory wiring checks, back-end type checks and API tests against a local PostgreSQL test database, the generated-client drift check and the front-end build. The CI workflow runs `make check-factory` only until it can provision PostgreSQL, uv and Node through reviewed, pinned actions.
 
 ## Recovery
 
