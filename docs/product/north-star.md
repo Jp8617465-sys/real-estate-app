@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Help Australian buyers agents and small agencies work within their connected professional universe. Turn buyer requirements into a qualified property shortlist with clear fit evidence, supported by current property data and mapping, and connect the surrounding client/relationship work.
+Help Australian buyers agents and small agencies work within their connected professional universe. Turn buyer requirements into a qualified property shortlist with clear fit evidence, supported by current property data and mapping, and connect the surrounding client/relationship work. Build so the same platform can later add property management and sales service lines, without building them before the buying workflow proves useful.
 
 ## Agreed foundation
 
@@ -23,7 +23,7 @@ A prototype of one useful daily workflow, tested with the pilot agent, plus an a
 
 ## Open decisions
 
-Pilot agency and engagement example; production extraction hosting in Australia (agreed future state, not set up); exact profiles/checks; data sources, access and permitted use; freshness/latency; map behaviour; roles/tenancy; API consumers; production stack/hosting; spend; release arrangements. A US$50 Claude API cap is approved for the first tracer bullet only. These are decisions to resolve, not commitments to build every feature.
+Pilot agency and engagement example; production extraction hosting in Australia (agreed future state, not set up); exact profiles/checks; data sources, access and permitted use; freshness/latency; map behaviour; roles (tenancy decided in ADR 0002); API consumers; hosting in Australia (stack in ADR 0001, residency in ADR 0004); spend; release arrangements. A US$50 Claude API cap is approved for the first tracer bullet only. These are decisions to resolve, not commitments to build every feature.
 
 The initial workflow/question is recorded in the [decision ticket](https://github.com/Jp8617465-sys/real-estate-app/issues/50). James selected an A+B UI direction as a starting point; the [working brief](working-brief.md) captures the feedback, prototypes and open ideation questions. Real pilot validation remains outstanding.
 
