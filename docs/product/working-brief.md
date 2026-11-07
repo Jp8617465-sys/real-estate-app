@@ -6,7 +6,7 @@ The [north star](north-star.md) owns agreed product direction, [GLOSSARY.md](../
 
 ## Product context
 
-Help Australian buyers agents connect their client work, buyer requirements, property search/assessment and surrounding professional relationships. The broader direction includes intake/sales, service delivery, checks and aftercare, with property intelligence/mapping and a documented product API backed by replaceable provider connectors. The first useful workflow should prove value before building the wider suite.
+Help Australian buyers agents connect their client work, buyer requirements, property search/assessment and their relationships with professionals. The broader direction includes opportunities from enquiry to agreement, service delivery, checks and aftercare, with property intelligence/mapping and a documented product API backed by replaceable provider connectors. The first useful workflow should prove value before building the wider suite.
 
 Keep a lasting buyer/household profile separate from each buying engagement. A client can return for another purchase. Property decisions, tags, assessment notes and follow-up belong to the relevant engagement; passing on a property for one engagement must not overwrite another's view.
 
@@ -49,7 +49,7 @@ The hybrid accepts `.txt`, `.md`, `.vtt` and `.srt` transcripts up to 1 MB. Actu
 
 Records live in memory until the user exports a versioned JSON workspace. Open workspace file restores it. There is no automatic persistence, backend/authentication, connected CRM, live listing feed or independent property verification. Do not imply the prototype has these capabilities.
 
-Working interpretations to validate: "opportunity" is no longer a separate term, because a buying engagement exists from first enquiry (see the glossary); "assessed" describes review progress; "passed" means choosing not to pursue; "missed" means unavailable/lost out. Fit evidence and the engagement's decision are separate dimensions.
+Working interpretations to validate: an opportunity is an engagement before its agreement is signed, and a buying engagement exists from first enquiry (see the glossary); "assessed" describes review progress; "passed" means choosing not to pursue; "missed" means unavailable/lost out. Fit evidence and the engagement's decision are separate dimensions.
 
 ## Status of the ideation questions
 
