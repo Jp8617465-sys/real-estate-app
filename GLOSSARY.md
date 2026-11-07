@@ -2,24 +2,27 @@
 
 - **Agency:** A business serving clients through one or more service lines.
 - **Service line:** A kind of service an agency delivers, with its own engagement type, stages and checks. Buying comes first; property management and sales may follow.
-- **Client profile:** A lasting household record: its contacts and decision makers, relationship owner, lasting circumstances, professional relationships and document/check status. It holds no property criteria, budget or finance position; those belong to each buyer brief. Detailed identity-verification requirements remain unresolved. _Avoid_: buyer profile.
-- **Contact:** One person in a client profile, with their names, email addresses and phone numbers. A person belongs to one client profile; professionals are separate records.
-- **Relationship owner:** The agency person responsible for a client profile across all its engagements. A returning client keeps their relationship owner.
-- **Enquiry:** An inbound request for an agency's help, arriving by website form, email to the agency or an agent's own note of a call. It opens an engagement, or is logged on the client profile's open one. _Avoid_: lead.
-- **Engagement:** One service an agency delivers to a client profile under one service line, with its own agreement and stages. A client profile may have several engagements over time. _Avoid_: opportunity.
-- **Buying engagement:** The buying service line's engagement, from first enquiry through agreement, search and purchase, with its own brief. An enquiry that never reaches agreement is an engagement closed as did not proceed.
+- **Person:** Anyone the agency deals with, kept as one record whatever their roles: a client, a professional or both.
+- **Client:** A person the agency serves. The lasting record of their contact details, circumstances, relationship owner and history across every engagement and household. Detailed identity-verification requirements remain unresolved. _Avoid_: contact, client profile, buyer profile.
+- **Household:** The clients who live together, each with dates of membership, and the homes they rent or own. A client may belong to different households over time.
+- **Relationship:** A typed link between two people, or a person and a firm, such as partner of, parent of, their broker, referred by or works at. It may apply to one engagement only. _Avoid_: professional relationship.
+- **Relationship owner:** The agency person responsible for a client across all their engagements. A returning client keeps their relationship owner.
+- **Enquiry:** An inbound request for an agency's help, arriving by website form, email to the agency or an agent's own note of a call. It opens an opportunity, or is logged on the client's open engagement. _Avoid_: lead.
+- **Engagement:** One service an agency delivers to one or more clients (its parties) under one service line, with its own agreement and stages. A client may have several engagements over time.
+- **Opportunity:** An engagement before its agreement is signed. Once signed, it continues as the same engagement.
+- **Buying engagement:** The buying service line's engagement, from first enquiry through agreement, search and purchase, with its own brief. An opportunity that never reaches agreement is closed as did not proceed.
 - **Engagement owner:** The agency person responsible for one engagement. It starts as the relationship owner and can change.
-- **Discovery call:** The first consultation with a client about an engagement, before any agreement is signed. _Avoid_: initial consultation.
-- **Buyer brief:** Requirements, priorities, constraints, budget and finance position for one engagement. A new engagement may start from a copy of an earlier brief but never inherits one silently.
+- **Discovery call:** The first consultation with a client about an opportunity, before any agreement is signed. _Avoid_: initial consultation.
+- **Buyer brief:** Requirements, priorities, constraints, budget and finance position for one buying engagement. A new engagement may start from a copy of an earlier brief but never inherits one silently.
 - **Property:** A real-world property described by provider records and the agency's knowledge.
 - **Shortlist:** Properties selected against a brief, with reasons and supporting evidence.
-- **Property assessment:** An engagement's consideration of a property, including its review evidence, tags, decisions, reasons and next actions. The same property may have different assessments in different engagements; the client profile retains their history.
-- **Professional:** A person or firm the agency works alongside, such as a mortgage/finance broker, selling agent, conveyancer/solicitor, inspector or referral partner. One agency-wide record, shared across client profiles and properties.
-- **Professional relationship:** The link between a professional and a client profile or engagement, with a role such as their broker or referred them, including introductions, interactions and next actions.
-- **Next action:** Something a named person has agreed to do for an engagement, with a due date when one was given. It covers what the agent, the client or a professional owes. _Avoid_: commitment, task, follow-up.
+- **Property assessment:** An engagement's consideration of a property, including its review evidence, tags, decisions, reasons and next actions. The same property may have different assessments in different engagements; the clients keep that history.
+- **Professional:** A person or firm the agency works alongside, such as a mortgage/finance broker, selling agent, conveyancer/solicitor, inspector or referral partner. One agency-wide record; a person can be both a professional and a client.
+- **Next action:** Something a named person agreed to do for an engagement, with a due date when one was given. It covers what the agent, a client or a professional owes. _Avoid_: commitment, follow-up.
+- **Task:** Work a named staff member must do, created by hand, by an agency rule (such as confirming a match or a first response) or from a next action the agency owes.
 - **Check:** A review or verification with a status and supporting evidence. Required checks, roles and completion rules remain unresolved.
-- **Sales/intake pipeline:** The intake stages of a buying engagement: enquiry through qualification, discovery call and proposal/agreement.
-- **Buying-service pipeline:** Brief through search, shortlist, due diligence and purchase to settlement.
+- **Opportunity pipeline:** The stages of an opportunity. For buying: enquiry, discovery call booked, discovery call held, proposal sent and agreement signed; or closed as did not proceed. _Avoid_: sales pipeline, intake pipeline.
+- **Buying-service pipeline:** Brief, research, shortlist, inspections and outcomes (offers, contract, due diligence and settlement).
 - **Aftercare:** Post-settlement support, follow-ups, referrals and repeat engagements.
-- **Agent universe:** Connected territory, properties, buyers, engagements, private knowledge, professional relationships and next actions.
+- **Agent universe:** Connected territory, properties, clients, engagements, private knowledge, relationships and next actions.
 - **Tracer bullet:** The first thin working path across necessary layers proving one useful outcome and exposing integration uncertainty.
