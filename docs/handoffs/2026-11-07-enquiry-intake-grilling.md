@@ -43,7 +43,7 @@ make check passed before each glossary commit. The issue states, the sub-issue l
 ## Outstanding
 
 - Real roles and permissions (see #58).
-- Delivery pipelines; the client timeline and activity logging; the Granola integration.
+- Delivery pipelines, the client timeline, activity logging and call capture are ticketed as [Decide the client timeline, activity logging and call capture](https://github.com/Jp8617465-sys/real-estate-app/issues/67), blocked by #66.
 - Pilot evidence: no real agency walkthrough yet.
 
 Context: unavailable (no harness counter); the conversation was long, so this rolls over.
