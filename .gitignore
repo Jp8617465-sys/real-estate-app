@@ -7,3 +7,8 @@ __pycache__/
 node_modules/
 .scratch/
 *.bundle
+api/.venv/
+api/.mypy_cache/
+api/.pytest_cache/
+web/dist/
+web/*.tsbuildinfo
