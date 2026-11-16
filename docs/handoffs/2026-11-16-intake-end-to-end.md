@@ -27,7 +27,8 @@ Extraction is behind one port. The scripted adapter replays the prototype's 57 s
 
 - **GitHub writes are refused for this session (403 on push and on issue comments).** The commit is local only; no issue or PR was updated. Fix: reconnect GitHub at claude.ai/connect-github and install the Claude GitHub App on the repository, then push the branch and update issues 60 to 64.
 - Paid scored run (issue 64): needs James's Claude API account and key; this session did not read or use any key. Run `cd api && uv run python -m buyers_desk.scored_run --model claude-sonnet-5-5` (asks first; ledger refuses past US$50). Model price table is from the 3 November 2026 list.
-- Local Qwen comparison (issue 65), Ollama adapter, real-pilot validation and James's dated walkthrough of issues 61 to 64 remain.
+- Local Qwen comparison (issue 65): the Ollama adapter and `scored_run --ollama qwen3.5:9b` are built and tested against a stand-in server only. James still has to install Ollama, pull the model and run it on his Mac. Select it in the app with `BUYERS_DESK_EXTRACTOR=ollama`.
+- Real-pilot validation and James's dated walkthrough of issues 61 to 64 remain.
 - Built on PostgreSQL 16 in a Linux container with local trust auth; the spec says 17 on James's Mac.
 - CI still runs `make check-factory` only.
 

@@ -12,6 +12,7 @@ from buyers_desk import engagements, intakes
 from buyers_desk.intake.claude import ClaudeExtractor
 from buyers_desk.intake.extraction import Extractor, ScriptedExtractor
 from buyers_desk.intake.keys import load_keys
+from buyers_desk.intake.ollama import OllamaExtractor
 from buyers_desk.intake.scoring import key_replays
 from buyers_desk.settings import Settings
 
@@ -46,7 +47,9 @@ def build_extractor(settings: Settings) -> Extractor:
             return ScriptedExtractor()
     if settings.extractor == "claude":  # paid: set BUYERS_DESK_CLAUDE_MODEL; the spend ledger holds the US$50 cap
         return ClaudeExtractor(settings.claude_model)
-    raise ValueError(f"Unknown extractor {settings.extractor!r}; the choices are: scripted, claude")
+    if settings.extractor == "ollama":  # local and free: Ollama must be running with the model pulled
+        return OllamaExtractor(settings.ollama_model)
+    raise ValueError(f"Unknown extractor {settings.extractor!r}; the choices are: scripted, claude, ollama")
 
 
 def _serve_web_app(app: FastAPI) -> None:

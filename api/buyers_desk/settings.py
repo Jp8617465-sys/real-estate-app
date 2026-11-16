@@ -18,6 +18,7 @@ class Settings:
     database: str = field(default_factory=_database_from_env)
     extractor: str = field(default_factory=lambda: os.environ.get("BUYERS_DESK_EXTRACTOR", "scripted"))
     claude_model: str = field(default_factory=lambda: os.environ.get("BUYERS_DESK_CLAUDE_MODEL", "claude-sonnet-5-5"))
+    ollama_model: str = field(default_factory=lambda: os.environ.get("BUYERS_DESK_OLLAMA_MODEL", "qwen3.5:9b"))
     # None means "no agency": the API refuses to read or write anything (ADR 0002).
     agency_id: UUID | None = LOCAL_AGENCY_ID
 
