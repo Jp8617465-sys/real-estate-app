@@ -130,10 +130,12 @@ def get_changes(engagement_id: UUID, conn: Conn) -> list[ChangeLogEntry]:
             "SELECT c.entity, c.entity_id, c.field, c.new_value, c.earlier_value, c.source, "
             "c.changed_by, c.changed_at FROM change_log c, engagements e "
             "WHERE e.id = :id AND ("
-            " (c.entity = 'brief' AND c.entity_id = e.id)"
+            " (c.entity IN ('brief', 'profile', 'intake', 'properties', 'actions') AND c.entity_id = e.id)"
             " OR (c.entity = 'household' AND c.entity_id = e.household_id)"
             " OR (c.entity = 'client' AND c.entity_id IN "
-            "     (SELECT person_id FROM engagement_clients WHERE engagement_id = e.id)))"
+            "     (SELECT person_id FROM engagement_clients WHERE engagement_id = e.id))"
+            " OR (c.entity = 'client' AND c.entity_id IN "
+            "     (SELECT person_id FROM engagement_professionals WHERE engagement_id = e.id)))"
             "ORDER BY c.id"
         ),
         {"id": engagement_id},

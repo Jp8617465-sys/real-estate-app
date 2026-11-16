@@ -1,0 +1,940 @@
+{
+ "name": "03-broker-joins-first-home-north.vtt",
+ "note": "Hand-written suggestions from the transcript-review prototype, including its deliberate mistakes and three malformed suggestions.",
+ "fingerprint": "ff0aac8d7369563af33af730f65ceb0cceb6f1849f6dad3edbede56052197f68",
+ "suggestions": [
+  {
+   "id": "s-finalsay",
+   "field": "finalSay",
+   "value": "Tash and Rhys decide together",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "And we've been saving for ages, and we sort of, we just want to stop renting.",
+     "speaker": "Tash Kumar"
+    }
+   ],
+   "note": "Rhys's mum is mentioned only as a reason to like Aspley; she is not part of the decision."
+  },
+  {
+   "id": "s-pets",
+   "field": "pets",
+   "value": "A cat",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "We've got a cat, so, um, pet friendly, which I know with a body corporate can be—",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-housing",
+   "field": "housing",
+   "value": "Renting a unit in Lutwyche for three years; rent up about $130 a week over two years",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Um, so we're renting in Lutwitch, in a unit, we've been there three years.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "Hundred and thirty. And it's, like, we're paying someone else's mortgage, you know.",
+     "speaker": "Tash Kumar"
+    }
+   ],
+   "conflict": {
+    "type": "superseded",
+    "earlier": {
+     "value": "Renting in Lutwyche; rent up about $120 a week over two years",
+     "quotes": [
+      {
+       "text": "Our rent's gone up like a hundred and twenty dollars a week in the last two years.",
+       "speaker": "Tash Kumar"
+      }
+     ]
+    }
+   },
+   "note": "The transcript says “Lutwitch”; normalised to Lutwyche."
+  },
+  {
+   "id": "s-worktash",
+   "field": "work",
+   "value": "ICU nurse at the hospital at Chermside; works night shifts",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "At the hospital at Chermside. In ICU.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "No, I'm on nights tomorrow. So today's my, um, my sleep normally day. I've had a coffee. I'm okay.",
+     "speaker": "Tash Kumar"
+    }
+   ],
+   "subject": "Tash Kumar"
+  },
+  {
+   "id": "s-workrhys",
+   "field": "work",
+   "value": "Electrician, mostly commercial fit-outs; works across the city, the Valley and the airport; drives his own ute with his tools",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Yeah, electrician. I do mostly commercial. Fit outs and that.",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "Yeah, I've got the ute, it's mine, not the company's. And I've got all my tools.",
+     "speaker": "Rhys Gallagher"
+    }
+   ],
+   "subject": "Rhys Gallagher"
+  },
+  {
+   "id": "s-broker",
+   "field": "professionals",
+   "value": "Dan — their mortgage broker (firm not given)",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "Yeah, it's Dan, sorry, I'm on my phone, I'm in the car outside my last appointment.",
+     "speaker": "iPhone (2)"
+    },
+    {
+     "text": "So, I had a first chat with Rhys and Tash a couple of weeks ago,",
+     "speaker": "iPhone (2)"
+    }
+   ],
+   "note": "No professional named Dan is on record, so accepting creates a new professional and links him as their broker."
+  },
+  {
+   "id": "s-purpose",
+   "field": "purpose",
+   "value": "A home to live in (to stop renting)",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "And we've been saving for ages, and we sort of, we just want to stop renting.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-firsthome",
+   "field": "firstHome",
+   "value": "Yes",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "First home buyers.",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "Yeah. I hear that every week. So this is your first place?",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    }
+   ]
+  },
+  {
+   "id": "s-budget",
+   "field": "budgetTarget",
+   "value": "About $900k (established property)",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "For an established townhouse or house, I'd want you at about eight-eighty to nine hundred, maybe nine-ten at a stretch.",
+     "speaker": "iPhone (2)"
+    },
+    {
+     "text": "But nine hundred's still good. Like, that townhouse in Kedron would've been in range.",
+     "speaker": "Rhys Gallagher"
+    }
+   ],
+   "conflict": {
+    "type": "superseded",
+    "earlier": {
+     "value": "About $950k",
+     "quotes": [
+      {
+       "text": "Like, we always thought it'd be nine-fifty, and it's sort of, it's less than that, unless it's new.",
+       "speaker": "Tash Kumar"
+      }
+     ]
+    }
+   },
+   "note": "Dan's figure, accepted by Rhys."
+  },
+  {
+   "id": "s-ceiling",
+   "field": "budgetCeiling",
+   "value": "$950k",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "For a brand new property where you're not paying stamp duty, you could go up to about nine-fifty,",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "s-guidance",
+   "field": "brokerGuidance",
+   "value": "$880–900k, $910k at a stretch, for an established property; up to about $950k for a brand-new one (no stamp duty)",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "For an established townhouse or house, I'd want you at about eight-eighty to nine hundred, maybe nine-ten at a stretch.",
+     "speaker": "iPhone (2)"
+    },
+    {
+     "text": "For a brand new property where you're not paying stamp duty, you could go up to about nine-fifty,",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "s-preapproval",
+   "field": "preApproval",
+   "value": "Not yet lodged. Dan estimates a lender would approve about $900k, “maybe a little bit more”; lender not named; normally good for 90 days",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "So, putting all that together, at the moment I think a lender would approve you for a loan of around nine hundred,",
+     "speaker": "iPhone (2)"
+    },
+    {
+     "text": "maybe a little bit more. But I don't want to put you at the absolute max.",
+     "speaker": "iPhone (2)"
+    },
+    {
+     "text": "So I can lodge it this week, as long as I get the last few documents.",
+     "speaker": "iPhone (2)"
+    },
+    {
+     "text": "It's normally good for ninety days.",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "s-deposit",
+   "field": "deposit",
+   "value": "About $85,000 saved",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "That's kind of what we want to talk to Dan about. We've got, um, about $85,000 saved.",
+     "speaker": "Rhys Gallagher"
+    }
+   ]
+  },
+  {
+   "id": "s-scheme",
+   "field": "depositScheme",
+   "value": "5% deposit First Home Guarantee (no LMI); Dan says they qualify",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "And then we were looking at the five percent deposit thing.",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "Since they changed it in October last year, there's no income caps anymore and no limit on places. So they qualify.",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "s-family",
+   "field": "familyHelp",
+   "value": "Tash's nan has offered $10,000, timing unknown; not counted until it arrives; a gift letter will be needed",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Oh, yeah, that's, um. My nan said she'd give us ten thousand. But I don't know when.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "It's not hard. But I'm not including it until it's actually in your account.",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "s-sellfirst",
+   "field": "mustSellFirst",
+   "value": "No — they rent",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "Um, so we're renting in Lutwitch, in a unit, we've been there three years.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-area-kedron",
+   "field": "areas",
+   "value": "Kedron — open to",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Um, Kedron, Stafford, maybe Nundah? Wavell Heights? I don't know if that's realistic.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-area-stafford",
+   "field": "areas",
+   "value": "Stafford — open to",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Um, Kedron, Stafford, maybe Nundah? Wavell Heights? I don't know if that's realistic.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-area-nundah",
+   "field": "areas",
+   "value": "Nundah — open to (“maybe”)",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Um, Kedron, Stafford, maybe Nundah? Wavell Heights? I don't know if that's realistic.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-area-wavell",
+   "field": "areas",
+   "value": "Wavell Heights — open to (Tash unsure it's realistic)",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Um, Kedron, Stafford, maybe Nundah? Wavell Heights? I don't know if that's realistic.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-aspley",
+   "field": "areas",
+   "value": "Aspley — unresolved, to discuss",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "And then houses, maybe Gee bung, Zillmere, Aspley, but it's going to be tight.",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    },
+    {
+     "text": "Aspley would be good, it's close to my mum.",
+     "speaker": "Rhys Gallagher"
+    }
+   ],
+   "conflict": {
+    "type": "disagreement",
+    "views": [
+     {
+      "quote": {
+       "text": "Aspley would be good, it's close to my mum.",
+       "speaker": "Rhys Gallagher"
+      },
+      "person": "Rhys Gallagher",
+      "value": "Open to Aspley"
+     },
+     {
+      "quote": {
+       "text": "We're not buying near your mum.",
+       "speaker": "Tash Kumar"
+      },
+      "person": "Tash Kumar",
+      "value": "Against"
+     }
+    ]
+   }
+  },
+  {
+   "id": "s-agentareas",
+   "field": "areas",
+   "value": "Stafford Heights, Chermside, Chermside West, Wooloowin and Gordon Park — open to",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Kedron, Stafford, Stafford Heights, Chermside, Chermside West, Nundah, Wooloowin, Gordon Park even, those all have a lot of townhouses.",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    }
+   ]
+  },
+  {
+   "id": "s-type",
+   "field": "propertyType",
+   "value": "Most likely a townhouse; they'd love a house but think one is out of reach",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "I mean, honestly, we'd love a house. But I don't think we can afford a house anywhere near here.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "We went to a townhouse in Kedron that we really liked but it went really quickly.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-beds",
+   "field": "bedrooms",
+   "value": "3, or 2 plus a study",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Three bedrooms would be good. Or two and a study.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-parking",
+   "field": "parking",
+   "value": "Lockable garage for Rhys's ute and tools (a need); a single lock-up is fine",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "So I need, like, a lockable garage. I can't leave tools in the ute on the street. I've had them nicked before.",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "Single lock up is fine as long as I can lock the tools in it. Tash's car can go out the front.",
+     "speaker": "Rhys Gallagher"
+    }
+   ]
+  },
+  {
+   "id": "s-pet",
+   "field": "mustHaves",
+   "value": "Body corporate by-laws that allow their cat",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "We've got a cat, so, um, pet friendly, which I know with a body corporate can be—",
+     "speaker": "Tash Kumar"
+    }
+   ],
+   "note": "Inferred because they own a cat."
+  },
+  {
+   "id": "s-train",
+   "field": "mustHaves",
+   "value": "Close to a train station",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "I don't need near the train.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-outdoor",
+   "field": "niceToHaves",
+   "value": "Some outdoor space, even just a courtyard",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "And some outdoor space. Even a courtyard. Just somewhere to sit outside.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-endunit",
+   "field": "niceToHaves",
+   "value": "An end townhouse",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Oh God. Yeah. Like, end unit would be good.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-bbq",
+   "field": "niceToHaves",
+   "value": "Room for a barbecue (Rhys)",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "A barbecue. Ha. That's his must.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-db-commute",
+   "field": "dealBreakers",
+   "value": "More than about 20 minutes' drive from the hospital at Chermside",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Because of nights. Like, when I finish a night shift at eight in the morning, I don't want to drive forty minutes.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "Yeah. Like twenty minutes max.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-db-wall",
+   "field": "dealBreakers",
+   "value": "A bedroom next to a neighbour's bedroom (Tash sleeps during the day)",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Or at least not, um, like, the bedroom not next to someone else's bedroom.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-db-gympie",
+   "field": "dealBreakers",
+   "value": "On Gympie Road",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Not on Gympie Road. I don't want to be on Gympie Road.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-db-webster",
+   "field": "dealBreakers",
+   "value": "On Webster Road",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Or Webster Road.",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "Okay. Main roads, no. What about the train line, or the busway, or flight paths?",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    }
+   ]
+  },
+  {
+   "id": "s-db-flood",
+   "field": "dealBreakers",
+   "value": "Flooding",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "No flooding.",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "No flooding. Okay. And timing, is there a lease ending?",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    }
+   ]
+  },
+  {
+   "id": "s-db-planes",
+   "field": "dealBreakers",
+   "value": "Aircraft (flight-path) noise",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "Okay. Main roads, no. What about the train line, or the busway, or flight paths?",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    },
+    {
+     "text": "Oh, I didn't think about planes. I sleep during the day sometimes. That would be bad.",
+     "speaker": "Tash Kumar"
+    }
+   ],
+   "note": "You raised it; Tash confirmed it."
+  },
+  {
+   "id": "s-trainbus",
+   "field": "dealBreakers",
+   "value": "Near the train line or the busway",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Okay. Main roads, no. What about the train line, or the busway, or flight paths?",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    }
+   ]
+  },
+  {
+   "id": "s-older",
+   "field": "newOrEstablished",
+   "value": "An older complex (1980s or 1990s) is fine if it's “not gross” and the wiring is sound",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "Can I ask a couple more things before we finish? Just for my notes. Are you okay with an older complex?",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    },
+    {
+     "text": "Like, from the eighties or nineties?",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    },
+    {
+     "text": "Um. As long as it's, like, not gross.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "As long as the wiring's not stuffed.",
+     "speaker": "Rhys Gallagher"
+    }
+   ]
+  },
+  {
+   "id": "s-strata",
+   "field": "strata",
+   "value": "Yes — they expect a body corporate",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "We've got a cat, so, um, pet friendly, which I know with a body corporate can be—",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "s-timeline",
+   "field": "timeline",
+   "value": "Lease ends in April and they won't renew; no need to buy before Christmas",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Our lease is up in April. And we don't want to renew it, honestly, with the rent.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "Do we have to buy before Christmas?",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "No. Absolutely not. There's usually a quieter period over Christmas, and then February, March gets busy again.",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    }
+   ]
+  },
+  {
+   "id": "s-note-further",
+   "field": "notes",
+   "value": "Bracken Ridge and Zillmere houses ruled out: too far from Tash's work",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "We had a look at houses out in, like, Bracken Ridge, Zilmere, but Tash doesn't want to be too far from work.",
+     "speaker": "Rhys Gallagher"
+    }
+   ]
+  },
+  {
+   "id": "s-service",
+   "field": "service",
+   "value": "Undecided — to discuss",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "The negotiate one would be good. Because we can look ourselves.",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "But then we have to do all the looking. With my shifts.",
+     "speaker": "Tash Kumar"
+    }
+   ],
+   "conflict": {
+    "type": "disagreement",
+    "views": [
+     {
+      "quote": {
+       "text": "The negotiate one would be good. Because we can look ourselves.",
+       "speaker": "Rhys Gallagher"
+      },
+      "person": "Rhys Gallagher",
+      "value": "Negotiate-only service"
+     },
+     {
+      "quote": {
+       "text": "But then we have to do all the looking. With my shifts.",
+       "speaker": "Tash Kumar"
+      },
+      "person": "Tash Kumar",
+      "value": "Worried about doing all the looking"
+     }
+    ]
+   },
+   "note": "Service wanted stays empty until they choose."
+  },
+  {
+   "id": "s-prop-kedron",
+   "field": "properties",
+   "value": "Townhouse in Kedron — missed",
+   "outcome": "Missed",
+   "basis": "stated",
+   "detail": "Sold in about four days, before they were ready. Advertised as offers over $850k; reportedly sold for about $920k.",
+   "quotes": [
+    {
+     "text": "We went to a townhouse in Kedron that we really liked but it went really quickly.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "It was gone in like four days.",
+     "speaker": "Rhys Gallagher"
+    },
+    {
+     "text": "The agent said offers over eight-fifty, and then someone said it went for, um, nine-twenty? Something like that.",
+     "speaker": "Rhys Gallagher"
+    }
+   ]
+  },
+  {
+   "id": "s-prop-stafford",
+   "field": "properties",
+   "value": "A property in Stafford — inspecting on Saturday",
+   "outcome": "Upcoming inspection",
+   "basis": "stated",
+   "detail": "No address given; it stays partial until confirmed.",
+   "quotes": [
+    {
+     "text": "There's one in Stafford we were going to look at on Saturday.",
+     "speaker": "Rhys Gallagher"
+    }
+   ]
+  },
+  {
+   "id": "a-nadia-email",
+   "field": "nextActions",
+   "owners": [
+    "Nadia Pearce | Halyard Buyers Advocacy"
+   ],
+   "due": "Tonight",
+   "value": "Email a summary, both service options and the agreement (Form 6)",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "I'll send you an email tonight, with the summary of what we talked about, both service options, and the agreement.",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    }
+   ]
+  },
+  {
+   "id": "a-nadia-dan",
+   "field": "nextActions",
+   "owners": [
+    "Nadia Pearce | Halyard Buyers Advocacy"
+   ],
+   "due": "After the call",
+   "value": "Email Dan",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Thanks Dan, great to meet you, I'll email you after this.",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    }
+   ]
+  },
+  {
+   "id": "a-dan-docs",
+   "field": "nextActions",
+   "owners": [
+    "iPhone (2)"
+   ],
+   "due": "Tonight",
+   "value": "Send the document list, the confirmed first home owner grant amount and the gift-letter documents",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "But I'll send everything through tonight, okay?",
+     "speaker": "iPhone (2)"
+    },
+    {
+     "text": "I don't want to give you the wrong number. I'll confirm that and send it through.",
+     "speaker": "iPhone (2)"
+    },
+    {
+     "text": "Perfect. Then I'll send you guys the documents for the gift letter too, just in case.",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "a-dan-lodge",
+   "field": "nextActions",
+   "owners": [
+    "iPhone (2)"
+   ],
+   "due": "This week, once the last documents arrive",
+   "value": "Lodge the pre-approval",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "So I can lodge it this week, as long as I get the last few documents.",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "a-dan-rates",
+   "field": "nextActions",
+   "owners": [
+    "iPhone (2)"
+   ],
+   "due": "Not stated",
+   "value": "Show a couple of lender rate options on the 5% scheme",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "On the five percent scheme, not every lender has the best rates, so I'll show you a couple of options.",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "a-rhys-payslips",
+   "field": "nextActions",
+   "owners": [
+    "Rhys Gallagher"
+   ],
+   "due": "Tonight",
+   "value": "Send Dan his last two (October) payslips",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "I'll send you the payslips tonight.",
+     "speaker": "Rhys Gallagher"
+    }
+   ]
+  },
+  {
+   "id": "a-tash-roster",
+   "field": "nextActions",
+   "owners": [
+    "Tash Kumar"
+   ],
+   "due": "Tomorrow night",
+   "value": "Get her roster, or a hospital letter showing regular penalties, from her manager for Dan",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "I can get the roster thing from my manager.",
+     "speaker": "Tash Kumar"
+    },
+    {
+     "text": "I'll ask my manager tomorrow night when I'm on.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "a-links",
+   "field": "nextActions",
+   "owners": [
+    "Tash Kumar",
+    "Rhys Gallagher"
+   ],
+   "due": "Before Saturday (implied)",
+   "value": "Send you links to listings they're considering, including the Stafford one",
+   "basis": "inferred",
+   "quotes": [
+    {
+     "text": "Send me links. Anything you're thinking of going to, send it through, and I'll give you my two cents.",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    },
+    {
+     "text": "Will do.",
+     "speaker": "Rhys Gallagher"
+    }
+   ]
+  },
+  {
+   "id": "a-nadia-look",
+   "field": "nextActions",
+   "owners": [
+    "Nadia Pearce | Halyard Buyers Advocacy"
+   ],
+   "due": "This weekend",
+   "value": "Look over those listings informally and give your view",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "If you want, I'm happy to look at a couple of listings for you this weekend, even before you sign anything,",
+     "speaker": "Nadia Pearce | Halyard Buyers Advocacy"
+    },
+    {
+     "text": "Oh, that would be amazing.",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "a-carloan",
+   "field": "nextActions",
+   "owners": [
+    "Rhys Gallagher"
+   ],
+   "due": "Not stated",
+   "value": "Send Dan the car-loan statement",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "or something from the hospital that shows your penalties are regular. And I need the statement for the car loan.",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "d-ceiling910",
+   "field": "budgetCeiling",
+   "value": "$910k",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "maybe nine-ten at the most",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  },
+  {
+   "id": "d-bathrooms",
+   "field": "mustHaves",
+   "value": "Two bathrooms",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "probably two bathrooms,",
+     "speaker": "Tash Kumar"
+    }
+   ]
+  },
+  {
+   "id": "d-income",
+   "field": "income",
+   "fieldLabel": "Household income",
+   "value": "Rhys about $95k base plus overtime",
+   "basis": "stated",
+   "quotes": [
+    {
+     "text": "Rhys, your base is around ninety-five and then you do a fair bit of overtime,",
+     "speaker": "iPhone (2)"
+    }
+   ]
+  }
+ ]
+}

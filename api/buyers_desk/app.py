@@ -8,27 +8,37 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine
 
-from buyers_desk import engagements
+from buyers_desk import engagements, intakes
+from buyers_desk.intake.extraction import Extractor, ScriptedExtractor
 from buyers_desk.settings import Settings
 
 BUILT_WEB_APP = Path(__file__).resolve().parent.parent.parent / "web" / "dist"
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, extractor: Extractor | None = None) -> FastAPI:
     settings = settings or Settings()
+    chosen = extractor or build_extractor(settings)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.settings = settings
+        app.state.extractor = chosen
         app.state.engine = create_engine(settings.app_url)
         yield
         app.state.engine.dispose()
 
     app = FastAPI(title="Buyers desk API", lifespan=lifespan)
     app.include_router(engagements.router)
+    app.include_router(intakes.router)
     if (BUILT_WEB_APP / "index.html").is_file():
         _serve_web_app(app)
     return app
+
+
+def build_extractor(settings: Settings) -> Extractor:
+    if settings.extractor == "scripted":
+        return ScriptedExtractor()
+    raise ValueError(f"Unknown extractor {settings.extractor!r}; the choices are: scripted")
 
 
 def _serve_web_app(app: FastAPI) -> None:

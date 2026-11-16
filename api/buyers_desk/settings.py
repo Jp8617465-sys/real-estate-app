@@ -16,6 +16,7 @@ def _database_from_env() -> str:
 @dataclass(frozen=True)
 class Settings:
     database: str = field(default_factory=_database_from_env)
+    extractor: str = field(default_factory=lambda: os.environ.get("BUYERS_DESK_EXTRACTOR", "scripted"))
     # None means "no agency": the API refuses to read or write anything (ADR 0002).
     agency_id: UUID | None = LOCAL_AGENCY_ID
 

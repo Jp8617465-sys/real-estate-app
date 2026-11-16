@@ -59,6 +59,160 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/engagements/{engagement_id}/intakes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Intakes */
+        get: operations["list_intakes_api_engagements__engagement_id__intakes_get"];
+        put?: never;
+        /** Create Intake */
+        post: operations["create_intake_api_engagements__engagement_id__intakes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagements/{engagement_id}/record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Record */
+        get: operations["get_record_api_engagements__engagement_id__record_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/intakes/{intake_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Intake */
+        get: operations["get_intake_api_intakes__intake_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/intakes/{intake_id}/accept-rest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Rest */
+        post: operations["accept_rest_api_intakes__intake_id__accept_rest_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/intakes/{intake_id}/decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide */
+        post: operations["decide_api_intakes__intake_id__decisions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/intakes/{intake_id}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish */
+        post: operations["finish_api_intakes__intake_id__finish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/intakes/{intake_id}/speakers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Match Speaker */
+        put: operations["match_speaker_api_intakes__intake_id__speakers_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/intakes/{intake_id}/speakers/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Speakers */
+        post: operations["confirm_speakers_api_intakes__intake_id__speakers_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/intakes/{intake_id}/speakers/edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Edit Speakers */
+        post: operations["edit_speakers_api_intakes__intake_id__speakers_edit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -104,6 +258,56 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** ConflictView */
+        ConflictView: {
+            earlier?: components["schemas"]["EarlierValue"] | null;
+            /** Type */
+            type: string;
+            /** Views */
+            views?: components["schemas"]["DisagreementView"][] | null;
+        };
+        /** Decision */
+        Decision: {
+            /** Id */
+            id?: string | null;
+            /** Type */
+            type: string;
+            /** Value */
+            value?: string | null;
+        };
+        /** DecisionView */
+        DecisionView: {
+            /** Status */
+            status: string;
+            /** Value */
+            value: string | null;
+        };
+        /** DisagreementView */
+        DisagreementView: {
+            /** Person */
+            person: string;
+            quote: components["schemas"]["QuoteView"];
+            /** Value */
+            value: string;
+        };
+        /** DroppedView */
+        DroppedView: {
+            /** Field */
+            field: string;
+            /** Id */
+            id: string;
+            /** Reason */
+            reason: string;
+            /** Value */
+            value: string;
+        };
+        /** EarlierValue */
+        EarlierValue: {
+            /** Quotes */
+            quotes: components["schemas"]["QuoteView"][];
+            /** Value */
+            value: string;
+        };
         /** Engagement */
         Engagement: {
             /** Budget Aud */
@@ -128,6 +332,20 @@ export interface components {
             service_line: string;
             /** Stage */
             stage: string;
+        };
+        /** EngagementRecord */
+        EngagementRecord: {
+            /**
+             * Engagement Id
+             * Format: uuid
+             */
+            engagement_id: string;
+            /** Professionals */
+            professionals: components["schemas"]["ProfessionalView"][];
+            /** Sections */
+            sections: components["schemas"]["Section"][];
+            /** Values */
+            values: components["schemas"]["RecordValue"][];
         };
         /** EngagementSummary */
         EngagementSummary: {
@@ -157,6 +375,83 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HistoryEntry */
+        HistoryEntry: {
+            /** Source */
+            source: string | null;
+            /** Value */
+            value: string;
+        };
+        /** IntakeSummary */
+        IntakeSummary: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Filename */
+            filename: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Stage */
+            stage: string;
+        };
+        /** IntakeView */
+        IntakeView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Dropped */
+            dropped: components["schemas"]["DroppedView"][];
+            /** Dropped Count */
+            dropped_count: number;
+            /**
+             * Engagement Id
+             * Format: uuid
+             */
+            engagement_id: string;
+            /** Extraction Note */
+            extraction_note: string | null;
+            /** Extractor */
+            extractor: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            last: components["schemas"]["LastResult"];
+            /** Notice */
+            notice: string;
+            /** Queue */
+            queue: components["schemas"]["QueueItem"][];
+            /** Review Seconds */
+            review_seconds: number | null;
+            /** Sections */
+            sections: components["schemas"]["Section"][];
+            /** Source */
+            source: {
+                [key: string]: string;
+            };
+            /** Speakers */
+            speakers: components["schemas"]["SpeakerView"][];
+            /** Stage */
+            stage: string;
+            summary: components["schemas"]["Summary"] | null;
+            /** Turns */
+            turns: components["schemas"]["Turn"][];
+        };
+        /** LastResult */
+        LastResult: {
+            /** Ok */
+            ok: boolean;
+            /** Text */
+            text: string;
+        };
         /** NewBuyingOpportunity */
         NewBuyingOpportunity: {
             /** Budget Aud */
@@ -173,6 +468,248 @@ export interface components {
             mobile?: string | null;
             /** Name */
             name: string;
+        };
+        /** NewIntake */
+        NewIntake: {
+            /** Filename */
+            filename: string;
+            /**
+             * Notes
+             * @default false
+             */
+            notes: boolean;
+            /** Text */
+            text: string;
+        };
+        /** OnRecord */
+        OnRecord: {
+            /** Source */
+            source: string | null;
+            /** Value */
+            value: string;
+        };
+        /** ProfessionalView */
+        ProfessionalView: {
+            /** Name */
+            name: string;
+            /**
+             * Person Id
+             * Format: uuid
+             */
+            person_id: string;
+            /** Role */
+            role: string;
+        };
+        /** QueueItem */
+        QueueItem: {
+            /** Basis */
+            basis: string;
+            /** Blocked */
+            blocked: string | null;
+            /** Bucket */
+            bucket: string;
+            conflict: components["schemas"]["ConflictView"] | null;
+            current: components["schemas"]["OnRecord"] | null;
+            decision: components["schemas"]["DecisionView"] | null;
+            /** Due */
+            due: string | null;
+            /** Field */
+            field: string;
+            /** Field Label */
+            field_label: string;
+            /** Group */
+            group: string;
+            /** Id */
+            id: string;
+            /** Item */
+            item: string;
+            /** Note */
+            note: string | null;
+            /** Outcome */
+            outcome: string | null;
+            /** Owner Names */
+            owner_names: string[] | null;
+            /** Owners */
+            owners: string[] | null;
+            /** Quotes */
+            quotes: components["schemas"]["QuoteView"][];
+            /** Reasons */
+            reasons: components["schemas"]["Reason"][];
+            /** Section */
+            section: string;
+            /** Subject */
+            subject: string | null;
+            /** Value */
+            value: string;
+        };
+        /** QuoteView */
+        QuoteView: {
+            /** Cue */
+            cue: number;
+            /** Speaker */
+            speaker: string;
+            /** Speaker Name */
+            speaker_name: string;
+            /** Text */
+            text: string;
+            /** Time */
+            time: string;
+        };
+        /** Reason */
+        Reason: {
+            /** Code */
+            code: string;
+            /** Text */
+            text: string;
+            /** Tone */
+            tone: string;
+        };
+        /** RecordEntry */
+        RecordEntry: {
+            /** Basis */
+            basis: string | null;
+            /** Due */
+            due: string | null;
+            /** Field */
+            field: string;
+            /** History */
+            history: components["schemas"]["HistoryEntry"][];
+            /** Label */
+            label: string;
+            /** Outcome */
+            outcome: string | null;
+            /** Owners */
+            owners: string[] | null;
+            /** Quotes */
+            quotes: components["schemas"]["QuoteView"][];
+            /** Section */
+            section: string;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string | null;
+            /** Value */
+            value: string;
+        };
+        /** RecordValue */
+        RecordValue: {
+            /** Basis */
+            basis: string | null;
+            /** Earlier */
+            earlier: components["schemas"]["HistoryEntry"][];
+            /** Field */
+            field: string;
+            /** Label */
+            label: string;
+            /** Quotes */
+            quotes: components["schemas"]["QuoteView"][];
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Section */
+            section: string;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string | null;
+            /** Value */
+            value: string;
+        };
+        /** Section */
+        Section: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** SpeakerMatch */
+        SpeakerMatch: {
+            /** Guessed */
+            guessed: boolean;
+            /** Is New */
+            is_new: boolean;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Person Id */
+            person_id: string | null;
+            /** Role */
+            role: string;
+        };
+        /** SpeakerMatchRequest */
+        SpeakerMatchRequest: {
+            /**
+             * Is New
+             * @default false
+             */
+            is_new: boolean;
+            /** Kind */
+            kind: string | null;
+            /** Label */
+            label: string;
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /** Person Id */
+            person_id?: string | null;
+            /**
+             * Role
+             * @default
+             */
+            role: string;
+        };
+        /** SpeakerView */
+        SpeakerView: {
+            /** Label */
+            label: string;
+            match: components["schemas"]["SpeakerMatch"] | null;
+            /** Turn Count */
+            turn_count: number;
+            /** Unlocks */
+            unlocks: {
+                [key: string]: string;
+            };
+            /** Warning */
+            warning: string | null;
+        };
+        /** Summary */
+        Summary: {
+            /** Ask */
+            ask: components["schemas"]["QueueItem"][];
+            /** Entries */
+            entries: {
+                [key: string]: components["schemas"]["RecordEntry"][];
+            };
+            /** Not Covered */
+            not_covered: string[];
+            /** Rejected */
+            rejected: components["schemas"]["QueueItem"][];
+            /** To Discuss */
+            to_discuss: components["schemas"]["RecordEntry"][];
+            /** Undecided */
+            undecided: components["schemas"]["QueueItem"][];
+            /** Written */
+            written: number;
+        };
+        /** Turn */
+        Turn: {
+            /** N */
+            n: number;
+            /** Speaker */
+            speaker: string;
+            /** Text */
+            text: string;
+            /** Time */
+            time: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -298,6 +835,328 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChangeLogEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_intakes_api_engagements__engagement_id__intakes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_intake_api_engagements__engagement_id__intakes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewIntake"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_record_api_engagements__engagement_id__record_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngagementRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_intake_api_intakes__intake_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                intake_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_rest_api_intakes__intake_id__accept_rest_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                intake_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_api_intakes__intake_id__decisions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                intake_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Decision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    finish_api_intakes__intake_id__finish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                intake_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    match_speaker_api_intakes__intake_id__speakers_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                intake_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpeakerMatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_speakers_api_intakes__intake_id__speakers_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                intake_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_speakers_api_intakes__intake_id__speakers_edit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                intake_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeView"];
                 };
             };
             /** @description Validation Error */

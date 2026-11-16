@@ -54,3 +54,218 @@ class ChangeLogEntry(BaseModel):
     source: dict[str, Any]
     changed_by: str
     changed_at: datetime
+
+
+# ---- Discovery-call intake -----------------------------------------------------------------------
+
+
+class NewIntake(BaseModel):
+    filename: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    notes: bool = False
+
+
+class Turn(BaseModel):
+    n: int
+    time: str
+    speaker: str
+    text: str
+
+
+class SpeakerMatch(BaseModel):
+    kind: str
+    name: str
+    role: str
+    person_id: str | None
+    is_new: bool
+    guessed: bool
+
+
+class SpeakerView(BaseModel):
+    label: str
+    turn_count: int
+    match: SpeakerMatch | None
+    unlocks: dict[str, str]
+    warning: str | None
+
+
+class SpeakerMatchRequest(BaseModel):
+    label: str
+    kind: str | None
+    name: str = ""
+    role: str = ""
+    person_id: str | None = None
+    is_new: bool = False
+
+
+class QuoteView(BaseModel):
+    speaker: str
+    speaker_name: str
+    text: str
+    cue: int
+    time: str
+
+
+class EarlierValue(BaseModel):
+    value: str
+    quotes: list[QuoteView]
+
+
+class DisagreementView(BaseModel):
+    person: str
+    value: str
+    quote: QuoteView
+
+
+class ConflictView(BaseModel):
+    type: str
+    earlier: EarlierValue | None = None
+    views: list[DisagreementView] | None = None
+
+
+class Reason(BaseModel):
+    code: str
+    tone: str
+    text: str
+
+
+class OnRecord(BaseModel):
+    value: str
+    source: str | None
+
+
+class DecisionView(BaseModel):
+    status: str
+    value: str | None
+
+
+class QueueItem(BaseModel):
+    id: str
+    field: str
+    field_label: str
+    item: str
+    section: str
+    group: str
+    value: str
+    basis: str
+    subject: str | None
+    quotes: list[QuoteView]
+    conflict: ConflictView | None
+    owners: list[str] | None
+    owner_names: list[str] | None
+    due: str | None
+    outcome: str | None
+    note: str | None
+    bucket: str
+    reasons: list[Reason]
+    blocked: str | None
+    current: OnRecord | None
+    decision: DecisionView | None
+
+
+class DroppedView(BaseModel):
+    id: str
+    field: str
+    value: str
+    reason: str
+
+
+class HistoryEntry(BaseModel):
+    value: str
+    source: str | None
+
+
+class RecordEntry(BaseModel):
+    field: str
+    label: str
+    section: str
+    subject: str | None
+    value: str
+    status: str
+    basis: str | None
+    quotes: list[QuoteView]
+    source: str
+    owners: list[str] | None
+    due: str | None
+    outcome: str | None
+    history: list[HistoryEntry]
+
+
+class Summary(BaseModel):
+    entries: dict[str, list[RecordEntry]]
+    to_discuss: list[RecordEntry]
+    not_covered: list[str]
+    ask: list[QueueItem]
+    rejected: list[QueueItem]
+    undecided: list[QueueItem]
+    written: int
+
+
+class Section(BaseModel):
+    key: str
+    label: str
+
+
+class LastResult(BaseModel):
+    ok: bool
+    text: str
+
+
+class IntakeView(BaseModel):
+    id: UUID
+    engagement_id: UUID
+    stage: str
+    source: dict[str, str]
+    notice: str
+    extractor: str
+    extraction_note: str | None
+    turns: list[Turn]
+    speakers: list[SpeakerView]
+    dropped_count: int
+    dropped: list[DroppedView]
+    queue: list[QueueItem]
+    sections: list[Section]
+    summary: Summary | None
+    review_seconds: int | None
+    last: LastResult
+    created_at: datetime
+
+
+class IntakeSummary(BaseModel):
+    id: UUID
+    filename: str
+    stage: str
+    created_at: datetime
+
+
+class Decision(BaseModel):
+    type: str
+    id: str | None = None
+    value: str | None = None
+
+
+class RecordValue(BaseModel):
+    field: str
+    label: str
+    section: str
+    subject: str | None
+    value: str
+    status: str
+    basis: str | None
+    source: str
+    quotes: list[QuoteView]
+    earlier: list[HistoryEntry]
+    recorded_at: datetime
+
+
+class EngagementRecord(BaseModel):
+    engagement_id: UUID
+    sections: list[Section]
+    values: list[RecordValue]
+    professionals: list["ProfessionalView"]
+
+
+class ProfessionalView(BaseModel):
+    person_id: UUID
+    name: str
+    role: str

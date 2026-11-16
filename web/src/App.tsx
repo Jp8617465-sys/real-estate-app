@@ -1,6 +1,7 @@
 import { NavLink, Route, Routes } from "react-router-dom";
 import { EngagementList } from "./pages/EngagementList";
 import { EngagementPage } from "./pages/EngagementPage";
+import { IntakePage } from "./pages/IntakePage";
 import { NewOpportunity } from "./pages/NewOpportunity";
 
 export function App() {
@@ -21,6 +22,7 @@ export function App() {
           <Route path="/" element={<EngagementList />} />
           <Route path="/new" element={<NewOpportunity />} />
           <Route path="/engagements/:id" element={<EngagementPage />} />
+          <Route path="/intakes/:id" element={<IntakePage />} />
           <Route path="*" element={<p className="muted">Nothing here.</p>} />
         </Routes>
       </main>
