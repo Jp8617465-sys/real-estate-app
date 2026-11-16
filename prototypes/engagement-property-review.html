@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en-AU">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Property review · Buyers-agent prototype</title>
+<style>
+  :root{--ink:#203330;--muted:#586a65;--line:#dce5df;--paper:#f6f8f4;--accent:#17624f;--light:#e8f2ec;--warn:#775418;--danger:#913c34}
+  *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,sans-serif}main{max-width:1320px;margin:auto;padding:32px}h1{font:44px/1.1 Georgia,serif;letter-spacing:-1px;margin:12px 0}h2{font-size:20px;margin:0 0 16px}h3{font-size:16px;margin:0 0 10px}p{margin:8px 0 16px}a{color:var(--accent)}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:white;color:var(--ink);border-radius:7px;padding:9px 13px}button:hover{border-color:var(--accent);background:var(--light)}button:disabled{cursor:default;opacity:.45}button.primary,button[aria-pressed=true]{background:var(--accent);color:white;border-color:var(--accent)}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #b88a29;outline-offset:2px}input,select,textarea{width:100%;border:1px solid #bdcdc4;border-radius:6px;padding:9px;background:white;color:var(--ink)}textarea{min-height:65px;resize:vertical}label{display:block;font-size:13px;font-weight:650;margin:0 0 6px}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:1.6px;font-weight:750;color:var(--accent)}.muted,small{color:var(--muted)}small{font-size:12px}.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:23px;margin-bottom:20px}.notice{border-left:3px solid var(--accent);padding:10px 15px;background:var(--light);font-size:13px}.topline,.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.topline{justify-content:space-between}.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.context{display:grid;grid-template-columns:1fr 1.5fr;gap:20px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.brief{padding:14px 0 0;border-top:1px solid var(--line);margin-top:18px}.chip{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:3px 8px;font-size:12px;margin:3px 4px 3px 0;background:var(--paper)}.flag{font-size:12px;font-weight:700;border-radius:5px;padding:3px 8px;display:inline-block;background:#eef2ed}.flag.match{color:var(--accent);background:var(--light)}.flag.mismatch{color:var(--danger);background:#f9eeeb}.flag.unknown,.flag.conflict{color:var(--warn);background:#fbf4e4}.message{min-height:42px;padding:10px 14px;margin:16px 0;border:1px solid var(--line);border-radius:8px;background:white}.message.error{color:var(--danger);border-color:#d7a79f}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px;text-align:left}th{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);padding:10px 8px;border-bottom:1px solid var(--line)}td{padding:12px 8px;vertical-align:top;border-bottom:1px solid var(--line)}tr.selected{background:#f0f6f1}.property-button{border:0;padding:0;background:transparent;text-align:left;color:var(--accent);font-weight:700}.stat{font:28px/1 Georgia,serif;margin:0 8px 0 0}.stats{display:flex;gap:28px;padding:16px 0}.evidence{border-top:1px solid var(--line);padding:12px 0}.evidence-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}.evidence p{font-size:13px;margin:5px 0}.timeline{padding-left:20px;font-size:13px}.timeline li{margin:12px 0}.scenarios{margin:14px 0}.steps{display:grid;gap:9px;max-width:780px}.steps button{text-align:left}.section-note{margin:0 0 18px;font-size:13px}.footer{font-size:12px;color:var(--muted);padding:8px 0 24px}.source-list{padding-left:20px;font-size:13px}details summary{cursor:pointer;font-weight:650}details{margin-top:16px}.tag-remove{padding:0 4px;margin-left:4px;border:0;background:transparent;font-size:12px}.title-row{display:flex;align-items:start;justify-content:space-between;gap:12px}.state-summary{font-size:13px;margin:10px 0}.actions{margin-top:16px}.actions button{flex:1;min-width:90px}.divider{height:1px;background:var(--line);margin:18px 0}.empty{padding:18px;color:var(--muted);font-size:13px}@media(max-width:900px){main{padding:18px}.grid,.context{grid-template-columns:1fr}h1{font-size:35px}.panel{padding:18px}.formgrid{grid-template-columns:1fr}.stats{gap:15px}.full{grid-column:auto}}@media(prefers-reduced-motion:no-preference){/* Deliberately no animations. */}
+</style>
+<main>
+  <header>
+    <div class="topline"><span class="eyebrow">Buyers-agent workflow / throwaway prototype</span><button id="reset">Reset all examples</button></div>
+    <h1>A reason for every property.</h1>
+    <p class="muted">Review the brief, weigh the evidence, and keep the property’s story with the right client and engagement.</p>
+    <div class="notice"><strong>The question:</strong> Can an agent spot mismatches and missing evidence, choose an explained next action, and keep assessed, passed and missed properties attached to the correct engagement?<br><strong>Illustrative data only.</strong> All people, property details, notes and dates below are invented. Changes stay in memory and reset when you reload.</div>
+  </header>
+  <div id="message" class="message" role="status" aria-live="polite">Choose a property, or start a guided walkthrough below.</div>
+  <section class="panel" aria-labelledby="context-title">
+    <div class="eyebrow">01 / Client & buying engagement</div><h2 id="context-title">Start with the buyer’s context</h2>
+    <div class="context"><div><label for="client">Client / household</label><select id="client"></select></div><div><label for="engagement">Buying engagement</label><select id="engagement"></select></div></div>
+    <div id="brief" class="brief"></div>
+    <p class="section-note muted">Working language: “opportunity” means this buying engagement in the demo. A client can have several engagements. It does not define the sales pipeline.</p>
+  </section>
+  <div class="grid">
+    <section class="panel" aria-labelledby="list-title">
+      <div class="eyebrow">02 / Linked properties</div><h2 id="list-title">The complete consideration list</h2>
+      <p class="section-note muted">Passing or missing a property keeps it here. A property can appear in other engagements with a different decision.</p>
+      <div id="counts" class="stats"></div>
+      <div class="scroll"><table><thead><tr><th>Property</th><th>Brief evidence</th><th>Review / decision</th></tr></thead><tbody id="properties"></tbody></table></div>
+      <div class="divider"></div><label for="attach-property">Attach a property to this engagement</label><div class="row"><select id="attach-property" style="flex:1"></select><button id="attach">Attach property</button></div>
+    </section>
+    <section class="panel" aria-labelledby="evidence-title">
+      <div class="eyebrow">03 / Fit & evidence</div><div class="title-row"><h2 id="evidence-title"></h2><span class="chip">Synthetic candidate</span></div>
+      <div id="evidence"></div>
+      <div id="confirmation"></div>
+      <p class="section-note muted">Match = supported by the example evidence. Unknown or conflicting information stays unresolved. No automatic suitability or valuation decision is made.</p>
+    </section>
+    <section class="panel" aria-labelledby="decision-title">
+      <div class="eyebrow">04 / Assessment record</div><h2 id="decision-title">Make the next action explicit</h2>
+      <div id="record-state" class="state-summary"></div>
+      <div class="formgrid"><div class="full"><label for="reason">Reason / assessment note</label><textarea id="reason" placeholder="Why are you making this decision?"></textarea></div><div class="full"><label for="next-action">Next action</label><input id="next-action" placeholder="Who needs to do what next?"></div></div>
+      <div class="row actions"><button data-action="assess">Mark assessed</button><button data-action="Shortlisted" class="primary">Shortlist</button><button data-action="On hold">Hold</button><button data-action="Passed">Pass</button><button data-action="Missed">Missed</button></div>
+      <p class="section-note muted" style="margin-top:12px">Assessed records review progress. Passed = chose not to pursue. Missed = unavailable / lost out. Every decision needs a reason; a hold or unresolved shortlist also needs a next action.</p>
+      <div class="divider"></div><label for="tag">Tags for this property in this engagement</label><div class="row"><input id="tag" style="flex:1" placeholder="e.g. Inspect Saturday" maxlength="48"><button id="add-tag">Add tag</button></div><div id="tags"></div>
+      <details open><summary>Decision history for this engagement</summary><ol id="timeline" class="timeline"></ol></details>
+    </section>
+    <section class="panel" aria-labelledby="history-title">
+      <div class="eyebrow">05 / Lasting client history</div><h2 id="history-title">Across this client’s engagements</h2>
+      <p class="section-note muted">The client view rolls up engagement records. It does not turn a pass or a tag into a permanent label on the property.</p>
+      <div id="client-history"></div>
+    </section>
+  </div>
+  <section class="panel" aria-labelledby="walkthrough-title"><div class="eyebrow">Try the awkward cases</div><h2 id="walkthrough-title">Guided walkthroughs</h2><p class="section-note muted">Starting a walkthrough resets the sample. Each numbered button changes real demo state; free-play actions remain available.</p><div id="scenario-tabs" class="row scenarios" role="group" aria-label="Guided scenarios"></div><p id="scenario-description"></p><div id="scenario-steps" class="steps"></div></section>
+  <section class="panel"><details><summary>Assumptions & public reference sources</summary><p>James named Buywell Group as the agency he is modelling for. Buywell has not participated in this project. This is an independent exploration, with no Buywell clients, internal process or endorsement.</p><p>Working assumptions: one agent reviews a small set of candidate properties for an agreed brief. Status names, three-property review size, timing and tags are design hypotheses. Actual workload, tools, pain, value and adoption are unknown.</p><p>James believes Buywell uses HighLevel. That remains unconfirmed; no CRM is connected or selected. Nothing here assumes HighLevel stores the property assessment record.</p><ul class="source-list"><li><a href="https://www.buywellgroup.com.au/locations/buyers-agency-brisbane" target="_blank" rel="noreferrer">Buywell’s Brisbane service description</a> — public reference agency, not a pilot interview.</li><li><a href="https://rebaa.com.au/buyers-agents/" target="_blank" rel="noreferrer">REBAA’s service overview</a> — broad service scope.</li><li><a href="https://strandpropertybuyers.com.au/approach/" target="_blank" rel="noreferrer">STRAND’s approach</a> — published tracker, feedback and assessment practices at another agency.</li></ul><p>Review date: 6 November 2026. Public descriptions support exploration; they do not prove internal routines or legal requirements. The demo tests record behaviour, not provider integration or pilot usefulness.</p></details></section>
+  <div class="footer">Open this file directly. No account, connection or installation needed. Nothing is saved or sent. A deliberate pass and a missed property are separate outcomes; evidence of fit is a separate dimension again.</div>
+</main>
+<script>
+/* Portable prototype logic. No DOM, storage, network or clock dependencies. */
+const Review = (() => {
+  const clients = [{id:'hart',name:'Hart household'},{id:'singh',name:'Singh household'}];
+  const engagements = [
+    {id:'home',clientId:'hart',name:'Family home · active search',budget:1200000,beds:3,areas:['Indooroopilly','Taringa'],stepFree:true},
+    {id:'investment',clientId:'hart',name:'Investment · separate engagement',budget:950000,beds:2,areas:['Indooroopilly','Taringa','Mitchelton'],stepFree:false},
+    {id:'relocation',clientId:'singh',name:'Relocation · active search',budget:1250000,beds:2,areas:['Indooroopilly','Taringa','Mitchelton'],stepFree:false}
+  ];
+  const fact = (value,source,observed='6 Nov 2026, 09:00',retrieved='6 Nov 2026, 09:10') => ({value,source,observed,retrieved});
+  const newRecord = (engagementId,propertyId) => ({engagementId,propertyId,assessment:'To assess',decision:'Undecided',reason:'',nextAction:'',tags:[],history:[{action:'Attached',note:'Added to this engagement.',nextAction:''}]});
+  const initial = () => ({
+    clients:structuredClone(clients),engagements:structuredClone(engagements),activeEngagementId:'home',selectedPropertyId:'a',
+    properties:[
+      {id:'a',name:'Candidate A',area:'Indooroopilly',facts:{price:[fact(1150000,'Illustrative listing extract A')],beds:[fact(3,'Illustrative listing extract A')],area:[fact('Indooroopilly','Illustrative listing extract A')],stepFree:[]}},
+      {id:'b',name:'Candidate B',area:'Taringa',facts:{price:[fact(1090000,'Illustrative listing extract B')],beds:[fact(2,'Illustrative inspection note B')],area:[fact('Taringa','Illustrative listing extract B')],stepFree:[fact(true,'Illustrative inspection note B')]}},
+      {id:'c',name:'Candidate C',area:'Taringa',facts:{price:[fact(1180000,'Illustrative listing extract C')],beds:[fact(3,'Illustrative listing extract C')],area:[fact('Taringa','Illustrative listing extract C')],stepFree:[fact(true,'Illustrative selling-agent note C','5 Nov 2026, 16:00'),fact(false,'Illustrative inspection note C','6 Nov 2026, 09:00')]}}
+    ],
+    records:[newRecord('home','a'),newRecord('home','b'),newRecord('home','c'),{...newRecord('investment','a'),assessment:'Assessed',decision:'Passed',reason:'Over this engagement’s $950,000 budget.',history:[{action:'Passed',note:'Over this engagement’s $950,000 budget.',nextAction:''}]},newRecord('relocation','b')],message:'Choose a property, or start a guided walkthrough below.',error:false
+  });
+  const active = s => s.engagements.find(e=>e.id===s.activeEngagementId);
+  const record = s => s.records.find(r=>r.engagementId===s.activeEngagementId&&r.propertyId===s.selectedPropertyId);
+  const evaluate = (s,propertyId,engagementId=s.activeEngagementId) => {
+    const p=s.properties.find(p=>p.id===propertyId),e=s.engagements.find(e=>e.id===engagementId);
+    const criteria=[{key:'price',name:'Price guide',want:'At or below $'+e.budget.toLocaleString('en-AU'),check:v=>v<=e.budget},{key:'beds',name:'Bedrooms',want:e.beds+' or more',check:v=>v>=e.beds},{key:'area',name:'Location',want:e.areas.join(' / '),check:v=>e.areas.includes(v)}];
+    if(e.stepFree)criteria.push({key:'stepFree',name:'Step-free access',want:'Required',check:v=>v===true});
+    return criteria.map(c=>{const facts=p.facts[c.key],values=[...new Set(facts.map(f=>f.value))];return {...c,facts,status:!values.length?'Unknown':values.length>1?'Conflict':c.check(values[0])?'Match':'Mismatch'};});
+  };
+  const transition = (state,action) => {
+    const s=structuredClone(state);s.error=false;
+    const reject=message=>({...state,message,error:true});
+    const log=(r,label,note,nextAction='')=>r.history.push({action:label,note,nextAction});
+    if(action.type==='context'){
+      if(!s.engagements.some(e=>e.id===action.id))return reject('Choose a known engagement.');
+      s.activeEngagementId=action.id;s.selectedPropertyId=s.records.find(r=>r.engagementId===action.id)?.propertyId||s.properties[0].id;
+      s.message='Context changed. Each engagement keeps its own brief, tags and decisions.';return s;
+    }
+    if(action.type==='select'){
+      if(!s.records.some(r=>r.engagementId===s.activeEngagementId&&r.propertyId===action.id))return reject('Attach the property before reviewing it here.');
+      s.selectedPropertyId=action.id;s.message='Viewing the property’s assessment in this engagement.';return s;
+    }
+    if(action.type==='attach'){
+      if(!s.properties.some(p=>p.id===action.id))return reject('Choose a known property.');
+      if(s.records.some(r=>r.engagementId===s.activeEngagementId&&r.propertyId===action.id))return reject('Already attached to this engagement. No duplicate created.');
+      s.records.push(newRecord(s.activeEngagementId,action.id));s.selectedPropertyId=action.id;s.message='Property attached to this engagement and visible in the client history. Other engagements are unchanged.';return s;
+    }
+    const r=record(s);if(!r)return reject('Attach a property to this engagement first.');
+    if(action.type==='confirmAccess'){
+      if(s.selectedPropertyId!=='a')return reject('This illustrative confirmation belongs to Candidate A.');
+      if(s.properties.find(p=>p.id==='a').facts.stepFree.length)return reject('The example confirmation is already recorded.');
+      s.properties.find(p=>p.id==='a').facts.stepFree.push(fact(true,'Illustrative inspection confirmation A','6 Nov 2026, 10:00','6 Nov 2026, 10:05'));
+      log(r,'Evidence added','Step-free access confirmed in the illustrative inspection note.');s.message='Property evidence added. Fit now uses that evidence in every linked engagement; each engagement’s decision stays unchanged.';return s;
+    }
+    if(action.type==='tag'){
+      const tag=(action.value||'').trim();if(!tag)return reject('Enter a tag first.');
+      if(r.tags.some(t=>t.toLowerCase()===tag.toLowerCase()))return reject('This tag is already on this engagement’s assessment.');
+      r.tags.push(tag);log(r,'Tagged',tag);s.message='Tag added to this engagement’s property assessment.';return s;
+    }
+    if(action.type==='removeTag'){
+      r.tags=r.tags.filter(t=>t!==action.value);log(r,'Tag removed',action.value);s.message='Tag removed from this assessment only.';return s;
+    }
+    const reason=(action.reason||'').trim(),nextAction=(action.nextAction||'').trim();
+    if(action.type==='assess'){
+      if(!reason)return reject('Add an assessment note before marking the property assessed.');
+      r.assessment='Assessed';r.reason=reason;r.nextAction=nextAction;log(r,'Assessed',reason,nextAction);
+      s.message='Review recorded. “Assessed” does not mean the property fits or should be purchased.';return s;
+    }
+    if(action.type==='decide'){
+      if(!['Shortlisted','On hold','Passed','Missed'].includes(action.value))return reject('Choose a known decision.');
+      if(!reason)return reject('Record a reason before changing the property decision.');
+      const unresolved=evaluate(s,r.propertyId).some(c=>c.status!=='Match');
+      if((action.value==='On hold'||action.value==='Shortlisted'&&unresolved)&&!nextAction)return reject('A hold or unresolved shortlist needs a next action. Keep the evidence gap explicit.');
+      r.decision=action.value;r.reason=reason;r.nextAction=nextAction;log(r,action.value,reason,nextAction);
+      s.message=action.value==='Missed'?'Marked missed for this engagement. Earlier decisions and evidence are retained.':action.value==='Passed'?'Passed for this engagement. The property stays in the client history.':action.value==='Shortlisted'&&unresolved?'Shortlisted with unresolved evidence. This is an explicit agent decision, not an automatic match.':'Decision recorded with its reason.';return s;
+    }
+    return reject('Choose an available action.');
+  };
+  return Object.freeze({initial,active,record,evaluate,transition});
+})();
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=value=>'$'+value.toLocaleString('en-AU');
+let state=Review.initial(),scenarioIndex=null,stepIndex=0;
+const scenarios=[
+  {name:'Unknown → confirmed',description:'A property can be shortlisted while a requirement is unresolved, but only with a reason and follow-up. Later evidence changes fit without silently rewriting the decision.',setup:[],steps:[
+    {label:'1. Shortlist A with an access-confirmation follow-up',actions:[{type:'decide',value:'Shortlisted',reason:'Candidate fits the other must-haves; step-free access is not yet confirmed.',nextAction:'Ask the selling agent for an inspection confirming step-free access.'}]},
+    {label:'2. Record the illustrative access confirmation',actions:[{type:'confirmAccess'}]},
+    {label:'3. Mark the completed assessment',actions:[{type:'assess',reason:'All required criteria now have supporting example evidence.',nextAction:'Discuss Candidate A with the household.'}]}
+  ]},
+  {name:'Mismatch & missing reason',description:'Candidate B has two bedrooms against the family’s three-bedroom minimum. The mismatch is visible; a reasonless pass is refused. A deliberate pass keeps the property in history.',setup:[{type:'select',id:'b'}],steps:[
+    {label:'1. Try to pass without a reason — should be refused',actions:[{type:'decide',value:'Passed',reason:'',nextAction:''}]},
+    {label:'2. Record the bedroom mismatch and pass',actions:[{type:'assess',reason:'Inspection example shows two bedrooms against the required three.',nextAction:''},{type:'decide',value:'Passed',reason:'Two bedrooms does not meet the three-bedroom minimum.',nextAction:''}]}
+  ]},
+  {name:'Shortlisted → missed',description:'A promising property can become unavailable. “Missed” records that outcome without changing its fit evidence or erasing the earlier shortlist decision.',setup:[],steps:[
+    {label:'1. Confirm access and shortlist Candidate A',actions:[{type:'confirmAccess'},{type:'decide',value:'Shortlisted',reason:'All required criteria have supporting example evidence.',nextAction:'Arrange a client inspection.'}]},
+    {label:'2. Mark missed: sold to another buyer',actions:[{type:'decide',value:'Missed',reason:'Illustrative outcome: sold to another buyer before our client inspected.',nextAction:'Ask the selling agent for comparable new listings.'}]}
+  ]},
+  {name:'Same property, different engagement',description:'The Hart client has two engagements. Candidate A is already passed in the investment engagement because its budget is different. Attaching it to the Singh engagement creates a fresh assessment; tags and decisions do not follow it.',setup:[],steps:[
+    {label:'1. View the Hart investment engagement’s existing pass',actions:[{type:'context',id:'investment'}]},
+    {label:'2. Return to the Hart family search — still undecided',actions:[{type:'context',id:'home'}]},
+    {label:'3. Attach A to the Singh relocation engagement',actions:[{type:'context',id:'relocation'},{type:'attach',id:'a'}]},
+    {label:'4. Tag it for Singh’s Saturday inspection',actions:[{type:'tag',value:'Inspect Saturday'}]},
+    {label:'5. Return to Hart — no Singh tag or inherited pass',actions:[{type:'context',id:'home'}]}
+  ]},
+  {name:'Conflicting evidence',description:'Candidate C has contradictory step-free claims. Marking it assessed does not resolve the conflict. A hold carries a clear task to obtain reliable evidence.',setup:[{type:'select',id:'c'}],steps:[
+    {label:'1. Record the conflict and mark assessed',actions:[{type:'assess',reason:'Selling-agent and inspection examples disagree on step-free access.',nextAction:'Obtain a physical access check.'}]},
+    {label:'2. Hold pending confirmation — conflict stays visible',actions:[{type:'decide',value:'On hold',reason:'Step-free access is a must-have and the sources conflict.',nextAction:'Arrange an inspection to resolve the access discrepancy.'}]}
+  ]}
+];
+function send(action){const draft={reason:$('reason').value,nextAction:$('next-action').value,tag:$('tag').value};state=Review.transition(state,action);render();if(state.error){$('reason').value=draft.reason;$('next-action').value=draft.nextAction;$('tag').value=draft.tag;}}
+function statusHTML(status){return '<span class="flag '+status.toLowerCase()+'">'+escapeHTML(status)+'</span>';}
+function render(){
+  const e=Review.active(state),r=Review.record(state),p=state.properties.find(p=>p.id===state.selectedPropertyId),records=state.records.filter(r=>r.engagementId===e.id);
+  $('message').textContent=state.message;$('message').className='message'+(state.error?' error':'');
+  $('client').innerHTML=state.clients.map(c=>'<option value="'+c.id+'" '+(c.id===e.clientId?'selected':'')+'>'+escapeHTML(c.name)+'</option>').join('');
+  $('engagement').innerHTML=state.engagements.filter(x=>x.clientId===e.clientId).map(x=>'<option value="'+x.id+'" '+(x.id===e.id?'selected':'')+'>'+escapeHTML(x.name)+'</option>').join('');
+  $('brief').innerHTML='<strong>Must-haves for this engagement</strong><div><span class="chip">Budget ≤ '+money(e.budget)+'</span><span class="chip">'+e.beds+'+ bedrooms</span><span class="chip">'+escapeHTML(e.areas.join(' / '))+'</span>'+(e.stepFree?'<span class="chip">Step-free access required</span>':'')+'</div>';
+  $('counts').innerHTML=[['Linked',records.length],['Passed',records.filter(r=>r.decision==='Passed').length],['Missed',records.filter(r=>r.decision==='Missed').length]].map(([label,count])=>'<div><span class="stat">'+count+'</span><small>'+label+'</small></div>').join('');
+  $('properties').innerHTML=records.map(x=>{const property=state.properties.find(p=>p.id===x.propertyId),results=Review.evaluate(state,x.propertyId),flags=[...new Set(results.filter(c=>c.status!=='Match').map(c=>c.status))];return '<tr class="'+(x.propertyId===p.id?'selected':'')+'"><td><button class="property-button" data-property="'+property.id+'" '+(x.propertyId===p.id?'aria-current="true"':'')+'>'+escapeHTML(property.name)+'</button><br><small>'+escapeHTML(property.area)+'</small></td><td>'+(flags.length?flags.map(statusHTML).join(' '):statusHTML('Match'))+'</td><td>'+escapeHTML(x.assessment)+'<br><strong>'+escapeHTML(x.decision)+'</strong></td></tr>';}).join('');
+  $('attach-property').innerHTML=state.properties.map(property=>'<option value="'+property.id+'">'+escapeHTML(property.name+' · '+property.area)+(records.some(r=>r.propertyId===property.id)?' · already linked':'')+'</option>').join('');
+  $('evidence-title').textContent=p.name+' · '+p.area;
+  $('evidence').innerHTML=Review.evaluate(state,p.id).map(c=>'<div class="evidence"><div class="evidence-head"><strong>'+escapeHTML(c.name)+'</strong>'+statusHTML(c.status)+'</div><small>Brief: '+escapeHTML(c.want)+'</small>'+(!c.facts.length?'<p>No supporting evidence recorded.</p>':c.facts.map(f=>'<p><strong>'+escapeHTML(c.key==='price'?money(f.value):typeof f.value==='boolean'?(f.value?'Yes':'No'):f.value)+'</strong> · '+escapeHTML(f.source)+'<br><small>Observed: '+escapeHTML(f.observed)+'<br>Retrieved: '+escapeHTML(f.retrieved)+'</small></p>').join(''))+'</div>').join('');
+  $('confirmation').innerHTML=p.id==='a'&&!p.facts.stepFree.length?'<button id="confirm-access">Record example access confirmation</button><p><small>Adds a fictional inspection fact so you can explore the transition.</small></p>':'';
+  $('record-state').innerHTML='<strong>'+escapeHTML(state.clients.find(c=>c.id===e.clientId).name)+'</strong> / '+escapeHTML(e.name)+'<br>Review: <strong>'+escapeHTML(r?.assessment||'Not attached')+'</strong> · Decision: <strong>'+escapeHTML(r?.decision||'None')+'</strong>';
+  $('reason').value=r?.reason||'';$('next-action').value=r?.nextAction||'';
+  $('tags').innerHTML=r?.tags.map(tag=>'<span class="chip">'+escapeHTML(tag)+'<button class="tag-remove" data-remove-tag="'+escapeHTML(tag)+'" aria-label="Remove tag '+escapeHTML(tag)+'">×</button></span>').join('')||'<small>No tags on this engagement’s assessment.</small>';
+  $('timeline').innerHTML=r?.history.map((h,i)=>'<li><strong>'+(i+1)+'. '+escapeHTML(h.action)+'</strong><br>'+escapeHTML(h.note)+(h.nextAction?'<br><small>Next: '+escapeHTML(h.nextAction)+'</small>':'')+'</li>').join('')||'<li>No record yet.</li>';
+  $('client-history').innerHTML=state.engagements.filter(x=>x.clientId===e.clientId).map(eng=>'<h3>'+escapeHTML(eng.name)+'</h3>'+state.records.filter(x=>x.engagementId===eng.id).map(x=>{const property=state.properties.find(p=>p.id===x.propertyId);return '<div class="evidence"><button class="property-button" data-history-engagement="'+eng.id+'" data-history-property="'+property.id+'">'+escapeHTML(property.name+' · '+property.area)+'</button><p>'+escapeHTML(x.assessment)+' · <strong>'+escapeHTML(x.decision)+'</strong></p><p>'+escapeHTML(x.reason||'No decision reason recorded.')+(x.nextAction?'<br><small>Next: '+escapeHTML(x.nextAction)+'</small>':'')+'</p>'+x.tags.map(t=>'<span class="chip">'+escapeHTML(t)+'</span>').join('')+'<small>'+x.history.length+' history '+(x.history.length===1?'entry':'entries')+'</small></div>';}).join('')).join('');
+  renderScenarios();
+}
+function renderScenarios(){
+  $('scenario-tabs').innerHTML=scenarios.map((s,i)=>'<button data-scenario="'+i+'" aria-pressed="'+(scenarioIndex===i)+'">'+escapeHTML(s.name)+'</button>').join('');
+  const selected=scenarioIndex===null?null:scenarios[scenarioIndex];
+  $('scenario-description').textContent=selected?selected.description:'Choose a scenario to load its starting state. Or explore freely using the controls above.';
+  $('scenario-steps').innerHTML=selected?selected.steps.map((s,i)=>'<button data-step="'+i+'" '+(i!==stepIndex?'disabled':'')+'>'+(i<stepIndex?'✓ ':'')+escapeHTML(s.label)+'</button>').join('')+(stepIndex===selected.steps.length?'<p><strong>Walkthrough complete.</strong> Check the evidence, decision history and client context above. This is a technical demonstration, not a pilot verdict.</p>':''):'';
+}
+$('client').addEventListener('change',event=>send({type:'context',id:state.engagements.find(e=>e.clientId===event.target.value).id}));
+$('engagement').addEventListener('change',event=>send({type:'context',id:event.target.value}));
+$('reset').addEventListener('click',()=>{state=Review.initial();scenarioIndex=null;stepIndex=0;render();});
+$('attach').addEventListener('click',()=>send({type:'attach',id:$('attach-property').value}));
+$('add-tag').addEventListener('click',()=>{send({type:'tag',value:$('tag').value});if(!state.error)$('tag').value='';});
+document.addEventListener('click',event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.dataset.action){const action=button.dataset.action;send({type:action==='assess'?'assess':'decide',value:action,reason:$('reason').value,nextAction:$('next-action').value});}
+  if(button.dataset.property)send({type:'select',id:button.dataset.property});
+  if(button.id==='confirm-access')send({type:'confirmAccess'});
+  if(button.dataset.removeTag)send({type:'removeTag',value:button.dataset.removeTag});
+  if(button.dataset.historyEngagement){state=Review.transition(state,{type:'context',id:button.dataset.historyEngagement});send({type:'select',id:button.dataset.historyProperty});}
+  if(button.dataset.scenario!==undefined){scenarioIndex=Number(button.dataset.scenario);stepIndex=0;state=Review.initial();scenarios[scenarioIndex].setup.forEach(action=>state=Review.transition(state,action));state.message='Walkthrough loaded. Press each numbered step below, then inspect the state above.';render();}
+  if(button.dataset.step!==undefined){const i=Number(button.dataset.step);if(i!==stepIndex)return;scenarios[scenarioIndex].steps[i].actions.forEach(action=>state=Review.transition(state,action));stepIndex++;render();}
+});
+render();
+</script>
+</html>
