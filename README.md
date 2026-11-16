@@ -22,6 +22,13 @@ The first tracer bullet is a local app: a Python back end and a React front end 
 
 Needs macOS with Homebrew, `uv`, `postgresql@17` and Node 20 (`brew install uv postgresql@17 node@20`). After changing the API, run `make generate-client`.
 
+## Run the prototype
+
+    make setup   # pinned dependencies, local PostgreSQL, database, migrations, built front end
+    make run     # http://127.0.0.1:8000
+
+Upload a synthetic call from testdata/intake-consultations (or paste notes), match speakers, review, finish. `make score-keys` replays the approved answer keys through the scorer at no cost; a paid scored run is described in docs/handoffs/2026-11-16-intake-end-to-end.md.
+
 ## Verification
 
     make check

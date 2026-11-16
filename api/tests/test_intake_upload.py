@@ -231,3 +231,18 @@ def test_an_intake_belongs_to_its_agency(client: TestClient, app_client: ClientF
 
     assert elsewhere.get(f"/api/intakes/{intake['id']}").status_code == 404
     assert app_client(None).get(f"/api/intakes/{intake['id']}").status_code == 403
+
+
+def test_the_scripted_extractor_replays_the_answer_key_for_every_other_synthetic_transcript(
+    client: TestClient,
+) -> None:
+    for prefix in ("01", "02", "04", "05", "06", "07"):
+        intake = upload(client, new_opportunity(client), prefix)
+
+        assert intake["extraction_note"] is None, prefix
+        assert intake["dropped_count"] == 0, prefix
+        assert any(
+            "become buyer requirements or profile facts" in s["unlocks"]["household"]
+            and not s["unlocks"]["household"].startswith("As a client: 0 ")
+            for s in intake["speakers"]
+        ), prefix

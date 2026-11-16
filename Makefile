@@ -1,4 +1,4 @@
-.PHONY: setup run check check-factory generate-client prototype
+.PHONY: setup run check check-factory generate-client prototype score-keys
 
 PG_BIN := $(shell brew --prefix postgresql@17 2>/dev/null)/bin
 export PATH := $(PG_BIN):$(PATH)
@@ -36,3 +36,8 @@ generate-client:
 # Working hybrid. Open http://127.0.0.1:8765/buyers-desk-hybrid.html
 prototype:
 	python3 -m http.server 8765 --bind 127.0.0.1 --directory prototypes
+
+# No cost: replay James's approved answer keys through the scorer. It must pass the bar.
+# A paid run for one model: cd api && uv run python -m buyers_desk.scored_run --model claude-sonnet-5-5
+score-keys:
+	cd api && uv run python -m buyers_desk.scored_run --replay-keys

@@ -37,12 +37,17 @@ class ScriptedExtractor:
 
     name = "scripted replay"
 
-    def __init__(self, directories: Sequence[Path] = (REPLAYS,)) -> None:
+    def __init__(
+        self, directories: Sequence[Path] = (REPLAYS,), fallbacks: dict[str, list[dict[str, Any]]] | None = None
+    ) -> None:
+        """`fallbacks` (fingerprint -> suggestions) fill in only for transcripts with no recorded file."""
         self._replays: dict[str, list[dict[str, Any]]] = {}
         for directory in directories:
             for path in sorted(directory.glob("*.json")):
                 data = json.loads(path.read_text(encoding="utf-8"))
                 self._replays[data["fingerprint"]] = data["suggestions"]
+        for print_, suggestions in (fallbacks or {}).items():
+            self._replays.setdefault(print_, suggestions)
 
     def extract(self, request: ExtractionRequest) -> list[dict[str, Any]]:
         found = self._replays.get(fingerprint(request.turns), [])
