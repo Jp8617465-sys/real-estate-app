@@ -11,7 +11,7 @@ export function EngagementList() {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    api.GET("/api/engagements").then(({ data }) => {
+    api.GET("/api/v1/engagements").then(({ data }) => {
       if (data) setEngagements(data);
       else setFailed(true);
     });

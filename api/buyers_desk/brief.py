@@ -14,7 +14,7 @@ from buyers_desk.intakes import _budget_from, _money
 from buyers_desk.people import _log_change
 from buyers_desk.schemas import BriefValue, BriefView, BriefField, BriefSection, NewBriefValue
 
-router = APIRouter(prefix="/api/engagements", tags=["brief"])
+router = APIRouter(prefix="/api/v1/engagements", tags=["brief"])
 
 BRIEF_SECTIONS = ("profile", "brief", "intake")
 MANUAL = {"kind": "entered_by_hand", "label": "Entered by hand"}

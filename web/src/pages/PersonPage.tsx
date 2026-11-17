@@ -24,17 +24,17 @@ export function PersonPage() {
   const [missing, setMissing] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await api.GET("/api/people/{person_id}", { params: { path: { person_id: id } } });
+    const { data } = await api.GET("/api/v1/people/{person_id}", { params: { path: { person_id: id } } });
     if (!data) return setMissing(true);
     setPerson(data);
     setEdit({ name: data.name, email: data.email ?? "", mobile: data.mobile ?? "" });
     const loaded: Record<string, Household> = {};
     for (const h of data.households) {
-      const r = await api.GET("/api/households/{household_id}", { params: { path: { household_id: h.household_id } } });
+      const r = await api.GET("/api/v1/households/{household_id}", { params: { path: { household_id: h.household_id } } });
       if (r.data) loaded[h.household_id] = r.data;
     }
     setHouseholds(loaded);
-    const all = await api.GET("/api/people", { params: { query: {} } });
+    const all = await api.GET("/api/v1/people", { params: { query: { limit: 200 } } });
     if (all.data) setEveryone(all.data.filter((p) => p.id !== id));
   }, [id]);
 
@@ -47,7 +47,7 @@ export function PersonPage() {
 
   const save = async (confirm: boolean) => {
     setMessage(null);
-    const { error } = await api.PATCH("/api/people/{person_id}", {
+    const { error } = await api.PATCH("/api/v1/people/{person_id}", {
       params: { path: { person_id: id } },
       body: { name: edit.name, email: edit.email || null, mobile: edit.mobile || null, confirm_duplicate: confirm },
     });
@@ -60,12 +60,12 @@ export function PersonPage() {
 
   const newHousehold = async () => {
     const surname = person.name.split(" ").slice(-1)[0];
-    await api.POST("/api/households", { body: { name: `${surname} household`, member_ids: [id] } });
+    await api.POST("/api/v1/households", { body: { name: `${surname} household`, member_ids: [id] } });
     await load();
   };
 
   const openOpportunity = async (householdId: string) => {
-    const { data, error } = await api.POST("/api/households/{household_id}/opportunities", {
+    const { data, error } = await api.POST("/api/v1/households/{household_id}/opportunities", {
       params: { path: { household_id: householdId } },
       body: {},
     });
@@ -74,7 +74,7 @@ export function PersonPage() {
   };
 
   const addRelationship = async () => {
-    const { error } = await api.POST("/api/people/{person_id}/relationships", {
+    const { error } = await api.POST("/api/v1/people/{person_id}/relationships", {
       params: { path: { person_id: id } },
       body: { other_person_id: rel.other, kind: rel.kind },
     });
@@ -84,7 +84,7 @@ export function PersonPage() {
   };
 
   const addMember = async (householdId: string, personId: string) => {
-    await api.POST("/api/households/{household_id}/members", {
+    await api.POST("/api/v1/households/{household_id}/members", {
       params: { path: { household_id: householdId } },
       body: { person_id: personId },
     });
@@ -92,7 +92,7 @@ export function PersonPage() {
   };
 
   const endMember = async (householdId: string, personId: string) => {
-    await api.POST("/api/households/{household_id}/members/{person_id}/end", {
+    await api.POST("/api/v1/households/{household_id}/members/{person_id}/end", {
       params: { path: { household_id: householdId, person_id: personId } },
       body: {},
     });

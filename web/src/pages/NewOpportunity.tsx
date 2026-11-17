@@ -25,7 +25,7 @@ export function NewOpportunity() {
     }
     setSaving(true);
     setError(null);
-    const { data } = await api.POST("/api/engagements", {
+    const { data } = await api.POST("/api/v1/engagements", {
       body: {
         household_name: text("household") ?? "",
         client: { name: text("client") ?? "", email, mobile },

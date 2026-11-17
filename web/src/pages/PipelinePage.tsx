@@ -9,7 +9,7 @@ type Board = components["schemas"]["Board"];
 export function PipelinePage() {
   const [board, setBoard] = useState<Board | null>(null);
   useEffect(() => {
-    api.GET("/api/pipeline").then(({ data }) => data && setBoard(data));
+    api.GET("/api/v1/pipeline").then(({ data }) => data && setBoard(data));
   }, []);
   if (!board) return null;
   const shown = board.columns.filter((c) => c.group !== "closed" || c.engagements.length > 0);

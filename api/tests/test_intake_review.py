@@ -57,7 +57,7 @@ def test_accepting_the_rest_applies_only_the_ready_rows_and_touches_nothing_that
     before = read(client, intake_id)
     ready, needing_decision = ids(before, "ready"), ids(before, "decide")
 
-    after = client.post(f"/api/intakes/{intake_id}/accept-rest").json()
+    after = client.post(f"/api/v1/intakes/{intake_id}/accept-rest").json()
 
     assert ids(after, "decide") == needing_decision
     assert sorted(ids(after, "done")) == sorted(ready)
@@ -95,14 +95,14 @@ def test_speakers_lock_at_the_first_decision_and_unlock_when_it_is_undone(client
     _, intake_id = open_review_03(client)
     decided(client, intake_id, "accept", "s-pets")
 
-    locked = client.post(f"/api/intakes/{intake_id}/speakers/edit")
+    locked = client.post(f"/api/v1/intakes/{intake_id}/speakers/edit")
     assert locked.status_code == 409 and "locked" in locked.json()["detail"]
     assert client.put(
-        f"/api/intakes/{intake_id}/speakers", json={"label": DAN, "kind": "household", "name": "Dan"}
+        f"/api/v1/intakes/{intake_id}/speakers", json={"label": DAN, "kind": "household", "name": "Dan"}
     ).status_code == 409
 
     decided(client, intake_id, "undo", "s-pets")
-    assert client.post(f"/api/intakes/{intake_id}/speakers/edit").status_code == 200
+    assert client.post(f"/api/v1/intakes/{intake_id}/speakers/edit").status_code == 200
 
 
 def test_a_row_cannot_be_decided_twice_without_undoing_it(client: TestClient) -> None:
@@ -137,7 +137,7 @@ def test_finishing_shows_the_applied_brief_what_the_call_did_not_cover_and_next_
     client: TestClient,
 ) -> None:
     _, intake_id = open_review_03(client)
-    client.post(f"/api/intakes/{intake_id}/accept-rest")
+    client.post(f"/api/v1/intakes/{intake_id}/accept-rest")
 
     result = finish(client, intake_id)["summary"]
 
@@ -153,7 +153,7 @@ def test_properties_mentioned_keep_their_outcome_and_a_partial_address_stays_par
     client: TestClient,
 ) -> None:
     engagement_id, intake_id = open_review_03(client)
-    client.post(f"/api/intakes/{intake_id}/accept-rest")
+    client.post(f"/api/v1/intakes/{intake_id}/accept-rest")
     finish(client, intake_id)
 
     properties = {v["value"] for v in record(client, engagement_id) if v["section"] == "properties"}
@@ -167,7 +167,7 @@ def test_every_accepted_value_has_a_change_log_entry_with_its_source(client: Tes
     decided(client, intake_id, "accept", "s-pets")
     finish(client, intake_id)
 
-    entries = [c for c in client.get(f"/api/engagements/{engagement_id}/changes").json() if c["field"] == "pets"]
+    entries = [c for c in client.get(f"/api/v1/engagements/{engagement_id}/changes").json() if c["field"] == "pets"]
 
     assert len(entries) == 1
     source = entries[0]["source"]
@@ -195,7 +195,7 @@ def test_a_finished_review_cannot_be_decided_again(client: TestClient) -> None:
     finish(client, intake_id)
 
     assert decide(client, intake_id, "accept", "s-pets").status_code == 409
-    assert client.post(f"/api/intakes/{intake_id}/finish").status_code == 409
+    assert client.post(f"/api/v1/intakes/{intake_id}/finish").status_code == 409
 
 
 def test_decisions_and_the_applied_record_survive_a_restart(app_client: ClientFactory) -> None:
@@ -216,13 +216,13 @@ def test_a_new_household_member_and_the_professional_are_recorded_when_the_revie
     client: TestClient,
 ) -> None:
     engagement_id, intake_id = open_review_03(client)
-    assert [c["name"] for c in client.get(f"/api/engagements/{engagement_id}").json()["clients"]] == ["Tash Kumar"]
+    assert [c["name"] for c in client.get(f"/api/v1/engagements/{engagement_id}").json()["clients"]] == ["Tash Kumar"]
 
     finish(client, intake_id)
 
-    names = [c["name"] for c in client.get(f"/api/engagements/{engagement_id}").json()["clients"]]
+    names = [c["name"] for c in client.get(f"/api/v1/engagements/{engagement_id}").json()["clients"]]
     assert names == ["Tash Kumar", "Rhys Gallagher"]
-    professionals = client.get(f"/api/engagements/{engagement_id}/record").json()["professionals"]
+    professionals = client.get(f"/api/v1/engagements/{engagement_id}/record").json()["professionals"]
     assert [(p["name"], p["role"]) for p in professionals] == [("Dan", "Mortgage broker")]
 
 

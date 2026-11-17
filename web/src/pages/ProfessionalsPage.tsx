@@ -18,7 +18,7 @@ export function ProfessionalsPage() {
   const [dup, setDup] = useState<ReturnType<typeof duplicateOf>>(null);
 
   const load = () =>
-    api.GET("/api/professionals", { params: { query: { q: q || undefined, kind: kind || undefined } } }).then(({ data }) => data && setPros(data));
+    api.GET("/api/v1/professionals", { params: { query: { q: q || undefined, kind: kind || undefined } } }).then(({ data }) => data && setPros(data));
   useEffect(() => {
     const t = setTimeout(() => void load(), 150);
     return () => clearTimeout(t);
@@ -26,7 +26,7 @@ export function ProfessionalsPage() {
   }, [q, kind]);
 
   const add = async (confirm: boolean) => {
-    const { data, error } = await api.POST("/api/professionals", {
+    const { data, error } = await api.POST("/api/v1/professionals", {
       body: { name: form.name.trim(), kind: form.kind, firm: form.firm || null, email: form.email || null, mobile: form.mobile || null, confirm_duplicate: confirm },
     });
     const d = duplicateOf(error);

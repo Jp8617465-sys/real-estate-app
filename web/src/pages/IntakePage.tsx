@@ -35,11 +35,11 @@ export function IntakePage() {
   const path = { params: { path: { intake_id: id } } };
 
   useEffect(() => {
-    api.GET("/api/intakes/{intake_id}", path).then(({ data }) => {
+    api.GET("/api/v1/intakes/{intake_id}", path).then(({ data }) => {
       if (!data) return setMissing(true);
       setIntake(data);
       api
-        .GET("/api/engagements/{engagement_id}", { params: { path: { engagement_id: data.engagement_id } } })
+        .GET("/api/v1/engagements/{engagement_id}", { params: { path: { engagement_id: data.engagement_id } } })
         .then((r) => r.data && setClients(r.data.clients));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,7 +59,7 @@ export function IntakePage() {
 
   const decide = (type: string, itemId?: string, value?: string) =>
     api
-      .POST("/api/intakes/{intake_id}/decisions", { ...path, body: { type, id: itemId, value } })
+      .POST("/api/v1/intakes/{intake_id}/decisions", { ...path, body: { type, id: itemId, value } })
       .then(apply);
 
   return (
@@ -133,7 +133,7 @@ function Speakers(props: {
         <span className="muted">{unmatched ? `${unmatched} speaker${unmatched === 1 ? "" : "s"} not matched yet` : "Every speaker is matched."}</span>
         <button
           className="button primary"
-          onClick={() => api.POST("/api/intakes/{intake_id}/speakers/confirm", path).then(apply)}
+          onClick={() => api.POST("/api/v1/intakes/{intake_id}/speakers/confirm", path).then(apply)}
         >
           Confirm speakers and show suggestions
         </button>
@@ -159,11 +159,11 @@ function SpeakerCard(props: {
     const k = next.kind ?? kind;
     if (!k) {
       return api
-        .PUT("/api/intakes/{intake_id}/speakers", { ...path, body: { label: speaker.label, kind: null, name: "", role: "", is_new: false } })
+        .PUT("/api/v1/intakes/{intake_id}/speakers", { ...path, body: { label: speaker.label, kind: null, name: "", role: "", is_new: false } })
         .then(apply);
     }
     return api
-      .PUT("/api/intakes/{intake_id}/speakers", {
+      .PUT("/api/v1/intakes/{intake_id}/speakers", {
         ...path,
         body: {
           label: speaker.label,
@@ -390,7 +390,7 @@ function Review(props: {
               Stated, unconflicted, and said by the right person. Each row shows its value beside its quote and has its
               own reject. Items above are not touched.
             </p>
-            <button className="button primary" onClick={() => api.POST("/api/intakes/{intake_id}/accept-rest", path).then(apply)}>
+            <button className="button primary" onClick={() => api.POST("/api/v1/intakes/{intake_id}/accept-rest", path).then(apply)}>
               Accept all {ready.length} ready rows
             </button>
           </div>
@@ -434,10 +434,10 @@ function Review(props: {
         </details>
       )}
       <div className="foot">
-        <button className="button" onClick={() => api.POST("/api/intakes/{intake_id}/speakers/edit", path).then(apply)}>
+        <button className="button" onClick={() => api.POST("/api/v1/intakes/{intake_id}/speakers/edit", path).then(apply)}>
           Back to speakers
         </button>
-        <button className="button primary" onClick={() => api.POST("/api/intakes/{intake_id}/finish", path).then(apply)}>
+        <button className="button primary" onClick={() => api.POST("/api/v1/intakes/{intake_id}/finish", path).then(apply)}>
           Finish the review
         </button>
       </div>

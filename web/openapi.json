@@ -3917,17 +3917,72 @@
         "title": "ValidationError",
         "type": "object"
       }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      }
     }
   },
   "info": {
+    "description": "The buyers-agent product API, version 1. Resources are agency-scoped. Lists take `limit` (1 to 200) and `offset` and return `X-Total-Count`. Creates accept an `Idempotency-Key` header. Errors are `{detail, code}`. When tokens are configured, send `Authorization: Bearer <token>`.",
     "title": "Buyers desk API",
-    "version": "0.1.0"
+    "version": "1.0.0"
   },
   "openapi": "3.1.0",
   "paths": {
-    "/api/engagements": {
+    "/api/v1": {
       "get": {
-        "operationId": "list_engagements_api_engagements_get",
+        "operationId": "describe_api_v1_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Describe Api V1 Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Describe",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/v1/engagements": {
+      "get": {
+        "operationId": "list_engagements_api_v1_engagements_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -3936,12 +3991,22 @@
                   "items": {
                     "$ref": "#/components/schemas/EngagementSummary"
                   },
-                  "title": "Response List Engagements Api Engagements Get",
+                  "title": "Response List Engagements Api V1 Engagements Get",
                   "type": "array"
                 }
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "List Engagements",
@@ -3950,7 +4015,7 @@
         ]
       },
       "post": {
-        "operationId": "create_buying_opportunity_api_engagements_post",
+        "operationId": "create_buying_opportunity_api_v1_engagements_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3989,9 +4054,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}": {
+    "/api/v1/engagements/{engagement_id}": {
       "get": {
-        "operationId": "get_engagement_api_engagements__engagement_id__get",
+        "operationId": "get_engagement_api_v1_engagements__engagement_id__get",
         "parameters": [
           {
             "in": "path",
@@ -4032,9 +4097,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/brief": {
+    "/api/v1/engagements/{engagement_id}/brief": {
       "get": {
-        "operationId": "get_brief_api_engagements__engagement_id__brief_get",
+        "operationId": "get_brief_api_v1_engagements__engagement_id__brief_get",
         "parameters": [
           {
             "in": "path",
@@ -4075,9 +4140,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/brief/values/{value_id}": {
+    "/api/v1/engagements/{engagement_id}/brief/values/{value_id}": {
       "delete": {
-        "operationId": "remove_value_api_engagements__engagement_id__brief_values__value_id__delete",
+        "operationId": "remove_value_api_v1_engagements__engagement_id__brief_values__value_id__delete",
         "parameters": [
           {
             "in": "path",
@@ -4128,9 +4193,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/brief/{field_id}": {
+    "/api/v1/engagements/{engagement_id}/brief/{field_id}": {
       "put": {
-        "operationId": "set_value_api_engagements__engagement_id__brief__field_id__put",
+        "operationId": "set_value_api_v1_engagements__engagement_id__brief__field_id__put",
         "parameters": [
           {
             "in": "path",
@@ -4190,9 +4255,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/brief/{field_id}/values": {
+    "/api/v1/engagements/{engagement_id}/brief/{field_id}/values": {
       "post": {
-        "operationId": "add_value_api_engagements__engagement_id__brief__field_id__values_post",
+        "operationId": "add_value_api_v1_engagements__engagement_id__brief__field_id__values_post",
         "parameters": [
           {
             "in": "path",
@@ -4252,10 +4317,10 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/changes": {
+    "/api/v1/engagements/{engagement_id}/changes": {
       "get": {
         "description": "Every logged change to the values on this engagement's record, oldest first.",
-        "operationId": "get_changes_api_engagements__engagement_id__changes_get",
+        "operationId": "get_changes_api_v1_engagements__engagement_id__changes_get",
         "parameters": [
           {
             "in": "path",
@@ -4276,7 +4341,7 @@
                   "items": {
                     "$ref": "#/components/schemas/ChangeLogEntry"
                   },
-                  "title": "Response Get Changes Api Engagements  Engagement Id  Changes Get",
+                  "title": "Response Get Changes Api V1 Engagements  Engagement Id  Changes Get",
                   "type": "array"
                 }
               }
@@ -4300,9 +4365,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/intakes": {
+    "/api/v1/engagements/{engagement_id}/intakes": {
       "get": {
-        "operationId": "list_intakes_api_engagements__engagement_id__intakes_get",
+        "operationId": "list_intakes_api_v1_engagements__engagement_id__intakes_get",
         "parameters": [
           {
             "in": "path",
@@ -4323,7 +4388,7 @@
                   "items": {
                     "$ref": "#/components/schemas/IntakeSummary"
                   },
-                  "title": "Response List Intakes Api Engagements  Engagement Id  Intakes Get",
+                  "title": "Response List Intakes Api V1 Engagements  Engagement Id  Intakes Get",
                   "type": "array"
                 }
               }
@@ -4347,7 +4412,7 @@
         ]
       },
       "post": {
-        "operationId": "create_intake_api_engagements__engagement_id__intakes_post",
+        "operationId": "create_intake_api_v1_engagements__engagement_id__intakes_post",
         "parameters": [
           {
             "in": "path",
@@ -4398,9 +4463,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/professionals": {
+    "/api/v1/engagements/{engagement_id}/professionals": {
       "get": {
-        "operationId": "engagement_professionals_api_engagements__engagement_id__professionals_get",
+        "operationId": "engagement_professionals_api_v1_engagements__engagement_id__professionals_get",
         "parameters": [
           {
             "in": "path",
@@ -4441,7 +4506,7 @@
         ]
       },
       "post": {
-        "operationId": "link_professional_api_engagements__engagement_id__professionals_post",
+        "operationId": "link_professional_api_v1_engagements__engagement_id__professionals_post",
         "parameters": [
           {
             "in": "path",
@@ -4492,9 +4557,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/professionals/{person_id}/end": {
+    "/api/v1/engagements/{engagement_id}/professionals/{person_id}/end": {
       "post": {
-        "operationId": "end_link_api_engagements__engagement_id__professionals__person_id__end_post",
+        "operationId": "end_link_api_v1_engagements__engagement_id__professionals__person_id__end_post",
         "parameters": [
           {
             "in": "path",
@@ -4545,9 +4610,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/properties": {
+    "/api/v1/engagements/{engagement_id}/properties": {
       "get": {
-        "operationId": "list_engagement_properties_api_engagements__engagement_id__properties_get",
+        "operationId": "list_engagement_properties_api_v1_engagements__engagement_id__properties_get",
         "parameters": [
           {
             "in": "path",
@@ -4604,7 +4669,7 @@
         ]
       },
       "post": {
-        "operationId": "attach_property_api_engagements__engagement_id__properties_post",
+        "operationId": "attach_property_api_v1_engagements__engagement_id__properties_post",
         "parameters": [
           {
             "in": "path",
@@ -4655,9 +4720,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/properties/{ep_id}": {
+    "/api/v1/engagements/{engagement_id}/properties/{ep_id}": {
       "patch": {
-        "operationId": "edit_engagement_property_api_engagements__engagement_id__properties__ep_id__patch",
+        "operationId": "edit_engagement_property_api_v1_engagements__engagement_id__properties__ep_id__patch",
         "parameters": [
           {
             "in": "path",
@@ -4718,9 +4783,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/properties/{ep_id}/checks": {
+    "/api/v1/engagements/{engagement_id}/properties/{ep_id}/checks": {
       "put": {
-        "operationId": "set_check_api_engagements__engagement_id__properties__ep_id__checks_put",
+        "operationId": "set_check_api_v1_engagements__engagement_id__properties__ep_id__checks_put",
         "parameters": [
           {
             "in": "path",
@@ -4781,9 +4846,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/record": {
+    "/api/v1/engagements/{engagement_id}/record": {
       "get": {
-        "operationId": "get_record_api_engagements__engagement_id__record_get",
+        "operationId": "get_record_api_v1_engagements__engagement_id__record_get",
         "parameters": [
           {
             "in": "path",
@@ -4824,9 +4889,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/stage": {
+    "/api/v1/engagements/{engagement_id}/stage": {
       "post": {
-        "operationId": "move_stage_api_engagements__engagement_id__stage_post",
+        "operationId": "move_stage_api_v1_engagements__engagement_id__stage_post",
         "parameters": [
           {
             "in": "path",
@@ -4877,9 +4942,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/stage-history": {
+    "/api/v1/engagements/{engagement_id}/stage-history": {
       "get": {
-        "operationId": "stage_history_api_engagements__engagement_id__stage_history_get",
+        "operationId": "stage_history_api_v1_engagements__engagement_id__stage_history_get",
         "parameters": [
           {
             "in": "path",
@@ -4900,7 +4965,7 @@
                   "items": {
                     "$ref": "#/components/schemas/ChangeLogEntry"
                   },
-                  "title": "Response Stage History Api Engagements  Engagement Id  Stage History Get",
+                  "title": "Response Stage History Api V1 Engagements  Engagement Id  Stage History Get",
                   "type": "array"
                 }
               }
@@ -4924,10 +4989,10 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/tasks/from-actions": {
+    "/api/v1/engagements/{engagement_id}/tasks/from-actions": {
       "post": {
         "description": "Turn the next actions accepted from calls into tasks, once each.",
-        "operationId": "tasks_from_next_actions_api_engagements__engagement_id__tasks_from_actions_post",
+        "operationId": "tasks_from_next_actions_api_v1_engagements__engagement_id__tasks_from_actions_post",
         "parameters": [
           {
             "in": "path",
@@ -4948,7 +5013,7 @@
                   "items": {
                     "$ref": "#/components/schemas/TaskView"
                   },
-                  "title": "Response Tasks From Next Actions Api Engagements  Engagement Id  Tasks From Actions Post",
+                  "title": "Response Tasks From Next Actions Api V1 Engagements  Engagement Id  Tasks From Actions Post",
                   "type": "array"
                 }
               }
@@ -4972,9 +5037,9 @@
         ]
       }
     },
-    "/api/engagements/{engagement_id}/timeline": {
+    "/api/v1/engagements/{engagement_id}/timeline": {
       "get": {
-        "operationId": "timeline_api_engagements__engagement_id__timeline_get",
+        "operationId": "timeline_api_v1_engagements__engagement_id__timeline_get",
         "parameters": [
           {
             "in": "path",
@@ -4995,7 +5060,7 @@
                   "items": {
                     "$ref": "#/components/schemas/TimelineEvent"
                   },
-                  "title": "Response Timeline Api Engagements  Engagement Id  Timeline Get",
+                  "title": "Response Timeline Api V1 Engagements  Engagement Id  Timeline Get",
                   "type": "array"
                 }
               }
@@ -5019,9 +5084,34 @@
         ]
       }
     },
-    "/api/households": {
+    "/api/v1/health": {
       "get": {
-        "operationId": "list_households_api_households_get",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Api V1 Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/v1/households": {
+      "get": {
+        "operationId": "list_households_api_v1_households_get",
         "parameters": [
           {
             "in": "query",
@@ -5038,6 +5128,29 @@
               ],
               "title": "Q"
             }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -5048,7 +5161,7 @@
                   "items": {
                     "$ref": "#/components/schemas/HouseholdSummary"
                   },
-                  "title": "Response List Households Api Households Get",
+                  "title": "Response List Households Api V1 Households Get",
                   "type": "array"
                 }
               }
@@ -5072,7 +5185,7 @@
         ]
       },
       "post": {
-        "operationId": "create_household_api_households_post",
+        "operationId": "create_household_api_v1_households_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -5111,9 +5224,9 @@
         ]
       }
     },
-    "/api/households/{household_id}": {
+    "/api/v1/households/{household_id}": {
       "get": {
-        "operationId": "get_household_api_households__household_id__get",
+        "operationId": "get_household_api_v1_households__household_id__get",
         "parameters": [
           {
             "in": "path",
@@ -5154,9 +5267,9 @@
         ]
       }
     },
-    "/api/households/{household_id}/members": {
+    "/api/v1/households/{household_id}/members": {
       "post": {
-        "operationId": "add_member_api_households__household_id__members_post",
+        "operationId": "add_member_api_v1_households__household_id__members_post",
         "parameters": [
           {
             "in": "path",
@@ -5207,9 +5320,9 @@
         ]
       }
     },
-    "/api/households/{household_id}/members/{person_id}/end": {
+    "/api/v1/households/{household_id}/members/{person_id}/end": {
       "post": {
-        "operationId": "end_membership_api_households__household_id__members__person_id__end_post",
+        "operationId": "end_membership_api_v1_households__household_id__members__person_id__end_post",
         "parameters": [
           {
             "in": "path",
@@ -5270,9 +5383,9 @@
         ]
       }
     },
-    "/api/households/{household_id}/opportunities": {
+    "/api/v1/households/{household_id}/opportunities": {
       "post": {
-        "operationId": "open_opportunity_api_households__household_id__opportunities_post",
+        "operationId": "open_opportunity_api_v1_households__household_id__opportunities_post",
         "parameters": [
           {
             "in": "path",
@@ -5323,9 +5436,9 @@
         ]
       }
     },
-    "/api/intakes/{intake_id}": {
+    "/api/v1/intakes/{intake_id}": {
       "get": {
-        "operationId": "get_intake_api_intakes__intake_id__get",
+        "operationId": "get_intake_api_v1_intakes__intake_id__get",
         "parameters": [
           {
             "in": "path",
@@ -5366,9 +5479,9 @@
         ]
       }
     },
-    "/api/intakes/{intake_id}/accept-rest": {
+    "/api/v1/intakes/{intake_id}/accept-rest": {
       "post": {
-        "operationId": "accept_rest_api_intakes__intake_id__accept_rest_post",
+        "operationId": "accept_rest_api_v1_intakes__intake_id__accept_rest_post",
         "parameters": [
           {
             "in": "path",
@@ -5409,9 +5522,9 @@
         ]
       }
     },
-    "/api/intakes/{intake_id}/decisions": {
+    "/api/v1/intakes/{intake_id}/decisions": {
       "post": {
-        "operationId": "decide_api_intakes__intake_id__decisions_post",
+        "operationId": "decide_api_v1_intakes__intake_id__decisions_post",
         "parameters": [
           {
             "in": "path",
@@ -5462,9 +5575,9 @@
         ]
       }
     },
-    "/api/intakes/{intake_id}/finish": {
+    "/api/v1/intakes/{intake_id}/finish": {
       "post": {
-        "operationId": "finish_api_intakes__intake_id__finish_post",
+        "operationId": "finish_api_v1_intakes__intake_id__finish_post",
         "parameters": [
           {
             "in": "path",
@@ -5505,9 +5618,9 @@
         ]
       }
     },
-    "/api/intakes/{intake_id}/speakers": {
+    "/api/v1/intakes/{intake_id}/speakers": {
       "put": {
-        "operationId": "match_speaker_api_intakes__intake_id__speakers_put",
+        "operationId": "match_speaker_api_v1_intakes__intake_id__speakers_put",
         "parameters": [
           {
             "in": "path",
@@ -5558,9 +5671,9 @@
         ]
       }
     },
-    "/api/intakes/{intake_id}/speakers/confirm": {
+    "/api/v1/intakes/{intake_id}/speakers/confirm": {
       "post": {
-        "operationId": "confirm_speakers_api_intakes__intake_id__speakers_confirm_post",
+        "operationId": "confirm_speakers_api_v1_intakes__intake_id__speakers_confirm_post",
         "parameters": [
           {
             "in": "path",
@@ -5601,9 +5714,9 @@
         ]
       }
     },
-    "/api/intakes/{intake_id}/speakers/edit": {
+    "/api/v1/intakes/{intake_id}/speakers/edit": {
       "post": {
-        "operationId": "edit_speakers_api_intakes__intake_id__speakers_edit_post",
+        "operationId": "edit_speakers_api_v1_intakes__intake_id__speakers_edit_post",
         "parameters": [
           {
             "in": "path",
@@ -5644,9 +5757,9 @@
         ]
       }
     },
-    "/api/people": {
+    "/api/v1/people": {
       "get": {
-        "operationId": "search_people_api_people_get",
+        "operationId": "search_people_api_v1_people_get",
         "parameters": [
           {
             "in": "query",
@@ -5663,6 +5776,29 @@
               ],
               "title": "Q"
             }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -5673,7 +5809,7 @@
                   "items": {
                     "$ref": "#/components/schemas/PersonSummary"
                   },
-                  "title": "Response Search People Api People Get",
+                  "title": "Response Search People Api V1 People Get",
                   "type": "array"
                 }
               }
@@ -5697,7 +5833,7 @@
         ]
       },
       "post": {
-        "operationId": "create_person_api_people_post",
+        "operationId": "create_person_api_v1_people_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -5736,9 +5872,9 @@
         ]
       }
     },
-    "/api/people/{person_id}": {
+    "/api/v1/people/{person_id}": {
       "get": {
-        "operationId": "get_person_api_people__person_id__get",
+        "operationId": "get_person_api_v1_people__person_id__get",
         "parameters": [
           {
             "in": "path",
@@ -5779,7 +5915,7 @@
         ]
       },
       "patch": {
-        "operationId": "edit_person_api_people__person_id__patch",
+        "operationId": "edit_person_api_v1_people__person_id__patch",
         "parameters": [
           {
             "in": "path",
@@ -5830,9 +5966,9 @@
         ]
       }
     },
-    "/api/people/{person_id}/changes": {
+    "/api/v1/people/{person_id}/changes": {
       "get": {
-        "operationId": "person_changes_api_people__person_id__changes_get",
+        "operationId": "person_changes_api_v1_people__person_id__changes_get",
         "parameters": [
           {
             "in": "path",
@@ -5853,7 +5989,7 @@
                   "items": {
                     "$ref": "#/components/schemas/ChangeLogEntry"
                   },
-                  "title": "Response Person Changes Api People  Person Id  Changes Get",
+                  "title": "Response Person Changes Api V1 People  Person Id  Changes Get",
                   "type": "array"
                 }
               }
@@ -5877,9 +6013,9 @@
         ]
       }
     },
-    "/api/people/{person_id}/relationships": {
+    "/api/v1/people/{person_id}/relationships": {
       "post": {
-        "operationId": "add_relationship_api_people__person_id__relationships_post",
+        "operationId": "add_relationship_api_v1_people__person_id__relationships_post",
         "parameters": [
           {
             "in": "path",
@@ -5910,7 +6046,7 @@
                   "additionalProperties": {
                     "type": "string"
                   },
-                  "title": "Response Add Relationship Api People  Person Id  Relationships Post",
+                  "title": "Response Add Relationship Api V1 People  Person Id  Relationships Post",
                   "type": "object"
                 }
               }
@@ -5934,9 +6070,9 @@
         ]
       }
     },
-    "/api/pipeline": {
+    "/api/v1/pipeline": {
       "get": {
-        "operationId": "board_api_pipeline_get",
+        "operationId": "board_api_v1_pipeline_get",
         "responses": {
           "200": {
             "content": {
@@ -5955,9 +6091,9 @@
         ]
       }
     },
-    "/api/pipeline/stages": {
+    "/api/v1/pipeline/stages": {
       "get": {
-        "operationId": "stages_api_pipeline_stages_get",
+        "operationId": "stages_api_v1_pipeline_stages_get",
         "responses": {
           "200": {
             "content": {
@@ -5966,7 +6102,7 @@
                   "items": {
                     "$ref": "#/components/schemas/StageInfo"
                   },
-                  "title": "Response Stages Api Pipeline Stages Get",
+                  "title": "Response Stages Api V1 Pipeline Stages Get",
                   "type": "array"
                 }
               }
@@ -5980,9 +6116,9 @@
         ]
       }
     },
-    "/api/professionals": {
+    "/api/v1/professionals": {
       "get": {
-        "operationId": "list_professionals_api_professionals_get",
+        "operationId": "list_professionals_api_v1_professionals_get",
         "parameters": [
           {
             "in": "query",
@@ -6015,6 +6151,29 @@
               ],
               "title": "Kind"
             }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -6025,7 +6184,7 @@
                   "items": {
                     "$ref": "#/components/schemas/ProSummary"
                   },
-                  "title": "Response List Professionals Api Professionals Get",
+                  "title": "Response List Professionals Api V1 Professionals Get",
                   "type": "array"
                 }
               }
@@ -6049,7 +6208,7 @@
         ]
       },
       "post": {
-        "operationId": "create_professional_api_professionals_post",
+        "operationId": "create_professional_api_v1_professionals_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -6088,9 +6247,9 @@
         ]
       }
     },
-    "/api/professionals/{person_id}": {
+    "/api/v1/professionals/{person_id}": {
       "get": {
-        "operationId": "get_professional_api_professionals__person_id__get",
+        "operationId": "get_professional_api_v1_professionals__person_id__get",
         "parameters": [
           {
             "in": "path",
@@ -6131,7 +6290,7 @@
         ]
       },
       "patch": {
-        "operationId": "edit_professional_api_professionals__person_id__patch",
+        "operationId": "edit_professional_api_v1_professionals__person_id__patch",
         "parameters": [
           {
             "in": "path",
@@ -6182,7 +6341,7 @@
         ]
       },
       "put": {
-        "operationId": "make_professional_api_professionals__person_id__put",
+        "operationId": "make_professional_api_v1_professionals__person_id__put",
         "parameters": [
           {
             "in": "path",
@@ -6233,9 +6392,9 @@
         ]
       }
     },
-    "/api/properties": {
+    "/api/v1/properties": {
       "get": {
-        "operationId": "search_properties_api_properties_get",
+        "operationId": "search_properties_api_v1_properties_get",
         "parameters": [
           {
             "in": "query",
@@ -6252,6 +6411,29 @@
               ],
               "title": "Q"
             }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -6262,7 +6444,7 @@
                   "items": {
                     "$ref": "#/components/schemas/Property"
                   },
-                  "title": "Response Search Properties Api Properties Get",
+                  "title": "Response Search Properties Api V1 Properties Get",
                   "type": "array"
                 }
               }
@@ -6286,7 +6468,7 @@
         ]
       },
       "post": {
-        "operationId": "create_property_api_properties_post",
+        "operationId": "create_property_api_v1_properties_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -6325,9 +6507,9 @@
         ]
       }
     },
-    "/api/properties/{property_id}": {
+    "/api/v1/properties/{property_id}": {
       "get": {
-        "operationId": "get_property_api_properties__property_id__get",
+        "operationId": "get_property_api_v1_properties__property_id__get",
         "parameters": [
           {
             "in": "path",
@@ -6368,7 +6550,7 @@
         ]
       },
       "patch": {
-        "operationId": "edit_property_api_properties__property_id__patch",
+        "operationId": "edit_property_api_v1_properties__property_id__patch",
         "parameters": [
           {
             "in": "path",
@@ -6419,9 +6601,9 @@
         ]
       }
     },
-    "/api/tasks": {
+    "/api/v1/tasks": {
       "get": {
-        "operationId": "list_tasks_api_tasks_get",
+        "operationId": "list_tasks_api_v1_tasks_get",
         "parameters": [
           {
             "in": "query",
@@ -6482,6 +6664,29 @@
               ],
               "title": "Owner"
             }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -6492,7 +6697,7 @@
                   "items": {
                     "$ref": "#/components/schemas/TaskView"
                   },
-                  "title": "Response List Tasks Api Tasks Get",
+                  "title": "Response List Tasks Api V1 Tasks Get",
                   "type": "array"
                 }
               }
@@ -6516,7 +6721,7 @@
         ]
       },
       "post": {
-        "operationId": "create_task_api_tasks_post",
+        "operationId": "create_task_api_v1_tasks_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -6555,9 +6760,9 @@
         ]
       }
     },
-    "/api/tasks/summary": {
+    "/api/v1/tasks/summary": {
       "get": {
-        "operationId": "task_summary_api_tasks_summary_get",
+        "operationId": "task_summary_api_v1_tasks_summary_get",
         "responses": {
           "200": {
             "content": {
@@ -6576,9 +6781,9 @@
         ]
       }
     },
-    "/api/tasks/{task_id}": {
+    "/api/v1/tasks/{task_id}": {
       "patch": {
-        "operationId": "edit_task_api_tasks__task_id__patch",
+        "operationId": "edit_task_api_v1_tasks__task_id__patch",
         "parameters": [
           {
             "in": "path",
@@ -6629,9 +6834,9 @@
         ]
       }
     },
-    "/api/tasks/{task_id}/done": {
+    "/api/v1/tasks/{task_id}/done": {
       "post": {
-        "operationId": "finish_task_api_tasks__task_id__done_post",
+        "operationId": "finish_task_api_v1_tasks__task_id__done_post",
         "parameters": [
           {
             "in": "path",
@@ -6672,9 +6877,9 @@
         ]
       }
     },
-    "/api/tasks/{task_id}/reopen": {
+    "/api/v1/tasks/{task_id}/reopen": {
       "post": {
-        "operationId": "reopen_task_api_tasks__task_id__reopen_post",
+        "operationId": "reopen_task_api_v1_tasks__task_id__reopen_post",
         "parameters": [
           {
             "in": "path",

@@ -19,7 +19,7 @@ export function ShortlistPanel({ engagementId }: { engagementId: string }) {
   const path = { params: { path: { engagement_id: engagementId } } };
 
   const load = useCallback(() => {
-    api.GET("/api/engagements/{engagement_id}/properties", { ...path, params: { ...path.params, query: {} } }).then(({ data }) => data && setList(data));
+    api.GET("/api/v1/engagements/{engagement_id}/properties", { ...path, params: { ...path.params, query: {} } }).then(({ data }) => data && setList(data));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engagementId]);
   useEffect(load, [load]);
@@ -28,7 +28,7 @@ export function ShortlistPanel({ engagementId }: { engagementId: string }) {
 
   const add = async (confirm: boolean) => {
     setNote(null);
-    const created = await api.POST("/api/properties", {
+    const created = await api.POST("/api/v1/properties", {
       body: {
         address_line: form.address_line.trim(), suburb: form.suburb.trim() || null, bedrooms: num(form.bedrooms),
         price_guide_low: num(form.low), price_guide_high: num(form.high), confirm_duplicate: confirm,
@@ -38,21 +38,21 @@ export function ShortlistPanel({ engagementId }: { engagementId: string }) {
     if (!created.data && dup?.matches) {
       setNote(`${dup.message} `);
       const existing = dup.matches[0]?.id ?? "";
-      await api.POST("/api/engagements/{engagement_id}/properties", { ...path, body: { property_id: existing, status: "considering" } });
+      await api.POST("/api/v1/engagements/{engagement_id}/properties", { ...path, body: { property_id: existing, status: "considering" } });
     } else if (created.data) {
-      await api.POST("/api/engagements/{engagement_id}/properties", { ...path, body: { property_id: created.data.id, status: "considering" } });
+      await api.POST("/api/v1/engagements/{engagement_id}/properties", { ...path, body: { property_id: created.data.id, status: "considering" } });
     }
     setForm({ address_line: "", suburb: "", bedrooms: "", low: "", high: "" });
     load();
   };
 
   const patch = async (r: Row, body: { status?: Status; assessment?: string; reasons?: string }) => {
-    await api.PATCH("/api/engagements/{engagement_id}/properties/{ep_id}", { params: { path: { engagement_id: engagementId, ep_id: r.id } }, body });
+    await api.PATCH("/api/v1/engagements/{engagement_id}/properties/{ep_id}", { params: { path: { engagement_id: engagementId, ep_id: r.id } }, body });
     load();
   };
 
   const check = async (r: Row, name: string, result: (typeof RESULTS)[number]) => {
-    await api.PUT("/api/engagements/{engagement_id}/properties/{ep_id}/checks", {
+    await api.PUT("/api/v1/engagements/{engagement_id}/properties/{ep_id}/checks", {
       params: { path: { engagement_id: engagementId, ep_id: r.id } },
       body: { criterion: name, result },
     });

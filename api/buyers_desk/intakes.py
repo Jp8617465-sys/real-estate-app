@@ -29,7 +29,7 @@ from buyers_desk.schemas import (
     SpeakerMatchRequest,
 )
 
-router = APIRouter(prefix="/api", tags=["intake"])
+router = APIRouter(prefix="/api/v1", tags=["intake"])
 
 NOTICE = (
     "Only synthetic or role-play material may be used here. Extraction runs on the global Claude "

@@ -24,7 +24,7 @@ def transcript(prefix: str) -> tuple[str, str]:
 
 
 def new_opportunity(client: TestClient, body: dict[str, Any] | None = None) -> str:
-    created = client.post("/api/engagements", json=body or KUMAR_GALLAGHER)
+    created = client.post("/api/v1/engagements", json=body or KUMAR_GALLAGHER)
     assert created.status_code == 201
     return str(created.json()["id"])
 
@@ -38,7 +38,7 @@ def upload_text(
     client: TestClient, engagement_id: str, filename: str, text: str, notes: bool = False
 ) -> dict[str, Any]:
     response = client.post(
-        f"/api/engagements/{engagement_id}/intakes",
+        f"/api/v1/engagements/{engagement_id}/intakes",
         json={"filename": filename, "text": text, "notes": notes},
     )
     assert response.status_code == 201, response.text
@@ -50,7 +50,7 @@ def match(
     client: TestClient, intake_id: str, label: str, kind: str, name: str, **extra: Any
 ) -> dict[str, Any]:
     response = client.put(
-        f"/api/intakes/{intake_id}/speakers", json={"label": label, "kind": kind, "name": name, **extra}
+        f"/api/v1/intakes/{intake_id}/speakers", json={"label": label, "kind": kind, "name": name, **extra}
     )
     assert response.status_code == 200, response.text
     body: dict[str, Any] = response.json()
@@ -68,7 +68,7 @@ def match_call_03(client: TestClient, intake_id: str, dan_as: str = "professiona
 
 
 def confirm(client: TestClient, intake_id: str) -> dict[str, Any]:
-    response = client.post(f"/api/intakes/{intake_id}/speakers/confirm")
+    response = client.post(f"/api/v1/intakes/{intake_id}/speakers/confirm")
     assert response.status_code == 200, response.text
     body: dict[str, Any] = response.json()
     return body
@@ -93,7 +93,7 @@ def ids(view: dict[str, Any], bucket: str) -> list[str]:
 
 def decide(client: TestClient, intake_id: str, kind: str, suggestion_id: str, value: str | None = None) -> Any:
     return client.post(
-        f"/api/intakes/{intake_id}/decisions", json={"type": kind, "id": suggestion_id, "value": value}
+        f"/api/v1/intakes/{intake_id}/decisions", json={"type": kind, "id": suggestion_id, "value": value}
     )
 
 
@@ -107,17 +107,17 @@ def decided(client: TestClient, intake_id: str, kind: str, *suggestion_ids: str)
 
 
 def read(client: TestClient, intake_id: str) -> dict[str, Any]:
-    body: dict[str, Any] = client.get(f"/api/intakes/{intake_id}").json()
+    body: dict[str, Any] = client.get(f"/api/v1/intakes/{intake_id}").json()
     return body
 
 
 def record(client: TestClient, engagement_id: str) -> list[dict[str, Any]]:
-    values: list[dict[str, Any]] = client.get(f"/api/engagements/{engagement_id}/record").json()["values"]
+    values: list[dict[str, Any]] = client.get(f"/api/v1/engagements/{engagement_id}/record").json()["values"]
     return values
 
 
 def finish(client: TestClient, intake_id: str) -> dict[str, Any]:
-    response = client.post(f"/api/intakes/{intake_id}/finish")
+    response = client.post(f"/api/v1/intakes/{intake_id}/finish")
     assert response.status_code == 200, response.text
     body: dict[str, Any] = response.json()
     return body

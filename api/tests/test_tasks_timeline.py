@@ -10,14 +10,14 @@ from tests.helpers import decided, finish, new_opportunity, open_review_03
 
 
 def task(client: TestClient, title: str, **extra: Any) -> dict[str, Any]:
-    response = client.post("/api/tasks", json={"title": title, **extra})
+    response = client.post("/api/v1/tasks", json={"title": title, **extra})
     assert response.status_code == 201, response.text
     body: dict[str, Any] = response.json()
     return body
 
 
 def tasks(client: TestClient, **params: str) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = client.get("/api/tasks", params=params).json()
+    rows: list[dict[str, Any]] = client.get("/api/v1/tasks", params=params).json()
     return rows
 
 
@@ -26,10 +26,10 @@ def test_a_task_is_created_listed_done_and_reopened(client: TestClient) -> None:
     t = task(client, "Send the proposal", engagement_id=engagement_id, owner="Nadia", due_on="2026-12-01")
 
     assert [x["title"] for x in tasks(client, engagement_id=engagement_id)] == ["Send the proposal"]
-    done = client.post(f"/api/tasks/{t['id']}/done")
+    done = client.post(f"/api/v1/tasks/{t['id']}/done")
     assert done.status_code == 200 and done.json()["done_at"]
     assert tasks(client, state="open") == [] and [x["id"] for x in tasks(client, state="done")] == [t["id"]]
-    reopened = client.post(f"/api/tasks/{t['id']}/reopen")
+    reopened = client.post(f"/api/v1/tasks/{t['id']}/reopen")
     assert reopened.json()["done_at"] is None and len(tasks(client, state="open")) == 1
 
 
@@ -44,30 +44,30 @@ def test_overdue_tasks_are_flagged_and_listed_first_and_the_summary_counts_them(
 
     assert [r["title"] for r in rows] == ["Overdue", "Today", "Later", "No date"]
     assert [r["overdue"] for r in rows] == [True, False, False, False]
-    assert client.get("/api/tasks/summary").json() == {"open": 4, "overdue": 1, "due_today": 1}
+    assert client.get("/api/v1/tasks/summary").json() == {"open": 4, "overdue": 1, "due_today": 1}
 
 
 def test_a_task_can_be_edited_and_bad_input_is_refused(client: TestClient) -> None:
     t = task(client, "Call Dan")
 
-    edited = client.patch(f"/api/tasks/{t['id']}", json={"title": "Call Dan about the pre-approval", "owner": "Ops", "due_on": "2026-12-02"})
+    edited = client.patch(f"/api/v1/tasks/{t['id']}", json={"title": "Call Dan about the pre-approval", "owner": "Ops", "due_on": "2026-12-02"})
 
     assert edited.status_code == 200 and (edited.json()["owner"], edited.json()["due_on"]) == ("Ops", "2026-12-02")
-    assert client.post("/api/tasks", json={"title": "  "}).status_code == 422
-    assert client.post("/api/tasks", json={"title": "x", "due_on": "tomorrow"}).status_code == 422
-    assert client.post("/api/tasks", json={"title": "x", "engagement_id": "00000000-0000-4000-8000-000000000009"}).status_code == 404
+    assert client.post("/api/v1/tasks", json={"title": "  "}).status_code == 422
+    assert client.post("/api/v1/tasks", json={"title": "x", "due_on": "tomorrow"}).status_code == 422
+    assert client.post("/api/v1/tasks", json={"title": "x", "engagement_id": "00000000-0000-4000-8000-000000000009"}).status_code == 404
 
 
 def test_the_timeline_shows_what_happened_newest_first_with_where_it_came_from(client: TestClient) -> None:
     engagement_id = new_opportunity(client)
-    client.post(f"/api/engagements/{engagement_id}/stage", json={"stage": "consultation"})
-    client.put(f"/api/engagements/{engagement_id}/brief/bedrooms", json={"value": "3"})
+    client.post(f"/api/v1/engagements/{engagement_id}/stage", json={"stage": "consultation"})
+    client.put(f"/api/v1/engagements/{engagement_id}/brief/bedrooms", json={"value": "3"})
     t = task(client, "Send the proposal", engagement_id=engagement_id)
-    client.post(f"/api/tasks/{t['id']}/done")
-    prop = client.post("/api/properties", json={"address_line": "12 Example St", "suburb": "Kedron"}).json()
-    client.post(f"/api/engagements/{engagement_id}/properties", json={"property_id": prop["id"]})
+    client.post(f"/api/v1/tasks/{t['id']}/done")
+    prop = client.post("/api/v1/properties", json={"address_line": "12 Example St", "suburb": "Kedron"}).json()
+    client.post(f"/api/v1/engagements/{engagement_id}/properties", json={"property_id": prop["id"]})
 
-    events = client.get(f"/api/engagements/{engagement_id}/timeline").json()
+    events = client.get(f"/api/v1/engagements/{engagement_id}/timeline").json()
 
     titles = [e["title"] for e in events]
     assert "Stage moved: enquiry → consultation" in titles
@@ -84,7 +84,7 @@ def test_the_timeline_includes_a_call_and_the_values_it_recorded(client: TestCli
     decided(client, intake_id, "accept", "s-pets")
     finish(client, intake_id)
 
-    events = client.get(f"/api/engagements/{engagement_id}/timeline").json()
+    events = client.get(f"/api/v1/engagements/{engagement_id}/timeline").json()
 
     titles = [e["title"] for e in events]
     assert any(t.startswith("Call reviewed: 03-broker-joins-first-home-north") for t in titles)
@@ -97,8 +97,8 @@ def test_next_actions_from_a_call_become_tasks_once(client: TestClient) -> None:
     decided(client, intake_id, "accept", "a-tash-roster", "a-rhys-payslips")
     finish(client, intake_id)
 
-    first = client.post(f"/api/engagements/{engagement_id}/tasks/from-actions")
-    second = client.post(f"/api/engagements/{engagement_id}/tasks/from-actions")
+    first = client.post(f"/api/v1/engagements/{engagement_id}/tasks/from-actions")
+    second = client.post(f"/api/v1/engagements/{engagement_id}/tasks/from-actions")
 
     assert first.status_code == 201 and len(first.json()) == 2
     assert second.json() == []
@@ -113,4 +113,4 @@ def test_tasks_belong_to_their_agency_and_survive_a_restart(app_client: ClientFa
 
     assert [x["id"] for x in tasks(app_client())] == [t["id"]]
     elsewhere = app_client(another_agency)
-    assert tasks(elsewhere) == [] and elsewhere.post(f"/api/tasks/{t['id']}/done").status_code == 404
+    assert tasks(elsewhere) == [] and elsewhere.post(f"/api/v1/tasks/{t['id']}/done").status_code == 404

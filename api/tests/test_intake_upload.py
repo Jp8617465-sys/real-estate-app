@@ -128,10 +128,10 @@ def test_suggestions_stay_hidden_until_every_speaker_is_matched(client: TestClie
     intake = upload(client, new_opportunity(client))
 
     assert intake["queue"] == []
-    refused = client.post(f"/api/intakes/{intake['id']}/speakers/confirm")
+    refused = client.post(f"/api/v1/intakes/{intake['id']}/speakers/confirm")
     assert refused.status_code == 409
     assert "Match every speaker first" in refused.json()["detail"]
-    assert client.get(f"/api/intakes/{intake['id']}").json()["queue"] == []
+    assert client.get(f"/api/v1/intakes/{intake['id']}").json()["queue"] == []
 
 
 def test_exactly_one_speaker_must_be_the_agent_before_review(client: TestClient) -> None:
@@ -139,7 +139,7 @@ def test_exactly_one_speaker_must_be_the_agent_before_review(client: TestClient)
     for label, name in ((NADIA, "Nadia"), (TASH, "Tash"), (RHYS, "Rhys"), (DAN, "Dan")):
         match(client, intake["id"], label, "household", name)
 
-    refused = client.post(f"/api/intakes/{intake['id']}/speakers/confirm")
+    refused = client.post(f"/api/v1/intakes/{intake['id']}/speakers/confirm")
 
     assert refused.status_code == 409
     assert "which speaker is you" in refused.json()["detail"]
@@ -149,7 +149,7 @@ def test_a_speaker_is_matched_to_an_existing_client_and_the_match_is_remembered(
     client: TestClient,
 ) -> None:
     engagement_id = new_opportunity(client)
-    existing = client.get(f"/api/engagements/{engagement_id}").json()["clients"][0]
+    existing = client.get(f"/api/v1/engagements/{engagement_id}").json()["clients"][0]
     intake = upload(client, engagement_id)
 
     matched = match(client, intake["id"], TASH, "household", "Tash Kumar", person_id=existing["id"])
@@ -203,7 +203,7 @@ def test_selecting_a_quote_can_find_its_turn_because_each_quote_carries_its_cue(
     for label, kind, name in ((NADIA, "agent", "Nadia"), (TASH, "household", "Tash"), (RHYS, "household", "Rhys"), (DAN, "professional", "Dan")):
         match(client, intake["id"], label, kind, name)
 
-    review = client.post(f"/api/intakes/{intake['id']}/speakers/confirm").json()
+    review = client.post(f"/api/v1/intakes/{intake['id']}/speakers/confirm").json()
 
     pets = next(item for item in review["queue"] if item["id"] == "s-pets")
     cue = pets["quotes"][0]["cue"]
@@ -217,7 +217,7 @@ def test_the_intake_and_its_speaker_matches_survive_a_restart(app_client: Client
     match(first, intake["id"], DAN, "professional", "Dan", role="Mortgage broker")
 
     restarted = app_client()
-    reread = restarted.get(f"/api/intakes/{intake['id']}").json()
+    reread = restarted.get(f"/api/v1/intakes/{intake['id']}").json()
 
     dan = next(s for s in reread["speakers"] if s["label"] == DAN)
     assert dan["match"]["kind"] == "professional"
@@ -229,8 +229,8 @@ def test_an_intake_belongs_to_its_agency(client: TestClient, app_client: ClientF
 
     elsewhere = app_client(another_agency)
 
-    assert elsewhere.get(f"/api/intakes/{intake['id']}").status_code == 404
-    assert app_client(None).get(f"/api/intakes/{intake['id']}").status_code == 403
+    assert elsewhere.get(f"/api/v1/intakes/{intake['id']}").status_code == 404
+    assert app_client(None).get(f"/api/v1/intakes/{intake['id']}").status_code == 403
 
 
 def test_the_scripted_extractor_replays_the_answer_key_for_every_other_synthetic_transcript(
