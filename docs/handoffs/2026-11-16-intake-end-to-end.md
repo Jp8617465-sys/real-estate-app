@@ -30,6 +30,6 @@ Extraction is behind one port. The scripted adapter replays the prototype's 57 s
 - Local Qwen comparison (issue 65): the Ollama adapter and `scored_run --ollama qwen3.5:9b` are built and tested against a stand-in server only. James still has to install Ollama, pull the model and run it on his Mac. Select it in the app with `BUYERS_DESK_EXTRACTOR=ollama`.
 - Real-pilot validation and James's dated walkthrough of issues 61 to 64 remain.
 - Built on PostgreSQL 16 in a Linux container with local trust auth; the spec says 17 on James's Mac.
-- CI still runs `make check-factory` only.
+- CI now also runs the full `make check` against the runner's PostgreSQL 16 (job `full`, passed on 17 November 2026). It adds no new Actions; uv is pinned to 0.13.6.
 
 Context: unavailable (no harness counter). Next: James runs and accepts the walkthrough; fix GitHub access, push, update the tickets; start [Compare a local Qwen extractor](https://github.com/Jp8617465-sys/real-estate-app/issues/65) or the paid run.
