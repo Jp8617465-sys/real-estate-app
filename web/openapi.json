@@ -15,6 +15,102 @@
         "title": "AddMember",
         "type": "object"
       },
+      "Board": {
+        "properties": {
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/BoardColumn"
+            },
+            "title": "Columns",
+            "type": "array"
+          }
+        },
+        "required": [
+          "columns"
+        ],
+        "title": "Board",
+        "type": "object"
+      },
+      "BoardCard": {
+        "properties": {
+          "budget_aud": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Aud"
+          },
+          "client_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Client Names",
+            "type": "array"
+          },
+          "days_in_stage": {
+            "title": "Days In Stage",
+            "type": "integer"
+          },
+          "household_name": {
+            "title": "Household Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "stage",
+          "household_name",
+          "client_names",
+          "budget_aud",
+          "days_in_stage"
+        ],
+        "title": "BoardCard",
+        "type": "object"
+      },
+      "BoardColumn": {
+        "properties": {
+          "engagements": {
+            "items": {
+              "$ref": "#/components/schemas/BoardCard"
+            },
+            "title": "Engagements",
+            "type": "array"
+          },
+          "group": {
+            "title": "Group",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage",
+          "label",
+          "group",
+          "engagements"
+        ],
+        "title": "BoardColumn",
+        "type": "object"
+      },
       "ChangeLogEntry": {
         "properties": {
           "changed_at": {
@@ -319,6 +415,17 @@
             "title": "Clients",
             "type": "array"
           },
+          "closed_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Reason"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -340,6 +447,11 @@
           "stage": {
             "title": "Stage",
             "type": "string"
+          },
+          "stage_changed_at": {
+            "format": "date-time",
+            "title": "Stage Changed At",
+            "type": "string"
           }
         },
         "required": [
@@ -350,6 +462,8 @@
           "client_names",
           "budget_aud",
           "created_at",
+          "stage_changed_at",
+          "closed_reason",
           "clients"
         ],
         "title": "Engagement",
@@ -413,6 +527,17 @@
             "title": "Client Names",
             "type": "array"
           },
+          "closed_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Reason"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -434,6 +559,11 @@
           "stage": {
             "title": "Stage",
             "type": "string"
+          },
+          "stage_changed_at": {
+            "format": "date-time",
+            "title": "Stage Changed At",
+            "type": "string"
           }
         },
         "required": [
@@ -443,7 +573,9 @@
           "household_name",
           "client_names",
           "budget_aud",
-          "created_at"
+          "created_at",
+          "stage_changed_at",
+          "closed_reason"
         ],
         "title": "EngagementSummary",
         "type": "object"
@@ -1914,6 +2046,53 @@
         "title": "SpeakerView",
         "type": "object"
       },
+      "StageInfo": {
+        "properties": {
+          "group": {
+            "title": "Group",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "group"
+        ],
+        "title": "StageInfo",
+        "type": "object"
+      },
+      "StageMove": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage"
+        ],
+        "title": "StageMove",
+        "type": "object"
+      },
       "Summary": {
         "properties": {
           "ask": {
@@ -2347,6 +2526,106 @@
         "summary": "Get Record",
         "tags": [
           "intake"
+        ]
+      }
+    },
+    "/api/engagements/{engagement_id}/stage": {
+      "post": {
+        "operationId": "move_stage_api_engagements__engagement_id__stage_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "engagement_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Engagement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StageMove"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Engagement"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Move Stage",
+        "tags": [
+          "pipeline"
+        ]
+      }
+    },
+    "/api/engagements/{engagement_id}/stage-history": {
+      "get": {
+        "operationId": "stage_history_api_engagements__engagement_id__stage_history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "engagement_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Engagement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ChangeLogEntry"
+                  },
+                  "title": "Response Stage History Api Engagements  Engagement Id  Stage History Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Stage History",
+        "tags": [
+          "pipeline"
         ]
       }
     },
@@ -3262,6 +3541,52 @@
         "summary": "Add Relationship",
         "tags": [
           "people"
+        ]
+      }
+    },
+    "/api/pipeline": {
+      "get": {
+        "operationId": "board_api_pipeline_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Board"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Board",
+        "tags": [
+          "pipeline"
+        ]
+      }
+    },
+    "/api/pipeline/stages": {
+      "get": {
+        "operationId": "stages_api_pipeline_stages_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StageInfo"
+                  },
+                  "title": "Response Stages Api Pipeline Stages Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Stages",
+        "tags": [
+          "pipeline"
         ]
       }
     }

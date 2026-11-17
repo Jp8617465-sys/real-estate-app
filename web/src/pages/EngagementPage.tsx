@@ -8,6 +8,8 @@ type Engagement = components["schemas"]["Engagement"];
 type Change = components["schemas"]["ChangeLogEntry"];
 type Record = components["schemas"]["EngagementRecord"];
 type IntakeSummary = components["schemas"]["IntakeSummary"];
+type StageInfo = components["schemas"]["StageInfo"];
+type StageEntry = components["schemas"]["ChangeLogEntry"];
 
 const NOTICE =
   "Only synthetic or role-play material may be used while extraction runs on the global Claude API, outside Australia. Never upload a real client's conversation.";
@@ -79,6 +81,10 @@ export function EngagementPage() {
   const [changes, setChanges] = useState<Change[]>([]);
   const [record, setRecord] = useState<Record | null>(null);
   const [intakes, setIntakes] = useState<IntakeSummary[]>([]);
+  const [stages, setStages] = useState<StageInfo[]>([]);
+  const [stageHistory, setStageHistory] = useState<StageEntry[]>([]);
+  const [stageNote, setStageNote] = useState<string | null>(null);
+  const [closing, setClosing] = useState("");
   const [missing, setMissing] = useState(false);
 
   useEffect(() => {
@@ -92,7 +98,22 @@ export function EngagementPage() {
     });
     api.GET("/api/engagements/{engagement_id}/record", params).then(({ data }) => data && setRecord(data));
     api.GET("/api/engagements/{engagement_id}/intakes", params).then(({ data }) => data && setIntakes(data));
+    api.GET("/api/pipeline/stages").then(({ data }) => data && setStages(data));
+    api.GET("/api/engagements/{engagement_id}/stage-history", params).then(({ data }) => data && setStageHistory(data));
   }, [id]);
+
+  const moveTo = async (stage: string, reason?: string) => {
+    setStageNote(null);
+    const { data, error } = await api.POST("/api/engagements/{engagement_id}/stage", {
+      params: { path: { engagement_id: id } },
+      body: { stage, reason: reason ?? null },
+    });
+    if (data) {
+      setEngagement(data);
+      const h = await api.GET("/api/engagements/{engagement_id}/stage-history", { params: { path: { engagement_id: id } } });
+      if (h.data) setStageHistory(h.data);
+    } else setStageNote(String((error as { detail?: unknown } | undefined)?.detail ?? "That move was refused."));
+  };
 
   if (missing) return <p className="muted">That engagement was not found.</p>;
   if (!engagement) return null;
@@ -125,6 +146,43 @@ export function EngagementPage() {
           </p>
         </section>
       </div>
+      <section className="panel">
+        <h2>Stage</h2>
+        <div className="acts">
+          {stages
+            .filter((s) => s.key !== "closed")
+            .map((s) => (
+              <button key={s.key} className={s.key === engagement.stage ? "primary" : ""} disabled={s.key === engagement.stage} onClick={() => void moveTo(s.key)}>
+                {s.label}
+              </button>
+            ))}
+        </div>
+        {engagement.stage === "closed" ? (
+          <p className="warnbox">Closed: {engagement.closed_reason}</p>
+        ) : (
+          <div className="edit">
+            <input value={closing} onChange={(e) => setClosing(e.target.value)} placeholder="Close it: say why (for example did not proceed)" aria-label="Reason for closing" />
+            <button className="button" disabled={!closing.trim()} onClick={() => void moveTo("closed", closing)}>
+              Close engagement
+            </button>
+          </div>
+        )}
+        {stageNote && <p className="error">{stageNote}</p>}
+        {stageHistory.length > 0 && (
+          <ul className="plain history">
+            {stageHistory.map((h, i) => (
+              <li key={i}>
+                <span>
+                  {String(h.earlier_value)} → <strong>{String(h.new_value)}</strong>
+                </span>
+                <span className="muted">
+                  {h.changed_by} · {when(h.changed_at)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
       <UploadCall engagementId={engagement.id} />
       {intakes.length > 0 && (
         <section className="panel">

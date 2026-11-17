@@ -94,6 +94,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/engagements/{engagement_id}/stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move Stage */
+        post: operations["move_stage_api_engagements__engagement_id__stage_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagements/{engagement_id}/stage-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stage History */
+        get: operations["stage_history_api_engagements__engagement_id__stage_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/households": {
         parameters: {
             query?: never;
@@ -369,6 +403,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Board */
+        get: operations["board_api_pipeline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pipeline/stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stages */
+        get: operations["stages_api_pipeline_stages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -380,6 +448,40 @@ export interface components {
              * Format: uuid
              */
             person_id: string;
+        };
+        /** Board */
+        Board: {
+            /** Columns */
+            columns: components["schemas"]["BoardColumn"][];
+        };
+        /** BoardCard */
+        BoardCard: {
+            /** Budget Aud */
+            budget_aud: number | null;
+            /** Client Names */
+            client_names: string[];
+            /** Days In Stage */
+            days_in_stage: number;
+            /** Household Name */
+            household_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Stage */
+            stage: string;
+        };
+        /** BoardColumn */
+        BoardColumn: {
+            /** Engagements */
+            engagements: components["schemas"]["BoardCard"][];
+            /** Group */
+            group: string;
+            /** Label */
+            label: string;
+            /** Stage */
+            stage: string;
         };
         /** ChangeLogEntry */
         ChangeLogEntry: {
@@ -485,6 +587,8 @@ export interface components {
             client_names: string[];
             /** Clients */
             clients: components["schemas"]["Client"][];
+            /** Closed Reason */
+            closed_reason: string | null;
             /**
              * Created At
              * Format: date-time
@@ -501,6 +605,11 @@ export interface components {
             service_line: string;
             /** Stage */
             stage: string;
+            /**
+             * Stage Changed At
+             * Format: date-time
+             */
+            stage_changed_at: string;
         };
         /** EngagementRecord */
         EngagementRecord: {
@@ -522,6 +631,8 @@ export interface components {
             budget_aud: number | null;
             /** Client Names */
             client_names: string[];
+            /** Closed Reason */
+            closed_reason: string | null;
             /**
              * Created At
              * Format: date-time
@@ -538,6 +649,11 @@ export interface components {
             service_line: string;
             /** Stage */
             stage: string;
+            /**
+             * Stage Changed At
+             * Format: date-time
+             */
+            stage_changed_at: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1028,6 +1144,22 @@ export interface components {
             /** Warning */
             warning: string | null;
         };
+        /** StageInfo */
+        StageInfo: {
+            /** Group */
+            group: string;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** StageMove */
+        StageMove: {
+            /** Reason */
+            reason?: string | null;
+            /** Stage */
+            stage: string;
+        };
         /** Summary */
         Summary: {
             /** Ask */
@@ -1279,6 +1411,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EngagementRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    move_stage_api_engagements__engagement_id__stage_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StageMove"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Engagement"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stage_history_api_engagements__engagement_id__stage_history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeLogEntry"][];
                 };
             };
             /** @description Validation Error */
@@ -1912,6 +2110,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    board_api_pipeline_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Board"];
+                };
+            };
+        };
+    };
+    stages_api_pipeline_stages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StageInfo"][];
                 };
             };
         };

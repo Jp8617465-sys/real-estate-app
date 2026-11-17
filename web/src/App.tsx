@@ -2,6 +2,7 @@ import { NavLink, Route, Routes } from "react-router-dom";
 import { EngagementList } from "./pages/EngagementList";
 import { EngagementPage } from "./pages/EngagementPage";
 import { IntakePage } from "./pages/IntakePage";
+import { PipelinePage } from "./pages/PipelinePage";
 import { PeoplePage } from "./pages/PeoplePage";
 import { PersonPage } from "./pages/PersonPage";
 import { NewOpportunity } from "./pages/NewOpportunity";
@@ -15,6 +16,7 @@ export function App() {
           <NavLink to="/" end>
             Engagements
           </NavLink>
+          <NavLink to="/pipeline">Pipeline</NavLink>
           <NavLink to="/people">Clients</NavLink>
           <NavLink to="/new">New opportunity</NavLink>
         </nav>
@@ -23,6 +25,7 @@ export function App() {
       <main className="content">
         <Routes>
           <Route path="/" element={<EngagementList />} />
+          <Route path="/pipeline" element={<PipelinePage />} />
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/people/:id" element={<PersonPage />} />
           <Route path="/new" element={<NewOpportunity />} />
