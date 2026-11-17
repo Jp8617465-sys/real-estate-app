@@ -8,7 +8,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine
 
-from buyers_desk import activity, contract, brief, engagements, intakes, people, pipeline, professionals, properties
+from buyers_desk import activity, contract, integrations_api, brief, engagements, intakes, people, pipeline, professionals, properties
+from buyers_desk.integrations.registry import Integrations
 from buyers_desk.intake.claude import ClaudeExtractor
 from buyers_desk.intake.extraction import Extractor, ScriptedExtractor
 from buyers_desk.intake.keys import load_keys
@@ -19,7 +20,7 @@ from buyers_desk.settings import Settings
 BUILT_WEB_APP = Path(__file__).resolve().parent.parent.parent / "web" / "dist"
 
 
-def create_app(settings: Settings | None = None, extractor: Extractor | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, extractor: Extractor | None = None, integrations: Integrations | None = None) -> FastAPI:
     settings = settings or Settings()
     chosen = extractor or build_extractor(settings)
 
@@ -27,6 +28,7 @@ def create_app(settings: Settings | None = None, extractor: Extractor | None = N
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.settings = settings
         app.state.extractor = chosen
+        app.state.integrations = integrations or Integrations()
         app.state.engine = create_engine(settings.app_url)
         yield
         app.state.engine.dispose()
@@ -41,6 +43,7 @@ def create_app(settings: Settings | None = None, extractor: Extractor | None = N
     app.include_router(properties.router)
     app.include_router(professionals.router)
     app.include_router(activity.router)
+    app.include_router(integrations_api.router)
     if (BUILT_WEB_APP / "index.html").is_file():
         _serve_web_app(app)
     return app

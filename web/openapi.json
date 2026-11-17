@@ -140,6 +140,20 @@
         "title": "BoardColumn",
         "type": "object"
       },
+      "BookCall": {
+        "properties": {
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start"
+        ],
+        "title": "BookCall",
+        "type": "object"
+      },
       "BriefField": {
         "properties": {
           "group": {
@@ -323,6 +337,54 @@
         "title": "BriefView",
         "type": "object"
       },
+      "CallBooked": {
+        "properties": {
+          "attendees": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Attendees",
+            "type": "array"
+          },
+          "invite_ics": {
+            "title": "Invite Ics",
+            "type": "string"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "task_id": {
+            "format": "uuid",
+            "title": "Task Id",
+            "type": "string"
+          },
+          "uid": {
+            "title": "Uid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid",
+          "invite_ics",
+          "start",
+          "attendees",
+          "stage",
+          "task_id",
+          "synthetic"
+        ],
+        "title": "CallBooked",
+        "type": "object"
+      },
       "ChangeLogEntry": {
         "properties": {
           "changed_at": {
@@ -451,6 +513,53 @@
         "title": "Client",
         "type": "object"
       },
+      "CommunicationView": {
+        "properties": {
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "direction",
+          "channel",
+          "subject",
+          "body",
+          "occurred_at"
+        ],
+        "title": "CommunicationView",
+        "type": "object"
+      },
       "ConflictView": {
         "properties": {
           "earlier": {
@@ -568,6 +677,46 @@
           "quote"
         ],
         "title": "DisagreementView",
+        "type": "object"
+      },
+      "DriveTime": {
+        "properties": {
+          "from_place": {
+            "title": "From Place",
+            "type": "string"
+          },
+          "minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minutes"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "to_place": {
+            "title": "To Place",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from_place",
+          "to_place",
+          "minutes",
+          "source",
+          "synthetic"
+        ],
+        "title": "DriveTime",
         "type": "object"
       },
       "DroppedView": {
@@ -971,6 +1120,83 @@
         "title": "EngagementSummary",
         "type": "object"
       },
+      "EnrichResult": {
+        "properties": {
+          "filled": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Filled",
+            "type": "array"
+          },
+          "kept": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Kept",
+            "type": "array"
+          },
+          "not_available": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Not Available",
+            "type": "array"
+          },
+          "property": {
+            "$ref": "#/components/schemas/Property"
+          }
+        },
+        "required": [
+          "property",
+          "filled",
+          "kept",
+          "not_available"
+        ],
+        "title": "EnrichResult",
+        "type": "object"
+      },
+      "Fact": {
+        "properties": {
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "required": [
+          "value",
+          "observed_at",
+          "retrieved_at",
+          "source",
+          "stale"
+        ],
+        "title": "Fact",
+        "type": "object"
+      },
       "Fit": {
         "properties": {
           "fails": {
@@ -997,6 +1223,43 @@
           "unknown"
         ],
         "title": "Fit",
+        "type": "object"
+      },
+      "GeoResult": {
+        "properties": {
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "precision": {
+            "enum": [
+              "suburb",
+              "address"
+            ],
+            "title": "Precision",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "lat",
+          "lng",
+          "precision",
+          "source",
+          "synthetic"
+        ],
+        "title": "GeoResult",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1161,6 +1424,59 @@
         "title": "HouseholdView",
         "type": "object"
       },
+      "IdentityCheckView": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "provider",
+          "reference",
+          "evidence",
+          "synthetic",
+          "created_at"
+        ],
+        "title": "IdentityCheckView",
+        "type": "object"
+      },
       "IntakeSummary": {
         "properties": {
           "created_at": {
@@ -1322,6 +1638,39 @@
           "created_at"
         ],
         "title": "IntakeView",
+        "type": "object"
+      },
+      "IntegrationInfo": {
+        "properties": {
+          "adapter": {
+            "title": "Adapter",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "live": {
+            "title": "Live",
+            "type": "boolean"
+          },
+          "port": {
+            "title": "Port",
+            "type": "string"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "port",
+          "adapter",
+          "synthetic",
+          "live",
+          "description"
+        ],
+        "title": "IntegrationInfo",
         "type": "object"
       },
       "LastResult": {
@@ -1584,6 +1933,51 @@
         "title": "NewClient",
         "type": "object"
       },
+      "NewCommunication": {
+        "properties": {
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "channel": {
+            "enum": [
+              "email",
+              "call",
+              "sms",
+              "note"
+            ],
+            "title": "Channel",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "in",
+              "out"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "subject": {
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "direction",
+          "channel",
+          "subject"
+        ],
+        "title": "NewCommunication",
+        "type": "object"
+      },
       "NewHousehold": {
         "properties": {
           "member_ids": {
@@ -1604,6 +1998,23 @@
           "name"
         ],
         "title": "NewHousehold",
+        "type": "object"
+      },
+      "NewIdentityCheck": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "customer_identification",
+              "sanctions_pep"
+            ],
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "NewIdentityCheck",
         "type": "object"
       },
       "NewIntake": {
@@ -2700,6 +3111,31 @@
         "title": "Property",
         "type": "object"
       },
+      "PropertyLookup": {
+        "properties": {
+          "address_line": {
+            "minLength": 1,
+            "title": "Address Line",
+            "type": "string"
+          },
+          "suburb": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suburb"
+          }
+        },
+        "required": [
+          "address_line"
+        ],
+        "title": "PropertyLookup",
+        "type": "object"
+      },
       "PropertyPatch": {
         "properties": {
           "address_line": {
@@ -2854,6 +3290,68 @@
           }
         },
         "title": "PropertyPatch",
+        "type": "object"
+      },
+      "PropertyRecord": {
+        "properties": {
+          "address_line": {
+            "title": "Address Line",
+            "type": "string"
+          },
+          "facts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Fact"
+            },
+            "title": "Facts",
+            "type": "object"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing",
+            "type": "array"
+          },
+          "postcode": {
+            "title": "Postcode",
+            "type": "string"
+          },
+          "stale": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Stale",
+            "type": "array"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "suburb": {
+            "title": "Suburb",
+            "type": "string"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "terms": {
+            "title": "Terms",
+            "type": "string"
+          }
+        },
+        "required": [
+          "address_line",
+          "suburb",
+          "state",
+          "postcode",
+          "facts",
+          "missing",
+          "stale",
+          "synthetic",
+          "terms"
+        ],
+        "title": "PropertyRecord",
         "type": "object"
       },
       "QueueItem": {
@@ -3387,6 +3885,31 @@
           "suggested_criteria"
         ],
         "title": "ShortlistView",
+        "type": "object"
+      },
+      "SlotProposal": {
+        "properties": {
+          "attendees": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Attendees",
+            "type": "array"
+          },
+          "slots": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Slots",
+            "type": "array"
+          }
+        },
+        "required": [
+          "attendees",
+          "slots"
+        ],
+        "title": "SlotProposal",
         "type": "object"
       },
       "SpeakerMatch": {
@@ -4362,6 +4885,200 @@
         "summary": "Get Changes",
         "tags": [
           "engagements"
+        ]
+      }
+    },
+    "/api/v1/engagements/{engagement_id}/communications": {
+      "get": {
+        "operationId": "list_communications_api_v1_engagements__engagement_id__communications_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "engagement_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Engagement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CommunicationView"
+                  },
+                  "title": "Response List Communications Api V1 Engagements  Engagement Id  Communications Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Communications",
+        "tags": [
+          "integrations"
+        ]
+      },
+      "post": {
+        "operationId": "log_communication_api_v1_engagements__engagement_id__communications_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "engagement_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Engagement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewCommunication"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunicationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Log Communication",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/api/v1/engagements/{engagement_id}/discovery-call/book": {
+      "post": {
+        "operationId": "book_call_api_v1_engagements__engagement_id__discovery_call_book_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "engagement_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Engagement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookCall"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallBooked"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Book Call",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/api/v1/engagements/{engagement_id}/discovery-call/slots": {
+      "post": {
+        "operationId": "propose_slots_api_v1_engagements__engagement_id__discovery_call_slots_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "engagement_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Engagement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlotProposal"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Propose Slots",
+        "tags": [
+          "integrations"
         ]
       }
     },
@@ -5757,6 +6474,253 @@
         ]
       }
     },
+    "/api/v1/integrations": {
+      "get": {
+        "operationId": "integrations_api_v1_integrations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationInfo"
+                  },
+                  "title": "Response Integrations Api V1 Integrations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Integrations",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/api/v1/integrations/maps/drive-time": {
+      "get": {
+        "operationId": "drive_time_api_v1_integrations_maps_drive_time_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from_place",
+            "required": true,
+            "schema": {
+              "title": "From Place",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_place",
+            "required": true,
+            "schema": {
+              "title": "To Place",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveTime"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Drive Time",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/api/v1/integrations/maps/geocode": {
+      "get": {
+        "operationId": "geocode_api_v1_integrations_maps_geocode_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "suburb",
+            "required": true,
+            "schema": {
+              "title": "Suburb",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "address_line",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Address Line"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Geocode",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/api/v1/integrations/property-data/comparables": {
+      "get": {
+        "operationId": "comparables_api_v1_integrations_property_data_comparables_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "suburb",
+            "required": true,
+            "schema": {
+              "title": "Suburb",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bedrooms",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bedrooms"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 5,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PropertyRecord"
+                  },
+                  "title": "Response Comparables Api V1 Integrations Property Data Comparables Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Comparables",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/api/v1/integrations/property-data/lookup": {
+      "post": {
+        "operationId": "lookup_api_v1_integrations_property_data_lookup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PropertyLookup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PropertyRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lookup",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
     "/api/v1/people": {
       "get": {
         "operationId": "search_people_api_v1_people_get",
@@ -6010,6 +6974,104 @@
         "summary": "Person Changes",
         "tags": [
           "people"
+        ]
+      }
+    },
+    "/api/v1/people/{person_id}/identity-checks": {
+      "get": {
+        "operationId": "list_identity_checks_api_v1_people__person_id__identity_checks_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Person Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IdentityCheckView"
+                  },
+                  "title": "Response List Identity Checks Api V1 People  Person Id  Identity Checks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Identity Checks",
+        "tags": [
+          "integrations"
+        ]
+      },
+      "post": {
+        "operationId": "run_identity_check_api_v1_people__person_id__identity_checks_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Person Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewIdentityCheck"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityCheckView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Identity Check",
+        "tags": [
+          "integrations"
         ]
       }
     },
@@ -6598,6 +7660,50 @@
         "summary": "Edit Property",
         "tags": [
           "properties"
+        ]
+      }
+    },
+    "/api/v1/properties/{property_id}/enrich": {
+      "post": {
+        "description": "Fill a property's empty facts from the data source. Anything already entered is kept.",
+        "operationId": "enrich_api_v1_properties__property_id__enrich_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "property_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Property Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrichResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Enrich",
+        "tags": [
+          "integrations"
         ]
       }
     },

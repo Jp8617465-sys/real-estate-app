@@ -8,6 +8,7 @@ import { duplicateOf } from "./PeoplePage";
 type Detail = components["schemas"]["PersonDetail"];
 type Summary = components["schemas"]["PersonSummary"];
 type Household = components["schemas"]["HouseholdView"];
+type Check = components["schemas"]["IdentityCheckView"];
 
 const KINDS = ["partner", "parent", "child", "sibling", "other"] as const;
 
@@ -22,6 +23,7 @@ export function PersonPage() {
   const [duplicate, setDuplicate] = useState<ReturnType<typeof duplicateOf>>(null);
   const [rel, setRel] = useState<{ other: string; kind: (typeof KINDS)[number] }>({ other: "", kind: "partner" });
   const [missing, setMissing] = useState(false);
+  const [checks, setChecks] = useState<Check[]>([]);
 
   const load = useCallback(async () => {
     const { data } = await api.GET("/api/v1/people/{person_id}", { params: { path: { person_id: id } } });
@@ -34,6 +36,8 @@ export function PersonPage() {
       if (r.data) loaded[h.household_id] = r.data;
     }
     setHouseholds(loaded);
+    const c = await api.GET("/api/v1/people/{person_id}/identity-checks", { params: { path: { person_id: id } } });
+    if (c.data) setChecks(c.data);
     const all = await api.GET("/api/v1/people", { params: { query: { limit: 200 } } });
     if (all.data) setEveryone(all.data.filter((p) => p.id !== id));
   }, [id]);
@@ -229,6 +233,25 @@ export function PersonPage() {
             Add
           </button>
         </div>
+      </section>
+
+      <section className="panel">
+        <h2>Identity checks</h2>
+        <p className="warnbox">Synthetic only: shows the shape of a check. No identity provider is connected, and the AML/CTF requirements are not decided yet. This is not a real check.</p>
+        <ul className="plain">
+          {checks.map((c) => (
+            <li key={c.id}>
+              <span className={`pill ${c.status === "failed" ? "bad" : c.status === "needs_review" ? "warn" : ""}`}>{c.status.replace("_", " ")}</span> {c.kind.replace("_", " ")} · {c.reference}
+              <div className="muted small">{c.evidence.join(" ")} ({c.provider})</div>
+            </li>
+          ))}
+          {checks.length === 0 && <li className="muted">No checks run.</li>}
+        </ul>
+        {(["customer_identification", "sanctions_pep"] as const).map((k) => (
+          <button key={k} className="button" onClick={() => api.POST("/api/v1/people/{person_id}/identity-checks", { params: { path: { person_id: id } }, body: { kind: k } }).then(load)}>
+            Run {k.replace("_", " ")} check
+          </button>
+        ))}
       </section>
 
       {person.engagements.length > 0 && (

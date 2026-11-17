@@ -670,3 +670,68 @@ class TimelineEvent(BaseModel):
     kind: str
     title: str
     source: str
+
+
+# ---- Integrations (slice 8) -----------------------------------------------------------------------------------------------
+
+
+class PropertyLookup(BaseModel):
+    address_line: str = Field(min_length=1)
+    suburb: str | None = None
+
+
+class EnrichResult(BaseModel):
+    property: Property
+    filled: list[str]
+    kept: list[str]
+    not_available: list[str]
+
+
+class SlotProposal(BaseModel):
+    attendees: list[str]
+    slots: list[dict[str, Any]]
+
+
+class BookCall(BaseModel):
+    start: datetime
+
+
+class CallBooked(BaseModel):
+    uid: str
+    invite_ics: str
+    start: datetime
+    attendees: list[str]
+    stage: str
+    task_id: UUID
+    synthetic: bool
+
+
+class NewCommunication(BaseModel):
+    direction: Literal["in", "out"]
+    channel: Literal["email", "call", "sms", "note"]
+    subject: str = Field(min_length=1)
+    body: str | None = None
+
+
+class CommunicationView(BaseModel):
+    id: UUID
+    direction: str
+    channel: str
+    subject: str
+    body: str | None
+    occurred_at: datetime
+
+
+class NewIdentityCheck(BaseModel):
+    kind: Literal["customer_identification", "sanctions_pep"]
+
+
+class IdentityCheckView(BaseModel):
+    id: UUID
+    kind: str
+    status: str
+    provider: str
+    reference: str
+    evidence: list[str]
+    synthetic: bool
+    created_at: datetime

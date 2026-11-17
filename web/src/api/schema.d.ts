@@ -144,6 +144,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/engagements/{engagement_id}/communications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Communications */
+        get: operations["list_communications_api_v1_engagements__engagement_id__communications_get"];
+        put?: never;
+        /** Log Communication */
+        post: operations["log_communication_api_v1_engagements__engagement_id__communications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engagements/{engagement_id}/discovery-call/book": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Book Call */
+        post: operations["book_call_api_v1_engagements__engagement_id__discovery_call_book_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engagements/{engagement_id}/discovery-call/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Propose Slots */
+        post: operations["propose_slots_api_v1_engagements__engagement_id__discovery_call_slots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/engagements/{engagement_id}/intakes": {
         parameters: {
             query?: never;
@@ -559,6 +611,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Integrations */
+        get: operations["integrations_api_v1_integrations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/maps/drive-time": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Drive Time */
+        get: operations["drive_time_api_v1_integrations_maps_drive_time_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/maps/geocode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Geocode */
+        get: operations["geocode_api_v1_integrations_maps_geocode_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/property-data/comparables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Comparables */
+        get: operations["comparables_api_v1_integrations_property_data_comparables_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/property-data/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Lookup */
+        post: operations["lookup_api_v1_integrations_property_data_lookup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/people": {
         parameters: {
             query?: never;
@@ -606,6 +743,24 @@ export interface paths {
         get: operations["person_changes_api_v1_people__person_id__changes_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/{person_id}/identity-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Identity Checks */
+        get: operations["list_identity_checks_api_v1_people__person_id__identity_checks_get"];
+        put?: never;
+        /** Run Identity Check */
+        post: operations["run_identity_check_api_v1_people__person_id__identity_checks_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -734,6 +889,26 @@ export interface paths {
         head?: never;
         /** Edit Property */
         patch: operations["edit_property_api_v1_properties__property_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/properties/{property_id}/enrich": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enrich
+         * @description Fill a property's empty facts from the data source. Anything already entered is kept.
+         */
+        post: operations["enrich_api_v1_properties__property_id__enrich_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/tasks": {
@@ -882,6 +1057,14 @@ export interface components {
             /** Stage */
             stage: string;
         };
+        /** BookCall */
+        BookCall: {
+            /**
+             * Start
+             * Format: date-time
+             */
+            start: string;
+        };
         /** BriefField */
         BriefField: {
             /** Group */
@@ -939,6 +1122,29 @@ export interface components {
             /** Sections */
             sections: components["schemas"]["BriefSection"][];
         };
+        /** CallBooked */
+        CallBooked: {
+            /** Attendees */
+            attendees: string[];
+            /** Invite Ics */
+            invite_ics: string;
+            /** Stage */
+            stage: string;
+            /**
+             * Start
+             * Format: date-time
+             */
+            start: string;
+            /** Synthetic */
+            synthetic: boolean;
+            /**
+             * Task Id
+             * Format: uuid
+             */
+            task_id: string;
+            /** Uid */
+            uid: string;
+        };
         /** ChangeLogEntry */
         ChangeLogEntry: {
             /**
@@ -994,6 +1200,27 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** CommunicationView */
+        CommunicationView: {
+            /** Body */
+            body: string | null;
+            /** Channel */
+            channel: string;
+            /** Direction */
+            direction: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Subject */
+            subject: string;
+        };
         /** ConflictView */
         ConflictView: {
             earlier?: components["schemas"]["EarlierValue"] | null;
@@ -1025,6 +1252,19 @@ export interface components {
             quote: components["schemas"]["QuoteView"];
             /** Value */
             value: string;
+        };
+        /** DriveTime */
+        DriveTime: {
+            /** From Place */
+            from_place: string;
+            /** Minutes */
+            minutes: number | null;
+            /** Source */
+            source: string;
+            /** Synthetic */
+            synthetic: boolean;
+            /** To Place */
+            to_place: string;
         };
         /** DroppedView */
         DroppedView: {
@@ -1166,6 +1406,32 @@ export interface components {
              */
             stage_changed_at: string;
         };
+        /** EnrichResult */
+        EnrichResult: {
+            /** Filled */
+            filled: string[];
+            /** Kept */
+            kept: string[];
+            /** Not Available */
+            not_available: string[];
+            property: components["schemas"]["Property"];
+        };
+        /** Fact */
+        Fact: {
+            /** Observed At */
+            observed_at: string | null;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Source */
+            source: string;
+            /** Stale */
+            stale: boolean;
+            /** Value */
+            value: unknown;
+        };
         /** Fit */
         Fit: {
             /** Fails */
@@ -1176,6 +1442,22 @@ export interface components {
             partly: number;
             /** Unknown */
             unknown: number;
+        };
+        /** GeoResult */
+        GeoResult: {
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+            /**
+             * Precision
+             * @enum {string}
+             */
+            precision: "suburb" | "address";
+            /** Source */
+            source: string;
+            /** Synthetic */
+            synthetic: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1235,6 +1517,31 @@ export interface components {
             members: components["schemas"]["Member"][];
             /** Name */
             name: string;
+        };
+        /** IdentityCheckView */
+        IdentityCheckView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Evidence */
+            evidence: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Provider */
+            provider: string;
+            /** Reference */
+            reference: string;
+            /** Status */
+            status: string;
+            /** Synthetic */
+            synthetic: boolean;
         };
         /** IntakeSummary */
         IntakeSummary: {
@@ -1298,6 +1605,19 @@ export interface components {
             summary: components["schemas"]["Summary"] | null;
             /** Turns */
             turns: components["schemas"]["Turn"][];
+        };
+        /** IntegrationInfo */
+        IntegrationInfo: {
+            /** Adapter */
+            adapter: string;
+            /** Description */
+            description: string;
+            /** Live */
+            live: boolean;
+            /** Port */
+            port: string;
+            /** Synthetic */
+            synthetic: boolean;
         };
         /** LastResult */
         LastResult: {
@@ -1386,12 +1706,37 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** NewCommunication */
+        NewCommunication: {
+            /** Body */
+            body?: string | null;
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "email" | "call" | "sms" | "note";
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "in" | "out";
+            /** Subject */
+            subject: string;
+        };
         /** NewHousehold */
         NewHousehold: {
             /** Member Ids */
             member_ids?: string[];
             /** Name */
             name: string;
+        };
+        /** NewIdentityCheck */
+        NewIdentityCheck: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "customer_identification" | "sanctions_pep";
         };
         /** NewIntake */
         NewIntake: {
@@ -1709,6 +2054,13 @@ export interface components {
             /** Suburb */
             suburb: string | null;
         };
+        /** PropertyLookup */
+        PropertyLookup: {
+            /** Address Line */
+            address_line: string;
+            /** Suburb */
+            suburb?: string | null;
+        };
         /** PropertyPatch */
         PropertyPatch: {
             /** Address Line */
@@ -1737,6 +2089,29 @@ export interface components {
             state?: string | null;
             /** Suburb */
             suburb?: string | null;
+        };
+        /** PropertyRecord */
+        PropertyRecord: {
+            /** Address Line */
+            address_line: string;
+            /** Facts */
+            facts: {
+                [key: string]: components["schemas"]["Fact"];
+            };
+            /** Missing */
+            missing: string[];
+            /** Postcode */
+            postcode: string;
+            /** Stale */
+            stale: string[];
+            /** State */
+            state: string;
+            /** Suburb */
+            suburb: string;
+            /** Synthetic */
+            synthetic: boolean;
+            /** Terms */
+            terms: string;
         };
         /** QueueItem */
         QueueItem: {
@@ -1891,6 +2266,15 @@ export interface components {
             properties: components["schemas"]["EngagementProperty"][];
             /** Suggested Criteria */
             suggested_criteria: string[];
+        };
+        /** SlotProposal */
+        SlotProposal: {
+            /** Attendees */
+            attendees: string[];
+            /** Slots */
+            slots: {
+                [key: string]: unknown;
+            }[];
         };
         /** SpeakerMatch */
         SpeakerMatch: {
@@ -2347,6 +2731,138 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChangeLogEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_communications_api_v1_engagements__engagement_id__communications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommunicationView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    log_communication_api_v1_engagements__engagement_id__communications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCommunication"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommunicationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    book_call_api_v1_engagements__engagement_id__discovery_call_book_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookCall"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallBooked"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    propose_slots_api_v1_engagements__engagement_id__discovery_call_slots_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlotProposal"];
                 };
             };
             /** @description Validation Error */
@@ -3273,6 +3789,156 @@ export interface operations {
             };
         };
     };
+    integrations_api_v1_integrations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationInfo"][];
+                };
+            };
+        };
+    };
+    drive_time_api_v1_integrations_maps_drive_time_get: {
+        parameters: {
+            query: {
+                from_place: string;
+                to_place: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DriveTime"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    geocode_api_v1_integrations_maps_geocode_get: {
+        parameters: {
+            query: {
+                suburb: string;
+                address_line?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeoResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    comparables_api_v1_integrations_property_data_comparables_get: {
+        parameters: {
+            query: {
+                suburb: string;
+                bedrooms?: number | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PropertyRecord"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lookup_api_v1_integrations_property_data_lookup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PropertyLookup"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PropertyRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     search_people_api_v1_people_get: {
         parameters: {
             query?: {
@@ -3423,6 +4089,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChangeLogEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_identity_checks_api_v1_people__person_id__identity_checks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                person_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityCheckView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_identity_check_api_v1_people__person_id__identity_checks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                person_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewIdentityCheck"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityCheckView"];
                 };
             };
             /** @description Validation Error */
@@ -3800,6 +4532,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Property"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enrich_api_v1_properties__property_id__enrich_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                property_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrichResult"];
                 };
             };
             /** @description Validation Error */
