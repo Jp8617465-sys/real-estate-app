@@ -446,3 +446,107 @@ class BriefView(BaseModel):
     engagement_id: UUID
     sections: list[BriefSection]
     not_covered: list[str]
+
+
+# ---- Properties and shortlist (slice 4) ------------------------------------------------------------------------
+
+PropertyStatus = Literal["considering", "shortlisted", "inspecting", "held", "offered", "purchased", "passed", "missed"]
+
+
+class NewProperty(BaseModel):
+    address_line: str = Field(min_length=1)
+    suburb: str | None = None
+    state: str | None = None
+    postcode: str | None = None
+    property_type: str | None = None
+    bedrooms: int | None = Field(default=None, ge=0)
+    bathrooms: int | None = Field(default=None, ge=0)
+    parking: int | None = Field(default=None, ge=0)
+    land_m2: int | None = Field(default=None, ge=0)
+    price_guide_low: int | None = Field(default=None, ge=0)
+    price_guide_high: int | None = Field(default=None, ge=0)
+    listing_url: str | None = None
+    notes: str | None = None
+    confirm_duplicate: bool = False
+
+
+class PropertyPatch(BaseModel):
+    address_line: str | None = Field(default=None, min_length=1)
+    suburb: str | None = None
+    state: str | None = None
+    postcode: str | None = None
+    property_type: str | None = None
+    bedrooms: int | None = Field(default=None, ge=0)
+    bathrooms: int | None = Field(default=None, ge=0)
+    parking: int | None = Field(default=None, ge=0)
+    land_m2: int | None = Field(default=None, ge=0)
+    price_guide_low: int | None = Field(default=None, ge=0)
+    price_guide_high: int | None = Field(default=None, ge=0)
+    listing_url: str | None = None
+    notes: str | None = None
+
+
+class Property(BaseModel):
+    id: UUID
+    address_line: str
+    suburb: str | None
+    state: str | None
+    postcode: str | None
+    property_type: str | None
+    bedrooms: int | None
+    bathrooms: int | None
+    parking: int | None
+    land_m2: int | None
+    price_guide_low: int | None
+    price_guide_high: int | None
+    listing_url: str | None
+    notes: str | None
+    source: str
+
+
+class AttachProperty(BaseModel):
+    property_id: UUID
+    status: PropertyStatus = "considering"
+
+
+class EngagementPropertyPatch(BaseModel):
+    status: PropertyStatus | None = None
+    assessment: str | None = None
+    reasons: str | None = None
+
+
+class NewCheck(BaseModel):
+    criterion: str = Field(min_length=1)
+    result: Literal["meets", "partly", "fails", "unknown"]
+    note: str | None = None
+
+
+class CheckView(BaseModel):
+    id: UUID
+    criterion: str
+    result: str
+    note: str | None
+
+
+class Fit(BaseModel):
+    meets: int
+    partly: int
+    fails: int
+    unknown: int
+
+
+class EngagementProperty(BaseModel):
+    id: UUID
+    engagement_id: UUID
+    property: Property
+    status: str
+    assessment: str | None
+    reasons: str | None
+    checks: list[CheckView]
+    fit: Fit
+    budget_fit: str
+
+
+class ShortlistView(BaseModel):
+    properties: list[EngagementProperty]
+    suggested_criteria: list[str]

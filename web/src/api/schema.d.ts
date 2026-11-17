@@ -145,6 +145,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/engagements/{engagement_id}/properties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Engagement Properties */
+        get: operations["list_engagement_properties_api_engagements__engagement_id__properties_get"];
+        put?: never;
+        /** Attach Property */
+        post: operations["attach_property_api_engagements__engagement_id__properties_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagements/{engagement_id}/properties/{ep_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit Engagement Property */
+        patch: operations["edit_engagement_property_api_engagements__engagement_id__properties__ep_id__patch"];
+        trace?: never;
+    };
+    "/api/engagements/{engagement_id}/properties/{ep_id}/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Check */
+        put: operations["set_check_api_engagements__engagement_id__properties__ep_id__checks_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/engagements/{engagement_id}/record": {
         parameters: {
             query?: never;
@@ -505,6 +557,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/properties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Properties */
+        get: operations["search_properties_api_properties_get"];
+        put?: never;
+        /** Create Property */
+        post: operations["create_property_api_properties_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/properties/{property_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Property */
+        get: operations["get_property_api_properties__property_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit Property */
+        patch: operations["edit_property_api_properties__property_id__patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -516,6 +604,20 @@ export interface components {
              * Format: uuid
              */
             person_id: string;
+        };
+        /** AttachProperty */
+        AttachProperty: {
+            /**
+             * Property Id
+             * Format: uuid
+             */
+            property_id: string;
+            /**
+             * Status
+             * @default considering
+             * @enum {string}
+             */
+            status: "considering" | "shortlisted" | "inspecting" | "held" | "offered" | "purchased" | "passed" | "missed";
         };
         /** Board */
         Board: {
@@ -635,6 +737,20 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** CheckView */
+        CheckView: {
+            /** Criterion */
+            criterion: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Note */
+            note: string | null;
+            /** Result */
+            result: string;
+        };
         /** Client */
         Client: {
             /** Email */
@@ -736,6 +852,40 @@ export interface components {
              */
             stage_changed_at: string;
         };
+        /** EngagementProperty */
+        EngagementProperty: {
+            /** Assessment */
+            assessment: string | null;
+            /** Budget Fit */
+            budget_fit: string;
+            /** Checks */
+            checks: components["schemas"]["CheckView"][];
+            /**
+             * Engagement Id
+             * Format: uuid
+             */
+            engagement_id: string;
+            fit: components["schemas"]["Fit"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            property: components["schemas"]["Property"];
+            /** Reasons */
+            reasons: string | null;
+            /** Status */
+            status: string;
+        };
+        /** EngagementPropertyPatch */
+        EngagementPropertyPatch: {
+            /** Assessment */
+            assessment?: string | null;
+            /** Reasons */
+            reasons?: string | null;
+            /** Status */
+            status?: ("considering" | "shortlisted" | "inspecting" | "held" | "offered" | "purchased" | "passed" | "missed") | null;
+        };
         /** EngagementRecord */
         EngagementRecord: {
             /**
@@ -779,6 +929,17 @@ export interface components {
              * Format: date-time
              */
             stage_changed_at: string;
+        };
+        /** Fit */
+        Fit: {
+            /** Fails */
+            fails: number;
+            /** Meets */
+            meets: number;
+            /** Partly */
+            partly: number;
+            /** Unknown */
+            unknown: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -938,6 +1099,18 @@ export interface components {
             /** Household Name */
             household_name: string;
         };
+        /** NewCheck */
+        NewCheck: {
+            /** Criterion */
+            criterion: string;
+            /** Note */
+            note?: string | null;
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "meets" | "partly" | "fails" | "unknown";
+        };
         /** NewClient */
         NewClient: {
             /** Email */
@@ -979,6 +1152,40 @@ export interface components {
             mobile?: string | null;
             /** Name */
             name: string;
+        };
+        /** NewProperty */
+        NewProperty: {
+            /** Address Line */
+            address_line: string;
+            /** Bathrooms */
+            bathrooms?: number | null;
+            /** Bedrooms */
+            bedrooms?: number | null;
+            /**
+             * Confirm Duplicate
+             * @default false
+             */
+            confirm_duplicate: boolean;
+            /** Land M2 */
+            land_m2?: number | null;
+            /** Listing Url */
+            listing_url?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Parking */
+            parking?: number | null;
+            /** Postcode */
+            postcode?: string | null;
+            /** Price Guide High */
+            price_guide_high?: number | null;
+            /** Price Guide Low */
+            price_guide_low?: number | null;
+            /** Property Type */
+            property_type?: string | null;
+            /** State */
+            state?: string | null;
+            /** Suburb */
+            suburb?: string | null;
         };
         /** NewRelationship */
         NewRelationship: {
@@ -1075,6 +1282,71 @@ export interface components {
             person_id: string;
             /** Role */
             role: string;
+        };
+        /** Property */
+        Property: {
+            /** Address Line */
+            address_line: string;
+            /** Bathrooms */
+            bathrooms: number | null;
+            /** Bedrooms */
+            bedrooms: number | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Land M2 */
+            land_m2: number | null;
+            /** Listing Url */
+            listing_url: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Parking */
+            parking: number | null;
+            /** Postcode */
+            postcode: string | null;
+            /** Price Guide High */
+            price_guide_high: number | null;
+            /** Price Guide Low */
+            price_guide_low: number | null;
+            /** Property Type */
+            property_type: string | null;
+            /** Source */
+            source: string;
+            /** State */
+            state: string | null;
+            /** Suburb */
+            suburb: string | null;
+        };
+        /** PropertyPatch */
+        PropertyPatch: {
+            /** Address Line */
+            address_line?: string | null;
+            /** Bathrooms */
+            bathrooms?: number | null;
+            /** Bedrooms */
+            bedrooms?: number | null;
+            /** Land M2 */
+            land_m2?: number | null;
+            /** Listing Url */
+            listing_url?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Parking */
+            parking?: number | null;
+            /** Postcode */
+            postcode?: string | null;
+            /** Price Guide High */
+            price_guide_high?: number | null;
+            /** Price Guide Low */
+            price_guide_low?: number | null;
+            /** Property Type */
+            property_type?: string | null;
+            /** State */
+            state?: string | null;
+            /** Suburb */
+            suburb?: string | null;
         };
         /** QueueItem */
         QueueItem: {
@@ -1222,6 +1494,13 @@ export interface components {
             key: string;
             /** Label */
             label: string;
+        };
+        /** ShortlistView */
+        ShortlistView: {
+            /** Properties */
+            properties: components["schemas"]["EngagementProperty"][];
+            /** Suggested Criteria */
+            suggested_criteria: string[];
         };
         /** SpeakerMatch */
         SpeakerMatch: {
@@ -1647,6 +1926,146 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_engagement_properties_api_engagements__engagement_id__properties_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+            };
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShortlistView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    attach_property_api_engagements__engagement_id__properties_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttachProperty"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngagementProperty"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_engagement_property_api_engagements__engagement_id__properties__ep_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+                ep_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EngagementPropertyPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngagementProperty"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_check_api_engagements__engagement_id__properties__ep_id__checks_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+                ep_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCheck"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngagementProperty"];
                 };
             };
             /** @description Validation Error */
@@ -2417,6 +2836,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StageInfo"][];
+                };
+            };
+        };
+    };
+    search_properties_api_properties_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Property"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_property_api_properties_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewProperty"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Property"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_property_api_properties__property_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                property_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Property"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_property_api_properties__property_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                property_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PropertyPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Property"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
