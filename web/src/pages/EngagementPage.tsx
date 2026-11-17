@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { components } from "../api/schema";
 import { money, stageLabel, when } from "../format";
+import { BriefPanel } from "./BriefPanel";
 
 type Engagement = components["schemas"]["Engagement"];
 type Change = components["schemas"]["ChangeLogEntry"];
@@ -183,6 +184,7 @@ export function EngagementPage() {
           </ul>
         )}
       </section>
+      <BriefPanel engagementId={engagement.id} />
       <UploadCall engagementId={engagement.id} />
       {intakes.length > 0 && (
         <section className="panel">
