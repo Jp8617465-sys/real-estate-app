@@ -1,5 +1,5 @@
 """The documented product API: request and response shapes for buying opportunities."""
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal
 from uuid import UUID
 
@@ -620,3 +620,53 @@ class LinkedProfessional(BaseModel):
 class EngagementProfessionals(BaseModel):
     current: list[LinkedProfessional]
     former: list[LinkedProfessional]
+
+
+# ---- Tasks and timeline (slice 6) ---------------------------------------------------------------------------------------
+
+
+class NewTask(BaseModel):
+    title: str
+    engagement_id: UUID | None = None
+    person_id: UUID | None = None
+    owner: str = "Agent"
+    due_on: date | None = None
+
+    @model_validator(mode="after")
+    def title_not_blank(self) -> "NewTask":
+        if not self.title.strip():
+            raise ValueError("a task needs a title")
+        return self
+
+
+class TaskPatch(BaseModel):
+    title: str | None = Field(default=None, min_length=1)
+    owner: str | None = Field(default=None, min_length=1)
+    due_on: date | None = None
+
+
+class TaskView(BaseModel):
+    id: UUID
+    title: str
+    owner: str
+    engagement_id: UUID | None
+    household_name: str | None
+    person_id: UUID | None
+    due_on: str | None
+    due_text: str | None
+    done_at: datetime | None
+    overdue: bool
+    created_at: datetime
+
+
+class TaskSummary(BaseModel):
+    open: int
+    overdue: int
+    due_today: int
+
+
+class TimelineEvent(BaseModel):
+    at: datetime
+    kind: str
+    title: str
+    source: str
