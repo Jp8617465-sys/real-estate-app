@@ -405,3 +405,44 @@ class BoardColumn(BaseModel):
 
 class Board(BaseModel):
     columns: list[BoardColumn]
+
+
+# ---- Brief editor (slice 3) ---------------------------------------------------------------------------------
+
+
+class NewBriefValue(BaseModel):
+    value: str
+    subject: str | None = None
+
+
+class BriefValue(BaseModel):
+    id: UUID | None
+    value: str
+    subject: str | None
+    status: str
+    basis: str | None
+    source: str
+    history: list[HistoryEntry]
+    recorded_at: datetime | None
+
+
+class BriefField(BaseModel):
+    id: str
+    label: str
+    item: str
+    kind: str
+    group: str
+    per_person: bool
+    values: list[BriefValue]
+
+
+class BriefSection(BaseModel):
+    key: str
+    label: str
+    fields: list[BriefField]
+
+
+class BriefView(BaseModel):
+    engagement_id: UUID
+    sections: list[BriefSection]
+    not_covered: list[str]

@@ -39,6 +39,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/engagements/{engagement_id}/brief": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Brief */
+        get: operations["get_brief_api_engagements__engagement_id__brief_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagements/{engagement_id}/brief/values/{value_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Value */
+        delete: operations["remove_value_api_engagements__engagement_id__brief_values__value_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagements/{engagement_id}/brief/{field_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Value */
+        put: operations["set_value_api_engagements__engagement_id__brief__field_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagements/{engagement_id}/brief/{field_id}/values": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Value */
+        post: operations["add_value_api_engagements__engagement_id__brief__field_id__values_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/engagements/{engagement_id}/changes": {
         parameters: {
             query?: never;
@@ -483,6 +551,63 @@ export interface components {
             /** Stage */
             stage: string;
         };
+        /** BriefField */
+        BriefField: {
+            /** Group */
+            group: string;
+            /** Id */
+            id: string;
+            /** Item */
+            item: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Per Person */
+            per_person: boolean;
+            /** Values */
+            values: components["schemas"]["BriefValue"][];
+        };
+        /** BriefSection */
+        BriefSection: {
+            /** Fields */
+            fields: components["schemas"]["BriefField"][];
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** BriefValue */
+        BriefValue: {
+            /** Basis */
+            basis: string | null;
+            /** History */
+            history: components["schemas"]["HistoryEntry"][];
+            /** Id */
+            id: string | null;
+            /** Recorded At */
+            recorded_at: string | null;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string | null;
+            /** Value */
+            value: string;
+        };
+        /** BriefView */
+        BriefView: {
+            /**
+             * Engagement Id
+             * Format: uuid
+             */
+            engagement_id: string;
+            /** Not Covered */
+            not_covered: string[];
+            /** Sections */
+            sections: components["schemas"]["BriefSection"][];
+        };
         /** ChangeLogEntry */
         ChangeLogEntry: {
             /**
@@ -797,6 +922,13 @@ export interface components {
             person_id: string;
             /** Started On */
             started_on: string;
+        };
+        /** NewBriefValue */
+        NewBriefValue: {
+            /** Subject */
+            subject?: string | null;
+            /** Value */
+            value: string;
         };
         /** NewBuyingOpportunity */
         NewBuyingOpportunity: {
@@ -1283,6 +1415,141 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Engagement"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_brief_api_engagements__engagement_id__brief_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_value_api_engagements__engagement_id__brief_values__value_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+                value_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_value_api_engagements__engagement_id__brief__field_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewBriefValue"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_value_api_engagements__engagement_id__brief__field_id__values_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewBriefValue"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefView"];
                 };
             };
             /** @description Validation Error */
