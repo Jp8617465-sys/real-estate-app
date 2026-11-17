@@ -1,6 +1,20 @@
 {
   "components": {
     "schemas": {
+      "AddMember": {
+        "properties": {
+          "person_id": {
+            "format": "uuid",
+            "title": "Person Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "person_id"
+        ],
+        "title": "AddMember",
+        "type": "object"
+      },
       "ChangeLogEntry": {
         "properties": {
           "changed_at": {
@@ -261,6 +275,23 @@
         "title": "EarlierValue",
         "type": "object"
       },
+      "EndMembership": {
+        "properties": {
+          "ended_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended On"
+          }
+        },
+        "title": "EndMembership",
+        "type": "object"
+      },
       "Engagement": {
         "properties": {
           "budget_aud": {
@@ -455,6 +486,130 @@
         "title": "HistoryEntry",
         "type": "object"
       },
+      "HouseholdMembership": {
+        "properties": {
+          "ended_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended On"
+          },
+          "household_id": {
+            "format": "uuid",
+            "title": "Household Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "started_on": {
+            "title": "Started On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "household_id",
+          "name",
+          "started_on",
+          "ended_on"
+        ],
+        "title": "HouseholdMembership",
+        "type": "object"
+      },
+      "HouseholdOpportunity": {
+        "properties": {
+          "budget_aud": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Aud"
+          }
+        },
+        "title": "HouseholdOpportunity",
+        "type": "object"
+      },
+      "HouseholdSummary": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "member_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Member Names",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "member_names"
+        ],
+        "title": "HouseholdSummary",
+        "type": "object"
+      },
+      "HouseholdView": {
+        "properties": {
+          "engagements": {
+            "items": {
+              "$ref": "#/components/schemas/PersonEngagement"
+            },
+            "title": "Engagements",
+            "type": "array"
+          },
+          "former_members": {
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            },
+            "title": "Former Members",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "members",
+          "former_members",
+          "engagements"
+        ],
+        "title": "HouseholdView",
+        "type": "object"
+      },
       "IntakeSummary": {
         "properties": {
           "created_at": {
@@ -636,6 +791,42 @@
         "title": "LastResult",
         "type": "object"
       },
+      "Member": {
+        "properties": {
+          "ended_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended On"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "person_id": {
+            "format": "uuid",
+            "title": "Person Id",
+            "type": "string"
+          },
+          "started_on": {
+            "title": "Started On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "person_id",
+          "name",
+          "started_on",
+          "ended_on"
+        ],
+        "title": "Member",
+        "type": "object"
+      },
       "NewBuyingOpportunity": {
         "properties": {
           "budget_aud": {
@@ -704,6 +895,28 @@
         "title": "NewClient",
         "type": "object"
       },
+      "NewHousehold": {
+        "properties": {
+          "member_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Member Ids",
+            "type": "array"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "NewHousehold",
+        "type": "object"
+      },
       "NewIntake": {
         "properties": {
           "filename": {
@@ -729,6 +942,86 @@
         "title": "NewIntake",
         "type": "object"
       },
+      "NewPerson": {
+        "properties": {
+          "confirm_duplicate": {
+            "default": false,
+            "title": "Confirm Duplicate",
+            "type": "boolean"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "NewPerson",
+        "type": "object"
+      },
+      "NewRelationship": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "partner",
+              "parent",
+              "child",
+              "sibling",
+              "other"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "other_person_id": {
+            "format": "uuid",
+            "title": "Other Person Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "other_person_id",
+          "kind"
+        ],
+        "title": "NewRelationship",
+        "type": "object"
+      },
       "OnRecord": {
         "properties": {
           "source": {
@@ -752,6 +1045,195 @@
           "source"
         ],
         "title": "OnRecord",
+        "type": "object"
+      },
+      "PersonDetail": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "engagements": {
+            "items": {
+              "$ref": "#/components/schemas/PersonEngagement"
+            },
+            "title": "Engagements",
+            "type": "array"
+          },
+          "households": {
+            "items": {
+              "$ref": "#/components/schemas/HouseholdMembership"
+            },
+            "title": "Households",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "relationships": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipView"
+            },
+            "title": "Relationships",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "households",
+          "relationships",
+          "engagements"
+        ],
+        "title": "PersonDetail",
+        "type": "object"
+      },
+      "PersonEdit": {
+        "properties": {
+          "confirm_duplicate": {
+            "default": false,
+            "title": "Confirm Duplicate",
+            "type": "boolean"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "PersonEdit",
+        "type": "object"
+      },
+      "PersonEngagement": {
+        "properties": {
+          "household_name": {
+            "title": "Household Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "household_name",
+          "stage"
+        ],
+        "title": "PersonEngagement",
+        "type": "object"
+      },
+      "PersonSummary": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "household_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Household Names",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "household_names"
+        ],
+        "title": "PersonSummary",
         "type": "object"
       },
       "ProfessionalView": {
@@ -1225,6 +1707,48 @@
           "recorded_at"
         ],
         "title": "RecordValue",
+        "type": "object"
+      },
+      "RelationshipView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "other_name": {
+            "title": "Other Name",
+            "type": "string"
+          },
+          "other_person_id": {
+            "format": "uuid",
+            "title": "Other Person Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "other_person_id",
+          "other_name",
+          "kind",
+          "note"
+        ],
+        "title": "RelationshipView",
         "type": "object"
       },
       "Section": {
@@ -1826,6 +2350,310 @@
         ]
       }
     },
+    "/api/households": {
+      "get": {
+        "operationId": "list_households_api_households_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HouseholdSummary"
+                  },
+                  "title": "Response List Households Api Households Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Households",
+        "tags": [
+          "people"
+        ]
+      },
+      "post": {
+        "operationId": "create_household_api_households_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewHousehold"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseholdView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Household",
+        "tags": [
+          "people"
+        ]
+      }
+    },
+    "/api/households/{household_id}": {
+      "get": {
+        "operationId": "get_household_api_households__household_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "household_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Household Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseholdView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Household",
+        "tags": [
+          "people"
+        ]
+      }
+    },
+    "/api/households/{household_id}/members": {
+      "post": {
+        "operationId": "add_member_api_households__household_id__members_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "household_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Household Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMember"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseholdView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Member",
+        "tags": [
+          "people"
+        ]
+      }
+    },
+    "/api/households/{household_id}/members/{person_id}/end": {
+      "post": {
+        "operationId": "end_membership_api_households__household_id__members__person_id__end_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "household_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Household Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Person Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndMembership"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseholdView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "End Membership",
+        "tags": [
+          "people"
+        ]
+      }
+    },
+    "/api/households/{household_id}/opportunities": {
+      "post": {
+        "operationId": "open_opportunity_api_households__household_id__opportunities_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "household_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Household Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HouseholdOpportunity"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Engagement"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Open Opportunity",
+        "tags": [
+          "people"
+        ]
+      }
+    },
     "/api/intakes/{intake_id}": {
       "get": {
         "operationId": "get_intake_api_intakes__intake_id__get",
@@ -2144,6 +2972,296 @@
         "summary": "Edit Speakers",
         "tags": [
           "intake"
+        ]
+      }
+    },
+    "/api/people": {
+      "get": {
+        "operationId": "search_people_api_people_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PersonSummary"
+                  },
+                  "title": "Response Search People Api People Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search People",
+        "tags": [
+          "people"
+        ]
+      },
+      "post": {
+        "operationId": "create_person_api_people_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewPerson"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Person",
+        "tags": [
+          "people"
+        ]
+      }
+    },
+    "/api/people/{person_id}": {
+      "get": {
+        "operationId": "get_person_api_people__person_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Person Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Person",
+        "tags": [
+          "people"
+        ]
+      },
+      "patch": {
+        "operationId": "edit_person_api_people__person_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Person Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit Person",
+        "tags": [
+          "people"
+        ]
+      }
+    },
+    "/api/people/{person_id}/changes": {
+      "get": {
+        "operationId": "person_changes_api_people__person_id__changes_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Person Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ChangeLogEntry"
+                  },
+                  "title": "Response Person Changes Api People  Person Id  Changes Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Person Changes",
+        "tags": [
+          "people"
+        ]
+      }
+    },
+    "/api/people/{person_id}/relationships": {
+      "post": {
+        "operationId": "add_relationship_api_people__person_id__relationships_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Person Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewRelationship"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Add Relationship Api People  Person Id  Relationships Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Relationship",
+        "tags": [
+          "people"
         ]
       }
     }

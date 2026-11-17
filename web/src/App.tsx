@@ -2,6 +2,8 @@ import { NavLink, Route, Routes } from "react-router-dom";
 import { EngagementList } from "./pages/EngagementList";
 import { EngagementPage } from "./pages/EngagementPage";
 import { IntakePage } from "./pages/IntakePage";
+import { PeoplePage } from "./pages/PeoplePage";
+import { PersonPage } from "./pages/PersonPage";
 import { NewOpportunity } from "./pages/NewOpportunity";
 
 export function App() {
@@ -13,6 +15,7 @@ export function App() {
           <NavLink to="/" end>
             Engagements
           </NavLink>
+          <NavLink to="/people">Clients</NavLink>
           <NavLink to="/new">New opportunity</NavLink>
         </nav>
         <p className="rail-note">Local workspace · synthetic material only</p>
@@ -20,6 +23,8 @@ export function App() {
       <main className="content">
         <Routes>
           <Route path="/" element={<EngagementList />} />
+          <Route path="/people" element={<PeoplePage />} />
+          <Route path="/people/:id" element={<PersonPage />} />
           <Route path="/new" element={<NewOpportunity />} />
           <Route path="/engagements/:id" element={<EngagementPage />} />
           <Route path="/intakes/:id" element={<IntakePage />} />
