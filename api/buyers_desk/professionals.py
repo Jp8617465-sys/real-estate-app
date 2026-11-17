@@ -3,11 +3,12 @@ record, whether a client, a professional or both."""
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import Connection, text
 
 from buyers_desk.engagements import Conn, _read
 from buyers_desk.people import _log_change, _matches, _refuse_duplicates
+from buyers_desk.paging import PageDep, paginate
 from buyers_desk.schemas import (
     EngagementProfessionals,
     LinkedProfessional,
@@ -20,7 +21,7 @@ from buyers_desk.schemas import (
     ProSummary,
 )
 
-router = APIRouter(prefix="/api", tags=["professionals"])
+router = APIRouter(prefix="/api/v1", tags=["professionals"])
 
 _SELECT = (
     "SELECT p.id, p.name, p.email, p.mobile, pr.kind, pr.firm, pr.notes, "
@@ -79,15 +80,15 @@ def make_professional(person_id: UUID, body: ProfessionalProfile, request: Reque
 
 
 @router.get("/professionals", response_model=list[ProSummary])
-def list_professionals(conn: Conn, q: str | None = None, kind: str | None = None) -> list[ProSummary]:
+def list_professionals(conn: Conn, response: Response, page: PageDep, q: str | None = None, kind: str | None = None) -> list[ProSummary]:
     rows = conn.execute(
         text(
             _SELECT + " WHERE (CAST(:k AS text) IS NULL OR pr.kind = :k) AND (CAST(:q AS text) IS NULL "  # noqa: S608
-            "OR p.name ILIKE '%' || CAST(:q AS text) || '%' OR pr.firm ILIKE '%' || CAST(:q AS text) || '%') ORDER BY p.name, p.id LIMIT 200"
+            "OR p.name ILIKE '%' || CAST(:q AS text) || '%' OR pr.firm ILIKE '%' || CAST(:q AS text) || '%') ORDER BY p.name, p.id LIMIT 5000"
         ),
         {"q": (q or "").strip() or None, "k": kind},
     ).mappings()
-    return [ProSummary(**r) for r in rows]
+    return [ProSummary(**r) for r in paginate(list(rows), response, page)]
 
 
 @router.get("/professionals/{person_id}", response_model=ProDetail)

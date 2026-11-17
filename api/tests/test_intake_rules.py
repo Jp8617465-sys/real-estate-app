@@ -86,16 +86,16 @@ def test_replacing_a_value_on_record_needs_its_own_decision_and_history_keeps_th
 
     assert budget["current"] == {"value": "$950k", "source": "Entered by hand"}
     assert [r["code"] for r in budget["reasons"]] == ["changed", "replaces", "inferred"]
-    client.post(f"/api/intakes/{intake_id}/accept-rest")
+    client.post(f"/api/v1/intakes/{intake_id}/accept-rest")
     assert item(read(client, intake_id), "s-budget")["decision"] is None
 
     decided(client, intake_id, "accept", "s-budget")
     finish(client, intake_id)
 
-    change = next(c for c in client.get(f"/api/engagements/{engagement_id}/changes").json() if c["field"] == "budgetTarget")
+    change = next(c for c in client.get(f"/api/v1/engagements/{engagement_id}/changes").json() if c["field"] == "budgetTarget")
     assert change["new_value"] == "About $900k (established property)"
     assert change["earlier_value"] == {"value": "$950k", "source": "Entered by hand"}
-    assert client.get(f"/api/engagements/{engagement_id}").json()["budget_aud"] == 900_000
+    assert client.get(f"/api/v1/engagements/{engagement_id}").json()["budget_aud"] == 900_000
     on_record = next(v for v in record(client, engagement_id) if v["field"] == "budgetTarget")
     assert on_record["earlier"] == [{"value": "$950k", "source": "Entered by hand"}]
 
@@ -131,7 +131,7 @@ def test_walkthrough_careful_review_keeps_all_17_key_items_and_nothing_slips(cli
     )
     decide(client, intake_id, "edit", "s-worktash", "Works in ICU at the hospital at Chermside; night shifts (job title not given)")
     decided(client, intake_id, "reject", "s-train")
-    client.post(f"/api/intakes/{intake_id}/accept-rest")
+    client.post(f"/api/v1/intakes/{intake_id}/accept-rest")
     summary = finish(client, intake_id)["summary"]
 
     values = record(client, engagement_id)
@@ -155,7 +155,7 @@ def test_walkthrough_speed_run_holds_back_the_four_flagged_items(client: TestCli
 
     for suggestion_id in ids(view, "decide"):
         decide(client, intake_id, "accept", suggestion_id)  # flagged ones are refused
-    client.post(f"/api/intakes/{intake_id}/accept-rest")
+    client.post(f"/api/v1/intakes/{intake_id}/accept-rest")
     summary = finish(client, intake_id)["summary"]
 
     assert sorted(i["id"] for i in summary["undecided"]) == sorted(FLAGGED)
@@ -176,7 +176,7 @@ def test_walkthrough_broker_matched_as_a_client_shows_the_warning_and_his_ceilin
     dan = next(s for s in matched["speakers"] if s["label"] == DAN)
     assert dan["warning"] is not None
 
-    view = client.post(f"/api/intakes/{intake['id']}/speakers/confirm").json()
+    view = client.post(f"/api/v1/intakes/{intake['id']}/speakers/confirm").json()
     ceiling = item(view, "s-ceiling")
     assert ceiling["blocked"] is None
     assert ceiling["bucket"] == "ready"

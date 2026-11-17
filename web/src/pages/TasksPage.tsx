@@ -11,8 +11,8 @@ export function TasksPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [state, setState] = useState("open");
   const load = useCallback(() => {
-    api.GET("/api/tasks", { params: { query: { state } } }).then(({ data }) => data && setTasks(data));
-    api.GET("/api/tasks/summary").then(({ data }) => data && setSummary(data));
+    api.GET("/api/v1/tasks", { params: { query: { state } } }).then(({ data }) => data && setTasks(data));
+    api.GET("/api/v1/tasks/summary").then(({ data }) => data && setSummary(data));
   }, [state]);
   useEffect(load, [load]);
   return (

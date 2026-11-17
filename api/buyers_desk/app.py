@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine
 
-from buyers_desk import activity, brief, engagements, intakes, people, pipeline, professionals, properties
+from buyers_desk import activity, contract, brief, engagements, intakes, people, pipeline, professionals, properties
 from buyers_desk.intake.claude import ClaudeExtractor
 from buyers_desk.intake.extraction import Extractor, ScriptedExtractor
 from buyers_desk.intake.keys import load_keys
@@ -32,6 +32,7 @@ def create_app(settings: Settings | None = None, extractor: Extractor | None = N
         app.state.engine.dispose()
 
     app = FastAPI(title="Buyers desk API", lifespan=lifespan)
+    contract.install(app)
     app.include_router(engagements.router)
     app.include_router(intakes.router)
     app.include_router(people.router)

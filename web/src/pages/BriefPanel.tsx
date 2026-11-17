@@ -13,7 +13,7 @@ export function BriefPanel({ engagementId }: { engagementId: string }) {
   const path = { params: { path: { engagement_id: engagementId } } };
 
   const load = useCallback(() => {
-    api.GET("/api/engagements/{engagement_id}/brief", path).then(({ data }) => data && setBrief(data));
+    api.GET("/api/v1/engagements/{engagement_id}/brief", path).then(({ data }) => data && setBrief(data));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engagementId]);
   useEffect(load, [load]);
@@ -31,14 +31,14 @@ export function BriefPanel({ engagementId }: { engagementId: string }) {
     const subject = f.per_person ? subjects[f.id] || null : null;
     const r =
       f.kind === "one"
-        ? await api.PUT("/api/engagements/{engagement_id}/brief/{field_id}", { params: { path: { engagement_id: engagementId, field_id: f.id } }, body: { value, subject } })
-        : await api.POST("/api/engagements/{engagement_id}/brief/{field_id}/values", { params: { path: { engagement_id: engagementId, field_id: f.id } }, body: { value, subject } });
+        ? await api.PUT("/api/v1/engagements/{engagement_id}/brief/{field_id}", { params: { path: { engagement_id: engagementId, field_id: f.id } }, body: { value, subject } })
+        : await api.POST("/api/v1/engagements/{engagement_id}/brief/{field_id}/values", { params: { path: { engagement_id: engagementId, field_id: f.id } }, body: { value, subject } });
     apply(r);
     if (r.data) setDrafts({ ...drafts, [f.id]: "" });
   };
 
   const remove = async (valueId: string) => {
-    apply(await api.DELETE("/api/engagements/{engagement_id}/brief/values/{value_id}", { params: { path: { engagement_id: engagementId, value_id: valueId } } }));
+    apply(await api.DELETE("/api/v1/engagements/{engagement_id}/brief/values/{value_id}", { params: { path: { engagement_id: engagementId, value_id: valueId } } }));
   };
 
   if (!brief) return null;

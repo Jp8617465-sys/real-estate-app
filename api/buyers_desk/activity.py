@@ -4,14 +4,15 @@ import json
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import Connection, text
 
 from buyers_desk.engagements import Conn, _read
 from buyers_desk.intake.fields import FIELDS
+from buyers_desk.paging import PageDep, paginate
 from buyers_desk.schemas import NewTask, TaskPatch, TaskSummary, TaskView, TimelineEvent
 
-router = APIRouter(prefix="/api", tags=["tasks"])
+router = APIRouter(prefix="/api/v1", tags=["tasks"])
 
 _TASK = (
     "SELECT t.id, t.title, t.owner, t.engagement_id, h.name AS household_name, t.person_id, "
@@ -42,17 +43,17 @@ def create_task(body: NewTask, request: Request, conn: Conn) -> TaskView:
 
 
 @router.get("/tasks", response_model=list[TaskView])
-def list_tasks(conn: Conn, engagement_id: UUID | None = None, person_id: UUID | None = None, state: str = "all", owner: str | None = None) -> list[TaskView]:
+def list_tasks(conn: Conn, response: Response, page: PageDep, engagement_id: UUID | None = None, person_id: UUID | None = None, state: str = "all", owner: str | None = None) -> list[TaskView]:
     rows = conn.execute(
         text(
             _TASK + " WHERE (CAST(:e AS uuid) IS NULL OR t.engagement_id = :e) AND (CAST(:p AS uuid) IS NULL OR t.person_id = :p) "  # noqa: S608
             "AND (CAST(:o AS text) IS NULL OR t.owner = :o) "
             "AND (:s = 'all' OR (:s = 'open' AND t.done_at IS NULL) OR (:s = 'done' AND t.done_at IS NOT NULL)) "
-            "ORDER BY (t.done_at IS NOT NULL), t.due_on NULLS LAST, t.created_at, t.id LIMIT 500"
+            "ORDER BY (t.done_at IS NOT NULL), t.due_on NULLS LAST, t.created_at, t.id LIMIT 5000"
         ),
         {"e": engagement_id, "p": person_id, "o": owner, "s": state},
     ).mappings()
-    return [TaskView(**r) for r in rows]
+    return [TaskView(**r) for r in paginate(list(rows), response, page)]
 
 
 @router.get("/tasks/summary", response_model=TaskSummary)

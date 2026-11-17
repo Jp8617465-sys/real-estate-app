@@ -22,14 +22,14 @@ export function PeoplePage() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      api.GET("/api/people", { params: { query: { q: q || undefined } } }).then(({ data }) => data && setPeople(data));
+      api.GET("/api/v1/people", { params: { query: { q: q || undefined } } }).then(({ data }) => data && setPeople(data));
     }, 150);
     return () => clearTimeout(t);
   }, [q]);
 
   const create = async (confirm: boolean) => {
     setError(null);
-    const { data, error: failed } = await api.POST("/api/people", {
+    const { data, error: failed } = await api.POST("/api/v1/people", {
       body: {
         name: form.name.trim(),
         email: form.email.trim() || null,

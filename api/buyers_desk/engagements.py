@@ -4,9 +4,10 @@ from collections.abc import Iterator
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import Connection, text
 
+from buyers_desk.paging import PageDep, paginate
 from buyers_desk.schemas import (
     ChangeLogEntry,
     Client,
@@ -15,7 +16,7 @@ from buyers_desk.schemas import (
     NewBuyingOpportunity,
 )
 
-router = APIRouter(prefix="/api/engagements", tags=["engagements"])
+router = APIRouter(prefix="/api/v1/engagements", tags=["engagements"])
 
 
 def connection(request: Request) -> Iterator[Connection]:
@@ -85,9 +86,10 @@ def create_buying_opportunity(body: NewBuyingOpportunity, request: Request, conn
 
 
 @router.get("", response_model=list[EngagementSummary])
-def list_engagements(conn: Conn) -> list[EngagementSummary]:
+def list_engagements(conn: Conn, response: Response, page: PageDep) -> list[EngagementSummary]:
     ids = conn.execute(text("SELECT id FROM engagements ORDER BY created_at DESC, id")).scalars().all()
-    return [_read(conn, i) for i in ids]
+    window = paginate(list(ids), response, page)
+    return [_read(conn, i) for i in window]
 
 
 @router.get("/{engagement_id}", response_model=Engagement)

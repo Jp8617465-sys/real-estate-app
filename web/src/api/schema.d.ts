@@ -4,7 +4,24 @@
  */
 
 export interface paths {
-    "/api/engagements": {
+    "/api/v1": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Describe */
+        get: operations["describe_api_v1_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engagements": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,17 +29,17 @@ export interface paths {
             cookie?: never;
         };
         /** List Engagements */
-        get: operations["list_engagements_api_engagements_get"];
+        get: operations["list_engagements_api_v1_engagements_get"];
         put?: never;
         /** Create Buying Opportunity */
-        post: operations["create_buying_opportunity_api_engagements_post"];
+        post: operations["create_buying_opportunity_api_v1_engagements_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}": {
+    "/api/v1/engagements/{engagement_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -30,7 +47,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Engagement */
-        get: operations["get_engagement_api_engagements__engagement_id__get"];
+        get: operations["get_engagement_api_v1_engagements__engagement_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -39,7 +56,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/brief": {
+    "/api/v1/engagements/{engagement_id}/brief": {
         parameters: {
             query?: never;
             header?: never;
@@ -47,7 +64,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Brief */
-        get: operations["get_brief_api_engagements__engagement_id__brief_get"];
+        get: operations["get_brief_api_v1_engagements__engagement_id__brief_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -56,7 +73,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/brief/values/{value_id}": {
+    "/api/v1/engagements/{engagement_id}/brief/values/{value_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -67,13 +84,13 @@ export interface paths {
         put?: never;
         post?: never;
         /** Remove Value */
-        delete: operations["remove_value_api_engagements__engagement_id__brief_values__value_id__delete"];
+        delete: operations["remove_value_api_v1_engagements__engagement_id__brief_values__value_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/brief/{field_id}": {
+    "/api/v1/engagements/{engagement_id}/brief/{field_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -82,7 +99,7 @@ export interface paths {
         };
         get?: never;
         /** Set Value */
-        put: operations["set_value_api_engagements__engagement_id__brief__field_id__put"];
+        put: operations["set_value_api_v1_engagements__engagement_id__brief__field_id__put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -90,7 +107,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/brief/{field_id}/values": {
+    "/api/v1/engagements/{engagement_id}/brief/{field_id}/values": {
         parameters: {
             query?: never;
             header?: never;
@@ -100,14 +117,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Add Value */
-        post: operations["add_value_api_engagements__engagement_id__brief__field_id__values_post"];
+        post: operations["add_value_api_v1_engagements__engagement_id__brief__field_id__values_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/changes": {
+    "/api/v1/engagements/{engagement_id}/changes": {
         parameters: {
             query?: never;
             header?: never;
@@ -118,7 +135,7 @@ export interface paths {
          * Get Changes
          * @description Every logged change to the values on this engagement's record, oldest first.
          */
-        get: operations["get_changes_api_engagements__engagement_id__changes_get"];
+        get: operations["get_changes_api_v1_engagements__engagement_id__changes_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -127,7 +144,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/intakes": {
+    "/api/v1/engagements/{engagement_id}/intakes": {
         parameters: {
             query?: never;
             header?: never;
@@ -135,17 +152,17 @@ export interface paths {
             cookie?: never;
         };
         /** List Intakes */
-        get: operations["list_intakes_api_engagements__engagement_id__intakes_get"];
+        get: operations["list_intakes_api_v1_engagements__engagement_id__intakes_get"];
         put?: never;
         /** Create Intake */
-        post: operations["create_intake_api_engagements__engagement_id__intakes_post"];
+        post: operations["create_intake_api_v1_engagements__engagement_id__intakes_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/professionals": {
+    "/api/v1/engagements/{engagement_id}/professionals": {
         parameters: {
             query?: never;
             header?: never;
@@ -153,17 +170,17 @@ export interface paths {
             cookie?: never;
         };
         /** Engagement Professionals */
-        get: operations["engagement_professionals_api_engagements__engagement_id__professionals_get"];
+        get: operations["engagement_professionals_api_v1_engagements__engagement_id__professionals_get"];
         put?: never;
         /** Link Professional */
-        post: operations["link_professional_api_engagements__engagement_id__professionals_post"];
+        post: operations["link_professional_api_v1_engagements__engagement_id__professionals_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/professionals/{person_id}/end": {
+    "/api/v1/engagements/{engagement_id}/professionals/{person_id}/end": {
         parameters: {
             query?: never;
             header?: never;
@@ -173,14 +190,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** End Link */
-        post: operations["end_link_api_engagements__engagement_id__professionals__person_id__end_post"];
+        post: operations["end_link_api_v1_engagements__engagement_id__professionals__person_id__end_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/properties": {
+    "/api/v1/engagements/{engagement_id}/properties": {
         parameters: {
             query?: never;
             header?: never;
@@ -188,17 +205,17 @@ export interface paths {
             cookie?: never;
         };
         /** List Engagement Properties */
-        get: operations["list_engagement_properties_api_engagements__engagement_id__properties_get"];
+        get: operations["list_engagement_properties_api_v1_engagements__engagement_id__properties_get"];
         put?: never;
         /** Attach Property */
-        post: operations["attach_property_api_engagements__engagement_id__properties_post"];
+        post: operations["attach_property_api_v1_engagements__engagement_id__properties_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/properties/{ep_id}": {
+    "/api/v1/engagements/{engagement_id}/properties/{ep_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -212,10 +229,10 @@ export interface paths {
         options?: never;
         head?: never;
         /** Edit Engagement Property */
-        patch: operations["edit_engagement_property_api_engagements__engagement_id__properties__ep_id__patch"];
+        patch: operations["edit_engagement_property_api_v1_engagements__engagement_id__properties__ep_id__patch"];
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/properties/{ep_id}/checks": {
+    "/api/v1/engagements/{engagement_id}/properties/{ep_id}/checks": {
         parameters: {
             query?: never;
             header?: never;
@@ -224,7 +241,7 @@ export interface paths {
         };
         get?: never;
         /** Set Check */
-        put: operations["set_check_api_engagements__engagement_id__properties__ep_id__checks_put"];
+        put: operations["set_check_api_v1_engagements__engagement_id__properties__ep_id__checks_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -232,7 +249,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/record": {
+    "/api/v1/engagements/{engagement_id}/record": {
         parameters: {
             query?: never;
             header?: never;
@@ -240,7 +257,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Record */
-        get: operations["get_record_api_engagements__engagement_id__record_get"];
+        get: operations["get_record_api_v1_engagements__engagement_id__record_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -249,7 +266,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/stage": {
+    "/api/v1/engagements/{engagement_id}/stage": {
         parameters: {
             query?: never;
             header?: never;
@@ -259,14 +276,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Move Stage */
-        post: operations["move_stage_api_engagements__engagement_id__stage_post"];
+        post: operations["move_stage_api_v1_engagements__engagement_id__stage_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/stage-history": {
+    "/api/v1/engagements/{engagement_id}/stage-history": {
         parameters: {
             query?: never;
             header?: never;
@@ -274,7 +291,7 @@ export interface paths {
             cookie?: never;
         };
         /** Stage History */
-        get: operations["stage_history_api_engagements__engagement_id__stage_history_get"];
+        get: operations["stage_history_api_v1_engagements__engagement_id__stage_history_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -283,7 +300,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/tasks/from-actions": {
+    "/api/v1/engagements/{engagement_id}/tasks/from-actions": {
         parameters: {
             query?: never;
             header?: never;
@@ -296,14 +313,14 @@ export interface paths {
          * Tasks From Next Actions
          * @description Turn the next actions accepted from calls into tasks, once each.
          */
-        post: operations["tasks_from_next_actions_api_engagements__engagement_id__tasks_from_actions_post"];
+        post: operations["tasks_from_next_actions_api_v1_engagements__engagement_id__tasks_from_actions_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/engagements/{engagement_id}/timeline": {
+    "/api/v1/engagements/{engagement_id}/timeline": {
         parameters: {
             query?: never;
             header?: never;
@@ -311,7 +328,7 @@ export interface paths {
             cookie?: never;
         };
         /** Timeline */
-        get: operations["timeline_api_engagements__engagement_id__timeline_get"];
+        get: operations["timeline_api_v1_engagements__engagement_id__timeline_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -320,7 +337,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/households": {
+    "/api/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Health */
+        get: operations["health_api_v1_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/households": {
         parameters: {
             query?: never;
             header?: never;
@@ -328,17 +362,17 @@ export interface paths {
             cookie?: never;
         };
         /** List Households */
-        get: operations["list_households_api_households_get"];
+        get: operations["list_households_api_v1_households_get"];
         put?: never;
         /** Create Household */
-        post: operations["create_household_api_households_post"];
+        post: operations["create_household_api_v1_households_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/households/{household_id}": {
+    "/api/v1/households/{household_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -346,7 +380,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Household */
-        get: operations["get_household_api_households__household_id__get"];
+        get: operations["get_household_api_v1_households__household_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -355,7 +389,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/households/{household_id}/members": {
+    "/api/v1/households/{household_id}/members": {
         parameters: {
             query?: never;
             header?: never;
@@ -365,14 +399,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Add Member */
-        post: operations["add_member_api_households__household_id__members_post"];
+        post: operations["add_member_api_v1_households__household_id__members_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/households/{household_id}/members/{person_id}/end": {
+    "/api/v1/households/{household_id}/members/{person_id}/end": {
         parameters: {
             query?: never;
             header?: never;
@@ -382,14 +416,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** End Membership */
-        post: operations["end_membership_api_households__household_id__members__person_id__end_post"];
+        post: operations["end_membership_api_v1_households__household_id__members__person_id__end_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/households/{household_id}/opportunities": {
+    "/api/v1/households/{household_id}/opportunities": {
         parameters: {
             query?: never;
             header?: never;
@@ -399,14 +433,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Open Opportunity */
-        post: operations["open_opportunity_api_households__household_id__opportunities_post"];
+        post: operations["open_opportunity_api_v1_households__household_id__opportunities_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/intakes/{intake_id}": {
+    "/api/v1/intakes/{intake_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -414,7 +448,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Intake */
-        get: operations["get_intake_api_intakes__intake_id__get"];
+        get: operations["get_intake_api_v1_intakes__intake_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -423,7 +457,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/intakes/{intake_id}/accept-rest": {
+    "/api/v1/intakes/{intake_id}/accept-rest": {
         parameters: {
             query?: never;
             header?: never;
@@ -433,14 +467,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Accept Rest */
-        post: operations["accept_rest_api_intakes__intake_id__accept_rest_post"];
+        post: operations["accept_rest_api_v1_intakes__intake_id__accept_rest_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/intakes/{intake_id}/decisions": {
+    "/api/v1/intakes/{intake_id}/decisions": {
         parameters: {
             query?: never;
             header?: never;
@@ -450,14 +484,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Decide */
-        post: operations["decide_api_intakes__intake_id__decisions_post"];
+        post: operations["decide_api_v1_intakes__intake_id__decisions_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/intakes/{intake_id}/finish": {
+    "/api/v1/intakes/{intake_id}/finish": {
         parameters: {
             query?: never;
             header?: never;
@@ -467,14 +501,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Finish */
-        post: operations["finish_api_intakes__intake_id__finish_post"];
+        post: operations["finish_api_v1_intakes__intake_id__finish_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/intakes/{intake_id}/speakers": {
+    "/api/v1/intakes/{intake_id}/speakers": {
         parameters: {
             query?: never;
             header?: never;
@@ -483,7 +517,7 @@ export interface paths {
         };
         get?: never;
         /** Match Speaker */
-        put: operations["match_speaker_api_intakes__intake_id__speakers_put"];
+        put: operations["match_speaker_api_v1_intakes__intake_id__speakers_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -491,7 +525,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/intakes/{intake_id}/speakers/confirm": {
+    "/api/v1/intakes/{intake_id}/speakers/confirm": {
         parameters: {
             query?: never;
             header?: never;
@@ -501,14 +535,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Confirm Speakers */
-        post: operations["confirm_speakers_api_intakes__intake_id__speakers_confirm_post"];
+        post: operations["confirm_speakers_api_v1_intakes__intake_id__speakers_confirm_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/intakes/{intake_id}/speakers/edit": {
+    "/api/v1/intakes/{intake_id}/speakers/edit": {
         parameters: {
             query?: never;
             header?: never;
@@ -518,14 +552,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Edit Speakers */
-        post: operations["edit_speakers_api_intakes__intake_id__speakers_edit_post"];
+        post: operations["edit_speakers_api_v1_intakes__intake_id__speakers_edit_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/people": {
+    "/api/v1/people": {
         parameters: {
             query?: never;
             header?: never;
@@ -533,17 +567,17 @@ export interface paths {
             cookie?: never;
         };
         /** Search People */
-        get: operations["search_people_api_people_get"];
+        get: operations["search_people_api_v1_people_get"];
         put?: never;
         /** Create Person */
-        post: operations["create_person_api_people_post"];
+        post: operations["create_person_api_v1_people_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/people/{person_id}": {
+    "/api/v1/people/{person_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -551,17 +585,17 @@ export interface paths {
             cookie?: never;
         };
         /** Get Person */
-        get: operations["get_person_api_people__person_id__get"];
+        get: operations["get_person_api_v1_people__person_id__get"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /** Edit Person */
-        patch: operations["edit_person_api_people__person_id__patch"];
+        patch: operations["edit_person_api_v1_people__person_id__patch"];
         trace?: never;
     };
-    "/api/people/{person_id}/changes": {
+    "/api/v1/people/{person_id}/changes": {
         parameters: {
             query?: never;
             header?: never;
@@ -569,7 +603,7 @@ export interface paths {
             cookie?: never;
         };
         /** Person Changes */
-        get: operations["person_changes_api_people__person_id__changes_get"];
+        get: operations["person_changes_api_v1_people__person_id__changes_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -578,7 +612,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/people/{person_id}/relationships": {
+    "/api/v1/people/{person_id}/relationships": {
         parameters: {
             query?: never;
             header?: never;
@@ -588,14 +622,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Add Relationship */
-        post: operations["add_relationship_api_people__person_id__relationships_post"];
+        post: operations["add_relationship_api_v1_people__person_id__relationships_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/pipeline": {
+    "/api/v1/pipeline": {
         parameters: {
             query?: never;
             header?: never;
@@ -603,7 +637,7 @@ export interface paths {
             cookie?: never;
         };
         /** Board */
-        get: operations["board_api_pipeline_get"];
+        get: operations["board_api_v1_pipeline_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -612,7 +646,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/pipeline/stages": {
+    "/api/v1/pipeline/stages": {
         parameters: {
             query?: never;
             header?: never;
@@ -620,7 +654,7 @@ export interface paths {
             cookie?: never;
         };
         /** Stages */
-        get: operations["stages_api_pipeline_stages_get"];
+        get: operations["stages_api_v1_pipeline_stages_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -629,7 +663,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/professionals": {
+    "/api/v1/professionals": {
         parameters: {
             query?: never;
             header?: never;
@@ -637,17 +671,17 @@ export interface paths {
             cookie?: never;
         };
         /** List Professionals */
-        get: operations["list_professionals_api_professionals_get"];
+        get: operations["list_professionals_api_v1_professionals_get"];
         put?: never;
         /** Create Professional */
-        post: operations["create_professional_api_professionals_post"];
+        post: operations["create_professional_api_v1_professionals_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/professionals/{person_id}": {
+    "/api/v1/professionals/{person_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -655,18 +689,18 @@ export interface paths {
             cookie?: never;
         };
         /** Get Professional */
-        get: operations["get_professional_api_professionals__person_id__get"];
+        get: operations["get_professional_api_v1_professionals__person_id__get"];
         /** Make Professional */
-        put: operations["make_professional_api_professionals__person_id__put"];
+        put: operations["make_professional_api_v1_professionals__person_id__put"];
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /** Edit Professional */
-        patch: operations["edit_professional_api_professionals__person_id__patch"];
+        patch: operations["edit_professional_api_v1_professionals__person_id__patch"];
         trace?: never;
     };
-    "/api/properties": {
+    "/api/v1/properties": {
         parameters: {
             query?: never;
             header?: never;
@@ -674,17 +708,17 @@ export interface paths {
             cookie?: never;
         };
         /** Search Properties */
-        get: operations["search_properties_api_properties_get"];
+        get: operations["search_properties_api_v1_properties_get"];
         put?: never;
         /** Create Property */
-        post: operations["create_property_api_properties_post"];
+        post: operations["create_property_api_v1_properties_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/properties/{property_id}": {
+    "/api/v1/properties/{property_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -692,17 +726,17 @@ export interface paths {
             cookie?: never;
         };
         /** Get Property */
-        get: operations["get_property_api_properties__property_id__get"];
+        get: operations["get_property_api_v1_properties__property_id__get"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /** Edit Property */
-        patch: operations["edit_property_api_properties__property_id__patch"];
+        patch: operations["edit_property_api_v1_properties__property_id__patch"];
         trace?: never;
     };
-    "/api/tasks": {
+    "/api/v1/tasks": {
         parameters: {
             query?: never;
             header?: never;
@@ -710,17 +744,17 @@ export interface paths {
             cookie?: never;
         };
         /** List Tasks */
-        get: operations["list_tasks_api_tasks_get"];
+        get: operations["list_tasks_api_v1_tasks_get"];
         put?: never;
         /** Create Task */
-        post: operations["create_task_api_tasks_post"];
+        post: operations["create_task_api_v1_tasks_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/tasks/summary": {
+    "/api/v1/tasks/summary": {
         parameters: {
             query?: never;
             header?: never;
@@ -728,7 +762,7 @@ export interface paths {
             cookie?: never;
         };
         /** Task Summary */
-        get: operations["task_summary_api_tasks_summary_get"];
+        get: operations["task_summary_api_v1_tasks_summary_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -737,7 +771,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/tasks/{task_id}": {
+    "/api/v1/tasks/{task_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -751,10 +785,10 @@ export interface paths {
         options?: never;
         head?: never;
         /** Edit Task */
-        patch: operations["edit_task_api_tasks__task_id__patch"];
+        patch: operations["edit_task_api_v1_tasks__task_id__patch"];
         trace?: never;
     };
-    "/api/tasks/{task_id}/done": {
+    "/api/v1/tasks/{task_id}/done": {
         parameters: {
             query?: never;
             header?: never;
@@ -764,14 +798,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Finish Task */
-        post: operations["finish_task_api_tasks__task_id__done_post"];
+        post: operations["finish_task_api_v1_tasks__task_id__done_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/tasks/{task_id}/reopen": {
+    "/api/v1/tasks/{task_id}/reopen": {
         parameters: {
             query?: never;
             header?: never;
@@ -781,7 +815,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Reopen Task */
-        post: operations["reopen_task_api_tasks__task_id__reopen_post"];
+        post: operations["reopen_task_api_v1_tasks__task_id__reopen_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2042,9 +2076,34 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    list_engagements_api_engagements_get: {
+    describe_api_v1_get: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    list_engagements_api_v1_engagements_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2060,9 +2119,18 @@ export interface operations {
                     "application/json": components["schemas"]["EngagementSummary"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
-    create_buying_opportunity_api_engagements_post: {
+    create_buying_opportunity_api_v1_engagements_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2095,7 +2163,7 @@ export interface operations {
             };
         };
     };
-    get_engagement_api_engagements__engagement_id__get: {
+    get_engagement_api_v1_engagements__engagement_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2126,7 +2194,7 @@ export interface operations {
             };
         };
     };
-    get_brief_api_engagements__engagement_id__brief_get: {
+    get_brief_api_v1_engagements__engagement_id__brief_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2157,7 +2225,7 @@ export interface operations {
             };
         };
     };
-    remove_value_api_engagements__engagement_id__brief_values__value_id__delete: {
+    remove_value_api_v1_engagements__engagement_id__brief_values__value_id__delete: {
         parameters: {
             query?: never;
             header?: never;
@@ -2189,7 +2257,7 @@ export interface operations {
             };
         };
     };
-    set_value_api_engagements__engagement_id__brief__field_id__put: {
+    set_value_api_v1_engagements__engagement_id__brief__field_id__put: {
         parameters: {
             query?: never;
             header?: never;
@@ -2225,7 +2293,7 @@ export interface operations {
             };
         };
     };
-    add_value_api_engagements__engagement_id__brief__field_id__values_post: {
+    add_value_api_v1_engagements__engagement_id__brief__field_id__values_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2261,7 +2329,7 @@ export interface operations {
             };
         };
     };
-    get_changes_api_engagements__engagement_id__changes_get: {
+    get_changes_api_v1_engagements__engagement_id__changes_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2292,7 +2360,7 @@ export interface operations {
             };
         };
     };
-    list_intakes_api_engagements__engagement_id__intakes_get: {
+    list_intakes_api_v1_engagements__engagement_id__intakes_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2323,7 +2391,7 @@ export interface operations {
             };
         };
     };
-    create_intake_api_engagements__engagement_id__intakes_post: {
+    create_intake_api_v1_engagements__engagement_id__intakes_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2358,7 +2426,7 @@ export interface operations {
             };
         };
     };
-    engagement_professionals_api_engagements__engagement_id__professionals_get: {
+    engagement_professionals_api_v1_engagements__engagement_id__professionals_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2389,7 +2457,7 @@ export interface operations {
             };
         };
     };
-    link_professional_api_engagements__engagement_id__professionals_post: {
+    link_professional_api_v1_engagements__engagement_id__professionals_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2424,7 +2492,7 @@ export interface operations {
             };
         };
     };
-    end_link_api_engagements__engagement_id__professionals__person_id__end_post: {
+    end_link_api_v1_engagements__engagement_id__professionals__person_id__end_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2456,7 +2524,7 @@ export interface operations {
             };
         };
     };
-    list_engagement_properties_api_engagements__engagement_id__properties_get: {
+    list_engagement_properties_api_v1_engagements__engagement_id__properties_get: {
         parameters: {
             query?: {
                 status?: string | null;
@@ -2489,7 +2557,7 @@ export interface operations {
             };
         };
     };
-    attach_property_api_engagements__engagement_id__properties_post: {
+    attach_property_api_v1_engagements__engagement_id__properties_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2524,7 +2592,7 @@ export interface operations {
             };
         };
     };
-    edit_engagement_property_api_engagements__engagement_id__properties__ep_id__patch: {
+    edit_engagement_property_api_v1_engagements__engagement_id__properties__ep_id__patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -2560,7 +2628,7 @@ export interface operations {
             };
         };
     };
-    set_check_api_engagements__engagement_id__properties__ep_id__checks_put: {
+    set_check_api_v1_engagements__engagement_id__properties__ep_id__checks_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -2596,7 +2664,7 @@ export interface operations {
             };
         };
     };
-    get_record_api_engagements__engagement_id__record_get: {
+    get_record_api_v1_engagements__engagement_id__record_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2627,7 +2695,7 @@ export interface operations {
             };
         };
     };
-    move_stage_api_engagements__engagement_id__stage_post: {
+    move_stage_api_v1_engagements__engagement_id__stage_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2662,7 +2730,7 @@ export interface operations {
             };
         };
     };
-    stage_history_api_engagements__engagement_id__stage_history_get: {
+    stage_history_api_v1_engagements__engagement_id__stage_history_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2693,7 +2761,7 @@ export interface operations {
             };
         };
     };
-    tasks_from_next_actions_api_engagements__engagement_id__tasks_from_actions_post: {
+    tasks_from_next_actions_api_v1_engagements__engagement_id__tasks_from_actions_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2724,7 +2792,7 @@ export interface operations {
             };
         };
     };
-    timeline_api_engagements__engagement_id__timeline_get: {
+    timeline_api_v1_engagements__engagement_id__timeline_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2755,10 +2823,34 @@ export interface operations {
             };
         };
     };
-    list_households_api_households_get: {
+    health_api_v1_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    list_households_api_v1_households_get: {
         parameters: {
             query?: {
                 q?: string | null;
+                limit?: number;
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -2786,7 +2878,7 @@ export interface operations {
             };
         };
     };
-    create_household_api_households_post: {
+    create_household_api_v1_households_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2819,7 +2911,7 @@ export interface operations {
             };
         };
     };
-    get_household_api_households__household_id__get: {
+    get_household_api_v1_households__household_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2850,7 +2942,7 @@ export interface operations {
             };
         };
     };
-    add_member_api_households__household_id__members_post: {
+    add_member_api_v1_households__household_id__members_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2885,7 +2977,7 @@ export interface operations {
             };
         };
     };
-    end_membership_api_households__household_id__members__person_id__end_post: {
+    end_membership_api_v1_households__household_id__members__person_id__end_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2921,7 +3013,7 @@ export interface operations {
             };
         };
     };
-    open_opportunity_api_households__household_id__opportunities_post: {
+    open_opportunity_api_v1_households__household_id__opportunities_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2956,7 +3048,7 @@ export interface operations {
             };
         };
     };
-    get_intake_api_intakes__intake_id__get: {
+    get_intake_api_v1_intakes__intake_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2987,7 +3079,7 @@ export interface operations {
             };
         };
     };
-    accept_rest_api_intakes__intake_id__accept_rest_post: {
+    accept_rest_api_v1_intakes__intake_id__accept_rest_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3018,7 +3110,7 @@ export interface operations {
             };
         };
     };
-    decide_api_intakes__intake_id__decisions_post: {
+    decide_api_v1_intakes__intake_id__decisions_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3053,7 +3145,7 @@ export interface operations {
             };
         };
     };
-    finish_api_intakes__intake_id__finish_post: {
+    finish_api_v1_intakes__intake_id__finish_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3084,7 +3176,7 @@ export interface operations {
             };
         };
     };
-    match_speaker_api_intakes__intake_id__speakers_put: {
+    match_speaker_api_v1_intakes__intake_id__speakers_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -3119,7 +3211,7 @@ export interface operations {
             };
         };
     };
-    confirm_speakers_api_intakes__intake_id__speakers_confirm_post: {
+    confirm_speakers_api_v1_intakes__intake_id__speakers_confirm_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3150,7 +3242,7 @@ export interface operations {
             };
         };
     };
-    edit_speakers_api_intakes__intake_id__speakers_edit_post: {
+    edit_speakers_api_v1_intakes__intake_id__speakers_edit_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3181,10 +3273,12 @@ export interface operations {
             };
         };
     };
-    search_people_api_people_get: {
+    search_people_api_v1_people_get: {
         parameters: {
             query?: {
                 q?: string | null;
+                limit?: number;
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -3212,7 +3306,7 @@ export interface operations {
             };
         };
     };
-    create_person_api_people_post: {
+    create_person_api_v1_people_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3245,7 +3339,7 @@ export interface operations {
             };
         };
     };
-    get_person_api_people__person_id__get: {
+    get_person_api_v1_people__person_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3276,7 +3370,7 @@ export interface operations {
             };
         };
     };
-    edit_person_api_people__person_id__patch: {
+    edit_person_api_v1_people__person_id__patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -3311,7 +3405,7 @@ export interface operations {
             };
         };
     };
-    person_changes_api_people__person_id__changes_get: {
+    person_changes_api_v1_people__person_id__changes_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3342,7 +3436,7 @@ export interface operations {
             };
         };
     };
-    add_relationship_api_people__person_id__relationships_post: {
+    add_relationship_api_v1_people__person_id__relationships_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3379,7 +3473,7 @@ export interface operations {
             };
         };
     };
-    board_api_pipeline_get: {
+    board_api_v1_pipeline_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3399,7 +3493,7 @@ export interface operations {
             };
         };
     };
-    stages_api_pipeline_stages_get: {
+    stages_api_v1_pipeline_stages_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3419,11 +3513,13 @@ export interface operations {
             };
         };
     };
-    list_professionals_api_professionals_get: {
+    list_professionals_api_v1_professionals_get: {
         parameters: {
             query?: {
                 q?: string | null;
                 kind?: string | null;
+                limit?: number;
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -3451,7 +3547,7 @@ export interface operations {
             };
         };
     };
-    create_professional_api_professionals_post: {
+    create_professional_api_v1_professionals_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3484,7 +3580,7 @@ export interface operations {
             };
         };
     };
-    get_professional_api_professionals__person_id__get: {
+    get_professional_api_v1_professionals__person_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3515,7 +3611,7 @@ export interface operations {
             };
         };
     };
-    make_professional_api_professionals__person_id__put: {
+    make_professional_api_v1_professionals__person_id__put: {
         parameters: {
             query?: never;
             header?: never;
@@ -3550,7 +3646,7 @@ export interface operations {
             };
         };
     };
-    edit_professional_api_professionals__person_id__patch: {
+    edit_professional_api_v1_professionals__person_id__patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -3585,10 +3681,12 @@ export interface operations {
             };
         };
     };
-    search_properties_api_properties_get: {
+    search_properties_api_v1_properties_get: {
         parameters: {
             query?: {
                 q?: string | null;
+                limit?: number;
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -3616,7 +3714,7 @@ export interface operations {
             };
         };
     };
-    create_property_api_properties_post: {
+    create_property_api_v1_properties_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3649,7 +3747,7 @@ export interface operations {
             };
         };
     };
-    get_property_api_properties__property_id__get: {
+    get_property_api_v1_properties__property_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3680,7 +3778,7 @@ export interface operations {
             };
         };
     };
-    edit_property_api_properties__property_id__patch: {
+    edit_property_api_v1_properties__property_id__patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -3715,13 +3813,15 @@ export interface operations {
             };
         };
     };
-    list_tasks_api_tasks_get: {
+    list_tasks_api_v1_tasks_get: {
         parameters: {
             query?: {
                 engagement_id?: string | null;
                 person_id?: string | null;
                 state?: string;
                 owner?: string | null;
+                limit?: number;
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -3749,7 +3849,7 @@ export interface operations {
             };
         };
     };
-    create_task_api_tasks_post: {
+    create_task_api_v1_tasks_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3782,7 +3882,7 @@ export interface operations {
             };
         };
     };
-    task_summary_api_tasks_summary_get: {
+    task_summary_api_v1_tasks_summary_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3802,7 +3902,7 @@ export interface operations {
             };
         };
     };
-    edit_task_api_tasks__task_id__patch: {
+    edit_task_api_v1_tasks__task_id__patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -3837,7 +3937,7 @@ export interface operations {
             };
         };
     };
-    finish_task_api_tasks__task_id__done_post: {
+    finish_task_api_v1_tasks__task_id__done_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3868,7 +3968,7 @@ export interface operations {
             };
         };
     };
-    reopen_task_api_tasks__task_id__reopen_post: {
+    reopen_task_api_v1_tasks__task_id__reopen_post: {
         parameters: {
             query?: never;
             header?: never;

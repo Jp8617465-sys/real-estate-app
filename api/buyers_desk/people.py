@@ -6,10 +6,11 @@ from datetime import date
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import Connection, text
 
 from buyers_desk.engagements import LOCAL_AGENT, Conn, _log_entered_by_hand, _read
+from buyers_desk.paging import PageDep, paginate
 from buyers_desk.schemas import (
     AddMember,
     ChangeLogEntry,
@@ -26,7 +27,7 @@ from buyers_desk.schemas import (
     PersonSummary,
 )
 
-router = APIRouter(prefix="/api", tags=["people"])
+router = APIRouter(prefix="/api/v1", tags=["people"])
 
 _INVERSE = {"parent": "child", "child": "parent"}
 
@@ -85,18 +86,19 @@ def create_person(body: NewPerson, request: Request, conn: Conn) -> PersonSummar
 
 
 @router.get("/people", response_model=list[PersonSummary])
-def search_people(conn: Conn, q: str | None = None) -> list[PersonSummary]:
+def search_people(conn: Conn, response: Response, page: PageDep, q: str | None = None) -> list[PersonSummary]:
     rows = conn.execute(
         text(
             "SELECT id, name, email, mobile FROM persons WHERE CAST(:q AS text) IS NULL"
             " OR name ILIKE '%' || CAST(:q AS text) || '%' OR email ILIKE '%' || CAST(:q AS text) || '%'"
             " OR (length(normalize_mobile(CAST(:q AS text))) >= 3"
             "     AND normalize_mobile(mobile) LIKE '%' || normalize_mobile(CAST(:q AS text)) || '%')"
-            " ORDER BY name, id LIMIT 200"
+            " ORDER BY name, id LIMIT 5000"
         ),
         {"q": (q or "").strip() or None},
     ).mappings()
-    return [PersonSummary(**r, household_names=_current_households(conn, r["id"])) for r in rows]
+    found = paginate(list(rows), response, page)
+    return [PersonSummary(**r, household_names=_current_households(conn, r["id"])) for r in found]
 
 
 def _person_row(conn: Connection, person_id: UUID) -> dict[str, Any]:
@@ -261,13 +263,13 @@ def create_household(body: NewHousehold, request: Request, conn: Conn) -> Househ
 
 
 @router.get("/households", response_model=list[HouseholdSummary])
-def list_households(conn: Conn, q: str | None = None) -> list[HouseholdSummary]:
+def list_households(conn: Conn, response: Response, page: PageDep, q: str | None = None) -> list[HouseholdSummary]:
     rows = conn.execute(
-        text("SELECT id, name FROM households WHERE CAST(:q AS text) IS NULL OR name ILIKE '%' || CAST(:q AS text) || '%' ORDER BY name, id LIMIT 200"),
+        text("SELECT id, name FROM households WHERE CAST(:q AS text) IS NULL OR name ILIKE '%' || CAST(:q AS text) || '%' ORDER BY name, id LIMIT 5000"),
         {"q": (q or "").strip() or None},
     ).mappings()
     out = []
-    for r in rows:
+    for r in paginate(list(rows), response, page):
         names = conn.execute(
             text("SELECT p.name FROM household_members m JOIN persons p ON p.id = m.person_id WHERE m.household_id = :h AND m.ended_on IS NULL ORDER BY p.name"),
             {"h": r["id"]},

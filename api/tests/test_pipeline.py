@@ -11,11 +11,11 @@ from tests.helpers import new_opportunity
 
 
 def move(client: TestClient, engagement_id: str, stage: str, **extra: Any) -> Any:
-    return client.post(f"/api/engagements/{engagement_id}/stage", json={"stage": stage, **extra})
+    return client.post(f"/api/v1/engagements/{engagement_id}/stage", json={"stage": stage, **extra})
 
 
 def test_the_pipeline_lists_its_stages_in_order_grouped_by_service_phase(client: TestClient) -> None:
-    stages = client.get("/api/pipeline/stages").json()
+    stages = client.get("/api/v1/pipeline/stages").json()
 
     keys = [s["key"] for s in stages]
     assert keys[:3] == ["enquiry", "qualified", "consultation"]
@@ -30,8 +30,8 @@ def test_moving_an_engagement_changes_its_stage_and_is_logged_with_who_and_when(
     moved = move(client, engagement_id, "consultation")
 
     assert moved.status_code == 200 and moved.json()["stage"] == "consultation"
-    assert client.get(f"/api/engagements/{engagement_id}").json()["stage"] == "consultation"
-    history = client.get(f"/api/engagements/{engagement_id}/stage-history").json()
+    assert client.get(f"/api/v1/engagements/{engagement_id}").json()["stage"] == "consultation"
+    history = client.get(f"/api/v1/engagements/{engagement_id}/stage-history").json()
     assert [(h["earlier_value"], h["new_value"], h["changed_by"]) for h in history] == [("enquiry", "consultation", "Local agent")]
     assert history[0]["changed_at"]
 
@@ -53,7 +53,7 @@ def test_closing_needs_a_reason_and_it_is_kept_and_cleared_when_reopened(client:
 
     reopened = move(client, engagement_id, "qualified")
     assert reopened.status_code == 200 and reopened.json()["closed_reason"] is None
-    history = client.get(f"/api/engagements/{engagement_id}/stage-history").json()
+    history = client.get(f"/api/v1/engagements/{engagement_id}/stage-history").json()
     assert [h["new_value"] for h in history] == ["closed", "qualified"]
 
 
@@ -68,7 +68,7 @@ def test_the_board_groups_engagements_by_stage_with_how_long_they_have_been_ther
     b = new_opportunity(client, {"household_name": "Other (synthetic)", "client": {"name": "Cy Other", "email": "cy@example.com"}})
     move(client, b, "proposal")
 
-    board = client.get("/api/pipeline").json()
+    board = client.get("/api/v1/pipeline").json()
 
     by_stage = {c["stage"]: c["engagements"] for c in board["columns"]}
     assert [e["id"] for e in by_stage["enquiry"]] == [a]
@@ -84,7 +84,7 @@ def test_a_move_survives_a_restart_and_stays_in_its_agency(app_client: ClientFac
     move(first, engagement_id, "agreed")
 
     restarted = app_client()
-    assert restarted.get(f"/api/engagements/{engagement_id}").json()["stage"] == "agreed"
+    assert restarted.get(f"/api/v1/engagements/{engagement_id}").json()["stage"] == "agreed"
     elsewhere = app_client(another_agency)
     assert move(elsewhere, engagement_id, "searching").status_code == 404
-    assert [e for c in elsewhere.get("/api/pipeline").json()["columns"] for e in c["engagements"]] == []
+    assert [e for c in elsewhere.get("/api/v1/pipeline").json()["columns"] for e in c["engagements"]] == []

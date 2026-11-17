@@ -37,7 +37,7 @@ function UploadCall({ engagementId }: { engagementId: string }) {
   const send = async (filename: string, text: string, asNotes: boolean) => {
     setBusy(true);
     setError(null);
-    const { data, error: failed } = await api.POST("/api/engagements/{engagement_id}/intakes", {
+    const { data, error: failed } = await api.POST("/api/v1/engagements/{engagement_id}/intakes", {
       params: { path: { engagement_id: engagementId } },
       body: { filename, text, notes: asNotes },
     });
@@ -93,28 +93,28 @@ export function EngagementPage() {
 
   useEffect(() => {
     const params = { params: { path: { engagement_id: id } } };
-    api.GET("/api/engagements/{engagement_id}", params).then(({ data }) => {
+    api.GET("/api/v1/engagements/{engagement_id}", params).then(({ data }) => {
       if (data) setEngagement(data);
       else setMissing(true);
     });
-    api.GET("/api/engagements/{engagement_id}/changes", params).then(({ data }) => {
+    api.GET("/api/v1/engagements/{engagement_id}/changes", params).then(({ data }) => {
       if (data) setChanges(data);
     });
-    api.GET("/api/engagements/{engagement_id}/record", params).then(({ data }) => data && setRecord(data));
-    api.GET("/api/engagements/{engagement_id}/intakes", params).then(({ data }) => data && setIntakes(data));
-    api.GET("/api/pipeline/stages").then(({ data }) => data && setStages(data));
-    api.GET("/api/engagements/{engagement_id}/stage-history", params).then(({ data }) => data && setStageHistory(data));
+    api.GET("/api/v1/engagements/{engagement_id}/record", params).then(({ data }) => data && setRecord(data));
+    api.GET("/api/v1/engagements/{engagement_id}/intakes", params).then(({ data }) => data && setIntakes(data));
+    api.GET("/api/v1/pipeline/stages").then(({ data }) => data && setStages(data));
+    api.GET("/api/v1/engagements/{engagement_id}/stage-history", params).then(({ data }) => data && setStageHistory(data));
   }, [id]);
 
   const moveTo = async (stage: string, reason?: string) => {
     setStageNote(null);
-    const { data, error } = await api.POST("/api/engagements/{engagement_id}/stage", {
+    const { data, error } = await api.POST("/api/v1/engagements/{engagement_id}/stage", {
       params: { path: { engagement_id: id } },
       body: { stage, reason: reason ?? null },
     });
     if (data) {
       setEngagement(data);
-      const h = await api.GET("/api/engagements/{engagement_id}/stage-history", { params: { path: { engagement_id: id } } });
+      const h = await api.GET("/api/v1/engagements/{engagement_id}/stage-history", { params: { path: { engagement_id: id } } });
       if (h.data) setStageHistory(h.data);
     } else setStageNote(String((error as { detail?: unknown } | undefined)?.detail ?? "That move was refused."));
   };

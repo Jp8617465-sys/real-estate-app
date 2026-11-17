@@ -18,7 +18,7 @@ from buyers_desk.schemas import (
     StageMove,
 )
 
-router = APIRouter(prefix="/api", tags=["pipeline"])
+router = APIRouter(prefix="/api/v1", tags=["pipeline"])
 
 STAGES: list[tuple[str, str, str]] = [
     ("enquiry", "Enquiry", "sales"),

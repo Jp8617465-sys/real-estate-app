@@ -3,11 +3,12 @@ Unknown facts stay unknown; partial addresses stay partial."""
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import Connection, text
 
 from buyers_desk.engagements import Conn, _read
 from buyers_desk.people import _log_change
+from buyers_desk.paging import PageDep, paginate
 from buyers_desk.schemas import (
     AttachProperty,
     CheckView,
@@ -21,7 +22,7 @@ from buyers_desk.schemas import (
     ShortlistView,
 )
 
-router = APIRouter(prefix="/api", tags=["properties"])
+router = APIRouter(prefix="/api/v1", tags=["properties"])
 
 _COLUMNS = "id, address_line, suburb, state, postcode, property_type, bedrooms, bathrooms, parking, land_m2, price_guide_low, price_guide_high, listing_url, notes, source"
 _PATCHABLE = ("address_line", "suburb", "state", "postcode", "property_type", "bedrooms", "bathrooms", "parking", "land_m2", "price_guide_low", "price_guide_high", "listing_url", "notes")
@@ -58,15 +59,15 @@ def create_property(body: NewProperty, request: Request, conn: Conn) -> Property
 
 
 @router.get("/properties", response_model=list[Property])
-def search_properties(conn: Conn, q: str | None = None) -> list[Property]:
+def search_properties(conn: Conn, response: Response, page: PageDep, q: str | None = None) -> list[Property]:
     rows = conn.execute(
         text(
             f"SELECT {_COLUMNS} FROM properties WHERE CAST(:q AS text) IS NULL OR address_line ILIKE '%' || CAST(:q AS text) || '%' "  # noqa: S608
-            "OR suburb ILIKE '%' || CAST(:q AS text) || '%' ORDER BY address_line, id LIMIT 200"
+            "OR suburb ILIKE '%' || CAST(:q AS text) || '%' ORDER BY address_line, id LIMIT 5000"
         ),
         {"q": (q or "").strip() or None},
     ).mappings()
-    return [Property(**r) for r in rows]
+    return [Property(**r) for r in paginate(list(rows), response, page)]
 
 
 @router.get("/properties/{property_id}", response_model=Property)

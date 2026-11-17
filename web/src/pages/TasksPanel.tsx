@@ -8,8 +8,8 @@ type Task = components["schemas"]["TaskView"];
 
 export function TaskRows({ tasks, reload }: { tasks: Task[]; reload: () => void }) {
   const toggle = async (t: Task) => {
-    if (t.done_at) await api.POST("/api/tasks/{task_id}/reopen", { params: { path: { task_id: t.id } } });
-    else await api.POST("/api/tasks/{task_id}/done", { params: { path: { task_id: t.id } } });
+    if (t.done_at) await api.POST("/api/v1/tasks/{task_id}/reopen", { params: { path: { task_id: t.id } } });
+    else await api.POST("/api/v1/tasks/{task_id}/done", { params: { path: { task_id: t.id } } });
     reload();
   };
   return (
@@ -38,18 +38,18 @@ export function TasksPanel({ engagementId }: { engagementId: string }) {
   const [form, setForm] = useState({ title: "", owner: "Agent", due: "" });
   const [events, setEvents] = useState<components["schemas"]["TimelineEvent"][]>([]);
   const load = useCallback(() => {
-    api.GET("/api/tasks", { params: { query: { engagement_id: engagementId } } }).then(({ data }) => data && setTasks(data));
-    api.GET("/api/engagements/{engagement_id}/timeline", { params: { path: { engagement_id: engagementId } } }).then(({ data }) => data && setEvents(data));
+    api.GET("/api/v1/tasks", { params: { query: { engagement_id: engagementId } } }).then(({ data }) => data && setTasks(data));
+    api.GET("/api/v1/engagements/{engagement_id}/timeline", { params: { path: { engagement_id: engagementId } } }).then(({ data }) => data && setEvents(data));
   }, [engagementId]);
   useEffect(load, [load]);
 
   const add = async () => {
-    await api.POST("/api/tasks", { body: { title: form.title.trim(), engagement_id: engagementId, owner: form.owner || "Agent", due_on: form.due || null } });
+    await api.POST("/api/v1/tasks", { body: { title: form.title.trim(), engagement_id: engagementId, owner: form.owner || "Agent", due_on: form.due || null } });
     setForm({ ...form, title: "", due: "" });
     load();
   };
   const fromCalls = async () => {
-    await api.POST("/api/engagements/{engagement_id}/tasks/from-actions", { params: { path: { engagement_id: engagementId } } });
+    await api.POST("/api/v1/engagements/{engagement_id}/tasks/from-actions", { params: { path: { engagement_id: engagementId } } });
     load();
   };
 
