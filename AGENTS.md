@@ -21,7 +21,7 @@ Investigate facts yourself. Use fresh-context research agents when the invoked s
 
 ## Skills
 
-Twelve Matt Pocock skills are pinned byte-for-byte under .claude/skills/. Relative per-skill links under .agents/skills/ expose the same files to Codex. Preserve VENDORED.json and the licence. Never edit a vendored file; put adaptations in docs/process/. Run python3 scripts/upstream_skills.py verify after import/update.
+Twenty-two Matt Pocock skills are pinned byte-for-byte under .claude/skills/. Relative per-skill links under .agents/skills/ expose the same files to Codex. Preserve VENDORED.json and the licence. Never edit a vendored file; put adaptations in docs/process/. Run python3 scripts/upstream_skills.py verify after import/update. Specialist advisory agents live in .claude/agents/ (roster and when to dispatch: .claude/agents/README.md); the operator does the fan-out and lands the work.
 
 Read invoked skills. If upstream says to call the Skill tool and the host lacks it, read and follow the named SKILL.md directly. /grill-me delegates to grilling. /wayfinder maps decisions; /prototype tests a named question with throwaway code; /to-tickets creates approved complete tracer-bullet slices. Do not turn a decision ticket into a product build silently.
 
