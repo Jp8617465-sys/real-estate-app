@@ -16,6 +16,9 @@ export function ShortlistPanel({ engagementId }: { engagementId: string }) {
   const [form, setForm] = useState({ address_line: "", suburb: "", bedrooms: "", low: "", high: "" });
   const [note, setNote] = useState<string | null>(null);
   const [criterion, setCriterion] = useState<Record<string, string>>({});
+  const [drive, setDrive] = useState<Record<string, string>>({});
+  const [driveResult, setDriveResult] = useState<Record<string, string>>({});
+  const [enriched, setEnriched] = useState<Record<string, string>>({});
   const path = { params: { path: { engagement_id: engagementId } } };
 
   const load = useCallback(() => {
@@ -24,6 +27,15 @@ export function ShortlistPanel({ engagementId }: { engagementId: string }) {
   }, [engagementId]);
   useEffect(load, [load]);
 
+  const enrich = async (r: Row) => {
+    const { data, error } = await api.POST("/api/v1/properties/{property_id}/enrich", { params: { path: { property_id: r.property.id } } });
+    setEnriched({ ...enriched, [r.id]: data ? `Synthetic data: filled ${data.filled.join(", ") || "nothing"}; kept what you entered (${data.kept.join(", ") || "none"}); not available: ${data.not_available.join(", ") || "none"}.` : String((error as { detail?: unknown })?.detail ?? "No data for that address.") });
+    load();
+  };
+  const driveTime = async (r: Row) => {
+    const { data } = await api.GET("/api/v1/integrations/maps/drive-time", { params: { query: { from_place: r.property.suburb ?? "", to_place: drive[r.id] ?? "" } } });
+    setDriveResult({ ...driveResult, [r.id]: data ? (data.minutes == null ? "Unknown place" : `About ${data.minutes} minutes by car (synthetic estimate)`) : "" });
+  };
   const num = (s: string) => (s.trim() ? Number(s.replace(/[$,]/g, "")) : null);
 
   const add = async (confirm: boolean) => {
@@ -77,6 +89,13 @@ export function ShortlistPanel({ engagementId }: { engagementId: string }) {
               fit: {r.fit.meets} meets · {r.fit.partly} partly · {r.fit.fails} fails · {r.fit.unknown} unknown
             </span>
           </div>
+          <div className="edit">
+            <button className="button" onClick={() => void enrich(r)}>Look up details (synthetic data)</button>
+            <input className="narrow" value={drive[r.id] ?? ""} onChange={(e) => setDrive({ ...drive, [r.id]: e.target.value })} placeholder="Drive to… (suburb)" aria-label="Drive time to" />
+            <button className="button" disabled={!r.property.suburb || !(drive[r.id] ?? "").trim()} onClick={() => void driveTime(r)}>Drive time</button>
+          </div>
+          {enriched[r.id] && <p className="hint">{enriched[r.id]}</p>}
+          {driveResult[r.id] && <p className="hint">{driveResult[r.id]}</p>}
           <div className="acts">
             {STATUSES.map((s) => (
               <button key={s} className={s === r.status ? "primary" : ""} disabled={s === r.status} onClick={() => void patch(r, { status: s })}>

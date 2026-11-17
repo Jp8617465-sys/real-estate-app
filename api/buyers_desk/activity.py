@@ -171,5 +171,9 @@ def timeline(engagement_id: UUID, conn: Conn) -> list[TimelineEvent]:
         events.append((i["created_at"], 1, TimelineEvent(at=i["created_at"], kind="call", title=f"Call uploaded: {i['filename']}", source="")))
         if i["applied_at"]:
             events.append((i["applied_at"], 1, TimelineEvent(at=i["applied_at"], kind="call", title=f"Call reviewed: {i['filename']}", source="")))
+    for c in conn.execute(text("SELECT direction, channel, subject, occurred_at FROM communications WHERE engagement_id = :e"), {"e": engagement_id}).mappings():
+        what = {"email": "Email", "call": "Call", "sms": "Text", "note": "Note"}[c["channel"]]
+        verb = "" if c["channel"] == "note" else (" received" if c["direction"] == "in" else " sent")
+        events.append((c["occurred_at"], 1, TimelineEvent(at=c["occurred_at"], kind="communication", title=f"{what}{verb}: {c['subject']}", source="")))
     events.sort(key=lambda x: (x[0], x[1]), reverse=True)
     return [e for _, _, e in events]

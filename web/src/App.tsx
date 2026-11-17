@@ -5,6 +5,7 @@ import { IntakePage } from "./pages/IntakePage";
 import { PipelinePage } from "./pages/PipelinePage";
 import { ProfessionalsPage } from "./pages/ProfessionalsPage";
 import { TasksPage } from "./pages/TasksPage";
+import { IntegrationsPage } from "./pages/IntegrationsPage";
 import { PeoplePage } from "./pages/PeoplePage";
 import { PersonPage } from "./pages/PersonPage";
 import { NewOpportunity } from "./pages/NewOpportunity";
@@ -22,6 +23,7 @@ export function App() {
           <NavLink to="/tasks">Tasks</NavLink>
           <NavLink to="/people">Clients</NavLink>
           <NavLink to="/professionals">Professionals</NavLink>
+          <NavLink to="/integrations">Integrations</NavLink>
           <NavLink to="/new">New opportunity</NavLink>
         </nav>
         <p className="rail-note">Local workspace · synthetic material only</p>
@@ -32,6 +34,7 @@ export function App() {
           <Route path="/pipeline" element={<PipelinePage />} />
           <Route path="/professionals" element={<ProfessionalsPage />} />
           <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/integrations" element={<IntegrationsPage />} />
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/people/:id" element={<PersonPage />} />
           <Route path="/new" element={<NewOpportunity />} />
