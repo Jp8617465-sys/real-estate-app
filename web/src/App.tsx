@@ -4,6 +4,7 @@ import { EngagementPage } from "./pages/EngagementPage";
 import { IntakePage } from "./pages/IntakePage";
 import { PipelinePage } from "./pages/PipelinePage";
 import { ProfessionalsPage } from "./pages/ProfessionalsPage";
+import { TasksPage } from "./pages/TasksPage";
 import { PeoplePage } from "./pages/PeoplePage";
 import { PersonPage } from "./pages/PersonPage";
 import { NewOpportunity } from "./pages/NewOpportunity";
@@ -18,6 +19,7 @@ export function App() {
             Engagements
           </NavLink>
           <NavLink to="/pipeline">Pipeline</NavLink>
+          <NavLink to="/tasks">Tasks</NavLink>
           <NavLink to="/people">Clients</NavLink>
           <NavLink to="/professionals">Professionals</NavLink>
           <NavLink to="/new">New opportunity</NavLink>
@@ -29,6 +31,7 @@ export function App() {
           <Route path="/" element={<EngagementList />} />
           <Route path="/pipeline" element={<PipelinePage />} />
           <Route path="/professionals" element={<ProfessionalsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/people/:id" element={<PersonPage />} />
           <Route path="/new" element={<NewOpportunity />} />
