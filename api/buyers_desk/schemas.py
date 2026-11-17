@@ -1,6 +1,6 @@
 """The documented product API: request and response shapes for buying opportunities."""
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -269,3 +269,103 @@ class ProfessionalView(BaseModel):
     person_id: UUID
     name: str
     role: str
+
+
+# ---- Clients and households (slice 1) -------------------------------------------------------------
+
+
+class NewPerson(BaseModel):
+    name: str = Field(min_length=1)
+    email: str | None = Field(default=None, min_length=1)
+    mobile: str | None = Field(default=None, min_length=1)
+    confirm_duplicate: bool = False
+
+
+class PersonEdit(BaseModel):
+    name: str | None = Field(default=None, min_length=1)
+    email: str | None = Field(default=None, min_length=1)
+    mobile: str | None = Field(default=None, min_length=1)
+    confirm_duplicate: bool = False
+
+
+class PersonSummary(BaseModel):
+    id: UUID
+    name: str
+    email: str | None
+    mobile: str | None
+    household_names: list[str]
+
+
+class HouseholdMembership(BaseModel):
+    household_id: UUID
+    name: str
+    started_on: str
+    ended_on: str | None
+
+
+class RelationshipView(BaseModel):
+    id: UUID
+    other_person_id: UUID
+    other_name: str
+    kind: str
+    note: str | None
+
+
+class PersonEngagement(BaseModel):
+    id: UUID
+    household_name: str
+    stage: str
+
+
+class PersonDetail(BaseModel):
+    id: UUID
+    name: str
+    email: str | None
+    mobile: str | None
+    households: list[HouseholdMembership]
+    relationships: list[RelationshipView]
+    engagements: list[PersonEngagement]
+
+
+class NewHousehold(BaseModel):
+    name: str = Field(min_length=1)
+    member_ids: list[UUID] = Field(default_factory=list)
+
+
+class Member(BaseModel):
+    person_id: UUID
+    name: str
+    started_on: str
+    ended_on: str | None
+
+
+class HouseholdView(BaseModel):
+    id: UUID
+    name: str
+    members: list[Member]
+    former_members: list[Member]
+    engagements: list[PersonEngagement]
+
+
+class HouseholdSummary(BaseModel):
+    id: UUID
+    name: str
+    member_names: list[str]
+
+
+class AddMember(BaseModel):
+    person_id: UUID
+
+
+class EndMembership(BaseModel):
+    ended_on: str | None = None
+
+
+class NewRelationship(BaseModel):
+    other_person_id: UUID
+    kind: Literal["partner", "parent", "child", "sibling", "other"]
+    note: str | None = None
+
+
+class HouseholdOpportunity(BaseModel):
+    budget_aud: int | None = Field(default=None, gt=0)
