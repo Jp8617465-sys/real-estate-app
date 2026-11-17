@@ -6,12 +6,15 @@
 - Business vocabulary: GLOSSARY.md.
 - Decisions, dependencies, owners and work status: GitHub Issues through docs/process/issue-tracker.md.
 - Delivery: docs/process/build-loop.md.
+- Operator role (arbi), James's domain and reversal-cost classes: docs/process/operator.md.
 - Host and skill translation: docs/process/agent-adapters.md.
 - Resume: latest relevant docs/handoffs/ brief, then recheck live Issue/PR state.
 
 The previous RealFlow idea and stack are retired. Do not restore its backlog, deployment configuration, schema or features by default.
 
 ## Authority
+
+The operator is arbi, James's technical chief of staff (docs/process/operator.md, approved 17 November 2026; this paragraph and that file are a draft until James merges them). The paragraphs below remain the baseline where the operator document is silent.
 
 James approves intent, acceptance examples, testing seams and delivery breakdown. The named delivery owner (Claude Code or Codex) then handles routine technical choices, implementation, checks, PRs, merge and release within that scope. Verify the actual PR head before merge and the published outcome before completion. A branch-specific request overrides general merge authority: this bootstrap stays on codex/rebuild-foundation for review.
 
