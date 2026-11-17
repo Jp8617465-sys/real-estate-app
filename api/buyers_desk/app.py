@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine
 
-from buyers_desk import activity, contract, integrations_api, brief, engagements, intakes, people, pipeline, professionals, properties
+from buyers_desk import activity, contract, feedback, integrations_api, brief, engagements, intakes, people, pipeline, professionals, properties
 from buyers_desk.integrations.registry import Integrations
 from buyers_desk.intake.claude import ClaudeExtractor
 from buyers_desk.intake.extraction import Extractor, ScriptedExtractor
@@ -44,6 +44,7 @@ def create_app(settings: Settings | None = None, extractor: Extractor | None = N
     app.include_router(professionals.router)
     app.include_router(activity.router)
     app.include_router(integrations_api.router)
+    app.include_router(feedback.router)
     if (BUILT_WEB_APP / "index.html").is_file():
         _serve_web_app(app)
     return app

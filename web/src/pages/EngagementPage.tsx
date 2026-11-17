@@ -90,6 +90,7 @@ export function EngagementPage() {
   const [stageHistory, setStageHistory] = useState<StageEntry[]>([]);
   const [stageNote, setStageNote] = useState<string | null>(null);
   const [closing, setClosing] = useState("");
+  const [version, setVersion] = useState(0);
   const [missing, setMissing] = useState(false);
 
   useEffect(() => {
@@ -105,7 +106,7 @@ export function EngagementPage() {
     api.GET("/api/v1/engagements/{engagement_id}/intakes", params).then(({ data }) => data && setIntakes(data));
     api.GET("/api/v1/pipeline/stages").then(({ data }) => data && setStages(data));
     api.GET("/api/v1/engagements/{engagement_id}/stage-history", params).then(({ data }) => data && setStageHistory(data));
-  }, [id]);
+  }, [id, version]);
 
   const moveTo = async (stage: string, reason?: string) => {
     setStageNote(null);
@@ -145,7 +146,7 @@ export function EngagementPage() {
           </ul>
         </section>
         <section className="panel">
-          <h2>Buyer brief</h2>
+          <h2>Budget on record</h2>
           <p>
             <span className="muted">Budget</span> {money(engagement.budget_aud)}
           </p>
@@ -191,8 +192,8 @@ export function EngagementPage() {
       <BriefPanel engagementId={engagement.id} />
       <ShortlistPanel engagementId={engagement.id} />
       <ProfessionalsPanel engagementId={engagement.id} />
-      <CallPanel engagementId={engagement.id} onChanged={() => window.location.reload()} />
-      <TasksPanel engagementId={engagement.id} />
+      <CallPanel engagementId={engagement.id} onChanged={() => setVersion((v) => v + 1)} />
+      <TasksPanel key={version} engagementId={engagement.id} />
       <UploadCall engagementId={engagement.id} />
       {intakes.length > 0 && (
         <section className="panel">

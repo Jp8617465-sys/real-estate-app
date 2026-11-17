@@ -7,18 +7,24 @@ import { when } from "../format";
 type Task = components["schemas"]["TaskView"];
 
 export function TaskRows({ tasks, reload }: { tasks: Task[]; reload: () => void }) {
+  const [shown, setShown] = useState<Record<string, boolean>>({});
   const toggle = async (t: Task) => {
+    setShown({ ...shown, [t.id]: !(shown[t.id] ?? !!t.done_at) });
     if (t.done_at) await api.POST("/api/v1/tasks/{task_id}/reopen", { params: { path: { task_id: t.id } } });
     else await api.POST("/api/v1/tasks/{task_id}/done", { params: { path: { task_id: t.id } } });
     reload();
+    setShown((cur) => {
+      const { [t.id]: _gone, ...rest } = cur;
+      return rest;
+    });
   };
   return (
     <ul className="plain">
       {tasks.map((t) => (
         <li key={t.id} className="taskrow">
           <label>
-            <input type="checkbox" checked={!!t.done_at} onChange={() => void toggle(t)} aria-label={`Done: ${t.title}`} />{" "}
-            <span className={t.done_at ? "done" : ""}>{t.title}</span>
+            <input type="checkbox" checked={shown[t.id] ?? !!t.done_at} onChange={() => void toggle(t)} aria-label={`Done: ${t.title}`} />{" "}
+            <span className={(shown[t.id] ?? !!t.done_at) ? "done" : ""}>{t.title}</span>
           </label>
           <span className="muted">
             {t.owner}

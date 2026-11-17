@@ -39,4 +39,5 @@ def provision(database: str, *, recreate: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    provision(sys.argv[1] if len(sys.argv) > 1 else Settings().database)
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    provision(args[0] if args else Settings().database, recreate="--recreate" in sys.argv)
