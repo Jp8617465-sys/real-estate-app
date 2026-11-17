@@ -142,3 +142,6 @@ select { font: inherit; padding: 9px 11px; border: 1px solid #c9d2cb; border-rad
 .briefvalue { padding: 2px 0 6px; }
 .linkbtn { border: 0; background: none; color: var(--red); cursor: pointer; font: inherit; font-size: 12px; margin-left: 8px; }
 input.narrow { max-width: 130px; min-width: 100px; flex: 0 0 auto; }
+.check { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.stack { display: grid; gap: 4px; font-size: 12px; font-weight: 600; margin-top: 10px; }
+.stack textarea { font-weight: 400; }
