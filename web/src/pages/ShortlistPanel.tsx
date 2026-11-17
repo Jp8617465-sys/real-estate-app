@@ -143,7 +143,7 @@ export function ShortlistPanel({ engagementId }: { engagementId: string }) {
           <label>Suburb<input value={form.suburb} onChange={(e) => setForm({ ...form, suburb: e.target.value })} /></label>
         </div>
         <div className="two">
-          <label>Bedrooms<input value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: e.target.value })} /></label>
+          <label>Bedrooms of this property<input value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: e.target.value })} /></label>
           <label>Price guide low / high<span className="edit"><input value={form.low} onChange={(e) => setForm({ ...form, low: e.target.value })} aria-label="Price guide low" /><input value={form.high} onChange={(e) => setForm({ ...form, high: e.target.value })} aria-label="Price guide high" /></span></label>
         </div>
         <div><button className="button primary" disabled={!form.address_line.trim()} onClick={() => void add(false)}>Add to this engagement</button></div>

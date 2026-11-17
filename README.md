@@ -22,6 +22,12 @@ The first tracer bullet is a local app: a Python back end and a React front end 
 
 Needs macOS with Homebrew, `uv`, `postgresql@17` and Node 20 (`brew install uv postgresql@17 node@20`). After changing the API, run `make generate-client`.
 
+## Run the trial
+
+    make demo    # erases the LOCAL demo database, loads synthetic Buy Well-style data, runs on http://127.0.0.1:8000
+
+A 15-minute script for a buyers agent is in docs/trial/buy-well-walkthrough.md; the API is in docs/product/api.md.
+
 ## Run the prototype
 
     make setup   # pinned dependencies, local PostgreSQL, database, migrations, built front end

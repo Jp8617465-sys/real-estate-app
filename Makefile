@@ -1,4 +1,4 @@
-.PHONY: setup run check check-factory generate-client prototype score-keys
+.PHONY: setup run check check-factory generate-client prototype score-keys reset seed demo
 
 PG_BIN := $(shell brew --prefix postgresql@17 2>/dev/null)/bin
 export PATH := $(PG_BIN):$(PATH)
@@ -41,3 +41,19 @@ prototype:
 # A paid run for one model: cd api && uv run python -m buyers_desk.scored_run --model claude-sonnet-5-5
 score-keys:
 	cd api && uv run python -m buyers_desk.scored_run --replay-keys
+
+# THE TRIAL. Erases the local buyers_desk database, rebuilds it with synthetic Buy Well-style data
+# through the real API, and runs the app on http://127.0.0.1:8000. See docs/trial/buy-well-walkthrough.md.
+demo:
+	@echo "make demo erases the LOCAL buyers_desk database and loads synthetic data."
+	cd api && uv run python -m buyers_desk.provision --recreate
+	cd web && npm run build
+	cd api && uv run python -m buyers_desk.demo
+
+# Start again from an empty database (erases local data).
+reset:
+	cd api && uv run python -m buyers_desk.provision --recreate
+
+# Load synthetic data into a running, empty app (refuses if it already has people).
+seed:
+	cd api && uv run python -m buyers_desk.seed
