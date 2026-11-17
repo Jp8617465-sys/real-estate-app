@@ -98,7 +98,7 @@ def get_engagement(engagement_id: UUID, conn: Conn) -> Engagement:
 def _read(conn: Connection, engagement_id: UUID) -> Engagement:
     row = conn.execute(
         text(
-            "SELECT e.id, e.service_line, e.stage, e.created_at, h.name AS household_name, "
+            "SELECT e.id, e.service_line, e.stage, e.created_at, e.stage_changed_at, e.closed_reason, h.name AS household_name, "
             "b.budget_aud FROM engagements e "
             "JOIN households h ON h.id = e.household_id "
             "LEFT JOIN buyer_briefs b ON b.engagement_id = e.id WHERE e.id = :id"
@@ -130,7 +130,7 @@ def get_changes(engagement_id: UUID, conn: Conn) -> list[ChangeLogEntry]:
             "SELECT c.entity, c.entity_id, c.field, c.new_value, c.earlier_value, c.source, "
             "c.changed_by, c.changed_at FROM change_log c, engagements e "
             "WHERE e.id = :id AND ("
-            " (c.entity IN ('brief', 'profile', 'intake', 'properties', 'actions') AND c.entity_id = e.id)"
+            " (c.entity IN ('brief', 'profile', 'intake', 'properties', 'actions', 'engagement') AND c.entity_id = e.id)"
             " OR (c.entity = 'household' AND c.entity_id = e.household_id)"
             " OR (c.entity = 'client' AND c.entity_id IN "
             "     (SELECT person_id FROM engagement_clients WHERE engagement_id = e.id))"

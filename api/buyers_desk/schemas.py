@@ -39,6 +39,8 @@ class EngagementSummary(BaseModel):
     client_names: list[str]
     budget_aud: int | None
     created_at: datetime
+    stage_changed_at: datetime
+    closed_reason: str | None
 
 
 class Engagement(EngagementSummary):
@@ -369,3 +371,37 @@ class NewRelationship(BaseModel):
 
 class HouseholdOpportunity(BaseModel):
     budget_aud: int | None = Field(default=None, gt=0)
+
+
+# ---- Pipeline (slice 2) -----------------------------------------------------------------------------------
+
+
+class StageInfo(BaseModel):
+    key: str
+    label: str
+    group: str
+
+
+class StageMove(BaseModel):
+    stage: str
+    reason: str | None = None
+
+
+class BoardCard(BaseModel):
+    id: UUID
+    stage: str
+    household_name: str
+    client_names: list[str]
+    budget_aud: int | None
+    days_in_stage: int
+
+
+class BoardColumn(BaseModel):
+    stage: str
+    label: str
+    group: str
+    engagements: list[BoardCard]
+
+
+class Board(BaseModel):
+    columns: list[BoardColumn]
