@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import type { components } from "../api/schema";
 import { money, stageLabel, when } from "../format";
 import { BriefPanel } from "./BriefPanel";
+import { ProfessionalsPanel } from "./ProfessionalsPanel";
 import { ShortlistPanel } from "./ShortlistPanel";
 
 type Engagement = components["schemas"]["Engagement"];
@@ -187,6 +188,7 @@ export function EngagementPage() {
       </section>
       <BriefPanel engagementId={engagement.id} />
       <ShortlistPanel engagementId={engagement.id} />
+      <ProfessionalsPanel engagementId={engagement.id} />
       <UploadCall engagementId={engagement.id} />
       {intakes.length > 0 && (
         <section className="panel">

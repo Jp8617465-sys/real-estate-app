@@ -550,3 +550,73 @@ class EngagementProperty(BaseModel):
 class ShortlistView(BaseModel):
     properties: list[EngagementProperty]
     suggested_criteria: list[str]
+
+
+# ---- Professionals (slice 5) ----------------------------------------------------------------------------------------
+
+ProfessionalKind = Literal["broker", "selling_agent", "conveyancer", "solicitor", "inspector", "referrer", "other"]
+
+
+class NewProfessional(BaseModel):
+    name: str = Field(min_length=1)
+    kind: ProfessionalKind = "other"
+    firm: str | None = None
+    notes: str | None = None
+    email: str | None = Field(default=None, min_length=1)
+    mobile: str | None = Field(default=None, min_length=1)
+    confirm_duplicate: bool = False
+
+
+class ProfessionalProfile(BaseModel):
+    kind: ProfessionalKind = "other"
+    firm: str | None = None
+    notes: str | None = None
+
+
+class ProfessionalPatch(BaseModel):
+    kind: ProfessionalKind | None = None
+    firm: str | None = None
+    notes: str | None = None
+
+
+class ProSummary(BaseModel):
+    id: UUID
+    name: str
+    email: str | None
+    mobile: str | None
+    kind: str
+    firm: str | None
+    notes: str | None
+    engagement_count: int
+
+
+class ProEngagement(BaseModel):
+    engagement_id: UUID
+    household_name: str
+    role: str
+    started_on: str
+    ended_on: str | None
+
+
+class ProDetail(ProSummary):
+    engagements: list[ProEngagement]
+
+
+class LinkProfessional(BaseModel):
+    person_id: UUID
+    role: str = Field(min_length=1)
+
+
+class LinkedProfessional(BaseModel):
+    person_id: UUID
+    name: str
+    role: str
+    kind: str
+    firm: str | None
+    started_on: str
+    ended_on: str | None
+
+
+class EngagementProfessionals(BaseModel):
+    current: list[LinkedProfessional]
+    former: list[LinkedProfessional]

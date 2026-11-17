@@ -16,6 +16,7 @@ from buyers_desk.engagements import LOCAL_AGENT, Conn, _read
 from buyers_desk.intake import review, transcript
 from buyers_desk.intake.extraction import ExtractionRequest, ScriptedExtractor
 from buyers_desk.intake.fields import FIELDS, SECTIONS
+from buyers_desk.professionals import infer_kind
 from buyers_desk.schemas import (
     Decision,
     EngagementRecord,
@@ -423,6 +424,10 @@ def _apply(conn: Connection, agency: UUID, row: dict[str, Any], st: review.State
                     "VALUES (:a, :e, :p, :r) ON CONFLICT DO NOTHING"
                 ),
                 {"a": agency, "e": engagement_id, "p": person, "r": m["role"] or "Professional"},
+            )
+            conn.execute(
+                text("INSERT INTO professionals (person_id, agency_id, kind) VALUES (:p, :a, :k) ON CONFLICT DO NOTHING"),
+                {"p": person, "a": agency, "k": infer_kind(m["role"] or "")},
             )
 
     by_id = {s["id"]: s for s in st["suggestions"]}

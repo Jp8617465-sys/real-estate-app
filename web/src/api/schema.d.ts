@@ -145,6 +145,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/engagements/{engagement_id}/professionals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Engagement Professionals */
+        get: operations["engagement_professionals_api_engagements__engagement_id__professionals_get"];
+        put?: never;
+        /** Link Professional */
+        post: operations["link_professional_api_engagements__engagement_id__professionals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/engagements/{engagement_id}/professionals/{person_id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** End Link */
+        post: operations["end_link_api_engagements__engagement_id__professionals__person_id__end_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/engagements/{engagement_id}/properties": {
         parameters: {
             query?: never;
@@ -557,6 +592,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/professionals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Professionals */
+        get: operations["list_professionals_api_professionals_get"];
+        put?: never;
+        /** Create Professional */
+        post: operations["create_professional_api_professionals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/professionals/{person_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Professional */
+        get: operations["get_professional_api_professionals__person_id__get"];
+        /** Make Professional */
+        put: operations["make_professional_api_professionals__person_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit Professional */
+        patch: operations["edit_professional_api_professionals__person_id__patch"];
+        trace?: never;
+    };
     "/api/properties": {
         parameters: {
             query?: never;
@@ -852,6 +924,13 @@ export interface components {
              */
             stage_changed_at: string;
         };
+        /** EngagementProfessionals */
+        EngagementProfessionals: {
+            /** Current */
+            current: components["schemas"]["LinkedProfessional"][];
+            /** Former */
+            former: components["schemas"]["LinkedProfessional"][];
+        };
         /** EngagementProperty */
         EngagementProperty: {
             /** Assessment */
@@ -1070,6 +1149,36 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** LinkProfessional */
+        LinkProfessional: {
+            /**
+             * Person Id
+             * Format: uuid
+             */
+            person_id: string;
+            /** Role */
+            role: string;
+        };
+        /** LinkedProfessional */
+        LinkedProfessional: {
+            /** Ended On */
+            ended_on: string | null;
+            /** Firm */
+            firm: string | null;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /**
+             * Person Id
+             * Format: uuid
+             */
+            person_id: string;
+            /** Role */
+            role: string;
+            /** Started On */
+            started_on: string;
+        };
         /** Member */
         Member: {
             /** Ended On */
@@ -1152,6 +1261,30 @@ export interface components {
             mobile?: string | null;
             /** Name */
             name: string;
+        };
+        /** NewProfessional */
+        NewProfessional: {
+            /**
+             * Confirm Duplicate
+             * @default false
+             */
+            confirm_duplicate: boolean;
+            /** Email */
+            email?: string | null;
+            /** Firm */
+            firm?: string | null;
+            /**
+             * Kind
+             * @default other
+             * @enum {string}
+             */
+            kind: "broker" | "selling_agent" | "conveyancer" | "solicitor" | "inspector" | "referrer" | "other";
+            /** Mobile */
+            mobile?: string | null;
+            /** Name */
+            name: string;
+            /** Notes */
+            notes?: string | null;
         };
         /** NewProperty */
         NewProperty: {
@@ -1270,6 +1403,90 @@ export interface components {
             mobile: string | null;
             /** Name */
             name: string;
+        };
+        /** ProDetail */
+        ProDetail: {
+            /** Email */
+            email: string | null;
+            /** Engagement Count */
+            engagement_count: number;
+            /** Engagements */
+            engagements: components["schemas"]["ProEngagement"][];
+            /** Firm */
+            firm: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Mobile */
+            mobile: string | null;
+            /** Name */
+            name: string;
+            /** Notes */
+            notes: string | null;
+        };
+        /** ProEngagement */
+        ProEngagement: {
+            /** Ended On */
+            ended_on: string | null;
+            /**
+             * Engagement Id
+             * Format: uuid
+             */
+            engagement_id: string;
+            /** Household Name */
+            household_name: string;
+            /** Role */
+            role: string;
+            /** Started On */
+            started_on: string;
+        };
+        /** ProSummary */
+        ProSummary: {
+            /** Email */
+            email: string | null;
+            /** Engagement Count */
+            engagement_count: number;
+            /** Firm */
+            firm: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Mobile */
+            mobile: string | null;
+            /** Name */
+            name: string;
+            /** Notes */
+            notes: string | null;
+        };
+        /** ProfessionalPatch */
+        ProfessionalPatch: {
+            /** Firm */
+            firm?: string | null;
+            /** Kind */
+            kind?: ("broker" | "selling_agent" | "conveyancer" | "solicitor" | "inspector" | "referrer" | "other") | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** ProfessionalProfile */
+        ProfessionalProfile: {
+            /** Firm */
+            firm?: string | null;
+            /**
+             * Kind
+             * @default other
+             * @enum {string}
+             */
+            kind: "broker" | "selling_agent" | "conveyancer" | "solicitor" | "inspector" | "referrer" | "other";
+            /** Notes */
+            notes?: string | null;
         };
         /** ProfessionalView */
         ProfessionalView: {
@@ -1926,6 +2143,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["IntakeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    engagement_professionals_api_engagements__engagement_id__professionals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngagementProfessionals"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    link_professional_api_engagements__engagement_id__professionals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkProfessional"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngagementProfessionals"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    end_link_api_engagements__engagement_id__professionals__person_id__end_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement_id: string;
+                person_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngagementProfessionals"];
                 };
             };
             /** @description Validation Error */
@@ -2836,6 +3151,172 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StageInfo"][];
+                };
+            };
+        };
+    };
+    list_professionals_api_professionals_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                kind?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_professional_api_professionals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewProfessional"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_professional_api_professionals__person_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                person_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    make_professional_api_professionals__person_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                person_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfessionalProfile"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_professional_api_professionals__person_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                person_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfessionalPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
