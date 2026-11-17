@@ -10,4 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: make check-factory
+  # The full `make check`: back-end tests against real PostgreSQL, strict types, the generated-client
+  # drift check and the front-end build. No new Actions: only the pinned checkout plus tools the
+  # runner image already has. uv is pinned to the version the lock file was made with.
+  full:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Start PostgreSQL with local trust authentication (what the app expects)
+        run: |
+          sudo systemctl start postgresql
+          sudo sed -i -E 's/^(local[[:space:]]+all[[:space:]]+(all|postgres)[[:space:]]+)peer/\1trust/' /etc/postgresql/*/main/pg_hba.conf
+          sudo systemctl reload postgresql
+          sudo -u postgres psql -c "CREATE ROLE $(whoami) SUPERUSER LOGIN"
+          pg_isready
+          psql --version
+      - name: Install the pinned uv
+        run: pipx install uv==0.13.6
+      - name: Show tool versions
+        run: |
+          uv --version
+          node --version
+          npm --version
+      - run: make setup
       - run: make check
