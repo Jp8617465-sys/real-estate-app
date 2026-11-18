@@ -14,7 +14,7 @@ The previous RealFlow idea and stack are retired. Do not restore its backlog, de
 
 ## Authority
 
-The operator is arbi, James's technical chief of staff (docs/process/operator.md, approved 17 November 2026; this paragraph and that file are a draft until James merges them). The paragraphs below remain the baseline where the operator document is silent.
+The operator is arbi, James's technical chief of staff (docs/process/operator.md, approved by James 17 November 2026 and merged 18 November 2026). The paragraphs below remain the baseline where the operator document is silent.
 
 James approves intent, acceptance examples, testing seams and delivery breakdown. The named delivery owner (Claude Code or Codex) then handles routine technical choices, implementation, checks, PRs, merge and release within that scope. Verify the actual PR head before merge and the published outcome before completion. A branch-specific request overrides general merge authority: this bootstrap stays on codex/rebuild-foundation for review.
 
