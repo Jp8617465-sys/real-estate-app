@@ -29,7 +29,10 @@ def connection(request: Request) -> Iterator[Connection]:
         yield conn
 
 
-Conn = Annotated[Connection, Depends(connection)]
+# scope="function": the transaction commits when the route function returns, BEFORE the response is sent.
+# With the default request scope FastAPI commits after sending, so a fast client's next request could
+# not yet see what the previous one created (tests/test_commit_before_response.py).
+Conn = Annotated[Connection, Depends(connection, scope="function")]
 
 OPPORTUNITY_STAGES = ("enquiry",)
 ENTERED_BY_HAND = {"kind": "entered_by_hand"}
