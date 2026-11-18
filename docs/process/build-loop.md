@@ -10,7 +10,9 @@ Adapted from the merged ASXOS factory; see provenance.md.
 6. Assign one stable delivery owner through building, integration, publication and acceptance. Record scope, dependencies, integration agreements, publication plan, acceptance cases and verification command before readiness.
 7. Run meaningful checks and acceptance. Inspect required checks at the actual PR head and review the diff before landing. Merge/release within delegated scope and host permissions; branch-specific instructions override general authority.
 8. Verify the published version through read-back and dated observed acceptance. Tests/merge alone do not complete a product slice. Keep open while integrating, awaiting publication or verifying; close with evidence.
-9. Record learnings, update the owning Issue and leave a brief handoff before the next phase/fresh chat.
+9. Record learnings (append to docs/process/lessons.md), update the owning Issue and leave a brief handoff (`/arbi-close`) before the next phase/fresh chat.
+
+Who runs it: the operator (arbi, docs/process/operator.md) runs this loop in an interactive session and classifies every PR Green, Amber or Red; Red and anything in James's domain is prepared and handed over. Specialists are dispatched per .claude/agents/README.md, and a large call goes through `red-team` first. `/arbi` starts a session's work; `/arbi-close` ends it. Merges are by hand after reading the checks on the PR head: there is no auto-merge and no scheduled builder.
 
 States: planned → building → integrating → awaiting-publication → verifying → complete.
 
